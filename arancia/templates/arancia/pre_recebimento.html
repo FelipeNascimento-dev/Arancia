@@ -2,9 +2,63 @@
 
 {% block content %}
 
-{% include 'global/partials/_form_1col.html' %}
+{% include 'global/partials/_form_2col.html' %}
 
+{% if tabela_dados %}
+<div class="tabela-container">
+    <table class="tabela-p-recebimento">
+        <thead>
+            <tr>
+                <th>matnr</th>
+                <th>gernr</th>
+                <th>serge</th>
+                <!-- <th>zser_pr</th> -->
+                <th>ztipo</th>
+                <th>zver_ap</th>
+                <th>zsta_eq</th>
+                <!-- <th>nr_lcr_un</th>
+                    <th>nr_lcr_mast</th> -->
+                <!-- <th>nr_cd_br_cx</th> -->
+                <!-- <th>stat_div_rec</th> -->
+                <th>id_lote</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in tabela_dados %}
+            {% for i in "1234567890"|make_list %}
+            <tr>
+                <td>{{ item.matnr }}</td>
+                <td>{{ item.gernr }}</td>
+                <td>{{ item.serge }}</td>
+                <!-- <td>{{ item.zser_pr }}</td> -->
+                <td>{{ item.ztipo }}</td>
+                <td>{{ item.zver_ap }}</td>
+                <td>{{ item.zsta_eq }}</td>
+                <!-- <td>{{ item.nr_lcr_un }}</td>
+                <td>{{ nr_lcr_mast }}</td> -->
+                <!-- <td>{{ item.nr_cd_br_cx }}</td> -->
+                <!-- <td>{{ item.stat_div_rec }}</td> -->
+                <td>{{ item.id_lote }}</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
 
+    <div class="buttons-container">
+        <button class="btn-voltar" onclick="history.back()">Limpar</button>
+        {% include 'global/partials/_pagination.html' %}
+        <div class="buttons_id">
+            <a href="{% url 'arancia:pre_recebimento' %}">
+                <button class="btn-p-rec">Pré-recebimento</button>
+            </a>
+            <a href="{% url 'arancia:recebimento' %}">
+                <button class="btn-rec">Recebimento</button>
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 
 {% endblock content %}

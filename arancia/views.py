@@ -118,6 +118,12 @@ def consulta_id(request):
 
 def pre_recebimento(request):
     form = PreRecebimentoForm()
+    # qtd_campos = len(form.fields)
+    # mod = qtd_campos % 2
+    # impar = (mod == 1)
+    # primeiro_nome = next(iter(form.fields))
+    # primeiro_campo = form[primeiro_nome] 
+
     context = {
         'form': form
     }
