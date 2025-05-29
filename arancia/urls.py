@@ -15,4 +15,5 @@ urlpatterns = [
     path('estorno/picpac/', views.estorno_picpac, name='estorno_picpac'),
     path('estorno/rom/', views.estorno_rom, name='estorno_rom'),
     path('consulta/', views.consulta_id, name='consulta_id'),
+    path('pre-recebimento/', views.pre_recebimento, name='pre_recebimento'),
 ]

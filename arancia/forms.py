@@ -67,3 +67,8 @@ class EstornoRomaneioForm(forms.Form):
 class ConsultaForm(forms.Form):
     nome_formulario = 'Consulta de ID'
     id = forms.CharField(label='Insira o ID:', max_length=20)
+
+class PreRecebimentoForm(forms.Form):
+    nome_formulario = 'Pré-Recebimento'
+    serial = forms.CharField(label='Serial', max_length=50)
+    id = forms.CharField(label='ID', max_length=50)
