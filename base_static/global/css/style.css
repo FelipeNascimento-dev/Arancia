@@ -5,6 +5,7 @@
 @import url(button_1b.css);
 @import url(button_2b.css);
 @import url(consulta_id.css);
+@import url(pagination.css);
 
 * {
     margin: 0;

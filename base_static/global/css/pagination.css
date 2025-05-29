@@ -1,0 +1,25 @@
+.paginator-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #000000;
+  border: none;
+}
+
+.paginator-text {
+  color: #000000;
+}
+
+.paginator-arrow {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #000000;
+  padding: 2px 6px;
+}
+
+.paginator-arrow:hover {
+  color: #000000;
+}

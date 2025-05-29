@@ -2,7 +2,9 @@
 
 {% block content %}
 
-{% include 'global/partials/_form_1col.html' %}
+{% if exibir_formulario %}
+    {% include 'global/partials/_form_1col.html' %}
+{% endif %}
 
 {% if tabela_dados %}
     <div class="tabela-container">
@@ -20,7 +22,7 @@
                     <th>nr_lcr_mast</th> -->
                     <!-- <th>nr_cd_br_cx</th> -->
                     <!-- <th>stat_div_rec</th> -->
-                    <!-- <th>id_lote</th> -->
+                    <th>id_lote</th>
                 </tr>
             </thead>
             <tbody>
@@ -37,7 +39,7 @@
                         <td>{{ nr_lcr_mast }}</td> -->
                         <!-- <td>{{ item.nr_cd_br_cx }}</td> -->
                         <!-- <td>{{ item.stat_div_rec }}</td> -->
-                        <!-- <td>{{ item.id_lote }}</td> -->
+                        <td>{{ item.id_lote }}</td>
                     </tr>
                     <tr>
                         <td>{{ item.matnr }}</td>
@@ -51,7 +53,7 @@
                         <td>{{ nr_lcr_mast }}</td> -->
                         <!-- <td>{{ item.nr_cd_br_cx }}</td> -->
                         <!-- <td>{{ item.stat_div_rec }}</td> -->
-                        <!-- <td>{{ item.id_lote }}</td> -->
+                        <td>{{ item.id_lote }}</td>
                     </tr>
                     <tr>
                         <td>{{ item.matnr }}</td>
@@ -65,7 +67,7 @@
                         <td>{{ nr_lcr_mast }}</td> -->
                         <!-- <td>{{ item.nr_cd_br_cx }}</td> -->
                         <!-- <td>{{ item.stat_div_rec }}</td> -->
-                        <!-- <td>{{ item.id_lote }}</td> -->
+                        <td>{{ item.id_lote }}</td>
                     </tr>
                     <tr>
                         <td>{{ item.matnr }}</td>
@@ -79,7 +81,7 @@
                         <td>{{ nr_lcr_mast }}</td> -->
                         <!-- <td>{{ item.nr_cd_br_cx }}</td> -->
                         <!-- <td>{{ item.stat_div_rec }}</td> -->
-                        <!-- <td>{{ item.id_lote }}</td> -->
+                        <td>{{ item.id_lote }}</td>
                     </tr>
                     <tr>
                         <td>{{ item.matnr }}</td>
@@ -93,7 +95,7 @@
                         <td>{{ nr_lcr_mast }}</td> -->
                         <!-- <td>{{ item.nr_cd_br_cx }}</td> -->
                         <!-- <td>{{ item.stat_div_rec }}</td> -->
-                        <!-- <td>{{ item.id_lote }}</td> -->
+                        <td>{{ item.id_lote }}</td>
                     </tr>
                     <tr>
                         <td>{{ item.matnr }}</td>
@@ -107,7 +109,7 @@
                         <td>{{ nr_lcr_mast }}</td> -->
                         <!-- <td>{{ item.nr_cd_br_cx }}</td> -->
                         <!-- <td>{{ item.stat_div_rec }}</td> -->
-                        <!-- <td>{{ item.id_lote }}</td> -->
+                        <td>{{ item.id_lote }}</td>
                     </tr>
                     <tr>
                         <td>{{ item.matnr }}</td>
@@ -121,7 +123,7 @@
                         <td>{{ nr_lcr_mast }}</td> -->
                         <!-- <td>{{ item.nr_cd_br_cx }}</td> -->
                         <!-- <td>{{ item.stat_div_rec }}</td> -->
-                        <!-- <td>{{ item.id_lote }}</td> -->
+                        <td>{{ item.id_lote }}</td>
                     </tr>
                     <tr>
                         <td>{{ item.matnr }}</td>
@@ -135,7 +137,7 @@
                         <td>{{ nr_lcr_mast }}</td> -->
                         <!-- <td>{{ item.nr_cd_br_cx }}</td> -->
                         <!-- <td>{{ item.stat_div_rec }}</td> -->
-                        <!-- <td>{{ item.id_lote }}</td> -->
+                        <td>{{ item.id_lote }}</td>
                     </tr>
                     <tr>
                         <td>{{ item.matnr }}</td>
@@ -149,7 +151,7 @@
                         <td>{{ nr_lcr_mast }}</td> -->
                         <!-- <td>{{ item.nr_cd_br_cx }}</td> -->
                         <!-- <td>{{ item.stat_div_rec }}</td> -->
-                        <!-- <td>{{ item.id_lote }}</td> -->
+                        <td>{{ item.id_lote }}</td>
                     </tr>
                     <tr>
                         <td>{{ item.matnr }}</td>
@@ -163,7 +165,7 @@
                         <td>{{ nr_lcr_mast }}</td> -->
                         <!-- <td>{{ item.nr_cd_br_cx }}</td> -->
                         <!-- <td>{{ item.stat_div_rec }}</td> -->
-                        <!-- <td>{{ item.id_lote }}</td> -->
+                        <td>{{ item.id_lote }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -171,6 +173,7 @@
 
         <div class="buttons-container">
             <button class="btn-voltar" onclick="history.back()">Limpar</button>
+            {% include 'global/partials/_pagination.html' %}
             <div class="buttons_id">
                 <button class="btn-rec">Recebimento</button>
                 <button class="btn-p-rec">Pré-recebimento</button>
