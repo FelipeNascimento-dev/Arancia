@@ -70,11 +70,11 @@ class ConsultaForm(forms.Form):
 
 class PreRecebimentoForm(forms.Form):
     nome_formulario = 'Pré-Recebimento'
-    serial = forms.CharField(label='Serial', max_length=50)
-    id = forms.CharField(label='ID', max_length=50)
+    id = forms.CharField(label='ID', max_length=20)
+    romaneio = forms.CharField(label='Romaneio', max_length=11)
 
 class RecebimentoForm(forms.Form):
     nome_formulario = 'Recebimento'
+    id = forms.CharField(label='ID', max_length=20)
+    romaneio = forms.CharField(label='Romaneio', max_length=11)
     serial = forms.CharField(label='Serial', max_length=50)
-    id = forms.CharField(label='ID', max_length=50)
-    data = forms.CharField(label='Data')
