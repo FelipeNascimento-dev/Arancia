@@ -1,0 +1,79 @@
+.form-2col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  width: 800px;
+  height: 450px;
+  background-color: #e4edf5;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-2col h2 {
+  font-weight: bold;
+  text-align: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+.form-2col label {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.form-2col input {
+  width: 350px;
+  height: 40px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  text-decoration: none;
+  background-color: #e0e5ea;
+  border: 1px solid #ccc;
+}
+
+.row-2col {
+  display: flex;
+  width: 650px;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  margin-top: 0px;
+}
+
+.row-2col label {
+  width: auto;
+  margin-bottom: 10px;
+}
+
+.col {
+  flex: 1;
+  padding: 10px;
+}
+
+.form-centralizado {
+  text-align: center;
+  width: 100%;
+  max-width: 715px;
+  margin: 0 auto;
+  margin-bottom: 0px;
+}
+
+.form-centralizado input,
+.form-centralizado select,
+.form-centralizado textarea {
+  width: 100%;
+}
+
+.form-centralizado label{
+  text-align: center;
+  display: flex;
+}
+
+.form-group {
+  margin-bottom: 10px;
+}

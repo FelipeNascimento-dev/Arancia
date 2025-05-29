@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  
+    {% include 'global/partials/_head.html' %}
+</head>
+<body>
+    <div class="forma">
+    
+        {% include 'global/partials/_header.html' %}
+
+        <main class="container">
+            {% block content %}{% endblock %}
+        </main>
+
+    </div>
+</body>
+</html>

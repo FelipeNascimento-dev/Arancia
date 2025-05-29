@@ -1,0 +1,103 @@
+{% load static %}
+
+<div class="navbar">
+
+        <a href="{% url 'arancia:index' %}">
+            <img class="nav-logo" src="{% static 'global/images/10 anos.png' %}" alt="Logo">
+        </a>
+
+        <div class="nav-links">
+            <a href="{% url 'arancia:index' %}">Home</a>
+
+            <div class="dropdown">
+                <button class="dropbtn">Operações</button>
+                <div class="dropdown-content">
+                    <div class="top-columns">
+                        <div class="column">
+                            <h4 class="column-toggle" data-target="pesquisas" title="Use para encontrar itens.">
+                                <i class="fa fa-search"></i><span> Pesquisas</span>
+                            </h4>
+                            <div class="submenu" id="pesquisas">
+                                <a href="#">Pesquisar</a>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <h4 class="column-toggle" data-target="relatorios" title="Veja relatórios disponíveis.">
+                                <i class="fa-solid fa-file"></i> Relatórios
+                            </h4>
+                            <div class="submenu" id="relatorios">
+                                <a href="#">PDFs Pendentes</a>
+                                <a href="#">PDFs Selecionados</a>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <h4 class="column-toggle" data-target="logistica" title="Ações rápidas para as operações.">
+                                <i class="fas fa-tools"></i> Logistica
+                            </h4>
+                            <div class="submenu" id="logistica">
+                                <a href="#">Excluir Seleção</a>
+                                <a href="#">Exportar Planilha</a>
+                                <a href="#">Baixa de OS</a>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <h4 class="column-toggle" data-target="transporte">
+                                <i class="fa-solid fa-truck"></i> Transporte
+                            </h4>
+                            <div class="submenu" id="transporte">
+                                <!-- <div>
+                                    <h5 class="submenu-toggle" data-target="entregas-sub">Entregas <i
+                                            class="fa fa-caret-down"></i></h5>
+                                    <div class="sub-submenu" id="entregas-sub">
+                                        <a href="{% url 'arancia:entrega_paec' %}">Entrega PA/EC</a>
+                                        <a href="{% url 'arancia:entrega_picpac' %}">Entrega PicPac</a>
+                                        <a href="{% url 'arancia:romaneio' %}">Criar Romaneio</a>
+                                        <a href="{% url 'arancia:despacho' %}">Despachar Romaneio</a>
+                                        <a href="{% url 'arancia:rastreio' %}">Rastrear Entregas</a>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5 class="submenu-toggle" data-target="estornos-sub">Estornos <i
+                                            class="fa fa-caret-down"></i></h5>
+                                    <div class="sub-submenu" id="estornos-sub">
+                                        <a href="{% url 'arancia:estorno_paec' %}">Estorno PA/EC</a>
+                                        <a href="{% url 'arancia:estorno_picpac' %}">Estorno PicPac</a>
+                                        <a href="{% url 'arancia:estorno_rom' %}">Estorno Romaneio</a>
+                                    </div>
+                                </div> -->
+                                <div>
+                                    <h5 class="submenu-toggle" data-target="estornos-sub">Entrada <i
+                                            class="fa fa-caret-down"></i></h5>
+                                    <div class="sub-submenu" id="estornos-sub">
+                                        <a href="{% url 'arancia:consulta_id' %}">Consulta ID</a>
+                                        <a href="{% url 'arancia:estorno_picpac' %}">Pré-Recebimento</a>
+                                        <a href="{% url 'arancia:estorno_rom' %}">Recebimento</a>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="column">
+                            <h4 class="column-toggle" data-target="Sistema" title="Ações rápidas para as operações.">
+                                <i class="fa-solid fa-globe"></i> Sistema
+                            </h4>
+                            <div class="submenu" id="Sistema">
+                                <a href="http://192.168.0.214/erp/login.aspx" target="_blank">Agendamentos</a>
+                                <a href="http://192.168.0.214/logyxrepresentante/login.aspx" target="_blank">Ordens de
+                                    serviço</a>
+                                <a href="http://192.168.0.214/portaldeanalises/login" target="_blank">Portal</a>
+                                <a href="http://192.168.0.214/sga/login" target="_blank">Central de retenção</a>
+                                <a href="http://192.168.0.214/Relatorios/login/" target="_blank">Relatórios</a>
+                                <a href="http://192.168.0.214/site/Index.aspx" target="_blank">Gerencial</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <a href="#">Cadastros</a>
+            <a href="#">Segurança</a>
+        </div>
+    </div>
+    
+<script src="{% static 'global/javascript/script.js' %}"></script>
