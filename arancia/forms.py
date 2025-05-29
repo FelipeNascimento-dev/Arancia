@@ -72,3 +72,9 @@ class PreRecebimentoForm(forms.Form):
     nome_formulario = 'Pré-Recebimento'
     serial = forms.CharField(label='Serial', max_length=50)
     id = forms.CharField(label='ID', max_length=50)
+
+class RecebimentoForm(forms.Form):
+    nome_formulario = 'Recebimento'
+    serial = forms.CharField(label='Serial', max_length=50)
+    id = forms.CharField(label='ID', max_length=50)
+    data = forms.CharField(label='Data')

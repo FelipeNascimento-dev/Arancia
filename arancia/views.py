@@ -4,7 +4,7 @@ from .models import Romaneio, ItemRomaneio
 import json
 from .forms import RomaneioForm, RevisarForm, DespachoForm, RastreioForm, \
 EntregaPaecForm, EntregaPicpacForm, EstornoPaecForm, EstornoPicpacForm, EstornoRomaneioForm, \
-ConsultaForm, PreRecebimentoForm
+ConsultaForm, PreRecebimentoForm, RecebimentoForm
 
 from django.shortcuts import render
 
@@ -122,6 +122,13 @@ def pre_recebimento(request):
         'form': form
     }
     return render(request, 'arancia/pre_recebimento.html', context)
+
+def recebimento(request):
+    form = RecebimentoForm()
+    context = {
+        'form': form
+    }
+    return render(request, 'arancia/recebimento.html', context)
 
 
 @csrf_exempt
