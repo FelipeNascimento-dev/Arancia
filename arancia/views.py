@@ -11,79 +11,6 @@ from django.shortcuts import render
 def index(request):
     return render(request, 'global/base.html')
 
-def romaneio(request):
-    form = RomaneioForm()
-    qtd_campos = len(form.fields)
-    mod = qtd_campos % 2
-    impar = (mod == 1)
-    primeiro_nome = next(iter(form.fields))
-    primeiro_campo = form[primeiro_nome] 
-
-    context = {
-        'form': form,
-        'impar': impar,
-        'primeiro_campo': primeiro_campo
-    }   
-    return render(request, 'arancia/romaneio.html', context)
-
-
-def revisar(request):
-    form = RevisarForm()
-    context = {
-        'form': form
-    }
-    return render(request, 'arancia/revisar.html', context)
-
-def rastreio(request):
-    form = RastreioForm()
-    context = {
-        'form': form
-    }
-    return render(request, 'arancia/rastreio.html', context)
-
-def despacho(request):
-    form = DespachoForm()
-    context = {
-        'form': form
-    }
-    return render(request, 'arancia/despacho.html', context)
-
-def entrega_paec(request):
-    form = EntregaPaecForm()
-    context = {
-        'form': form
-    }
-    return render(request, 'arancia/EntregaPAEC.html', context)
-
-def entrega_picpac(request):
-    form = EntregaPicpacForm()
-    context = {
-        'form': form
-    }
-    return render(request, 'arancia/EntregaPicPac.html', context)
-
-def estorno_paec(request):
-    form = EstornoPaecForm()
-    context = {
-        'form': form
-    }
-    return render(request, 'arancia/EstornoPAEC.html', context)
-
-def estorno_picpac(request):
-    form = EstornoPicpacForm()
-    context = {
-        'form': form
-    }
-    return render(request, 'arancia/EstornoPICPAC.html', context)
-
-def estorno_rom(request):
-    form = EstornoRomaneioForm()
-    context = {
-        'form': form
-    }
-    return render(request, 'arancia/EstornoROM.html', context)
-
-
 def consulta_id(request):
     form = ConsultaForm()
     tabela_dados = None
@@ -131,8 +58,16 @@ def pre_recebimento(request):
 
 def recebimento(request):
     form = RecebimentoForm()
+    # qtd_campos = len(form.fields)
+    # mod = qtd_campos % 2
+    # impar = (mod == 1)
+    # primeiro_nome = next(iter(form.fields))
+    # primeiro_campo = form[primeiro_nome]
+
     context = {
-        'form': form
+        'form': form,
+        # 'impar': impar,
+        # 'primeiro_campo': primeiro_campo
     }
     return render(request, 'arancia/recebimento.html', context)
 
