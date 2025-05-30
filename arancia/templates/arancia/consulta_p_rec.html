@@ -2,11 +2,10 @@
 
 {% block content %}
 
-{% if exibir_formulario %}
 <div class="form-container">
-    <form method="post" class="form-1col" action="{% url 'arancia:consulta_id_form' %}">
+    <form method="post" class="form-1col" >
         {% include 'global/partials/_form_1col.html' %}
     </form>
 </div>
-{% endif %}
+
 {% endblock content %}

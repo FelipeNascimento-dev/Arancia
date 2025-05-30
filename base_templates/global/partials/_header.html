@@ -54,7 +54,14 @@
                                         <a href="{% url 'arancia:recebimento' %}">Recebimento</a>
                                     </div>
                                 </div>
-
+                                <div>
+                                    <h5 class="submenu-toggle" data-target="consultas-sub">Consulta <i
+                                            class="fa fa-caret-down"></i></h5>
+                                    <div class="sub-submenu" id="consultas-sub">
+                                        <a href="{% url 'arancia:consulta_pre_recebimento' %}">Consulta Pré-Recebimentos</a>
+                                        <a href="{% url 'arancia:consulta_id_form' %}">Consulta Recebimentos</a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="column">

@@ -2,6 +2,10 @@
 
 {% block content %}
 
-{% include 'global/partials/_form_1col.html' %}
+<div class="form-container">
+    <form method="post" class="form-1col" action="{% url 'arancia:consulta_id_form' %}">
+        {% include 'global/partials/_form_1col.html' %}
+    </form>
+</div>
 
 {% endblock content %}
