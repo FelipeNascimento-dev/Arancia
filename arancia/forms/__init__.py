@@ -1,4 +1,4 @@
 from .forms_consulta import ConsultaForm
 from .forms_pre_recebimento import PreRecebimentoForm
 from .forms_recebimento import RecebimentoForm
-from .forms_consulta_p_rec import ConsultaPreRecebimentoForm
+from .forms_consulta_result import ConsultaPreRecebimentoForm

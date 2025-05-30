@@ -46,20 +46,13 @@
                             </h4>
                             <div class="submenu" id="transporte">
                                 <div>
-                                    <h5 class="submenu-toggle" data-target="estornos-sub">Entrada <i
+                                    <h5 class="submenu-toggle" data-target="estornos-sub">Entrada-Fulfillment<i
                                             class="fa fa-caret-down"></i></h5>
                                     <div class="sub-submenu" id="estornos-sub">
                                         <a href="{% url 'arancia:consulta_id_form' %}">Consulta ID</a>
                                         <a href="{% url 'arancia:pre_recebimento' %}">Pré-Recebimento</a>
                                         <a href="{% url 'arancia:recebimento' %}">Recebimento</a>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h5 class="submenu-toggle" data-target="consultas-sub">Consulta <i
-                                            class="fa fa-caret-down"></i></h5>
-                                    <div class="sub-submenu" id="consultas-sub">
-                                        <a href="{% url 'arancia:consulta_pre_recebimento' %}">Consulta Pré-Recebimentos</a>
-                                        <a href="{% url 'arancia:consulta_id_form' %}">Consulta Recebimentos</a>
+                                        <a href="{% url 'arancia:consulta_resultados' 15 %}">Consulta Resultados</a>
                                     </div>
                                 </div>
                             </div>

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import index, consulta_id_form, pre_recebimento, recebimento, registrar_romaneio,consulta_id_table,consulta_pre_recebimento
+from .views import index, consulta_id_form, pre_recebimento, recebimento, registrar_romaneio,consulta_id_table, consulta_result
 
 app_name = 'arancia'
 
@@ -9,5 +9,5 @@ urlpatterns = [
     path('consulta-id/<str:id>/', consulta_id_table, name='consulta_id_table'),
     path('pre-recebimento/', pre_recebimento, name='pre_recebimento'),
     path('recebimento/', recebimento, name='recebimento'),
-    path('consulta/pre-recebimento/', consulta_pre_recebimento, name='consulta_pre_recebimento'),
+    path('consulta/resultados/<str:tp_reg>/', consulta_result, name='consulta_resultados'),
 ]
