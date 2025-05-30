@@ -13,6 +13,7 @@ def consulta_result(request, tp_reg: str):
             return render(request, 'arancia/consulta_result.html', {'form': form})
     else:
         form = ConsultaPreRecebimentoForm()
+        form.data = {'tp_reg': tp_reg}
 
 
     return render(request, 'arancia/consulta_result.html', {'form': form})
