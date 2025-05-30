@@ -1,9 +1,4 @@
-from datetime import datetime
 from django import forms
-
-class ConsultaForm(forms.Form):
-    nome_formulario = 'Consulta de ID'
-    id = forms.CharField(label='Insira o ID:', max_length=20)
 
 class PreRecebimentoForm(forms.Form):
     nome_formulario = 'Pré-Recebimento'
@@ -13,8 +8,3 @@ class PreRecebimentoForm(forms.Form):
     deposito_origem = forms.ChoiceField(label='Depósito de Origem', choices=[(1, ''), (2, '0001'), (3, '989A')])
     centro_destino = forms.ChoiceField(label='Centro de Destino', choices=[(1, ''), (2, 'CTRD'), (3, 'FLEX')])
     deposito_destino = forms.ChoiceField(label='Depósito de Destino', choices=[(1, ''), (2, '989A'), (3, '0001')])
-
-class RecebimentoForm(forms.Form):
-    nome_formulario = 'Recebimento'
-    serial = forms.CharField(label='Serial', max_length=50)
-    id = forms.CharField(label='ID', max_length=20)
