@@ -2,10 +2,6 @@
 
 {% block content %}
 
-{% if exibir_formulario %}
-{% include 'global/partials/_form_1col.html' %}
-{% endif %}
-
 {% if tabela_dados %}
 <div class="tabela-container">
     <table class="tabela-consulta">
@@ -48,7 +44,9 @@
     </table>
 
     <div class="buttons-container">
-        <button class="btn-voltar" onclick="history.back()">Limpar</button>
+        <a href="{% url 'arancia:consulta_id_form' %}">
+            <button class="btn-voltar" onclick="history.back()">Limpar</button>
+        </a>
         {% include 'global/partials/_pagination.html' %}
         <div class="buttons_id">
             <a href="{% url 'arancia:pre_recebimento' %}">

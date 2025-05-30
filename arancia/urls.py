@@ -1,11 +1,12 @@
 from django.urls import path
-from .views import index, consulta_id, pre_recebimento, recebimento, registrar_romaneio
+from .views import index, consulta_id_form, pre_recebimento, recebimento, registrar_romaneio,consulta_id_table
 
 app_name = 'arancia'
 
 urlpatterns = [
     path('', index, name='index'),
-    path('consulta/', consulta_id, name='consulta_id'),
+    path('consulta/', consulta_id_form, name='consulta_id_form'),
+    path('consulta/<str:id>/', consulta_id_table, name='consulta_id_table'),
     path('pre-recebimento/', pre_recebimento, name='pre_recebimento'),
     path('recebimento/', recebimento, name='recebimento'),
 ]

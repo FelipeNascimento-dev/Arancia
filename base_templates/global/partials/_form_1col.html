@@ -1,21 +1,19 @@
 {% block content %}
-<div class="form-container">
-  <form method="post" class="form-1col" action="{% url 'arancia:consulta_id' %}">
-    <h2 class="form-title">{{ form.nome_formulario }}</h2>
-    {% csrf_token %}
 
-    {% for campo in form %}
-    <div class="form-group">
-      {{ campo.label_tag }}
-      {{ campo }}
-      {% if campo.errors %}
-      <div class="error">{{ campo.errors }}</div>
-      {% endif %}
-    </div>
-    {% endfor %}
-    <div class="form-group">
-      <button type="submit" class="submit-button">Consultar</button>
-    </div>
-  </form>
-</div>
+  <h2 class="form-title">{{ form.nome_formulario }}</h2>
+  {% csrf_token %}
+
+  {% for campo in form %}
+  <div class="form-group">
+    {{ campo.label_tag }}
+    {{ campo }}
+    {% if campo.errors %}
+    <div class="error">{{ campo.errors }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+  <div class="form-group">
+    <button type="submit" class="submit-button">Consultar</button>
+  </div>
+
 {% endblock %}
