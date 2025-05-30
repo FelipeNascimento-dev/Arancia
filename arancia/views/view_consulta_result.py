@@ -17,3 +17,7 @@ def consulta_result(request, tp_reg: str):
 
 
     return render(request, 'arancia/consulta_result.html', {'form': form})
+
+
+def btn_voltar(request):
+    return render(request, 'arancia/consulta_result.html')
