@@ -25,6 +25,10 @@ def recebimento(request):
             request.session['serial_recebido'] = serial_inserido
             return redirect('arancia:consulta_resultados', tp_reg='15')
     else:
-        form = RecebimentoForm()
-        
+        # Busca o ID salvo na session (caso tenha voltado da consulta_result)
+        id_inserido = request.session.get('id_pre_recebido')
+        initial_data = {'id': id_inserido} if id_inserido else {}
+        form = RecebimentoForm(initial=initial_data)
+
     return render(request, 'arancia/recebimento.html', {'form': form})
+

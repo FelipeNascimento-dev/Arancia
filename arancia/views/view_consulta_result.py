@@ -10,22 +10,15 @@ def buscar_dados(form):
             'status': 'Enviado',
             'data': '01/01/2025',
             'hora': '12:00:00',
-        },
-        {
-            'nr_arq': '123456',
-            'mensagem': 'sem erro',
-            'status': 'Enviado',
-            'data': '01/01/2025',
-            'hora': '12:00:00',
-        },
+        }
     ]
-
 
 @csrf_protect
 def consulta_result(request, tp_reg: str):
     id_pre_recebido = request.session.pop('id_pre_recebido', None)
     serial_inserido = request.session.pop('serial_recebido', None)
     origem = request.session.pop('origem', None)
+    mostrar_tabela = request.session.pop('mostrar_tabela', False)
 
     if request.method == 'POST':
         form = ConsultaPreRecebimentoForm(request.POST)
@@ -35,13 +28,13 @@ def consulta_result(request, tp_reg: str):
             return render(request, 'arancia/consulta_result.html', {'form': form})
 
         if form.is_valid():
-            dados = buscar_dados(form)
-            context = {
-                'form': form,
-                'tabela_dados': dados,
-                'tp_reg': tp_reg,
-            }
-            return render(request, 'arancia/consulta_result.html', context)
+            novo_tp_reg = form.cleaned_data['tp_reg']
+            request.session['id_pre_recebido'] = form.cleaned_data.get('id', '')
+            request.session['serial_recebido'] = form.cleaned_data.get('serial', '')
+            request.session['origem'] = 'consulta_result'
+            request.session['mostrar_tabela'] = True
+
+            return redirect('arancia:consulta_resultados', tp_reg=novo_tp_reg)
 
     else:
         initial_data = {'tp_reg': tp_reg}
@@ -55,13 +48,21 @@ def consulta_result(request, tp_reg: str):
 
         form = ConsultaPreRecebimentoForm(initial=initial_data)
 
-    return render(request, 'arancia/consulta_result.html', {'form': form})
+    dados = buscar_dados(form) if mostrar_tabela else None
 
+    return render(request, 'arancia/consulta_result.html', {
+        'form': form,
+        'tabela_dados': dados,
+        'tp_reg': tp_reg,
+    })
 
 def btn_voltar(request, tp_reg):
+    id_valor = request.POST.get('id') or request.GET.get('id')
     if tp_reg == '13':
         return redirect('arancia:pre_recebimento')
     elif tp_reg == '15':
+        if id_valor:
+            request.session['id_pre_recebido'] = id_valor
         return redirect('arancia:recebimento')
     else:
         return redirect('arancia:consulta_resultados', tp_reg=tp_reg)

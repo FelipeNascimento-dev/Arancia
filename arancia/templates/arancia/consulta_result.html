@@ -22,7 +22,6 @@
         </thead>
         <tbody>
             {% for item in tabela_dados %}
-            {% for i in "1234567890"|make_list %}
             <tr>
                 <td>{{ item.nr_arq }}</td>
                 <td>{{ item.mensagem }}</td>
@@ -31,12 +30,12 @@
                 <td>{{ item.hora }}</td>
             </tr>
             {% endfor %}
-            {% endfor %}
         </tbody>
     </table>
 
     <form action="{% url 'arancia:btn_voltar' tp_reg %}" method="POST">
         {% csrf_token %}
+        <input type="hidden" name="id" value="{{ form.id.value }}">
         <button class="btn-voltar" type="submit">Voltar</button>
     </form>
 </div>
