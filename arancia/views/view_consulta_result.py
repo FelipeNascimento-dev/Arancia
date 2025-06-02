@@ -45,6 +45,9 @@ def consulta_result(request, tp_reg: str):
         elif origem == 'recebimento':
             initial_data['tp_reg'] = '15'
             initial_data['serial'] = serial_inserido
+        elif origem == 'estorno_result':
+            dados_estorno = request.session.pop('dados_estorno', {})
+            initial_data.update(dados_estorno)
 
         form = ConsultaPreRecebimentoForm(initial=initial_data)
 
@@ -64,5 +67,9 @@ def btn_voltar(request, tp_reg):
         if id_valor:
             request.session['id_pre_recebido'] = id_valor
         return redirect('arancia:recebimento')
+    elif tp_reg in ('14', '16'):
+        if id_valor:
+            request.session['id_pre_recebido'] = id_valor
+        return redirect('arancia:estorno')
     else:
         return redirect('arancia:consulta_resultados', tp_reg=tp_reg)
