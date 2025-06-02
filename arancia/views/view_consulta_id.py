@@ -22,7 +22,6 @@ def consulta_id_form(request):
                     "id_lote": "030000431485",
                 }
             ]
-            # Redireciona para a página da tabela após o POST (limpa o form)
             return redirect('arancia:consulta_id_table', id=id)
     context = {
         'form': form,
@@ -36,14 +35,11 @@ def consulta_id_table(request, id):
     exibir_formulario = False
 
     if not tabela_dados:
-        # Se não tiver dados, redireciona para o formulário
         return redirect('arancia:consulta_id_form')
 
     context = {
         'tabela_dados': tabela_dados,
         'exibir_formulario': exibir_formulario,
     }
-    # Opcional: Limpa os dados da sessão após mostrar a tabela (se quiser)
-    # del request.session['tabela_dados']
 
     return render(request, 'arancia/consulta_id_table.html', context)

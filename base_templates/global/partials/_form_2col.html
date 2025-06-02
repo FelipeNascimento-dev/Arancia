@@ -1,52 +1,50 @@
 {% block content %}
-<div class="forma">
-  <form class="form-2col" action="{{ form_action }}" method="POST">
-    <h2>{{ form.nome_formulario }}</h2>
-    {% csrf_token %}
 
-    {% if impar %}
-    <div class="form-group form-centralizado">
-      {{ primeiro_campo.label_tag }}
-      {{ primeiro_campo }}
-      {% if primeiro_campo.errors %}
-        <div class="error">{{ primeiro_campo.errors }}</div>
-      {% endif %}
-    </div>
-    {% endif %}
+<h2>{{ form.nome_formulario }}</h2>
+{% csrf_token %}
 
-    <div class="row-2col">
-      <!-- Coluna 1: campos em posições pares -->
-      <div class="col col1">
-        {% for campo in form %}
-          {% if campo.name != primeiro_campo.name and forloop.counter0|divisibleby:"2" %}
-            <div class="form-group">
-              {{ campo.label_tag }}
-              {{ campo }}
-              {% if campo.errors %}
-                <div class="error">{{ campo.errors }}</div>
-              {% endif %}
-            </div>
-          {% endif %}
-        {% endfor %}
-      </div>
-
-      <!-- Coluna 2: campos em posições ímpares -->
-      <div class="col col2">
-        {% for campo in form %}
-          {% if campo.name != primeiro_campo.name and not forloop.counter0|divisibleby:"2" %}
-            <div class="form-group">
-              {{ campo.label_tag }}
-              {{ campo }}
-              {% if campo.errors %}
-                <div class="error">{{ campo.errors }}</div>
-              {% endif %}
-            </div>
-          {% endif %}
-        {% endfor %}
-      </div>
-    </div>
-
-    {% include 'global/partials/_button_2b.html' %} 
-  </form>
+{% if impar %}
+<div class="form-group form-centralizado">
+  {{ primeiro_campo.label_tag }}
+  {{ primeiro_campo }}
+  {% if primeiro_campo.errors %}
+    <div class="error">{{ primeiro_campo.errors }}</div>
+  {% endif %}
 </div>
+{% endif %}
+
+<div class="row-2col">
+  <!-- Coluna 1: campos em posições pares -->
+  <div class="col col1">
+    {% for campo in form %}
+      {% if campo.name != primeiro_campo.name and forloop.counter0|divisibleby:"2" %}
+        <div class="form-group">
+          {{ campo.label_tag }}
+          {{ campo }}
+          {% if campo.errors %}
+            <div class="error">{{ campo.errors }}</div>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <!-- Coluna 2: campos em posições ímpares -->
+  <div class="col col2">
+    {% for campo in form %}
+      {% if campo.name != primeiro_campo.name and not forloop.counter0|divisibleby:"2" %}
+        <div class="form-group">
+          {{ campo.label_tag }}
+          {{ campo }}
+          {% if campo.errors %}
+            <div class="error">{{ campo.errors }}</div>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+{% include 'global/partials/_button_2b.html' %} 
+
 {% endblock content %}

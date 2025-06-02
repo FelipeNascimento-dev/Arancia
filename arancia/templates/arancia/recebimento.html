@@ -3,7 +3,7 @@
 {% block content %}
 
 <div class="form-container">
-    <form method="post" class="form-1col" action="{% url 'arancia:consulta_id_form' %}">
+    <form class="form-1col" action="{{ form_action }}" method="POST">
         {% include 'global/partials/_form_1col.html' %}
     </form>
 </div>
