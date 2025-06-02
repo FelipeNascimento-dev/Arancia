@@ -4,3 +4,4 @@ from .view_recebimentos import pre_recebimento, recebimento
 from .view_romaneio import registrar_romaneio
 from .view_consulta_result import consulta_result, btn_voltar
 from .view_estorno import estorno_result
+from .view_reserva_equip import reserva_equip

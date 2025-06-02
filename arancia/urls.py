@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import index, consulta_id_form, pre_recebimento, \
 recebimento, registrar_romaneio,consulta_id_table, consulta_result, \
-btn_voltar, estorno_result
+btn_voltar, estorno_result, reserva_equip
 
 app_name = 'arancia'
 
@@ -14,4 +14,5 @@ urlpatterns = [
     path('consulta/resultados/<str:tp_reg>/', consulta_result, name='consulta_resultados'),
     path('consulta/resultados/<str:tp_reg>/voltar/', btn_voltar, name='btn_voltar'),
     path('estorno/', estorno_result, name='estorno'),
+    path('reserva-equip/', reserva_equip, name='reserva_equip'),
 ]
