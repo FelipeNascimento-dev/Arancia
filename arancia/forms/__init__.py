@@ -4,3 +4,4 @@ from .forms_recebimento import RecebimentoForm
 from .forms_consulta_result import ConsultaPreRecebimentoForm
 from .forms_estorno import EstornoForm
 from .forms_reserva_equip import ReservaEquipamentosForm
+from .forms_saida_campo import SaidaCampoForm
