@@ -158,6 +158,13 @@
   color: #235075;
 }
 
+#logistica h5 {
+  pointer-events: auto;
+  opacity: 1;
+  cursor: pointer;
+  color: #235075;
+}
+
 .submenu-toggle i {
   margin-left: 5px;
 }
