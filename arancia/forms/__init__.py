@@ -8,3 +8,4 @@ from .forms_saida_campo import SaidaCampoForm
 from .forms_estorno_reserva import EstornoReservaForms
 from .forms_estorno_saida import EstornoSaidaCampoForm
 from .forms_consulta_result_ma84 import ConsultaResultMA84Form
+from .forms_consulta_result_ec01 import ConsultaResultEC01Form
