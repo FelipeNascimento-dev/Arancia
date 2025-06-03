@@ -1,7 +1,7 @@
 from django import forms
 
-class SaidaCampoForm(forms.Form):
-    nome_formulario = 'Saída para Campo'
+class EstornoSaidaCampoForm(forms.Form):
+    nome_formulario = 'Saída para Campo (Estorno)'
     serial = forms.CharField(label='Serial', max_length=50)
     gtec = forms.CharField(label='GTec', max_length=50)
     centro = forms.CharField(label='Centro', max_length=50)

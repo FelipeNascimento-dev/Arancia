@@ -6,3 +6,5 @@ from .view_consulta_result import consulta_result, btn_voltar
 from .view_estorno import estorno_result
 from .view_reserva_equip import reserva_equip
 from .view_saida_campo import saida_campo
+from .view_estorno_reserva import estorno_reserva
+from .view_estorno_saida import estorno_saida_campo
