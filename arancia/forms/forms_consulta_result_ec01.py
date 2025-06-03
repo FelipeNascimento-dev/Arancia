@@ -1,7 +1,7 @@
 from django import forms
 
 class ConsultaResultEC01Form(forms.Form):
-    nome_formulario = 'Consulta Resultados EC01'
+    nome_formulario = 'Consulta Resultados EC'
     id = forms.CharField(label='ID', max_length=20)
     tp_reg = forms.ChoiceField(label='Tipo de Registro', choices=[
         ('', ''), 
