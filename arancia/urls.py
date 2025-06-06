@@ -1,3 +1,6 @@
+from .views import RegisterView
+from .views import UserLoginView
+from django.contrib.auth.views import LogoutView
 from django.urls import path
 from .views import index, consulta_id_form, pre_recebimento, \
 recebimento, registrar_romaneio,consulta_id_table, consulta_result, \
@@ -23,4 +26,7 @@ urlpatterns = [
     path('consulta-ma/<str:tp_reg>/voltar/', btn_ma_voltar, name='btn_ma_voltar'),
     path('consulta-ec/<str:tp_reg>/', consulta_ec01, name='consulta_result_ec'),
     path('consulta-ec/<str:tp_reg>/voltar/', btn_ec_voltar, name='btn_ec_voltar'),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('login/', UserLoginView.as_view(), name='login'),
+    path('logout/', LogoutView.as_view(next_page='/login/'), name='logout'),
 ]
