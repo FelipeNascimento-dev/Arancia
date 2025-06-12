@@ -23,7 +23,6 @@
         </thead>
         <tbody>
             {% for item in tabela_dados %}
-            {% for i in "1234567890"|make_list %}
             <tr>
                 <td>{{ item.matnr }}</td>
                 <td>{{ item.gernr }}</td>
@@ -38,7 +37,6 @@
                 <!-- <td>{{ item.stat_div_rec }}</td> -->
                 <td>{{ item.id_lote }}</td>
             </tr>
-            {% endfor %}
             {% endfor %}
         </tbody>
     </table>
