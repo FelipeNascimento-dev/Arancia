@@ -35,8 +35,10 @@ class RequestClient:
                 response.raise_for_status()
             except httpx.HTTPStatusError as exc:
                 log_request_result('request_error', self.url,
-                                   self.method, self.request_data, response)
-                raise exc
+                                   self.method, response.json(), response)
+                print('request_error', self.url,
+                      self.method, response.json(), response)
+                return response.json()
 
             log_request_result('request_success', self.url,
                                self.method, self.request_data, response)
