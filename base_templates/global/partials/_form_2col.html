@@ -2,7 +2,7 @@
 
 <h2>{{ form.nome_formulario }}</h2>
 {% csrf_token %}
-
+  {{ form.non_field_errors }}
 {% if impar %}
 <div class="form-group form-centralizado">
   {{ primeiro_campo.label_tag }}

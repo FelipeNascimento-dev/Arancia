@@ -1,5 +1,7 @@
 from ..forms import ConsultaForm
 from django.shortcuts import render, redirect
+from utils.request import RequestClient
+
 
 def consulta_id_form(request):
     form = ConsultaForm()
@@ -8,20 +10,22 @@ def consulta_id_form(request):
         form = ConsultaForm(request.POST)
         if form.is_valid():
             id = form.cleaned_data['id']
+            request_api = RequestClient(
+                headers={'Content-Type': 'application/json'},
+                method='get',
+                url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/lm/{id}',
+            )
+            response = request_api.send_api_request()
+            if not response:
+                form.add_error(
+                    None, 'Nenhum dado encontrado para o ID informado.')
+                return render(request, 'arancia/consulta_id_form.html', {'form': form, 'exibir_formulario': exibir_formulario})
+
+            tabela_dados = response.get('items', [])
+
             # Salva os dados na sessão para usar na view da tabela
-            request.session['tabela_dados'] = [
-                {
-                    "matnr": "000000000000604825",
-                    "gernr": "000000000005305833",
-                    "serge": "6G612662",
-                    "ztipo": "G2",
-                    "zver_ap": "CD16PS92040",
-                    "zsta_eq": "RPA",
-                    "nr_lcr_un": "00019AA2525766",
-                    "stat_div_rec": "00",
-                    "id_lote": "030000431485",
-                }
-            ]
+            request.session['tabela_dados'] = tabela_dados
+
             return redirect('arancia:consulta_id_table', id=id)
     context = {
         'form': form,
