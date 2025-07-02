@@ -33,7 +33,7 @@
         </tbody>
     </table>
 
-    <form action="{% url 'arancia:btn_ec_voltar' tp_reg %}" method="POST">
+    <form action="{% url 'logistica:btn_ec_voltar' tp_reg %}" method="POST">
         {% csrf_token %}
         <input type="hidden" name="id" value="{{ form.id.value }}">
         <button class="btn-voltar" type="submit">Voltar</button>

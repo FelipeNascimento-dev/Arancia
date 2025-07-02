@@ -19,19 +19,19 @@ def consulta_id_form(request):
             if not response:
                 form.add_error(
                     None, 'Nenhum dado encontrado para o ID informado.')
-                return render(request, 'arancia/consulta_id_form.html', {'form': form, 'exibir_formulario': exibir_formulario})
+                return render(request, 'logistica/consulta_id_form.html', {'form': form, 'exibir_formulario': exibir_formulario})
 
             tabela_dados = response.get('items', [])
 
             # Salva os dados na sessão para usar na view da tabela
             request.session['tabela_dados'] = tabela_dados
 
-            return redirect('arancia:consulta_id_table', id=id)
+            return redirect('logistica:consulta_id_table', id=id)
     context = {
         'form': form,
         'exibir_formulario': exibir_formulario,
     }
-    return render(request, 'arancia/consulta_id_form.html', context)
+    return render(request, 'logistica/consulta_id_form.html', context)
 
 
 def consulta_id_table(request, id):
@@ -39,11 +39,11 @@ def consulta_id_table(request, id):
     exibir_formulario = False
 
     if not tabela_dados:
-        return redirect('arancia:consulta_id_form')
+        return redirect('logistica:consulta_id_form')
 
     context = {
         'tabela_dados': tabela_dados,
         'exibir_formulario': exibir_formulario,
     }
 
-    return render(request, 'arancia/consulta_id_table.html', context)
+    return render(request, 'logistica/consulta_id_table.html', context)

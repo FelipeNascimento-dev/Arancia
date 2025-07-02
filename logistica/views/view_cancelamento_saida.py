@@ -1,4 +1,4 @@
-from ..forms import EstornoReservaForms
+from ..forms import CancelamentoSaidaCampoForm
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_protect
 
@@ -14,24 +14,24 @@ def buscar_dados(form):
     ]
 
 @csrf_protect
-def estorno_reserva(request):
+def cancelamento_saida_campo(request):
     serial_inserido = request.session.pop('serial_recebido', None)
 
     if request.method == 'POST':
-        form = EstornoReservaForms(request.POST)
+        form = CancelamentoSaidaCampoForm(request.POST)
 
-        if form.data.get('tp_reg') == '84' and form.data.get('serial') == '':
+        if form.data.get('tp_reg') == '85' and form.data.get('serial') == '':
             form.add_error('serial', 'O serial não pode ser vazio para essa mensagem.')
-            return render(request, 'arancia/estorno_reserva.html', {'form': form})
+            return render(request, 'logistica/estorno_reserva.html', {'form': form})
 
         if form.is_valid():
             request.session['serial_inserido'] = form.cleaned_data
 
-            return redirect('arancia:consulta_result_ma', tp_reg='85')
+            return redirect('logistica:consulta_result_ma', tp_reg='85')
 
     else:
-        form = EstornoReservaForms()
+        form = CancelamentoSaidaCampoForm()
 
-    return render(request, 'arancia/estorno_reserva.html', {
+    return render(request, 'logistica/estorno_reserva.html', {
         'form': form
     })

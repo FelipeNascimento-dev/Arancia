@@ -11,10 +11,10 @@ def reserva_equip(request):
             request.session['centro'] = centro
             request.session['deposito'] = deposito
             print('-'*100)
-            return redirect('arancia:consulta_result_ma', tp_reg='84')
+            return redirect('logistica:consulta_result_ma', tp_reg='84')
         else:
             print('z'*100)
     else:
         form = ReservaEquipamentosForm()
     
-    return render (request, 'arancia/consulta_result_ma.html', {'form': form})
+    return render (request, 'logistica/consulta_result_ma.html', {'form': form})

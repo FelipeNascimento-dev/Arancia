@@ -41,13 +41,13 @@ def pre_recebimento(request):
                 # Se a requisição falhar, exibe uma mensagem de erro
                 form.add_error(
                     None, 'Atenção: {}'.format(result.get('detail')))
-                return render(request, 'arancia/pre_recebimento.html', {'form': form})
+                return render(request, 'logistica/pre_recebimento.html', {'form': form})
 
-            return redirect('arancia:consulta_resultados', tp_reg='13')
+            return redirect('logistica:consulta_resultados', tp_reg='13')
     else:
         form = PreRecebimentoForm()
 
-    return render(request, 'arancia/pre_recebimento.html', {'form': form})
+    return render(request, 'logistica/pre_recebimento.html', {'form': form})
 
 
 def recebimento(request):
@@ -59,10 +59,10 @@ def recebimento(request):
             request.session['id_pre_recebido'] = id_inserido
             request.session['origem'] = 'recebimento'
             request.session['serial_recebido'] = serial_inserido
-            return redirect('arancia:consulta_resultados', tp_reg='15')
+            return redirect('logistica:consulta_resultados', tp_reg='15')
     else:
         id_inserido = request.session.get('id_pre_recebido')
         initial_data = {'id': id_inserido} if id_inserido else {}
         form = RecebimentoForm(initial=initial_data)
 
-    return render(request, 'arancia/recebimento.html', {'form': form})
+    return render(request, 'logistica/recebimento.html', {'form': form})
