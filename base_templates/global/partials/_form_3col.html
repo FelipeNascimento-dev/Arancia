@@ -1,26 +1,26 @@
 {% block content %}
 <div class="form-card">
-  <h2>{{ form.nome_formulario }}</h2>
+    <h2>{{ form.nome_formulario }}</h2>
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
 
-    <div class="form-grid form-3col">
-      {% for campo in form %}
-      <div>
-        <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
-        {{ campo }}
-        {% if campo.errors %}
-        <div class="error">{{ campo.errors }}</div>
-        {% endif %}
-      </div>
-      {% endfor %}
-    </div>
+        <div class="form-grid form-3col">
+            {% for campo in form %}
+            <div>
+                <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                {{ campo }}
+                {% if campo.errors %}
+                <div class="error">{{ campo.errors }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
 
-    <div style="margin-top: 24px; text-align: right;">
-      <button type="submit" class="submit-button">Consultar</button>
-    </div>
-  </form>
+        <div style="margin-top: 24px; text-align: right;">
+            <button type="submit" class="submit-button-right">Consultar</button>
+        </div>
+    </form>
 </div>
 {% endblock %}
