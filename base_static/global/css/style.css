@@ -30,9 +30,8 @@ html, body {
   align-items: flex-start; 
   box-sizing: border-box;
   position: relative;
-  padding-top: 100px; 
+  padding-top: 70px; 
 }
-
 
 .forma::before {
   content: "";

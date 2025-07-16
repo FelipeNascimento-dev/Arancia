@@ -4,9 +4,7 @@
     border-radius: 10px;
     box-shadow: 0 0 17px rgba(0, 0, 0, 0.05);
     width: 1300px;
-    max-width: 2500px;
-    margin: auto;
-    margin-top: 20px;
+    max-width: 1300px;
 }
 
 .form-grid {
@@ -16,29 +14,29 @@
 }
 
 .form-card h2 {
-  font-weight: bold;
-  text-align: left;
-  justify-content: center;
-  margin-bottom: 20px;
-  margin-top: 20px;
+    font-weight: bold;
+    text-align: left;
+    justify-content: center;
+    margin-bottom: 20px;
+    margin-top: 20px;
 }
 
 label {
     font-weight: bold;
-    color: #555;
+    color: #3f3f3f;
     display: block;
     margin-bottom: 4px;
+    font-size: 15px;
 }
 
 input,
 select,
 textarea {
-    /* width: 100%; */
-    width: 300px;
+    width: 383px;
     padding: 10px;
     background: #ffffff;
     border: 1px solid #f1f1f1;
-    border-radius: 6px;
+    border-radius: 10px;
     font-size: 15px;
 }
 
