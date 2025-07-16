@@ -1,0 +1,64 @@
+.form-card {
+    background: white;
+    padding: 24px;
+    border-radius: 10px;
+    box-shadow: 0 0 17px rgba(0, 0, 0, 0.05);
+    width: 1300px;
+    max-width: 2500px;
+    margin: auto;
+    margin-top: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 50px;
+}
+
+.form-card h2 {
+  font-weight: bold;
+  text-align: left;
+  justify-content: center;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+label {
+    font-weight: bold;
+    color: #555;
+    display: block;
+    margin-bottom: 4px;
+}
+
+input,
+select,
+textarea {
+    /* width: 100%; */
+    width: 300px;
+    padding: 10px;
+    background: #ffffff;
+    border: 1px solid #f1f1f1;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+.error {
+    color: red;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.submit-button {
+    background-color: #4a5fc1;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.submit-button:hover {
+    background-color: #3a4fb0;
+}
