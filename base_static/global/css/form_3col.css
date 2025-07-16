@@ -60,6 +60,6 @@ textarea {
   display: inline-block;
 }
 
-.submit-button:hover {
-  background-color: #3a4fb0;
+.submit-button-right:hover {
+  background-color: #3082ce;
 }
