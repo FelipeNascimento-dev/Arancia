@@ -31,6 +31,7 @@
     margin-bottom: 0.3rem;
     color: var(--form-label-color);
     font-weight: bold;
+    font-size: 15px;
 }
 
 .form-group input,

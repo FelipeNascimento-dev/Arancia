@@ -5,13 +5,15 @@
   padding: 10px;
   width: 800px;
   height: 450px;
-  background-color: #e4edf5;
+  background-color: var(--background-formularios);
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow-formularios);
+  border: var(--borda-formularios);
 }
 
 .form-2col h2 {
   font-weight: bold;
+  color: var(--form-titulo);
   text-align: center;
   justify-content: center;
   margin-bottom: 20px;
@@ -20,7 +22,8 @@
 
 .form-2col label {
   font-weight: bold;
-  font-size: 16px;
+  font-size: 15px;
+  background-color: var(--form-label-color);
 }
 
 .form-2col input {
@@ -32,8 +35,8 @@
   justify-content: center;
   box-sizing: border-box;
   text-decoration: none;
-  background-color: #e0e5ea;
-  border: 1px solid #ccc;
+  background-color: var(--form-input-color);
+  border: 1px solid var(--form-input-border);
 }
 
 .row-2col {
@@ -76,12 +79,4 @@
 
 .form-group {
   margin-bottom: 10px;
-}
-
-.form-group select{
-  background-color: #e0e5ea;
-}
-
-.form-group input{
-  background-color: #e0e5ea;
 }
