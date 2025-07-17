@@ -1,5 +1,5 @@
 .form-container {
-    margin-top: 150px;
+    margin-top: 70px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -7,18 +7,18 @@
 }
 
 .form-1col {
-    background-color: #ddebf7;
+    background-color: var(--background-formularios);
     padding: 2rem;
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--box-shadow-formularios);
     width: 350px;
 }
 
 .form-title {
-    text-align: center;
+    text-align: left;
     font-size: 1.5rem;
     margin-bottom: 1.5rem;
-    color: #1a1a1a;
+    color: var(--form-titulo);
 }
 
 .form-group {
@@ -29,6 +29,7 @@
 
 .form-group label {
     margin-bottom: 0.3rem;
+    color: var(--form-label-color);
     font-weight: bold;
 }
 
@@ -37,6 +38,7 @@
 .form-group textarea {
     padding: 0.5rem;
     border-radius: 5px;
-    border: 1px solid #ccc;
+    background-color: var(--form-input-color);
+    border: 1px solid var(--form-input-border);
     font-size: 1rem;
 }

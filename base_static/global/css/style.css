@@ -13,6 +13,7 @@
   --background-formularios: #fff;
   --box-shadow-formularios: 0 0 17px rgba(0, 0, 0, 0.05);
   --borda-formularios: #cccccc3d;
+  --form-titulo: #3F3F3F;
   --form-label-color: #3f3f3f;
   --form-input-color: #fff;
   --form-input-border: #cccccc77;
@@ -21,13 +22,14 @@
 }
 
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -38,10 +40,10 @@ html, body {
   width: 100%;
   display: flex;
   justify-content: center;
-  align-items: flex-start; 
+  align-items: flex-start;
   box-sizing: border-box;
   position: relative;
-  padding-top: 70px; 
+  padding-top: 70px;
 }
 
 .forma::before {
