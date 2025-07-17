@@ -96,7 +96,7 @@
   width: 100px;
   border-bottom: 1px solid #999;
   font-size: 14px;
-  color: #235075;
+  color: #569fe2;
   margin-bottom: 15px;
 }
 
@@ -111,7 +111,7 @@
 .submenu a {
   padding: 5px 0;
   text-decoration: none;
-  color: #235075;
+  color: #569fe2;
 }
 
 .submenu a:hover {
@@ -138,14 +138,14 @@
 }
 
 .submenu-toggle:hover {
-  color: #235075;
+  color: #569fe2;
 }
 
 .sub-submenu a {
   display: block;
   padding: 4px 0;
   text-decoration: none;
-  color: #235075;
+  color: #569fe2;
 }
 
 .sub-submenu a:hover {
@@ -156,14 +156,14 @@
   pointer-events: auto;
   opacity: 1;
   cursor: pointer;
-  color: #235075;
+  color: #569fe2;
 }
 
 #logistica h5 {
   pointer-events: auto;
   opacity: 1;
   cursor: pointer;
-  color: #235075;
+  color: #569fe2;
 }
 
 .submenu-toggle i {
