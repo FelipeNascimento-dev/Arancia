@@ -25,7 +25,7 @@ def estorno_result(request):
 
         if form.data.get('tp_reg') == '16' and form.data.get('serial') == '':
             form.add_error('serial', 'O serial não pode ser vazio para essa mensagem.')
-            return render(request, 'arancia/estorno.html', {'form': form})
+            return render(request, 'logistica/estorno.html', {'form': form})
 
         if form.is_valid():
             request.session['dados_estorno'] = form.cleaned_data
@@ -33,11 +33,11 @@ def estorno_result(request):
             request.session['origem'] = 'estorno_result'
             request.session['mostrar_tabela'] = True
 
-            return redirect('arancia:consulta_resultados', tp_reg='16')
+            return redirect('logistica:consulta_resultados', tp_reg='16')
 
     else:
         form = EstornoForm()
 
-    return render(request, 'arancia/estorno.html', {
+    return render(request, 'logistica/estorno.html', {
         'form': form
     })

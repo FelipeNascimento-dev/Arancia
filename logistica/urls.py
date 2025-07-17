@@ -7,7 +7,7 @@ recebimento, registrar_romaneio,consulta_id_table, consulta_result, \
 btn_voltar, estorno_result, reserva_equip, saida_campo, estorno_reserva, \
 cancelamento_saida_campo, consulta_ma84, btn_ma_voltar, consulta_ec01, btn_ec_voltar
 
-app_name = 'arancia'
+app_name = 'logistica'
 
 urlpatterns = [
     path('', index, name='index'),

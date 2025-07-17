@@ -1,7 +1,7 @@
 .submit-button {
     width: 100%;
     padding: 0.75rem;
-    background-color: #003d5c;
+    background-color: var(--button-form-color);
     color: #fff;
     border: none;
     border-radius: 6px;
@@ -11,7 +11,7 @@
 }
 
 .submit-button:hover {
-    background-color: #005a87;
+    background-color: var(--button-form-color-hover);
 }
 
 .error {

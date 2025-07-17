@@ -23,7 +23,6 @@
         </thead>
         <tbody>
             {% for item in tabela_dados %}
-            {% for i in "1234567890"|make_list %}
             <tr>
                 <td>{{ item.matnr }}</td>
                 <td>{{ item.gernr }}</td>
@@ -39,20 +38,19 @@
                 <td>{{ item.id_lote }}</td>
             </tr>
             {% endfor %}
-            {% endfor %}
         </tbody>
     </table>
 
     <div class="buttons-container">
-        <a href="{% url 'arancia:consulta_id_form' %}">
+        <a href="{% url 'logistica:consulta_id_form' %}">
             <button class="btn-voltar" onclick="history.back()">Limpar</button>
         </a>
         {% include 'global/partials/_pagination.html' %}
         <div class="buttons_id">
-            <a href="{% url 'arancia:pre_recebimento' %}">
+            <a href="{% url 'logistica:pre_recebimento' %}">
                 <button class="btn-p-rec">Pré-recebimento</button>
             </a>
-            <a href="{% url 'arancia:recebimento' %}">
+            <a href="{% url 'logistica:recebimento' %}">
                 <button class="btn-rec">Recebimento</button>
             </a>
         </div>

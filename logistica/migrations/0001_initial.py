@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
                 ('usuario', models.CharField(max_length=100)),
                 ('filial', models.CharField(max_length=100)),
                 ('destino', models.CharField(max_length=100)),
-                ('romaneio', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='itens', to='arancia.romaneio')),
+                ('romaneio', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='itens', to='logistica.romaneio')),
             ],
         ),
     ]

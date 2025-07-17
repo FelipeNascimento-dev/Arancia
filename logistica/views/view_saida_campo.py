@@ -15,8 +15,8 @@ def saida_campo(request):
             request.session['centro'] = centro
             request.session['deposito'] = deposito
             print('-'*100)
-            return redirect('arancia:consulta_result_ec', tp_reg='84')
+            return redirect('logistica:consulta_result_ec', tp_reg='84')
     else:
         form = SaidaCampoForm()
     
-    return render (request, 'arancia/consulta_result_ec.html', {'form': form})
+    return render (request, 'logistica/consulta_result_ec.html', {'form': form})
