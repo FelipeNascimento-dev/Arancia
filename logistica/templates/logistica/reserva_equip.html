@@ -2,10 +2,18 @@
 
 {% block content %}
 
-    <div class="forma">
-        <form class="form-1col" method="POST">
-            {% include 'global/partials/_form_1col.html' %}
+<style>
+    .form-card-2col {
+        height: 280px; 
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST">
+            {% include 'global/partials/_form_2col.html' %}
         </form>
     </div>
+</div>
 
 {% endblock content %}

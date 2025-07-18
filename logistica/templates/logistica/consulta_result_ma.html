@@ -2,10 +2,18 @@
 
 {% block content %}
 
+<style>
+    .form-card-2col {
+        height: 280px;
+    }
+</style>
+
 <div class="form-container">
-    <form method="post" class="form-1col" >
-        {% include 'global/partials/_form_1col.html' %}
-    </form>
+    <div class="form-card-2col">
+        <form method="POST">
+            {% include 'global/partials/_form_2col.html' %}
+        </form>
+    </div>
 </div>
 
 {% if tabela_dados %}

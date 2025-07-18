@@ -3,9 +3,11 @@
 {% block content %}
 
 <div class="form-container">
-    <form method="post" class="form-1col" >
-        {% include 'global/partials/_form_1col.html' %}
-    </form>
+    <div class="form-card-2col">
+        <form method="post" class="form-2col" >
+            {% include 'global/partials/_form_2col.html' %}
+        </form>
+    </div>
 </div>
 
 {% if tabela_dados %}
