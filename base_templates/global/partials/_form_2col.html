@@ -1,23 +1,22 @@
-{% block content %}
-
 <h2>{{ form.nome_formulario }}</h2>
-{% csrf_token %}
+
+<form method="POST" class="form-card-2col">
+  {% csrf_token %}
   {{ form.non_field_errors }}
-{% if impar %}
-<div class="form-group form-centralizado">
-  {{ primeiro_campo.label_tag }}
-  {{ primeiro_campo }}
-  {% if primeiro_campo.errors %}
-    <div class="error">{{ primeiro_campo.errors }}</div>
+
+  {% if impar %}
+    <div class="form-group form-centralizado">
+      {{ primeiro_campo.label_tag }}
+      {{ primeiro_campo }}
+      {% if primeiro_campo.errors %}
+        <div class="error">{{ primeiro_campo.errors }}</div>
+      {% endif %}
+    </div>
   {% endif %}
-</div>
-{% endif %}
 
-<div class="row-2col">
-  <!-- Coluna 1: campos em posições pares -->
-  <div class="col col1">
+  <div class="form-grid-2col">
     {% for campo in form %}
-      {% if campo.name != primeiro_campo.name and forloop.counter0|divisibleby:"2" %}
+      {% if campo.name != primeiro_campo.name %}
         <div class="form-group">
           {{ campo.label_tag }}
           {{ campo }}
@@ -29,22 +28,7 @@
     {% endfor %}
   </div>
 
-  <!-- Coluna 2: campos em posições ímpares -->
-  <div class="col col2">
-    {% for campo in form %}
-      {% if campo.name != primeiro_campo.name and not forloop.counter0|divisibleby:"2" %}
-        <div class="form-group">
-          {{ campo.label_tag }}
-          {{ campo }}
-          {% if campo.errors %}
-            <div class="error">{{ campo.errors }}</div>
-          {% endif %}
-        </div>
-      {% endif %}
-    {% endfor %}
+  <div class="form-actions">
+    <button type="submit" class="submit-button-right">Enviar</button>
   </div>
-</div>
-
-{% include 'global/partials/_button_2b.html' %} 
-
-{% endblock content %}
+</form>

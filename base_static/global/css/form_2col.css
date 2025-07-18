@@ -1,82 +1,109 @@
-.form-2col {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px;
-  width: 800px;
-  height: 450px;
-  background-color: var(--background-formularios);
+.form-card-2col {
+  background: var(--background-formularios);
+  padding: 24px;
   border-radius: 10px;
   box-shadow: var(--box-shadow-formularios);
-  border: var(--borda-formularios);
+  width: 1300px;
+  max-width: 1300px;
+  border: 1px solid var(--borda-formularios);
+  height: 380px;
 }
 
-.form-2col h2 {
+.form-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.form-card-2col h2 {
   font-weight: bold;
-  color: var(--form-titulo);
-  text-align: center;
+  text-align: left;
   justify-content: center;
   margin-bottom: 20px;
   margin-top: 20px;
+  color: var(--form-titulo);
 }
 
-.form-2col label {
+.form-grid-2col label {
   font-weight: bold;
+  color: var(--form-label-color);
+  display: block;
+  margin-bottom: 4px;
   font-size: 15px;
-  background-color: var(--form-label-color);
 }
 
-.form-2col input {
-  width: 350px;
-  height: 40px;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  text-decoration: none;
-  background-color: var(--form-input-color);
-  border: 1px solid var(--form-input-border);
-}
-
-.row-2col {
-  display: flex;
-  width: 650px;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-  margin-top: 0px;
-}
-
-.row-2col label {
-  width: auto;
-  margin-bottom: 10px;
-}
-
-.col {
-  flex: 1;
+.form-grid-2col input,
+.form-grid-2col select,
+.form-grid-2col textarea {
+  width: 100%;
   padding: 10px;
+  background: var(--form-input-color);
+  border: 1px solid var(--form-input-border);
+  border-radius: 10px;
+  font-size: 15px;
 }
 
-.form-centralizado {
-  text-align: center;
-  width: 100%;
-  max-width: 715px;
-  margin: 0 auto;
-  margin-bottom: 0px;
+.error {
+  color: red;
+  font-size: 13px;
+  margin-top: 4px;
 }
 
-.form-centralizado input,
-.form-centralizado select,
-.form-centralizado textarea {
-  width: 100%;
-}
-
-.form-centralizado label{
-  text-align: center;
+.form-actions {
   display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
 }
 
-.form-group {
-  margin-bottom: 10px;
+.submit-button-right {
+  background-color: var(--button-form-color);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  min-width: 160px;
+  display: inline-block;
+}
+
+.submit-button-right:hover {
+  background-color: var(--button-form-color-hover);
+}
+
+@media screen and (max-width: 1280px) {
+  .form-card-2col {
+    width: 1150px;
+    max-width: 1150px;
+    padding: 32px;
+  }
+
+  .form-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 60px;
+  }
+
+  .form-card-2col input,
+  .form-card-2col select,
+  .form-card-2col textarea {
+    width: 515px;
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  .form-card-2col h2 {
+    font-size: 24px;
+  }
+
+  label {
+    font-size: 16px;
+  }
+
+  .submit-button-right {
+    font-size: 17px;
+    padding: 12px 28px;
+    min-width: 180px;
+    margin-right: 20px;
+  }
 }
