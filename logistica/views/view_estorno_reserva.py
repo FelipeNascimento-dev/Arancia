@@ -33,5 +33,6 @@ def estorno_reserva(request):
         form = EstornoReservaForms()
 
     return render(request, 'logistica/estorno_reserva.html', {
-        'form': form
+        'form': form,
+        'etapa_ativa': 'estorno_reserva'
     })

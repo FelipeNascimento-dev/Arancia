@@ -33,5 +33,6 @@ def cancelamento_saida_campo(request):
         form = CancelamentoSaidaCampoForm()
 
     return render(request, 'logistica/estorno_reserva.html', {
-        'form': form
+        'form': form,
+        'etapa_ativa': 'cancelamento_saida'
     })

@@ -53,6 +53,7 @@ def consulta_ec01(request, tp_reg: str):
     return render(request, 'logistica/consulta_result_ec.html', {
         'form': form,
         'tabela_dados': dados,
+        'etapa_ativa': 'consulta_result_ec',
         'tp_reg': tp_reg,
     })
 
