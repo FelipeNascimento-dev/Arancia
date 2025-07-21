@@ -19,4 +19,7 @@ def saida_campo(request):
     else:
         form = SaidaCampoForm()
     
-    return render(request, 'logistica/saida_campo.html', {'form': form})
+    return render(request, 'logistica/saida_campo.html', {
+        'form': form,
+        'etapa_ativa': 'saida_campo',
+        })

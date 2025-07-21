@@ -17,4 +17,7 @@ def reserva_equip(request):
     else:
         form = ReservaEquipamentosForm()
     
-    return render(request, 'logistica/reserva_equip.html', {'form': form})
+    return render(request, 'logistica/reserva_equip.html', {
+        'form': form,
+        'etapa_ativa': 'reserva'
+        })

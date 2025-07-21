@@ -214,7 +214,7 @@
 }
 
 .etapa.ativa {
-  background-color: #f7813d;
+  background-color: #fc9b63;
   text-decoration: none;
 }
 
@@ -225,4 +225,5 @@
 
 a:-webkit-any-link{
   text-decoration: none;
+  color: white;
 }

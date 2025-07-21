@@ -54,6 +54,7 @@ def consulta_ma84(request, tp_reg: str):
     return render(request, 'logistica/consulta_result_ma.html', {
         'form': form,
         'tabela_dados': dados,
+        'etapa_ativa': 'consulta_result_ma',
         'tp_reg': tp_reg,
     })
 
