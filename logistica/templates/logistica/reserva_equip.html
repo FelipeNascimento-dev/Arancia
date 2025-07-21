@@ -1,0 +1,22 @@
+{% extends 'global/base.html' %}
+
+
+{% block content %}
+
+{% include 'global/partials/_nav_chevron.html' %}
+
+<style>
+    .form-card-2col {
+        height: 380px; 
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST">
+            {% include 'global/partials/_form_2col.html' %}
+        </form>
+    </div>
+</div>
+
+{% endblock content %}

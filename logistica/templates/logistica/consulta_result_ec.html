@@ -1,0 +1,48 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+{% include 'global/partials/_nav_chevron.html' %}
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="post" class="form-2col" >
+            {% include 'global/partials/_form_2col.html' %}
+        </form>
+    </div>
+</div>
+
+{% if tabela_dados %}
+<div class="tabela-container">
+    <table class="tabela-consulta">
+        <thead>
+            <tr>
+                <th>nr_arq</th>
+                <th>mensagem</th>
+                <th>status</th>
+                <th>data</th>
+                <th>hora</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in tabela_dados %}
+            <tr>
+                <td>{{ item.nr_arq }}</td>
+                <td>{{ item.mensagem }}</td>
+                <td>{{ item.status }}</td>
+                <td>{{ item.data }}</td>
+                <td>{{ item.hora }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <form action="{% url 'logistica:btn_ec_voltar' tp_reg %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="id" value="{{ form.id.value }}">
+        <button class="btn-voltar" type="submit">Voltar</button>
+    </form>
+</div>
+{% endif %}
+
+{% endblock content %}

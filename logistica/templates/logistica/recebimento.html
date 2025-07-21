@@ -1,0 +1,19 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+    .form-card-2col {
+        height: 280px;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col" action="{{ form_action }}" method="POST">
+        <form method="POST">
+            {% include 'global/partials/_form_2col.html' %}
+        </form>
+    </div>
+</div>
+
+{% endblock content %}

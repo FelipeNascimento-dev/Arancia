@@ -1,0 +1,16 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+{% include 'global/partials/_nav_chevron.html' %}
+
+<div class="form-container">
+  <div class="form-card-2col">
+    <form method="POST">
+      {% include 'global/partials/_form_2col.html' %}
+    </form>
+  </div>
+</div>
+
+
+{% endblock content %}
