@@ -9,7 +9,7 @@
   justify-content: space-between;
   align-items: center;
   border-bottom: 5px solid #81C784;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
   z-index: 1000;
 }
 
@@ -168,4 +168,61 @@
 
 .submenu-toggle i {
   margin-left: 5px;
+}
+
+.etapas-container {
+  margin-top: 20px;
+  width: 100%;
+  display: none;
+  border-radius: 6px;
+  background: transparent;
+  color: white;
+  z-index: 998;
+  padding: 10px 40px;
+  box-sizing: border-box;
+  position: fixed;
+  text-decoration: none;
+}
+
+.etapas-container.active {
+  display: block;
+}
+
+.etapas {
+  display: flex;
+  overflow-x: auto;
+  justify-content: right;
+  margin-right: 10px;
+  text-decoration: none;
+}
+
+.etapa {
+  background-color: #81C784;
+  color: white;
+  padding: 10px 25px;
+  margin-right: -10px;
+  clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-decoration: none;
+  border-radius: 3px;
+}
+
+.etapa span {
+  white-space: nowrap;
+  font-weight: bold;
+}
+
+.etapa.ativa {
+  background-color: #f7813d;
+  text-decoration: none;
+}
+
+.etapa:last-child {
+  margin-right: 0;
+  clip-path: polygon(10px 0%, 100% 0%, 100% 100%, 0% 100%);
+}
+
+a:-webkit-any-link{
+  text-decoration: none;
 }

@@ -42,7 +42,7 @@ document.querySelectorAll('.column-toggle').forEach(toggle => {
       if (menu.id !== targetId) {
         menu.style.display = 'none';
       }
-    }); 
+    });
 
     targetMenu.style.display = (targetMenu.style.display === 'flex') ? 'none' : 'flex';
   });
@@ -271,4 +271,29 @@ document.addEventListener('DOMContentLoaded', function () {
     atualizarContador();
     atualizarTituloRomaneio();
   }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  const triggers = document.querySelectorAll(".etapa-trigger");
+  const containers = document.querySelectorAll(".etapas-container");
+
+  triggers.forEach(trigger => {
+    trigger.addEventListener("click", () => {
+      const targetId = trigger.dataset.target;
+      containers.forEach(container => {
+        if (container.id === targetId) {
+          container.classList.toggle("active");
+        } else {
+          container.classList.remove("active");
+        }
+      });
+    });
+  });
+
+  document.querySelectorAll(".etapa").forEach(etapa => {
+    etapa.addEventListener("click", () => {
+      etapa.parentElement.querySelectorAll(".etapa").forEach(e => e.classList.remove("ativa"));
+      etapa.classList.add("ativa");
+    });
+  });
 });
