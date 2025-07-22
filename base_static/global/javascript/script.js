@@ -316,3 +316,16 @@ function toggleUsuarioMenu() {
   const menu = document.getElementById("usuario-menu");
   menu.parentElement.classList.toggle("active");
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+  const btnOperacoes = document.getElementById('abrir-operacoes');
+  const navbarSuperior = document.getElementById('navbar-superior');
+  const navbarVertical = document.getElementById('navbar-vertical');
+
+  btnOperacoes?.addEventListener('click', function (e) {
+    e.preventDefault();
+    navbarSuperior.classList.add('hidden');
+    navbarVertical.classList.remove('hidden');
+    navbarVertical.classList.add('visible');
+  });
+});

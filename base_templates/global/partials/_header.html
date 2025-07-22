@@ -1,6 +1,6 @@
 {% load static %}
 
-<div class="navbar">
+<div class="navbar" id="navbar-superior">
 
     <a href="{% url 'logistica:index' %}">
         <img class="nav-logo" src="{% static 'global/images/10 anos.png' %}" alt="Logo">
@@ -10,7 +10,7 @@
         <a href="{% url 'logistica:index' %}">Home</a>
 
         <div class="dropdown">
-            <button class="dropbtn">Operações</button>
+            <button class="dropbtn" id="abrir-operacoes">Operações</button>
             <div class="dropdown-content">
                 <div class="top-columns">
                     <div class="column">
