@@ -145,7 +145,7 @@
   display: block;
   padding: 4px 0;
   text-decoration: none;
-  color: #569fe2;
+  color: #569fe2; 
 }
 
 .sub-submenu a:hover {
@@ -226,4 +226,12 @@
 a:-webkit-any-link{
   text-decoration: none;
   color: white;
+}
+
+.column h4 a {
+  color: #569fe2 !important;
+}
+
+.etapa a {
+  color: white !important;
 }
