@@ -7,6 +7,7 @@
 @import url(button_2b.css);
 @import url(consulta_id.css);
 @import url(pagination.css);
+@import url(vertical_navbar.css);
 
 :root {
   --background-formularios: #fff;
@@ -55,4 +56,18 @@ body {
   z-index: -1;
   background: #f5f5f5;
   clip-path: polygon(0 0, 60% 0, 100% 100%, 0% 200%);
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-100%);
+  transition: all 0.4s ease;
+}
+
+.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition: all 0.4s ease;
 }

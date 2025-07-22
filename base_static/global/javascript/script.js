@@ -84,6 +84,20 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 
+// LOGOUT
+
+function toggleUsuarioMenu() {
+  const menu = document.getElementById("usuario-menu");
+  menu.style.display = menu.style.display === "block" ? "none" : "block";
+  // fecha se clicar fora
+  document.addEventListener('click', function handler(e) {
+    if (!menu.contains(e.target) && !e.target.classList.contains("usuario-logado")) {
+      menu.style.display = "none";
+      document.removeEventListener('click', handler);
+    }
+  });
+}
+
 // CONTADOR ROMANEIOS
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -295,5 +309,23 @@ document.addEventListener("DOMContentLoaded", function () {
       etapa.parentElement.querySelectorAll(".etapa").forEach(e => e.classList.remove("ativa"));
       etapa.classList.add("ativa");
     });
+  });
+});
+
+function toggleUsuarioMenu() {
+  const menu = document.getElementById("usuario-menu");
+  menu.parentElement.classList.toggle("active");
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const btnOperacoes = document.getElementById('abrir-operacoes');
+  const navbarSuperior = document.getElementById('navbar-superior');
+  const navbarVertical = document.getElementById('navbar-vertical');
+
+  btnOperacoes?.addEventListener('click', function (e) {
+    e.preventDefault();
+    navbarSuperior.classList.add('hidden');
+    navbarVertical.classList.remove('hidden');
+    navbarVertical.classList.add('visible');
   });
 });
