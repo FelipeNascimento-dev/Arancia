@@ -234,3 +234,46 @@ a:-webkit-any-link{
 .etapa a {
   color: white !important;
 }
+
+.usuario-logado {
+  color: #fff;
+  font-weight: 700;
+  font-size: 18px;
+  padding: 10px 18px;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+
+.usuario-logado:hover {
+  background-color: #569fe2;
+}
+
+.usuario-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #fceaea;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(179, 62, 62, 0.18);
+  padding: 8px 0;
+  z-index: 999;
+  min-width: 130px;
+}
+
+.usuario-dropdown-menu a {
+  display: block;
+  padding: 10px 16px;
+  text-decoration: none;
+  color: #569fe2;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.usuario-dropdown-menu a:hover {
+  background-color: #fbe5e5;
+}
