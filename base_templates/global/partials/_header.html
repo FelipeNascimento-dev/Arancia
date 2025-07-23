@@ -2,20 +2,30 @@
 
 <div class="sidebar">
     <div class="seta-tamanho">
-        <i class="fa-solid fa-angles-right" id="toggle-sidebar"></i>
+        <i class="fa-solid fa-angles-left" id="toggle-sidebar"></i>
     </div>
 
-    <a href="{% url 'logistica:index' %}">
-        <img class="sidebar-logo" src="{% static 'global/images/new_logo.jpeg' %}" alt="Logo">
+    <a href="{% url 'logistica:index' %}" class="logo-container">
+        <img class="sidebar-logo sidebar-logo-expandida" src="{% static 'global/images/new_logo.jpeg' %}"
+            alt="Logo Expandida">
+        <img class="sidebar-logo sidebar-logo-reduzida" src="{% static 'global/images/new_logo_reduzida.jpeg' %}"
+            alt="Logo Reduzida">
     </a>
 
     <div class="divider-horizontal"></div>
+    <div class="divider-horizontal-reduzida"></div>
 
 
-    <a href="{% url 'logistica:index' %}" class="itens-sidebar"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="{% url 'logistica:index' %}" class="itens-sidebar">
+        <i class="fa-solid fa-house"></i>
+        <span class="texto-item">Home</span>
+    </a>
 
     <div class="dropdown">
-        <button type="button" class="dropbtn" class="itens-sidebar"><i class="fa-solid fa-truck-fast"></i> Operações</button>
+        <button type="button" class="dropbtn itens-sidebar">
+            <i class="fa-solid fa-truck-fast"></i>
+            <span class="texto-item">Operações</span>
+        </button>
         <div class="dropdown-content">
             <!-- <div class="column">
                 <h4 class="column-toggle" data-target="pesquisas"><i class="fa fa-search"></i> Pesquisas</h4>
@@ -34,7 +44,8 @@
 
             <div class="column">
                 <h4 class="column-toggle" data-target="transporte">
-                    <i class="fa-solid fa-truck"></i> Transporte</h4>
+                    <i class="fa-solid fa-truck"></i> Transporte
+                </h4>
                 <div class="submenu" id="transporte">
                     <h5 class="submenu-toggle" data-target="estornos-sub">Entrada-Fulfillment</h5>
                     <div class="sub-submenu" id="estornos-sub">
@@ -79,8 +90,14 @@
         </div>
     </div>
 
-    <a href="#" class="itens-sidebar"><i class="fa-solid fa-user"></i> Cadastros</a>
-    <a href="#" class="itens-sidebar"><i class="fa-solid fa-lock"></i> Segurança</a>
+    <a href="#" class="itens-sidebar">
+        <i class="fa-solid fa-user"></i>
+        <span class="texto-item">Cadastros</span>
+    </a>
+    <a href="#" class="itens-sidebar">
+        <i class="fa-solid fa-lock"></i>
+        <span class="texto-item">Segurança</span>
+    </a>
 
     <!-- <div class="usuario-dropdown">
         <button class="usuario-logado" onclick="toggleUsuarioMenu()">

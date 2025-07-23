@@ -284,26 +284,10 @@ document.addEventListener("DOMContentLoaded", function () {
   toggleBtn.addEventListener("click", function () {
     sidebar.classList.toggle("colapsada");
 
-    // Troca o ícone também
     if (sidebar.classList.contains("colapsada")) {
-      toggleBtn.classList.remove("fa-angles-right");
-      toggleBtn.classList.add("fa-angles-left");
+      toggleBtn.classList.replace("fa-angles-left", "fa-angles-right");
     } else {
-      toggleBtn.classList.remove("fa-angles-left");
-      toggleBtn.classList.add("fa-angles-right");
+      toggleBtn.classList.replace("fa-angles-right", "fa-angles-left");
     }
   });
-});
-
-const logoExpandida = document.querySelector(".sidebar-logo-expandida");
-const logoReduzida = document.querySelector(".sidebar-logo-reduzida");
-
-toggleBtn.addEventListener("click", function () {
-  sidebar.classList.toggle("colapsada");
-
-  if (sidebar.classList.contains("colapsada")) {
-    toggleBtn.classList.replace("fa-angles-right", "fa-angles-left");
-  } else {
-    toggleBtn.classList.replace("fa-angles-left", "fa-angles-right");
-  }
 });
