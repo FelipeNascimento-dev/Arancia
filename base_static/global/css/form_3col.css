@@ -3,8 +3,8 @@
     padding: 24px;
     border-radius: 10px;
     box-shadow: var(--box-shadow-formularios);
-    width: 1300px;
-    max-width: 1300px;
+    width: 1250px;
+    max-width: 1250px;
     border: 1px solid var(--borda-formularios);
 }
 
@@ -34,7 +34,7 @@ label {
 .form-3col input,
 .form-3col select,
 .form-3col textarea {
-    width: 383px;
+    width: 366px;
     padding: 10px;
     background: var(--form-input-color);
     border: 1px solid var(--form-input-border);

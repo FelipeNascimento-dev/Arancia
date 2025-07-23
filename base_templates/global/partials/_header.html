@@ -1,8 +1,8 @@
 {% load static %}
 
-<div class="sidebar">
+<div class="sidebar colapsada">
     <div class="seta-tamanho">
-        <i class="fa-solid fa-angles-left" id="toggle-sidebar"></i>
+        <i class="fa-solid fa-angles-right" id="toggle-sidebar"></i>
     </div>
 
     <a href="{% url 'logistica:index' %}" class="logo-container">
@@ -15,7 +15,6 @@
     <div class="divider-horizontal"></div>
     <div class="divider-horizontal-reduzida"></div>
 
-
     <a href="{% url 'logistica:index' %}" class="itens-sidebar">
         <i class="fa-solid fa-house"></i>
         <span class="texto-item">Home</span>
@@ -24,7 +23,7 @@
     <div class="dropdown">
         <button type="button" class="dropbtn itens-sidebar">
             <i class="fa-solid fa-truck-fast"></i>
-            <span class="texto-item">Operações</span>
+            <span class="texto-item">&nbsp; Operações</span>
         </button>
         <div class="dropdown-content">
             <!-- <div class="column">

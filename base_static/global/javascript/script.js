@@ -263,18 +263,6 @@ document.addEventListener('DOMContentLoaded', function () {
     atualizarContador();
     atualizarTituloRomaneio();
   }
-
-  // TROCA NAVBAR VERTICAL (se usado)
-  const btnOperacoes = document.getElementById('abrir-operacoes');
-  const navbarSuperior = document.getElementById('navbar-superior');
-  const navbarVertical = document.getElementById('navbar-vertical');
-
-  btnOperacoes?.addEventListener('click', function (e) {
-    e.preventDefault();
-    navbarSuperior.classList.add('hidden');
-    navbarVertical.classList.remove('hidden');
-    navbarVertical.classList.add('visible');
-  });
 });
 
 document.addEventListener("DOMContentLoaded", function () {
