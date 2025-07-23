@@ -1,27 +1,29 @@
 <div id="etapas-logistica" class="etapas-container active">
-  <div class="etapas">
-    <div class="etapa {% if etapa_ativa == 'reserva' %}ativa{% endif %}">
-      <a href="{% url 'logistica:reserva_equip' %}">Reserva</a>
-    </div>
+  <div class="background-etapas">
+    <div class="etapas">
+      <div class="etapa {% if etapa_ativa == 'reserva' %}ativa{% endif %}">
+        <a href="{% url 'logistica:reserva_equip' %}">Reserva</a>
+      </div>
 
-    <div class="etapa {% if etapa_ativa == 'estorno_reserva' %}ativa{% endif %}">
-      <a href="{% url 'logistica:estorno_reserva' %}">Estorno</a>
-    </div>
+      <div class="etapa {% if etapa_ativa == 'estorno_reserva' %}ativa{% endif %}">
+        <a href="{% url 'logistica:estorno_reserva' %}">Estorno</a>
+      </div>
 
-    <div class="etapa {% if etapa_ativa == 'consulta_result_ma' %}ativa{% endif %}">
-      <a href="{% url 'logistica:consulta_result_ma' 0 %}">Consulta</a>
-    </div>
+      <div class="etapa {% if etapa_ativa == 'consulta_result_ma' %}ativa{% endif %}">
+        <a href="{% url 'logistica:consulta_result_ma' 0 %}">Consulta</a>
+      </div>
 
-    <div class="etapa {% if etapa_ativa == 'saida_campo' %}ativa{% endif %}">
-      <a href="{% url 'logistica:saida_campo' %}">Saída</a>
-    </div>
+      <div class="etapa {% if etapa_ativa == 'saida_campo' %}ativa{% endif %}">
+        <a href="{% url 'logistica:saida_campo' %}">Saída</a>
+      </div>
 
-    <div class="etapa {% if etapa_ativa == 'cancelamento_saida' %}ativa{% endif %}">
-      <a href="{% url 'logistica:cancelamento_saida_campo' %}">Estorno</a>
-    </div>
+      <div class="etapa {% if etapa_ativa == 'cancelamento_saida' %}ativa{% endif %}">
+        <a href="{% url 'logistica:cancelamento_saida_campo' %}">Estorno</a>
+      </div>
 
-    <div class="etapa {% if etapa_ativa == 'consulta_result_ec' %}ativa{% endif %}">
-      <a href="{% url 'logistica:consulta_result_ec' 0 %}">Consulta</a>
+      <div class="etapa {% if etapa_ativa == 'consulta_result_ec' %}ativa{% endif %}">
+        <a href="{% url 'logistica:consulta_result_ec' 0 %}">Consulta</a>
+      </div>
     </div>
   </div>
 </div>
