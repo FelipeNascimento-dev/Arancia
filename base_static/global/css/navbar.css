@@ -19,6 +19,7 @@
   background: var(--sidebar-bg);
   border-right: 4px solid var(--sidebar-border);
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  transition: width 0.3s ease;
   padding: 20px;
   display: flex;
   flex-direction: column;

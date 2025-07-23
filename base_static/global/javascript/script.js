@@ -276,3 +276,34 @@ document.addEventListener('DOMContentLoaded', function () {
     navbarVertical.classList.add('visible');
   });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+  const toggleBtn = document.getElementById("toggle-sidebar");
+  const sidebar = document.querySelector(".sidebar");
+
+  toggleBtn.addEventListener("click", function () {
+    sidebar.classList.toggle("colapsada");
+
+    // Troca o ícone também
+    if (sidebar.classList.contains("colapsada")) {
+      toggleBtn.classList.remove("fa-angles-right");
+      toggleBtn.classList.add("fa-angles-left");
+    } else {
+      toggleBtn.classList.remove("fa-angles-left");
+      toggleBtn.classList.add("fa-angles-right");
+    }
+  });
+});
+
+const logoExpandida = document.querySelector(".sidebar-logo-expandida");
+const logoReduzida = document.querySelector(".sidebar-logo-reduzida");
+
+toggleBtn.addEventListener("click", function () {
+  sidebar.classList.toggle("colapsada");
+
+  if (sidebar.classList.contains("colapsada")) {
+    toggleBtn.classList.replace("fa-angles-right", "fa-angles-left");
+  } else {
+    toggleBtn.classList.replace("fa-angles-left", "fa-angles-right");
+  }
+});
