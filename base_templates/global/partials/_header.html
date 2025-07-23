@@ -1,112 +1,95 @@
 {% load static %}
 
-<div class="navbar" id="navbar-superior">
+<div class="sidebar">
+    <div class="seta-tamanho">
+        <i class="fa-solid fa-angles-right"></i>
+    </div>
 
     <a href="{% url 'logistica:index' %}">
-        <img class="nav-logo" src="{% static 'global/images/10 anos.png' %}" alt="Logo">
+        <img class="sidebar-logo" src="{% static 'global/images/new_logo.jpeg' %}" alt="Logo">
     </a>
 
-    <div class="nav-links">
-        <a href="{% url 'logistica:index' %}">Home</a>
+    <div class="divider-horizontal"></div>
 
-        <div class="dropdown">
-            <button class="dropbtn" id="abrir-operacoes">Operações</button>
-            <div class="dropdown-content">
-                <div class="top-columns">
-                    <div class="column">
-                        <h4 class="column-toggle" data-target="pesquisas" title="Use para encontrar itens.">
-                            <i class="fa fa-search"></i><span> Pesquisas</span>
-                        </h4>
-                        <div class="submenu" id="pesquisas">
-                            <a href="#">Pesquisar</a>
-                        </div>
-                    </div>
-                    <div class="column">
-                        <h4 class="column-toggle" data-target="relatorios" title="Veja relatórios disponíveis.">
-                            <i class="fa-solid fa-file"></i> Relatórios
-                        </h4>
-                        <div class="submenu" id="relatorios">
-                            <a href="#">PDFs Pendentes</a>
-                            <a href="#">PDFs Selecionados</a>
-                        </div>
-                    </div>
 
-                    <div class="column">
-                        <h4 class="column-toggle" data-target="transporte">
-                            <i class="fa-solid fa-truck"></i> Transporte
-                        </h4>
-                        <div class="submenu" id="transporte">
-                            <div>
-                                <h5 class="submenu-toggle" data-target="estornos-sub">Entrada-Fulfillment<i
-                                        class="fa fa-caret-down"></i></h5>
-                                <div class="sub-submenu" id="estornos-sub">
-                                    <a href="{% url 'logistica:consulta_id_form' %}">Consulta ID</a>
-                                    <a href="{% url 'logistica:pre_recebimento' %}">Pré-Recebimento</a>
-                                    <a href="{% url 'logistica:recebimento' %}">Recebimento</a>
-                                    <a href="{% url 'logistica:consulta_resultados' 0 %}">Consulta Resultados</a>
-                                    <a href="{% url 'logistica:estorno' %}">Estornos</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="column">
-                        <h4 class="etapa-trigger" data-target="etapas-logistica">
-                            <a href="{% url 'logistica:reserva_equip' %}"><i class="fas fa-tools"></i> Logística</a>
-                        </h4>
+    <a href="{% url 'logistica:index' %}">Home</a>
 
-                        <!-- <div class="submenu" id="logistica">
-                                <div>
-                                    <h5 class="submenu-toggle" data-target="reserva-sub">Reserva de equipamento<i
-                                            class="fa fa-caret-down"></i></h5>
-                                    <div class="sub-submenu" id="reserva-sub">
-                                        <a href="{% url 'logistica:reserva_equip' %}">Reserva</a>
-                                        <a href="{% url 'logistica:estorno_reserva'  %}">Estorno</a>
-                                        <a href="{% url 'logistica:consulta_result_ma' 0 %}">Consulta</a>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h5 class="submenu-toggle" data-target="saida-sub">Saída para Campo<i
-                                            class="fa fa-caret-down"></i></h5>
-                                    <div class="sub-submenu" id="saida-sub">
-                                        <a href="{% url 'logistica:saida_campo' %}">Saída</a>
-                                        <a href="{% url 'logistica:cancelamento_saida_campo' %}">Estorno</a>
-                                        <a href="{% url 'logistica:consulta_result_ec' 0 %}">Consulta</a>
-                                    </div>
-                                </div>
-                            </div> -->
-                    </div>
-                    <div class="column">
-                        <h4 class="column-toggle" data-target="Sistema" title="Ações rápidas para as operações.">
-                            <i class="fa-solid fa-globe"></i> Sistema
-                        </h4>
-                        <div class="submenu" id="Sistema">
-                            <a href="http://192.168.0.214/erp/login.aspx" target="_blank">Agendamentos</a>
-                            <a href="http://192.168.0.214/logyxrepresentante/login.aspx" target="_blank">Ordens de
-                                serviço</a>
-                            <a href="http://192.168.0.214/portaldeanalises/login" target="_blank">Portal</a>
-                            <a href="http://192.168.0.214/sga/login" target="_blank">Central de retenção</a>
-                            <a href="http://192.168.0.214/Relatorios/login/" target="_blank">Relatórios</a>
-                            <a href="http://192.168.0.214/site/Index.aspx" target="_blank">Gerencial</a>
-                        </div>
+    <div class="dropdown">
+        <button type="button" class="dropbtn">Operações</button>
+        <div class="dropdown-content">
+            <div class="column">
+                <h4 class="column-toggle" data-target="pesquisas"><i class="fa fa-search"></i> Pesquisas</h4>
+                <div class="submenu" id="pesquisas">
+                    <a href="#">Pesquisar</a>
+                </div>
+            </div>
+
+            <div class="column">
+                <h4 class="column-toggle" data-target="relatorios"><i class="fa-solid fa-file"></i> Relatórios</h4>
+                <div class="submenu" id="relatorios">
+                    <a href="#">PDFs Pendentes</a>
+                    <a href="#">PDFs Selecionados</a>
+                </div>
+            </div>
+
+            <div class="column">
+                <h4 class="column-toggle" data-target="transporte">
+                    <i class="fa-solid fa-truck"></i> Transporte</h4>
+                <div class="submenu" id="transporte">
+                    <h5 class="submenu-toggle" data-target="estornos-sub">Entrada-Fulfillment</h5>
+                    <div class="sub-submenu" id="estornos-sub">
+                        <a href="{% url 'logistica:consulta_id_form' %}">Consulta ID</a>
+                        <a href="{% url 'logistica:pre_recebimento' %}">Pré-Recebimento</a>
+                        <a href="{% url 'logistica:recebimento' %}">Recebimento</a>
+                        <a href="{% url 'logistica:consulta_resultados' 0 %}">Consulta Resultados</a>
+                        <a href="{% url 'logistica:estorno' %}">Estornos</a>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <a href="#">Cadastros</a>
-        <a href="#">Segurança</a>
+            <div class="column">
+                <h4><i class="fas fa-tools"></i> Logística</h4>
+                <div class="submenu" id="logistica">
+                    <h5 class="submenu-toggle" data-target="reserva-sub">Reserva de equipamento</h5>
+                    <div class="sub-submenu" id="reserva-sub">
+                        <a href="{% url 'logistica:reserva_equip' %}">Reserva</a>
+                        <a href="{% url 'logistica:estorno_reserva' %}">Estorno</a>
+                        <a href="{% url 'logistica:consulta_result_ma' 0 %}">Consulta</a>
+                    </div>
+                    <h5 class="submenu-toggle" data-target="saida-sub">Saída para Campo</h5>
+                    <div class="sub-submenu" id="saida-sub">
+                        <a href="{% url 'logistica:saida_campo' %}">Saída</a>
+                        <a href="{% url 'logistica:cancelamento_saida_campo' %}">Estorno</a>
+                        <a href="{% url 'logistica:consulta_result_ec' 0 %}">Consulta</a>
+                    </div>
+                </div>
+            </div>
 
-        <div class="usuario-dropdown">
-            <button class="usuario-logado" onclick="toggleUsuarioMenu()">
-                Olá, {{ request.user.first_name|default:request.user.username }} ▾
-            </button>
-            <div id="usuario-menu" class="usuario-dropdown-menu">
-                <a href="#">Sair</a>
+            <div class="column">
+                <h4 class="column-toggle" data-target="sistema"><i class="fa-solid fa-globe"></i> Sistema</h4>
+                <div class="submenu" id="sistema">
+                    <a href="http://192.168.0.214/erp/login.aspx" target="_blank">Agendamentos</a>
+                    <a href="http://192.168.0.214/logyxrepresentante/login.aspx" target="_blank">Ordens de serviço</a>
+                    <a href="http://192.168.0.214/portaldeanalises/login" target="_blank">Portal</a>
+                    <a href="http://192.168.0.214/sga/login" target="_blank">Central de retenção</a>
+                    <a href="http://192.168.0.214/Relatorios/login/" target="_blank">Relatórios</a>
+                    <a href="http://192.168.0.214/site/Index.aspx" target="_blank">Gerencial</a>
+                </div>
             </div>
         </div>
     </div>
+
+    <a href="#">Cadastros</a>
+    <a href="#">Segurança</a>
+
+    <div class="usuario-dropdown">
+        <button class="usuario-logado" onclick="toggleUsuarioMenu()">
+            Olá, {{ request.user.first_name|default:request.user.username }} ▾
+        </button>
+        <div id="usuario-menu" class="usuario-dropdown-menu">
+            <a href="#">Sair</a>
+        </div>
+    </div>
 </div>
-
-
 
 <script src="{% static 'global/javascript/script.js' %}"></script>

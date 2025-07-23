@@ -7,7 +7,7 @@
 @import url(button_2b.css);
 @import url(consulta_id.css);
 @import url(pagination.css);
-@import url(vertical_navbar.css);
+/* @import url(vertical_navbar.css); */
 
 :root {
   --background-formularios: #fff;
