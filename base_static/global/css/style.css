@@ -8,6 +8,7 @@
 @import url(consulta_id.css);
 @import url(pagination.css);
 @import url(barra_progresso.css);
+@import url(nav_usuario.css);
 
 :root {
   --background-formularios: #fff;

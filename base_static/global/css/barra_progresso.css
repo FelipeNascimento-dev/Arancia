@@ -1,64 +1,74 @@
 .etapas-container {
-  margin-top: 20px;
-  width: 100%;
-  display: none;
-  border-radius: 6px;
-  background: transparent;
-  color: white;
-  z-index: 998;
-  padding: 10px 40px;
-  box-sizing: border-box;
+    width: 100% !important; 
+    background: transparent;
+    /* padding: 0 0 20px; */
+    box-sizing: border-box;
+    margin-top: 50px;
+    margin-bottom: 15px;
+}
+
+.etapas-container::after {
+  content: '';
   position: fixed;
-  text-decoration: none;
+  top: calc(50px + 39px);
+  left: 0;
+  width: 100vw;
+  height: 1px;
+  background-color: #ccc;
 }
 
 .etapas-container.active {
-  display: block;
+    display: block;
 }
 
 .etapas {
-  display: flex;
-  overflow-x: auto;
-  justify-content: right;
-  margin-right: 10px;
-  text-decoration: none;
+    display: flex;
+    overflow-x: auto;
 }
 
 .etapa {
-  background-color: #81C784;
-  color: white;
-  padding: 10px 25px;
-  margin-right: -10px;
-  clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  text-decoration: none;
-  border-radius: 3px;
+    position: relative;
+    background-color: var(--sidebar-bg);
+    /* border-top: 1px solid #ccc; */
+    /* border-right: 1px solid #ccc; */
+    color: #000;
+    padding: 10px 25px;
+    font-weight: bold;
+    min-width: 160px;
+    text-align: center;
+    z-index: 1;
+    transition: background-color 0.3s ease;
+    clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%, 15px 50%);
+    margin-right: -15px;
 }
 
-.etapa span {
-  white-space: nowrap;
-  font-weight: bold;
-}
-
-.etapa.ativa {
-  background-color: #fc9b63;
-  text-decoration: none;
+.etapa:first-child {
+    clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%);
+    margin-left: 0;
 }
 
 .etapa:last-child {
-  margin-right: 0;
-  clip-path: polygon(10px 0%, 100% 0%, 100% 100%, 0% 100%);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%, 15px 50%);
+    margin-right: 0;
 }
 
-a:-webkit-any-link{
-  text-decoration: none;
+.etapa.ativa {
+    background-color: #81C784;
+    color: #fff;
+    z-index: 2;
 }
 
-.column h4 a {
-  color: #569fe2 !important;
+.etapa.ativa:hover{
+    background-color: #81C784;
 }
 
 .etapa a {
-  color: white !important;
+    color: inherit;
+    text-decoration: none;
+    display: block;
+}
+
+.etapa:hover {
+    background-color: #f7f7f7;
+    cursor: pointer;
 }

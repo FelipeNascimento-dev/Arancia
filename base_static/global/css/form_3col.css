@@ -1,6 +1,6 @@
 .form-card {
     background: var(--background-formularios);
-    padding: 24px;
+    /* padding: 24px; */
     border-radius: 10px;
     box-shadow: var(--box-shadow-formularios);
     width: 1250px;
