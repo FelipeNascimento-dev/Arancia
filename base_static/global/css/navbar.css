@@ -164,7 +164,7 @@
   flex-direction: column;
   margin-top: 5px;
   border-left: 1px dashed var(--sidebar-border);
-  margin-left: 45px;
+  margin-left: 55px;
 }
 
 .dropdown-content.show {
@@ -263,4 +263,16 @@
 
 .usuario-dropdown-menu a:hover {
   background-color: var(--submenu-hover);
+}
+
+.logo-container:hover {
+  background-color: transparent !important;
+  color: inherit !important;
+  cursor: pointer;
+}
+
+.link-sem-estilo {
+    all: unset; /* zera todos os estilos herdados */
+    display: inline-block;
+    cursor: pointer;
 }

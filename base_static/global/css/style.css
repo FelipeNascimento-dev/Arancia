@@ -7,7 +7,7 @@
 @import url(button_2b.css);
 @import url(consulta_id.css);
 @import url(pagination.css);
-/* @import url(vertical_navbar.css); */
+@import url(barra_progresso.css);
 
 :root {
   --background-formularios: #fff;
@@ -43,7 +43,6 @@ body {
   align-items: flex-start;
   box-sizing: border-box;
   position: relative;
-  padding-top: 70px;
 }
 
 .forma::before {
