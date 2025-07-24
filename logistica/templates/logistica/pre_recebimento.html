@@ -1,6 +1,13 @@
 {% extends 'global/base.html' %}
 
 {% block content %}
+
+<style>
+  .form-3col {
+    margin-top: 65px;
+  }
+</style>
+
 <div class="forma">
   <form class="form-3col" action="{{ form_action }}" method="POST">
     {% include 'global/partials/_form_3col.html' %}

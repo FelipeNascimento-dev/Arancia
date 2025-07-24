@@ -2,6 +2,12 @@
 
 {% block content %}
 
+<style>
+    .form-container {
+        margin-top: 65px; 
+    }
+</style>
+
 {% if exibir_formulario %}
 <div class="form-container">
     <form method="post" class="form-1col" action="{% url 'logistica:consulta_id_form' %}">
