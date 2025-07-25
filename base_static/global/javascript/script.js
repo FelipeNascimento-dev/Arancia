@@ -290,7 +290,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (sidebar.classList.contains("colapsada")) {
         sidebar.classList.remove("colapsada");
-
         toggleBtn.classList.replace("fa-angles-right", "fa-angles-left");
       }
 
@@ -299,6 +298,16 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       dropdown.classList.toggle("show");
+    });
+  });
+
+  document.querySelectorAll(".submenu-toggle").forEach((toggle) => {
+    toggle.addEventListener("click", () => {
+      const targetId = toggle.dataset.target;
+      const submenu = document.getElementById(targetId);
+      if (submenu) {
+        submenu.classList.toggle("show");
+      }
     });
   });
 });

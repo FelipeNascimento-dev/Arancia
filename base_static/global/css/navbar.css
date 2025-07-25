@@ -164,7 +164,7 @@
   flex-direction: column;
   margin-top: 5px;
   border-left: 1px dashed var(--sidebar-border);
-  margin-left: 55px;
+  margin-left: 50px;
 }
 
 .dropdown-content.show {
@@ -221,6 +221,11 @@
   margin-top: 4px;
   margin-left: 15px;
   border-left: 1px dashed var(--sidebar-border);
+}
+
+.sub-submenu.show {
+  display: flex;
+  flex-direction: column;
 }
 
 .usuario-logado {

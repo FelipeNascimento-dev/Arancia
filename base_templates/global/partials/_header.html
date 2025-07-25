@@ -21,14 +21,14 @@
     </a>
 
     <!-- Relatórios -->
-     <!--PROBLEMA MAL RESOLVIDO, NAO PODE MEXER AQUI SE NAO QUEBRAR TUDO-->
+    <!--PROBLEMA MAL RESOLVIDO, NAO PODE MEXER AQUI SE NAO QUEBRAR TUDO-->
     <div class="dropdown" style="display: none;">
         <button type="button" class="dropbtn itens-sidebar" id="fake-button">
         </button>
         <div class="dropdown-content" id="relatorios-dropdown1">
         </div>
     </div>
-        
+
     <!-- Relatórios -->
     <div class="dropdown">
         <button type="button" class="dropbtn itens-sidebar" id="real-button">
@@ -76,7 +76,7 @@
                 <a href="{% url 'logistica:saida_campo' %}">Saída</a>
                 <a href="{% url 'logistica:consulta_result_ec' 0 %}">Consulta</a>
             </div>
-            <h5 class="submenu-toggle" data-target="estornos-sub">Estornos</h5>
+            <h5 class="submenu-toggle" data-target="estornos-saida-reserva">Estornos</h5>
             <div class="sub-submenu" id="estornos-saida-reserva">
                 <a href="{% url 'logistica:estorno_reserva' %}">Estorno Reserva de Equipamento</a>
                 <a href="{% url 'logistica:cancelamento_saida_campo' %}">Estorno Saida para Campo</a>
