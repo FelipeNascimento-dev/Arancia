@@ -5,7 +5,7 @@
   right: 0;
   height: 50px;
   background-color: var(--sidebar-bg);
-      border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
   display: flex;
   align-items: center;
   justify-content: flex-end;

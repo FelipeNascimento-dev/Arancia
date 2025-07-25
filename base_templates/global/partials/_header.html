@@ -20,94 +20,85 @@
         <span class="texto-item">Home</span>
     </a>
 
+    <!-- Relatórios -->
+     <!--PROBLEMA MAL RESOLVIDO, NAO PODE MEXER AQUI SE NAO QUEBRAR TUDO-->
+    <div class="dropdown" style="display: none;">
+        <button type="button" class="dropbtn itens-sidebar" id="fake-button">
+        </button>
+        <div class="dropdown-content" id="relatorios-dropdown1">
+        </div>
+    </div>
+        
+    <!-- Relatórios -->
+    <div class="dropdown">
+        <button type="button" class="dropbtn itens-sidebar" id="real-button">
+            <i class="fa-solid fa-file" style="margin-left: 3px; margin-right: 2px;"></i>
+            <span class="texto-item">&nbsp; Relatórios</span>
+        </button>
+        <div class="dropdown-content" id="relatorios-dropdown">
+            <a href="#">PDFs Pendentes</a>
+            <a href="#">PDFs Selecionados</a>
+        </div>
+    </div>
+
+    <!-- Transporte -->
     <div class="dropdown">
         <button type="button" class="dropbtn itens-sidebar">
-            <i class="fa-solid fa-truck-fast"></i>
-            <span class="texto-item">&nbsp; Operações</span>
+            <i class="fa-solid fa-truck"></i>
+            <span class="texto-item">&nbsp; Transporte</span>
         </button>
         <div class="dropdown-content">
-            <!-- <div class="column">
-                <h4 class="column-toggle" data-target="pesquisas"><i class="fa fa-search"></i> Pesquisas</h4>
-                <div class="submenu" id="pesquisas">
-                    <a href="#">Pesquisar</a>
-                </div>
-            </div> -->
-
-            <div class="column">
-                <h4 class="column-toggle" data-target="relatorios"><i class="fa-solid fa-file"></i> Relatórios</h4>
-                <div class="submenu" id="relatorios">
-                    <a href="#">PDFs Pendentes</a>
-                    <a href="#">PDFs Selecionados</a>
-                </div>
-            </div>
-
-            <div class="column">
-                <h4 class="column-toggle" data-target="transporte">
-                    <i class="fa-solid fa-truck"></i> Transporte
-                </h4>
-                <div class="submenu" id="transporte">
-                    <h5 class="submenu-toggle" data-target="estornos-sub">Entrada-Fulfillment</h5>
-                    <div class="sub-submenu" id="estornos-sub">
-                        <a href="{% url 'logistica:consulta_id_form' %}">Consulta ID</a>
-                        <a href="{% url 'logistica:pre_recebimento' %}">Pré-Recebimento</a>
-                        <a href="{% url 'logistica:recebimento' %}">Recebimento</a>
-                        <a href="{% url 'logistica:consulta_resultados' 0 %}">Consulta Resultados</a>
-                        <a href="{% url 'logistica:estorno' %}">Estornos</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="column">
-                <h4 onclick="window.location.href='{% url 'logistica:reserva_equip' %}'">
-                    <i class="fas fa-tools"></i> Logística
-                </h4>
-                <div class="submenu" id="logistica">
-                    <h5 class="submenu-toggle" data-target="reserva-sub">Reserva de equipamento</h5>
-                    <div class="sub-submenu" id="reserva-sub">
-                        <a href="{% url 'logistica:reserva_equip' %}">Reserva</a>
-                        <a href="{% url 'logistica:estorno_reserva' %}">Estorno</a>
-                        <a href="{% url 'logistica:consulta_result_ma' 0 %}">Consulta</a>
-                    </div>
-                    <h5 class="submenu-toggle" data-target="saida-sub">Saída para Campo</h5>
-                    <div class="sub-submenu" id="saida-sub">
-                        <a href="{% url 'logistica:saida_campo' %}">Saída</a>
-                        <a href="{% url 'logistica:cancelamento_saida_campo' %}">Estorno</a>
-                        <a href="{% url 'logistica:consulta_result_ec' 0 %}">Consulta</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="column">
-                <h4 class="column-toggle" data-target="sistema"><i class="fa-solid fa-globe"></i> Sistema</h4>
-                <div class="submenu" id="sistema">
-                    <a href="http://192.168.0.214/erp/login.aspx" target="_blank">Agendamentos</a>
-                    <a href="http://192.168.0.214/logyxrepresentante/login.aspx" target="_blank">Ordens de serviço</a>
-                    <a href="http://192.168.0.214/portaldeanalises/login" target="_blank">Portal</a>
-                    <a href="http://192.168.0.214/sga/login" target="_blank">Central de retenção</a>
-                    <a href="http://192.168.0.214/Relatorios/login/" target="_blank">Relatórios</a>
-                    <a href="http://192.168.0.214/site/Index.aspx" target="_blank">Gerencial</a>
-                </div>
+            <h5 class="submenu-toggle" data-target="estornos-sub">Entrada-Fulfillment</h5>
+            <div class="sub-submenu" id="estornos-sub">
+                <a href="{% url 'logistica:consulta_id_form' %}">Consulta ID</a>
+                <a href="{% url 'logistica:pre_recebimento' %}">Pré-Recebimento</a>
+                <a href="{% url 'logistica:recebimento' %}">Recebimento</a>
+                <a href="{% url 'logistica:consulta_resultados' 0 %}">Consulta Resultados</a>
+                <a href="{% url 'logistica:estorno' %}">Estornos</a>
             </div>
         </div>
     </div>
 
-    <a href="#" class="itens-sidebar">
-        <i class="fa-solid fa-user"></i>
-        <span class="texto-item">Cadastros</span>
-    </a>
-    <a href="#" class="itens-sidebar">
-        <i class="fa-solid fa-lock"></i>
-        <span class="texto-item">Segurança</span>
-    </a>
-
-    <!-- <div class="usuario-dropdown">
-        <button class="usuario-logado" onclick="toggleUsuarioMenu()">
-            Olá, {{ request.user.first_name|default:request.user.username }} ▾
+    <!-- Logística -->
+    <div class="dropdown">
+        <button type="button" class="dropbtn itens-sidebar">
+            <i class="fas fa-tools"></i>
+            <span class="texto-item">&nbsp; Logística</span>
         </button>
-        <div id="usuario-menu" class="usuario-dropdown-menu">
-            <a href="#">Sair</a>
+        <div class="dropdown-content">
+            <h5 class="submenu-toggle" data-target="reserva-sub">Reserva de equipamento</h5>
+            <div class="sub-submenu" id="reserva-sub">
+                <a href="{% url 'logistica:reserva_equip' %}">Reserva</a>
+                <a href="{% url 'logistica:consulta_result_ma' 0 %}">Consulta</a>
+            </div>
+            <h5 class="submenu-toggle" data-target="saida-sub">Saída para Campo</h5>
+            <div class="sub-submenu" id="saida-sub">
+                <a href="{% url 'logistica:saida_campo' %}">Saída</a>
+                <a href="{% url 'logistica:consulta_result_ec' 0 %}">Consulta</a>
+            </div>
+            <h5 class="submenu-toggle" data-target="estornos-sub">Estornos</h5>
+            <div class="sub-submenu" id="estornos-saida-reserva">
+                <a href="{% url 'logistica:estorno_reserva' %}">Estorno Reserva de Equipamento</a>
+                <a href="{% url 'logistica:cancelamento_saida_campo' %}">Estorno Saida para Campo</a>
+            </div>
         </div>
-    </div> -->
+    </div>
+
+    <!-- Sistemas -->
+    <div class="dropdown">
+        <button type="button" class="dropbtn itens-sidebar">
+            <i class="fa-solid fa-globe"></i>
+            <span class="texto-item">&nbsp; Sistemas</span>
+        </button>
+        <div class="dropdown-content">
+            <a href="http://192.168.0.214/erp/login.aspx" target="_blank">Agendamentos</a>
+            <a href="http://192.168.0.214/logyxrepresentante/login.aspx" target="_blank">Ordens de serviço</a>
+            <a href="http://192.168.0.214/portaldeanalises/login" target="_blank">Portal</a>
+            <a href="http://192.168.0.214/sga/login" target="_blank">Central de retenção</a>
+            <a href="http://192.168.0.214/Relatorios/login/" target="_blank">Relatórios</a>
+            <a href="http://192.168.0.214/site/Index.aspx" target="_blank">Gerencial</a>
+        </div>
+    </div>
 </div>
 
 <script src="{% static 'global/javascript/script.js' %}"></script>

@@ -41,7 +41,7 @@
   margin: 0 auto 10px auto;
 }
 
-.sidebar.colapsada{
+.sidebar.colapsada {
   width: 70px;
 }
 
@@ -272,7 +272,7 @@
 }
 
 .link-sem-estilo {
-    all: unset; /* zera todos os estilos herdados */
-    display: inline-block;
-    cursor: pointer;
+  all: unset;
+  display: inline-block;
+  cursor: pointer;
 }
