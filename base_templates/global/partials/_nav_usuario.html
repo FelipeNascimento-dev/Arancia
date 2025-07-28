@@ -1,25 +1,37 @@
 <div class="user-navbar">
+    <div class="macro-guia" id="macroGuia"></div>
 
-    <ul>
-        <li>
-            <a href="#" title="Perfil">
-                <i class="fa fa-user"></i>
-            </a>
-        </li>
-        <li>
-            <a href="#" title="Configurações">
-                <i class="fa fa-cog"></i>
-            </a>
-        </li>
-        <li>
-            <a href="#" title="Ajuda">
-                <i class="fa fa-question-circle"></i>
-            </a>
-        </li>
-        <li>
-            <a href="#" title="Sair">
-                <i class="fa fa-sign-out-alt"></i>
-            </a>
-        </li>
-    </ul>
+    
+    <div class="form-container-center">
+        <form method="get" action="" class="form-pesquisa">
+            <input type="text" name="q" id="q" placeholder="Pesquisar lote..." value="{{ request.GET.q }}">
+            <button type="submit">Buscar</button>
+        </form>
+    </div>
+
+
+    <div class="items-nav-user">
+        <ul>
+            <li>
+                <a href="#" title="Perfil">
+                    <i class="fa fa-user"></i>
+                </a>
+            </li>
+            <li>
+                <a href="#" title="Configurações">
+                    <i class="fa fa-cog"></i>
+                </a>
+            </li>
+            <li>
+                <a href="#" title="Ajuda">
+                    <i class="fa fa-question-circle"></i>
+                </a>
+            </li>
+            <li>
+                <a href="#" title="Sair">
+                    <i class="fa fa-sign-out-alt"></i>
+                </a>
+            </li>
+        </ul>
+    </div>
 </div>
