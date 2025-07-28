@@ -14,7 +14,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 260px;
+  width: 270px;
   height: 100vh;
   background: var(--sidebar-bg);
   border-right: 4px solid var(--sidebar-border);
@@ -24,6 +24,39 @@
   display: flex;
   flex-direction: column;
   z-index: 1000;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding-bottom: 50px;
+}
+
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+/* Scroll bonito */
+.scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-area::-webkit-scrollbar-thumb {
+  background-color: #c1c1c1;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+.scroll-area::-webkit-scrollbar-thumb:hover {
+  background-color: #999;
+}
+
+.scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 transparent;
 }
 
 .sidebar-logo-reduzida {
@@ -87,8 +120,8 @@
 .divider-horizontal {
   height: 4px;
   background-color: #81C784;
-  margin: 10px auto 20px auto;
   width: 80%;
+  margin: 10px auto 20px auto;
   border: none;
 }
 
@@ -164,7 +197,7 @@
   flex-direction: column;
   margin-top: 5px;
   border-left: 1px dashed var(--sidebar-border);
-  margin-left: 55px;
+  margin-left: 50px;
 }
 
 .dropdown-content.show {
@@ -223,6 +256,11 @@
   border-left: 1px dashed var(--sidebar-border);
 }
 
+.sub-submenu.show {
+  display: flex;
+  flex-direction: column;
+}
+
 .usuario-logado {
   margin-top: auto;
   font-weight: bold;
@@ -275,4 +313,72 @@
   all: unset;
   display: inline-block;
   cursor: pointer;
+}
+
+.sidebar {
+  transition: width 0.4s ease;
+}
+
+.sidebar-logo-expandida,
+.sidebar-logo-reduzida {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.sidebar.colapsada .sidebar-logo-expandida {
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
+}
+
+.sidebar.colapsada .sidebar-logo-reduzida {
+  opacity: 1;
+  transform: scale(1);
+  transition-delay: 0.1s;
+}
+
+.sidebar:not(.colapsada) .sidebar-logo-reduzida {
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
+}
+
+.texto-item {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.sidebar.colapsada .texto-item {
+  opacity: 0;
+  transform: translateX(-10px);
+  pointer-events: none;
+}
+
+.seta-tamanho {
+  transition: transform 0.3s ease;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: #c1c1c1;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: #999;
+}
+
+.sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 transparent;
 }

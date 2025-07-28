@@ -1,51 +1,52 @@
 .form-card {
-    background: var(--background-formularios);
-    /* padding: 24px; */
-    border-radius: 10px;
-    box-shadow: var(--box-shadow-formularios);
-    width: 1250px;
-    max-width: 1250px;
-    border: 1px solid var(--borda-formularios);
+  background: var(--background-formularios);
+  padding: 24px;
+  border-radius: 10px;
+  box-shadow: var(--box-shadow-formularios);
+  width: 1250px;
+  max-width: 1250px;
+  border: 1px solid var(--borda-formularios);
+  margin-left: 65px;
 }
 
 .form-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 50px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 50px;
 }
 
 .form-card h2 {
-    font-weight: bold;
-    text-align: left;
-    justify-content: center;
-    margin-bottom: 20px;
-    margin-top: 20px;
-    color: var(--form-titulo);
+  font-weight: bold;
+  text-align: left;
+  justify-content: center;
+  margin-bottom: 20px;
+  margin-top: 20px;
+  color: var(--form-titulo);
 }
 
 label {
-    font-weight: bold;
-    color: var(--form-label-color);
-    display: block;
-    margin-bottom: 4px;
-    font-size: 15px;
+  font-weight: bold;
+  color: var(--form-label-color);
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
 }
 
 .form-3col input,
 .form-3col select,
 .form-3col textarea {
-    width: 366px;
-    padding: 10px;
-    background: var(--form-input-color);
-    border: 1px solid var(--form-input-border);
-    border-radius: 10px;
-    font-size: 15px;
+  width: 366px;
+  padding: 10px;
+  background: var(--form-input-color);
+  border: 1px solid var(--form-input-border);
+  border-radius: 10px;
+  font-size: 15px;
 }
 
 .error {
-    color: red;
-    font-size: 13px;
-    margin-top: 4px;
+  color: red;
+  font-size: 13px;
+  margin-top: 4px;
 }
 
 .submit-button-right {
@@ -64,7 +65,6 @@ label {
 .submit-button-right:hover {
   background-color: var(--button-form-color-hover);
 }
-
 
 @media screen and (max-width: 1280px) {
   .form-card {
