@@ -1,20 +1,20 @@
 {% block content %}
 
-  <h2 class="form-title">{{ form.nome_formulario }}</h2>
-  {% csrf_token %}
-  {{ form.non_field_errors }}
+<h2 class="form-title">{{ form.nome_formulario }}</h2>
+{% csrf_token %}
+{{ form.non_field_errors }}
 
-  {% for campo in form %}
-  <div class="form-group-1col">
-    {{ campo.label_tag }}
-    {{ campo }}
-    {% if campo.errors %}
+{% for campo in form %}
+<div class="form-group-1col">
+  {{ campo.label_tag }}
+  {{ campo }}
+  {% if campo.errors %}
     <div class="error">{{ campo.errors }}</div>
-    {% endif %}
-  </div>
-  {% endfor %}
-  <div class="form-actions">
-    <button type="submit" class="submit-button-right">Consultar</button>
-  </div>
+  {% endif %}
+</div>
+{% endfor %}
+<div class="form-actions">
+  <button type="submit" class="submit-button-right">Consultar</button>
+</div>
 
 {% endblock %}

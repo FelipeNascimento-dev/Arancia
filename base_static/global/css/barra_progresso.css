@@ -1,10 +1,11 @@
 .etapas-container {
     width: 100% !important; 
-    background: transparent;
+    background-color: #ffffff;
     /* padding: 0 0 20px; */
     box-sizing: border-box;
     margin-top: 50px;
     margin-bottom: 15px;
+    margin-left: 32px;
 }
 
 .etapas-container::after {
@@ -19,7 +20,7 @@
 
 .background-etapas{
     background-color: #cacaca;
-    width: 601px;
+    width: 100%;
 }
 
 .etapas-container.active {
@@ -53,6 +54,9 @@
 .etapa:last-child {
     clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%, 15px 50%);
     margin-right: 0;
+    width: 100%;
+    text-align: left;
+    padding: 10px 55px;
 }
 
 .etapa.ativa {
