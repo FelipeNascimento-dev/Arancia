@@ -307,3 +307,77 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  const macroGuia = document.getElementById("macroGuia");
+
+  // Detecta se está na Home com base na URL
+  const isHome =
+    window.location.pathname === "/" ||
+    window.location.pathname === "/home/" ||
+    window.location.pathname === "{% url 'logistica:index' %}";  // Django-safe
+
+  if (isHome) {
+    sessionStorage.removeItem("macroGuia");
+    macroGuia.innerHTML = "";
+  } else {
+    const macroSalva = sessionStorage.getItem("macroGuia");
+    if (macroSalva && !macroSalva.includes("Home")) {
+      macroGuia.innerHTML = macroSalva;
+    } else {
+      macroGuia.innerHTML = "";
+    }
+  }
+
+  // Submenu com 3 níveis
+  document.querySelectorAll(".sub-submenu a").forEach(link => {
+    link.addEventListener("click", () => {
+      const submenu = link.closest(".sub-submenu");
+      const submenuTitle = submenu.previousElementSibling?.textContent?.trim();
+      const dropdown = link.closest(".dropdown");
+      const dropbtn = dropdown.querySelector(".dropbtn .texto-item")?.textContent?.trim();
+      const linkText = link.textContent.trim();
+
+      const partes = [dropbtn, submenuTitle, linkText].filter(Boolean);
+
+      if (partes.length <= 1 || partes.includes("Home")) {
+        sessionStorage.removeItem("macroGuia");
+        macroGuia.innerHTML = "";
+        return;
+      }
+
+      const html = partes.map((parte, index) => {
+        return index < partes.length - 1
+          ? `<span>${parte}</span><span>›</span>`
+          : `<span>${parte}</span>`;
+      }).join("");
+
+      sessionStorage.setItem("macroGuia", html);
+    });
+  });
+
+  // Links diretos (sem submenu)
+  document.querySelectorAll(".dropdown-content > a").forEach(link => {
+    link.addEventListener("click", () => {
+      const dropdown = link.closest(".dropdown");
+      const dropbtn = dropdown.querySelector(".dropbtn .texto-item")?.textContent?.trim();
+      const linkText = link.textContent.trim();
+
+      const partes = [dropbtn, linkText].filter(Boolean);
+
+      if (partes.length <= 1 || partes.includes("Home")) {
+        sessionStorage.removeItem("macroGuia");
+        macroGuia.innerHTML = "";
+        return;
+      }
+
+      const html = partes.map((parte, index) => {
+        return index < partes.length - 1
+          ? `<span>${parte}</span><span>›</span>`
+          : `<span>${parte}</span>`;
+      }).join("");
+
+      sessionStorage.setItem("macroGuia", html);
+    });
+  });
+});
