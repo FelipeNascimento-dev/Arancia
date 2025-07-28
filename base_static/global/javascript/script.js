@@ -310,26 +310,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.addEventListener("DOMContentLoaded", () => {
   const macroGuia = document.getElementById("macroGuia");
+  const path = window.location.pathname;
 
-  // Detecta se está na Home com base na URL
   const isHome =
-    window.location.pathname === "/" ||
-    window.location.pathname === "/home/" ||
-    window.location.pathname === "{% url 'logistica:index' %}";  // Django-safe
+    path === "/" || path === "/home/" || path === "{% url 'logistica:index' %}";
 
   if (isHome) {
     sessionStorage.removeItem("macroGuia");
     macroGuia.innerHTML = "";
+    return;
+  }
+
+  const rotasMap = [
+    { regex: /^\/consulta-id(\/.*)?$/, macro: ["Transporte", "Entrada-Fulfillment", "Consulta ID"] },
+    { regex: /^\/pre-recebimento\/?$/, macro: ["Transporte", "Entrada-Fulfillment", "Pré-Recebimento"] },
+    { regex: /^\/recebimento\/?$/, macro: ["Transporte", "Entrada-Fulfillment", "Recebimento"] },
+    { regex: /^\/consulta\/resultados\/[^/]+\/?$/, macro: ["Transporte", "Entrada-Fulfillment", "Consulta Resultados"] },
+    { regex: /^\/estorno\/?$/, macro: ["Transporte", "Entrada-Fulfillment", "Estornos"] },
+    { regex: /^\/saida-campo\/?$/, macro: ["Logística", "Saída para Campo", "Saída"] },
+    { regex: /^\/consulta-ec\/[^/]+\/?$/, macro: ["Logística", "Saída para Campo", "Consulta Saída"] },
+    { regex: /^\/reserva-equip\/?$/, macro: ["Logística", "Reserva de equipamento", "Reserva"] },
+    { regex: /^\/consulta-ma\/[^/]+\/?$/, macro: ["Logística", "Reserva de equipamento", "Consulta Reserva"] },
+    { regex: /^\/estorno\/reserva-equip\/?$/, macro: ["Logística", "Estornos", "Estorno Reserva de Equipamento"] },
+    { regex: /^\/cancelamento\/saida-campo\/?$/, macro: ["Logística", "Estornos", "Estorno Saída para Campo"] }
+  ];
+
+  const rotaAtual = rotasMap.find(r => r.regex.test(path));
+  if (rotaAtual) {
+    const html = rotaAtual.macro.map((parte, index) => {
+      return index < rotaAtual.macro.length - 1
+        ? `<span>${parte}</span><span>›</span>`
+        : `<span>${parte}</span>`;
+    }).join("");
+
+    macroGuia.innerHTML = html;
+    sessionStorage.setItem("macroGuia", html);
   } else {
     const macroSalva = sessionStorage.getItem("macroGuia");
     if (macroSalva && !macroSalva.includes("Home")) {
       macroGuia.innerHTML = macroSalva;
     } else {
       macroGuia.innerHTML = "";
+      sessionStorage.removeItem("macroGuia");
     }
   }
 
-  // Submenu com 3 níveis
+  // Submenus
   document.querySelectorAll(".sub-submenu a").forEach(link => {
     link.addEventListener("click", () => {
       const submenu = link.closest(".sub-submenu");
@@ -339,7 +365,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const linkText = link.textContent.trim();
 
       const partes = [dropbtn, submenuTitle, linkText].filter(Boolean);
-
       if (partes.length <= 1 || partes.includes("Home")) {
         sessionStorage.removeItem("macroGuia");
         macroGuia.innerHTML = "";
@@ -364,7 +389,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const linkText = link.textContent.trim();
 
       const partes = [dropbtn, linkText].filter(Boolean);
-
       if (partes.length <= 1 || partes.includes("Home")) {
         sessionStorage.removeItem("macroGuia");
         macroGuia.innerHTML = "";
