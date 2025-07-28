@@ -1,9 +1,10 @@
 <div class="user-navbar">
     <div class="macro-guia" id="macroGuia"></div>
- 
+
     <div class="form-container-center">
         <form method="get" action="" class="form-pesquisa">
-            <input type="text" name="q" id="q" placeholder="Pesquisar lote..." value="{{ request.GET.q }}">
+            <i class="fa-solid fa-magnifying-glass search-icon-inside"></i>
+            <input type="text" name="q" id="q" placeholder="Pesquisar..." value="{{ request.GET.q }}">
             <button type="submit">Buscar</button>
         </form>
     </div>
