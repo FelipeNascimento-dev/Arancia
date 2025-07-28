@@ -293,10 +293,6 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleBtn.classList.replace("fa-angles-right", "fa-angles-left");
       }
 
-      document.querySelectorAll(".dropdown-content").forEach((el) => {
-        if (el !== dropdown) el.classList.remove("show");
-      });
-
       dropdown.classList.toggle("show");
     });
   });

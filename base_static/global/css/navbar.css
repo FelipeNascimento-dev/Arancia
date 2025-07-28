@@ -14,7 +14,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 260px;
+  width: 270px;
   height: 100vh;
   background: var(--sidebar-bg);
   border-right: 4px solid var(--sidebar-border);
@@ -24,6 +24,39 @@
   display: flex;
   flex-direction: column;
   z-index: 1000;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding-bottom: 50px;
+}
+
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+/* Scroll bonito */
+.scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-area::-webkit-scrollbar-thumb {
+  background-color: #c1c1c1;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+.scroll-area::-webkit-scrollbar-thumb:hover {
+  background-color: #999;
+}
+
+.scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 transparent;
 }
 
 .sidebar-logo-reduzida {
@@ -87,8 +120,8 @@
 .divider-horizontal {
   height: 4px;
   background-color: #81C784;
-  margin: 10px auto 20px auto;
   width: 80%;
+  margin: 10px auto 20px auto;
   border: none;
 }
 
@@ -284,7 +317,6 @@
 
 .sidebar {
   transition: width 0.4s ease;
-  overflow: hidden;
 }
 
 .sidebar-logo-expandida,
@@ -326,4 +358,27 @@
 
 .seta-tamanho {
   transition: transform 0.3s ease;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: #c1c1c1;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: #999;
+}
+
+.sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 transparent;
 }
