@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    {% include 'global/partials/_head.html' %}
+</head>
+
+<body>
+    <div class="abstract-left">
+        <div class="info-content">
+            <h2>C-Trends BPO!</h2>
+            <p>Soluções. Este é o nosso negocio!</p>
+            <ul>
+                <li>Call Center</li>
+                <li>Central Retenção</li>
+                <li>Cobrança</li>
+                <li>Operador Logístico</li>
+                <li>Caça Pos</li>
+                <li>SAC</li>
+            </ul>
+        </div>
+    </div>
+    <div class="container-logout">
+        <form method="post" class="form-logout" action="{% url 'logistica:logout' %}">
+            {% csrf_token %}
+            <h2>Tem certeza que deseja sair?</h2>
+            <br>
+            <div class="logout-buttons">
+                <button type="submit" class="logout-confirm-button">Sim, sair</button>
+                <a href="{% url 'logistica:index' %}" class="logout-cancel-button">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

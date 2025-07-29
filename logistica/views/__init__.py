@@ -1,4 +1,6 @@
 from .view_base import index
+from .logout_view import logout_view
+from .logout_confirm_view import logout_confirm_view
 from .view_consulta_id import consulta_id_form,consulta_id_table
 from .view_recebimentos import pre_recebimento, recebimento
 from .view_romaneio import registrar_romaneio

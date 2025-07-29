@@ -2,16 +2,41 @@
 <html lang="pt-br">
 
 <head>
-
     {% include 'global/partials/_head.html' %}
 </head>
 
 <body>
+    <div class="abstract-left">
+        <div class="info-content">
+            <h2>C-Trends BPO!</h2>
+            <p>Soluções. Este é o nosso negocio!</p>
+            <ul>
+                <li>Call Center</li>
+                <li>Central Retenção</li>
+                <li>Cobrança</li>
+                <li>Operador Logístico</li>
+                <li>Caça Pos</li>
+                <li>SAC</li>
+            </ul>
+        </div>
+    </div>
+
     <div class="container-login">
         <form class="form-login" method="post">
+            {% if request.COOKIES.mensagem_bloqueio %}
+            <div class="alert alert-danger">
+                {{ request.COOKIES.mensagem_bloqueio }}
+            </div>
+            {% endif %}
+
             {% csrf_token %}
-            <h2 class="form-title">Login</h2>
-            {% csrf_token %}
+            <h2 class="form-title-login">Login</h2>
+
+            {% if form.non_field_errors %}
+            <div class="error">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
 
             {% for campo in form %}
             <div class="form-group">
@@ -23,8 +48,8 @@
             </div>
             {% endfor %}
             <button class="login-button" type="submit">Entrar</button>
-            <p>Não tem cadastro? <a href="{% url 'arancia:register' %}">Crie sua conta</a></p>
         </form>
     </div>
 </body>
+
 </html>
