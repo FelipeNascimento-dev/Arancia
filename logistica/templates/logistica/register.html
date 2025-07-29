@@ -1,13 +1,51 @@
-{% extends 'global/base.html' %}
+<!DOCTYPE html>
+<html lang="pt-br">
 
-{% block content %}
-    <h2>Cadastro</h2>
-    <div class="container">
-      <form method="post">
-          {% csrf_token %}
-          {% include 'global/partials/_form_1col.html' %}
-          <button type="submit">Cadastrar</button>
-      </form>
-      <p>Já tem uma conta? <a href="{% url 'arancia:login' %}">Faça login</a></p>
+<head>
+  {% include 'global/partials/_head.html' %}
+</head>
+
+<body>
+  <div class="abstract-left">
+    <div class="info-content">
+      <h2>C-Trends BPO!</h2>
+      <p>Soluções. Este é o nosso negocio!</p>
+      <ul>
+        <li>Call Center</li>
+        <li>Central Retenção</li>
+        <li>Cobrança</li>
+        <li>Operador Logístico</li>
+        <li>Caça Pos</li>
+        <li>SAC</li>
+      </ul>
     </div>
-{% endblock content %}
+  </div>
+
+  <div class="container-register">
+    <form class="form-register" method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <div class="form-title-register">Cadastro</div>
+      <div class="form-group">
+        <label for="{{ form.username.id_for_label }}">Usuário</label>
+        {{ form.username }}
+        {{ form.username.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.password1.id_for_label }}">Senha</label>
+        {{ form.password1 }}
+        {{ form.password1.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.password2.id_for_label }}">Confirmar senha</label>
+        {{ form.password2 }}
+        {{ form.password2.errors }}
+      </div>
+      <button type="submit" class="register-button">Cadastrar</button>
+      <p>Já tem uma conta? <a href="{% url 'logistica:login' %}">Faça login</a></p>
+    </form>
+  </div>
+</body>
+
+</html>
