@@ -148,8 +148,7 @@ p {
     list-style: disc;
 }
 
-.login-button,
-button {
+.login-button {
     margin-top: 8px;
     width: 100%;
     padding: 10px;
@@ -165,10 +164,16 @@ button {
     text-decoration: none;
 }
 
-.login-button:hover,
-button:hover {
+.login-button:hover:hover {
     background: #aa2d2d;
     transform: translateY(-2px) scale(1.03);
+}
+
+.service img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    display: inline-block;
 }
 
 @media (max-width: 900px) {

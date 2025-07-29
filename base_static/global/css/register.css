@@ -79,8 +79,7 @@ body {
     box-shadow: 0 0 0 2px #b5ecd660;
 }
 
-.register-button,
-button {
+.register-button {
     margin-top: 8px;
     width: 100%;
     padding: 10px;
@@ -95,8 +94,7 @@ button {
     transition: background 0.2s, transform 0.13s;
 }
 
-.register-button:hover,
-button:hover {
+.register-button:hover:hover {
     background: #6dbf90;
     transform: translateY(-2px) scale(1.03);
 }
