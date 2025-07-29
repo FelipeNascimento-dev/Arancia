@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import Group
 
 class Romaneio(models.Model):
     numero = models.CharField(max_length=10, unique=True)
@@ -21,3 +22,12 @@ class ItemRomaneio(models.Model):
 
     def __str__(self):
         return f'Serial {self.serial} do {self.romaneio.numero}'
+    
+class PontoAtendimentoInfo(models.Model):
+    group = models.OneToOneField(Group, on_delete=models.CASCADE, related_name='informacoes')
+    endereco = models.CharField(max_length=255, verbose_name="Endereço")
+    limite = models.IntegerField(verbose_name="Limite de bipagens", default=50)
+    liberado = models.BooleanField(default=False, verbose_name="Acesso liberado")
+
+    def __str__(self):
+        return f"{self.group.name} - {self.endereco}"
