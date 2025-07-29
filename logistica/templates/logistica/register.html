@@ -1,49 +1,82 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="pt-br">
 
 <head>
   {% include 'global/partials/_head.html' %}
+  <meta charset="UTF-8">
+  <title>Cadastro | C-Trends BPO</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
 <body>
-  <div class="abstract-left">
-    <div class="info-content">
-      <h2>C-Trends BPO!</h2>
-      <p>Soluções. Este é o nosso negocio!</p>
-      <ul>
-        <li>Call Center</li>
-        <li>Central Retenção</li>
-        <li>Cobrança</li>
-        <li>Operador Logístico</li>
-        <li>Caça Pos</li>
-        <li>SAC</li>
-      </ul>
+  <div class="register-left">
+    <img class="logo-register" src="{% static 'global/images/new_logo.png' %}" alt="logo arancia">
+    <p>Flowsistem!</p>
+    <div class="register-services">
+      <div class="register-service"><img src="{% static 'global/images/call-center.png' %}" alt=""> Call Center</div>
+      <div class="register-service"><img src="{% static 'global/images/central-retencao.png' %}" alt=""> Central
+        Retenção</div>
+      <div class="register-service"><img src="{% static 'global/images/cobranca.png' %}" alt=""> Cobrança</div>
+      <div class="register-service"><img src="{% static 'global/images/operador-logistico.png' %}" alt=""> Operador
+        Logístico</div>
+      <div class="register-service"><img src="{% static 'global/images/caca-pos.png' %}" alt=""> Caça Pos</div>
+      <div class="register-service"><img src="{% static 'global/images/sac.png' %}" alt=""> SAC</div>
     </div>
   </div>
 
-  <div class="container-register">
-    <form class="form-register" method="post">
+  <div class="register-right">
+    <form method="post" class="register-box">
       {% csrf_token %}
-      {{ form.non_field_errors }}
+      <h2>Cadastro</h2>
 
-      <div class="form-title-register">Cadastro</div>
-      <div class="form-group">
-        <label for="{{ form.username.id_for_label }}">Usuário</label>
-        {{ form.username }}
-        {{ form.username.errors }}
+      {% if form.non_field_errors %}
+      <div class="register-error">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <div class="register-field">
+        <i class="fa-regular fa-user"></i>
+        <input type="text" name="{{ form.nome.name }}" id="{{ form.nome.id_for_label }}"
+          value="{{ form.nome.value|default_if_none:'' }}" placeholder=" " required>
+        <label for="{{ form.nome.id_for_label }}">Nome</label>
+        {% if form.nome.errors %}
+        <div class="register-error">{{ form.nome.errors }}</div>
+        {% endif %}
       </div>
-      <div class="form-group">
-        <label for="{{ form.password1.id_for_label }}">Senha</label>
-        {{ form.password1 }}
-        {{ form.password1.errors }}
+
+      <div class="register-field">
+        <i class="fa-solid fa-envelope"></i>
+        <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}"
+          value="{{ form.email.value|default_if_none:'' }}" placeholder=" " required>
+        <label for="{{ form.email.id_for_label }}">E-mail</label>
+        {% if form.email.errors %}
+        <div class="register-error">{{ form.email.errors }}</div>
+        {% endif %}
       </div>
-      <div class="form-group">
-        <label for="{{ form.password2.id_for_label }}">Confirmar senha</label>
-        {{ form.password2 }}
-        {{ form.password2.errors }}
+
+      <div class="register-field">
+        <i class="fa-solid fa-lock"></i>
+        <input type="password" name="{{ form.password1.name }}" id="{{ form.password1.id_for_label }}" placeholder=" "
+          required>
+        <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+        {% if form.password1.errors %}
+        <div class="register-error">{{ form.password1.errors }}</div>
+        {% endif %}
       </div>
+
+      <div class="register-field">
+        <i class="fa-solid fa-lock"></i>
+        <input type="password" name="{{ form.password2.name }}" id="{{ form.password2.id_for_label }}" placeholder=" "
+          required>
+        <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+        {% if form.password2.errors %}
+        <div class="register-error">{{ form.password2.errors }}</div>
+        {% endif %}
+      </div>
+
       <button type="submit" class="register-button">Cadastrar</button>
-      <p>Já tem uma conta? <a href="{% url 'logistica:login' %}">Faça login</a></p>
+      <p class="register-link">Já tem uma conta? <a href="{% url 'logistica:login' %}">Entrar</a></p>
     </form>
   </div>
 </body>

@@ -2,178 +2,11 @@
 
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     {% include 'global/partials/_head.html' %}
     <meta charset="UTF-8">
     <title>Login C-Trends BPO</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #eaf3fa;
-            display: flex;
-            height: 100vh;
-        }
-
-        .logo-tela-login{
-            width: 300px;
-        }
-
-        .left-panel {
-            flex: 1;
-            padding: 60px 40px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            background-color: #eaf3fa;
-            color: #2c3e50;
-        }
-
-        .left-panel h1 {
-            font-size: 36px;
-            margin-bottom: 10px;
-        }
-
-        .left-panel p {
-            font-size: 18px;
-            margin-bottom: 30px;
-            margin-left: 10px;
-        }
-
-        .services {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px 28px;
-            padding: 10px 0;
-        }
-
-        .service {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1rem;
-            font-weight: 500;
-            color: #2c3e50;
-            line-height: 1.4;
-        }
-
-        .service img {
-            width: 32px;
-            height: 32px;
-            object-fit: contain;
-            flex-shrink: 0;
-        }
-
-        .right-panel {
-            flex: 1;
-            background-color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-top-left-radius: 30px;
-            border-bottom-left-radius: 30px;
-            box-shadow: -4px 0 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .login-box {
-            width: 100%;
-            max-width: 360px;
-            padding: 40px;
-            border-radius: 12px;
-        }
-
-        .login-box h2 {
-            font-size: 26px;
-            margin-bottom: 25px;
-            text-align: center;
-            color: #2c3e50;
-        }
-
-        .form-group {
-            position: relative;
-            margin-bottom: 30px;
-        }
-
-        .form-group i {
-            position: absolute;
-            top: 14px;
-            left: 12px;
-            font-size: 16px;
-            color: #999;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px 12px 12px 38px;
-            font-size: 15px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            background: #fff;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus {
-            border-color: #2c3e50;
-            outline: none;
-        }
-
-        .form-group label {
-            position: absolute;
-            left: 38px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #aaa;
-            background: #fff;
-            padding: 0 4px;
-            transition: 0.2s ease;
-            pointer-events: none;
-        }
-
-        .form-group input:focus+label,
-        .form-group input:not(:placeholder-shown)+label {
-            top: -10px;
-            font-size: 12px;
-            color: #2c3e50;
-        }
-
-        .login-button {
-            width: 100%;
-            padding: 14px;
-            background-color: #2c3e50;
-            color: white;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .login-button:hover {
-            background-color: #1a252f;
-        }
-
-        .error {
-            color: #e74c3c;
-            font-size: 14px;
-            margin-top: 4px;
-        }
-
-        .alert {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-    </style>
 </head>
 
 <body>
@@ -181,14 +14,24 @@
         <img class="logo-tela-login" src="{% static 'global/images/new_logo.png' %}" alt="logo arancia">
         <p>Flowsistem!</p>
         <div class="services">
-            <div class="service"><img src="{% static 'global/images/call-center.png' %}" alt="logo"> Call Center</div>
-            <div class="service"><img src="{% static 'global/images/central-retencao.png' %}" alt="logo"> Central
-                Retenção</div>
-            <div class="service"><img src="{% static 'global/images/cobranca.png' %}" alt="logo"> Cobrança</div>
-            <div class="service"><img src="{% static 'global/images/operador-logistico.png' %}" alt="logo"> Operador
-                Logístico</div>
-            <div class="service"><img src="{% static 'global/images/caca-pos.png' %}" alt="logo"> Caça Pos</div>
-            <div class="service"><img src="{% static 'global/images/sac.png' %}" alt="logo"> SAC</div>
+            <div class="service">
+                <img src="{% static 'global/images/call-center.png' %}" alt="logo"> Call Center
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/central-retencao.png' %}" alt="logo"> Central Retenção
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/cobranca.png' %}" alt="logo"> Cobrança
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/operador-logistico.png' %}" alt="logo"> Operador Logístico
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/caca-pos.png' %}" alt="logo"> Caça Pos
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/sac.png' %}" alt="logo"> SAC
+            </div>
         </div>
     </div>
 
@@ -226,8 +69,8 @@
             </div>
 
             <button type="submit" class="login-button">Entrar</button>
+            <p class="link-register">Não tem cadastro?&nbsp;<a href="{% url 'logistica:register' %}">Crie sua conta</a></p>
         </form>
     </div>
 </body>
-
 </html>
