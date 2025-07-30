@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django import forms
-from .models import PontoAtendimentoInfo
+from .models import PontoAtendimentoInfo, GroupAditionalInformation
 
 class PontoAtendimentoInfoAdminForm(forms.ModelForm):
     limite_opcoes = [
@@ -24,12 +24,9 @@ class PontoAtendimentoInfoAdmin(admin.ModelAdmin):
     list_editable = ('liberado',)
     search_fields = ('group__name', 'endereco')
 
-# @admin.register(LoteBipagem)
-# class LoteBipagemAdmin(admin.ModelAdmin):
-#     list_display = ['id', 'criado_em', 'status', 'user_created', 'group_user']
 
-#     def get_queryset(self, request):
-#         qs = super().get_queryset(request)
-#         if request.user.is_superuser:
-#             return qs
-#         return qs.filter(group_user__in=request.user.groups.all())
+
+@admin.register(GroupAditionalInformation)
+class GroupAditionalInformationAdmin(admin.ModelAdmin):
+    list_display = ('group', 'cidade', 'estado', 'email', 'telefone1')
+    search_fields = ('group__name', 'cidade', 'estado', 'email', 'responsavel')
