@@ -1,6 +1,8 @@
 from ..forms import ReservaEquipamentosForm
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 
+@login_required(login_url='logistica:login')
 def reserva_equip(request):
     if request.method == 'POST':
         form = ReservaEquipamentosForm(request.POST)

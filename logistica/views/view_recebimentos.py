@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
 from ..forms import PreRecebimentoForm, RecebimentoForm
 from utils.request import RequestClient
+from django.contrib.auth.decorators import login_required
 
-
+@login_required(login_url='logistica:login')
 def pre_recebimento(request):
     if request.method == 'POST':
         form = PreRecebimentoForm(request.POST)
@@ -49,7 +50,7 @@ def pre_recebimento(request):
 
     return render(request, 'logistica/pre_recebimento.html', {'form': form})
 
-
+@login_required(login_url='logistica:login')
 def recebimento(request):
     if request.method == 'POST':
         form = RecebimentoForm(request.POST)
