@@ -1,11 +1,18 @@
-from django.contrib.auth.forms import UserCreationForm
-from django.urls import reverse_lazy
-from django.views.generic.edit import CreateView
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import permission_required
+from django.contrib import messages
+from ..forms import CustomUserCreationForm
 
-class RegisterView(PermissionRequiredMixin, CreateView):
-    raise_exception = True 
-    template_name = 'logistica/register.html'
-    form_class = UserCreationForm
-    permission_required = 'auth.add_user'
-    success_url = reverse_lazy('logistica:login')
+def registrar_usuario(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Usuário cadastrado com sucesso.')
+            return redirect('logistica:login')
+        else:
+            messages.error(request, 'Erro ao cadastrar. Verifique os dados.')
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, 'logistica/register.html', {'form': form})

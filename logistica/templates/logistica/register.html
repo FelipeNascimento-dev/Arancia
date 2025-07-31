@@ -31,53 +31,40 @@
       {% csrf_token %}
       <h2>Cadastro</h2>
 
-      {% if form.non_field_errors %}
-      <div class="register-error">{{ form.non_field_errors }}</div>
-      {% endif %}
+      <div class="register-field">
+        <i class="fa-regular fa-user"></i>
+        {{ form.username }}
+        <label for="{{ form.username.id_for_label }}">Usuário</label>
+      </div>
 
       <div class="register-field">
         <i class="fa-regular fa-user"></i>
-        <input type="text" name="{{ form.nome.name }}" id="{{ form.nome.id_for_label }}"
-          value="{{ form.nome.value|default_if_none:'' }}" placeholder=" " required>
-        <label for="{{ form.nome.id_for_label }}">Nome</label>
-        {% if form.nome.errors %}
-        <div class="register-error">{{ form.nome.errors }}</div>
-        {% endif %}
+        {{ form.first_name }}
+        <label for="{{ form.first_name.id_for_label }}">Nome</label>
       </div>
 
       <div class="register-field">
         <i class="fa-solid fa-envelope"></i>
-        <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}"
-          value="{{ form.email.value|default_if_none:'' }}" placeholder=" " required>
+        {{ form.email }}
         <label for="{{ form.email.id_for_label }}">E-mail</label>
-        {% if form.email.errors %}
-        <div class="register-error">{{ form.email.errors }}</div>
-        {% endif %}
       </div>
 
       <div class="register-field">
         <i class="fa-solid fa-lock"></i>
-        <input type="password" name="{{ form.password1.name }}" id="{{ form.password1.id_for_label }}" placeholder=" "
-          required>
-        <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
-        {% if form.password1.errors %}
-        <div class="register-error">{{ form.password1.errors }}</div>
-        {% endif %}
+        {{ form.password1 }}
+        <label for="{{ form.password1.id_for_label }}">Senha</label>
       </div>
 
       <div class="register-field">
         <i class="fa-solid fa-lock"></i>
-        <input type="password" name="{{ form.password2.name }}" id="{{ form.password2.id_for_label }}" placeholder=" "
-          required>
-        <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
-        {% if form.password2.errors %}
-        <div class="register-error">{{ form.password2.errors }}</div>
-        {% endif %}
+        {{ form.password2 }}
+        <label for="{{ form.password2.id_for_label }}">Confirme a Senha</label>
       </div>
 
       <button type="submit" class="register-button">Cadastrar</button>
       <p class="register-link">Já tem uma conta? <a href="{% url 'logistica:login' %}">Entrar</a></p>
     </form>
+
   </div>
 </body>
 
