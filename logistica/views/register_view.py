@@ -1,5 +1,5 @@
+# views.py
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
 from ..forms import CustomUserCreationForm
 
@@ -8,11 +8,10 @@ def registrar_usuario(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Usuário cadastrado com sucesso.')
+            messages.success(request, "Usuário cadastrado com sucesso.")
             return redirect('logistica:login')
         else:
-            messages.error(request, 'Erro ao cadastrar. Verifique os dados.')
+            messages.error(request, "Erro ao cadastrar. Verifique os dados.")
     else:
         form = CustomUserCreationForm()
-
     return render(request, 'logistica/register.html', {'form': form})
