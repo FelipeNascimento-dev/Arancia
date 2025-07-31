@@ -23,14 +23,22 @@ class CustomUserCreationForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
+
+        ultimo = User.objects.filter(username__startswith="ARC").order_by('-id').first()
+        if ultimo and ultimo.username.startswith("ARC") and ultimo.username[3:].isdigit():
+            numero = int(ultimo.username[3:]) + 1
+        else:
+            numero = 1
+        user.username = f"ARC{numero:04d}"
+
         user.first_name = self.cleaned_data["first_name"]
         user.last_name = self.cleaned_data["last_name"]
         user.email = self.cleaned_data["email"]
+
         if commit:
             user.save()
             grupo = self.cleaned_data["grupo"]
             user.groups.add(grupo)
 
-            cpf = self.cleaned_data["cpf"]
-            UserProfile.objects.update_or_create(user=user, defaults={"cpf": cpf})
+            UserProfile.objects.update_or_create(user=user, defaults={"cpf": self.cleaned_data["cpf"]})
         return user

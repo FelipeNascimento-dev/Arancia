@@ -73,16 +73,6 @@
         {% endif %}
       </div>
 
-      <!-- <div class="register-field">
-        <i class="fa-regular fa-user"></i>
-        <input type="text" name="{{ form.username.name }}" id="{{ form.username.id_for_label }}"
-          value="{{ form.username.value|default_if_none:'' }}" placeholder=" " required>
-        <label for="{{ form.username.id_for_label }}">Usuário</label>
-        {% if form.username.errors %}
-        <div class="register-error">{{ form.username.errors }}</div>
-        {% endif %}
-      </div> -->
-
       <div class="register-field">
         <i class="fa-solid fa-envelope"></i>
         <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}"

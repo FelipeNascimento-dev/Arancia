@@ -24,8 +24,6 @@ class PontoAtendimentoInfoAdmin(admin.ModelAdmin):
     list_editable = ('liberado',)
     search_fields = ('group__name', 'endereco')
 
-
-
 @admin.register(GroupAditionalInformation)
 class GroupAditionalInformationAdmin(admin.ModelAdmin):
     list_display = ('group', 'cidade', 'estado', 'email', 'telefone1')
