@@ -130,7 +130,12 @@
       </div>
 
       <button type="submit" class="register-button">Cadastrar</button>
-      <p class="register-link">Já tem uma conta? <a href="{% url 'logistica:login' %}">Entrar</a></p>
+      <div class="register-login-container">
+        <span>Já tem uma conta?</span>
+        <a href="{% url 'logistica:login' %}" class="btn-login-link">
+          Entrar
+        </a>
+      </div>
     </form>
   </div>
 

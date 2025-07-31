@@ -45,6 +45,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-left: 400px;
 }
 
 .form-pesquisa input[type="text"] {
