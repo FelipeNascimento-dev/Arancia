@@ -38,6 +38,7 @@ class PontoAtendimentoInfo(models.Model):
 
 class GroupAditionalInformation(models.Model):
     group = models.ForeignKey(Group, related_name='informacoes_adicionais', blank=True, null=True, on_delete=models.CASCADE)
+    nome = models.CharField(max_length=100, verbose_name="Nome", blank=True, null=True)
     logradouro = models.CharField(max_length=255, verbose_name="Logradouro", blank=True, null=True)
     numero = models.CharField(max_length=10, verbose_name="Número", blank=True, null=True)
     complemento = models.CharField(max_length=100, verbose_name="Complemento", blank=True, null=True)
