@@ -1,9 +1,10 @@
 from ..forms.forms_estorno import EstornoForm
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_protect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 
 @login_required(login_url='logistica:login')
+@permission_required('logistica.pode_visualizar_telas', raise_exception=True)
 def buscar_dados_estorno(form):
     return [
         {
@@ -17,6 +18,7 @@ def buscar_dados_estorno(form):
 
 @csrf_protect
 @login_required(login_url='logistica:login')
+@permission_required('logistica.pode_visualizar_telas', raise_exception=True)
 def estorno_result(request):
     id_pre_recebido = request.session.pop('id_pre_recebido', None)
     serial_inserido = request.session.pop('serial_recebido', None)

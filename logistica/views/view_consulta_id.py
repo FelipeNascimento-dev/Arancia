@@ -1,9 +1,10 @@
 from ..forms import ConsultaForm
 from django.shortcuts import render, redirect
 from utils.request import RequestClient
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 
 @login_required(login_url='logistica:login')
+@permission_required('logistica.pode_visualizar_telas', raise_exception=True)
 def consulta_id_form(request):
     form = ConsultaForm()
     exibir_formulario = True
@@ -24,7 +25,6 @@ def consulta_id_form(request):
 
             tabela_dados = response.get('items', [])
 
-            # Salva os dados na sessão para usar na view da tabela
             request.session['tabela_dados'] = tabela_dados
 
             return redirect('logistica:consulta_id_table', id=id)
@@ -35,6 +35,7 @@ def consulta_id_form(request):
     return render(request, 'logistica/consulta_id_form.html', context)
 
 @login_required(login_url='logistica:login')
+@permission_required('logistica.pode_visualizar_telas', raise_exception=True)
 def consulta_id_table(request, id):
     tabela_dados = request.session.get('tabela_dados')
     exibir_formulario = False
