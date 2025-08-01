@@ -63,6 +63,7 @@ class PermissaoUsuarioDummy(models.Model):
             ("pode_gerenciar_usuarios", "Pode gerenciar usuários"),
             ("pode_gerenciar_grupos", "Pode gerenciar grupos"),
             ("usuario_credenciado", "Usuário credenciado"),
+            ("pode_acessar_fulfillment","Pode acessar Fulfillment"),
         ]
     def __str__(self):
         return "Permissões personalizadas"
