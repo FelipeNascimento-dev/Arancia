@@ -37,7 +37,7 @@ class PontoAtendimentoInfo(models.Model):
         return f"{self.group.name} - {self.endereco}"
 
 class GroupAditionalInformation(models.Model):
-    group = models.ManyToManyField(Group, related_name='informacoes_adicionais')
+    group = models.ForeignKey(Group, related_name='informacoes_adicionais', blank=True, null=True, on_delete=models.CASCADE)
     logradouro = models.CharField(max_length=255, verbose_name="Logradouro", blank=True, null=True)
     numero = models.CharField(max_length=10, verbose_name="Número", blank=True, null=True)
     complemento = models.CharField(max_length=100, verbose_name="Complemento", blank=True, null=True)
@@ -45,7 +45,6 @@ class GroupAditionalInformation(models.Model):
     cidade = models.CharField(max_length=100, verbose_name="Cidade", blank=True, null=True)
     UF = models.CharField(max_length=2, verbose_name="Estado", blank=True, null=True)
     CEP = models.CharField(max_length=10, verbose_name="CEP", blank=True, null=True)
-    cidade = models.CharField(max_length=100, verbose_name="Cidade", blank=True, null=True)
     estado = models.CharField(max_length=2, verbose_name="Estado", blank=True, null=True)
     telefone1 = models.CharField(max_length=15, verbose_name="Telefone 1", blank=True, null=True)
     telefone2 = models.CharField(max_length=15, verbose_name="Telefone 2", blank=True, null=True)
@@ -53,8 +52,8 @@ class GroupAditionalInformation(models.Model):
     responsavel = models.CharField(max_length=100, verbose_name="Responsável", blank=True, null=True)
 
     def __str__(self):
-        return f"{self.group.name} - Contato"
-    
+        return f"{self.group.name} - Contato" if self.group else "Sem grupo"
+
 class PermissaoUsuarioDummy(models.Model):
     class Meta:
         verbose_name = "Transporte | Permissão de Usuario"

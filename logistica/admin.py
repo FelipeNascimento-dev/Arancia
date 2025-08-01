@@ -26,9 +26,5 @@ class PontoAtendimentoInfoAdmin(admin.ModelAdmin):
 
 @admin.register(GroupAditionalInformation)
 class GroupAditionalInformationAdmin(admin.ModelAdmin):
-    list_display = ('get_groups', 'cidade', 'estado', 'email', 'telefone1')
+    list_display = ('group', 'cidade', 'estado', 'email', 'telefone1')
     search_fields = ('group__name', 'cidade', 'estado', 'email', 'responsavel')
-
-    def get_groups(self, obj):
-        return ", ".join([g.name for g in obj.group.all()])
-    get_groups.short_description = 'Grupos'
