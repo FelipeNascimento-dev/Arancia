@@ -2,6 +2,7 @@
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     {% include 'global/partials/_head.html' %}
     <meta charset="UTF-8">
@@ -68,9 +69,20 @@
                 {% endif %}
             </div>
 
+            <div class="top-register-button">
+                <span>Novo por aqui?</span>
+                <a href="{% url 'logistica:register' %}" class="btn-create-account">
+                    <i class="fa fa-user-plus"></i> Criar Conta
+                </a>
+            </div>
+
+
             <button type="submit" class="login-button">Entrar</button>
-            <p class="link-register">Não tem cadastro?&nbsp;<a href="{% url 'logistica:register' %}">Crie sua conta</a></p>
+            <p class="link-forgot">
+                <a href="#">Esqueceu sua senha?</a>
+            </p>
         </form>
     </div>
 </body>
+
 </html>

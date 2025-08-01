@@ -25,7 +25,7 @@ DATABASES = {
         'NAME': 'arancia_db',
         'USER': 'sa',
         'PASSWORD': 'Profeta_01',
-        'HOST': '192.168.0.220',  # ou o IP do servidor
+        'HOST': '192.168.0.219',  # ou o IP do servidor
         'PORT': '5432',       # padrão do PostgreSQL
     }
 }

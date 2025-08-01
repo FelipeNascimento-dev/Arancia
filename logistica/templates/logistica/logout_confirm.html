@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -6,22 +8,32 @@
 </head>
 
 <body>
-    <div class="abstract-left">
-        <div class="info-content">
-            <h2>C-Trends BPO!</h2>
-            <p>Soluções. Este é o nosso negocio!</p>
-            <ul>
-                <li>Call Center</li>
-                <li>Central Retenção</li>
-                <li>Cobrança</li>
-                <li>Operador Logístico</li>
-                <li>Caça Pos</li>
-                <li>SAC</li>
-            </ul>
+    <div class="left-panel">
+        <img class="logo-tela-login" src="{% static 'global/images/new_logo.png' %}" alt="logo arancia">
+        <p>Flowsistem!</p>
+        <div class="services">
+            <div class="service">
+                <img src="{% static 'global/images/call-center.png' %}" alt="logo"> Call Center
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/central-retencao.png' %}" alt="logo"> Central Retenção
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/cobranca.png' %}" alt="logo"> Cobrança
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/operador-logistico.png' %}" alt="logo"> Operador Logístico
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/caca-pos.png' %}" alt="logo"> Caça Pos
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/sac.png' %}" alt="logo"> SAC
+            </div>
         </div>
     </div>
-    <div class="container-logout">
-        <form method="post" class="form-logout" action="{% url 'logistica:logout' %}">
+    <div class="right-panel">
+        <form method="post" class="logout-box" action="{% url 'logistica:logout' %}">
             {% csrf_token %}
             <h2>Tem certeza que deseja sair?</h2>
             <br>
@@ -30,7 +42,7 @@
                 <a href="{% url 'logistica:index' %}" class="logout-cancel-button">Cancelar</a>
             </div>
         </form>
-    </div>
+    </div> 
 </body>
 
 </html>

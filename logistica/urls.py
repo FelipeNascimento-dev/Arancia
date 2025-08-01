@@ -1,4 +1,3 @@
-from .views import RegisterView
 from .views import UserLoginView
 from django.contrib.auth.views import LogoutView
 from django.urls import path
@@ -6,14 +5,14 @@ from .views import index, consulta_id_form, pre_recebimento, \
 recebimento, registrar_romaneio,consulta_id_table, consulta_result, \
 btn_voltar, estorno_result, reserva_equip, saida_campo, estorno_reserva, \
 cancelamento_saida_campo, consulta_ma84, btn_ma_voltar, consulta_ec01, btn_ec_voltar, \
-logout_confirm_view, logout_view
+logout_confirm_view, logout_view, registrar_usuario
 
 app_name = 'logistica'
 
 urlpatterns = [
     path('', index, name='index'),
     path('login/', UserLoginView.as_view(), name='login'),
-    path('register/', RegisterView.as_view(), name='register'),
+    path('register/', registrar_usuario, name='register'),
     path('logout/', logout_confirm_view, name='logout_confirm'),
     path('logout/confirm/', logout_view, name='logout'),
     path('consulta-id/', consulta_id_form, name='consulta_id_form'),

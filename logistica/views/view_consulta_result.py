@@ -1,7 +1,9 @@
 from ..forms.forms_consulta_result import ConsultaPreRecebimentoForm
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required
 
+@login_required(login_url='logistica:login')
 def buscar_dados(form):
     return [
         {
@@ -14,6 +16,7 @@ def buscar_dados(form):
     ]
 
 @csrf_protect
+@login_required(login_url='logistica:login')
 def consulta_result(request, tp_reg: str):
     id_pre_recebido = request.session.pop('id_pre_recebido', None)
     serial_inserido = request.session.pop('serial_recebido', None)
@@ -59,6 +62,7 @@ def consulta_result(request, tp_reg: str):
         'tp_reg': tp_reg,
     })
 
+@login_required(login_url='logistica:login')
 def btn_voltar(request, tp_reg):
     id_valor = request.POST.get('id') or request.GET.get('id')
     if tp_reg == '13':

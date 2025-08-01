@@ -9,27 +9,33 @@
     </div>
 
     <div class="items-nav-user">
-        <ul>
-            <li>
-                <a href="#" title="Perfil">
-                    <i class="fa fa-user"></i>
-                </a>
-            </li>
-            <li>
-                <a href="#" title="Configurações">
-                    <i class="fa fa-cog"></i>
-                </a>
-            </li>
-            <li>
-                <a href="#" title="Ajuda">
-                    <i class="fa fa-question-circle"></i>
-                </a>
-            </li>
-            <li>
-                <a href="#" title="Sair">
-                    <i class="fa fa-sign-out-alt"></i>
-                </a>
-            </li>
-        </ul>
+        <div class="user-dropdown">
+            <button class="user-dropdown-toggle" onclick="toggleUserDropdown()">
+                <i class="fa fa-user"></i>
+                <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+                <i class="fa fa-chevron-down arrow-icon"></i>
+            </button>
+
+            <ul class="user-dropdown-menu" id="userDropdownMenu">
+                <li><a href="#"><i class="fa fa-cog"></i> Configurações</a></li>
+                <li><a href="#"><i class="fa fa-question-circle"></i> Ajuda</a></li>
+                <li><a href="{% url 'logistica:logout_confirm' %}"><i class="fa fa-sign-out-alt"></i> Sair</a></li>
+            </ul>
+        </div>
     </div>
 </div>
+
+<script>
+    function toggleUserDropdown() {
+        const menu = document.getElementById('userDropdownMenu');
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    document.addEventListener('click', function (e) {
+        const button = document.querySelector('.user-dropdown-toggle');
+        const menu = document.getElementById('userDropdownMenu');
+        if (!button.contains(e.target) && !menu.contains(e.target)) {
+            menu.style.display = 'none';
+        }
+    });
+</script>

@@ -1,7 +1,9 @@
 from ..forms import EstornoReservaForms
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required
 
+@login_required(login_url='logistica:login')
 def buscar_dados(form):
     return [
         {
@@ -14,6 +16,7 @@ def buscar_dados(form):
     ]
 
 @csrf_protect
+@login_required(login_url='logistica:login')
 def estorno_reserva(request):
     serial_inserido = request.session.pop('serial_recebido', None)
 
