@@ -1,9 +1,10 @@
 from ..forms import ConsultaResultMA84Form
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_protect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 
 @login_required(login_url='logistica:login')
+@permission_required('logistica.usuario_credenciado', raise_exception=True)
 def buscar_dados(form):
     return [
         {
@@ -17,6 +18,7 @@ def buscar_dados(form):
 
 @csrf_protect
 @login_required(login_url='logistica:login')
+@permission_required('logistica.usuario_credenciado', raise_exception=True)
 def consulta_ma84(request, tp_reg: str):
     id_pre_recebido = request.session.pop('id_pre_recebido', None)
     serial_inserido = request.session.pop('serial_recebido', None)
@@ -61,6 +63,7 @@ def consulta_ma84(request, tp_reg: str):
     })
 
 @login_required(login_url='logistica:login')
+@permission_required('logistica.usuario_credenciado', raise_exception=True)
 def btn_ma_voltar(request, tp_reg):
     id_valor = request.POST.get('id') or request.GET.get('id')
     print(tp_reg)

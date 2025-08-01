@@ -55,11 +55,15 @@ class GroupAditionalInformation(models.Model):
     def __str__(self):
         return f"{self.group.name} - Contato"
 
-class Permition(models.Model):
+class PermissaoUsuarioDummy(models.Model):
     class Meta:
         verbose_name = "Transporte | Permissão de Usuario"
         verbose_name_plural = "Transporte | Permissões de Usuários"
         permissions = [
             ("pode_gerenciar_usuarios", "Pode gerenciar usuários"),
             ("pode_gerenciar_grupos", "Pode gerenciar grupos"),
+            ("usuario_credenciado", "Usuário credenciado"),
+            ("pode_acessar_fulfillment","Pode acessar Fulfillment"),
         ]
+    def __str__(self):
+        return "Permissões personalizadas"
