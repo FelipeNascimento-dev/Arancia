@@ -4,12 +4,11 @@ from utils.request import RequestClient
 from django.contrib.auth.decorators import login_required, permission_required
 
 @login_required(login_url='logistica:login')
-@permission_required('logistica.pode_visualizar_telas', raise_exception=True)
+@permission_required('logistica.usuario_credenciado', raise_exception=True)
 def pre_recebimento(request):
     if request.method == 'POST':
         form = PreRecebimentoForm(request.POST)
         if form.is_valid():
-            # Obtendo os dados do formulário
             id_inserido = form.cleaned_data.get('id')
             qtde_vol_inserida = form.cleaned_data.get('qtde_vol')
             centro_origem_inserido = form.cleaned_data.get(
@@ -19,11 +18,9 @@ def pre_recebimento(request):
             deposito_destino_inserido = form.cleaned_data.get(
                 'deposito_destino')
 
-            # Armazenando os dados na sessão
             request.session['id_pre_recebido'] = id_inserido
             request.session['origem'] = 'pre-recebimento'
 
-            # Enviando os dados para a API
             request_client = RequestClient(
                 url='http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/mo/13',
                 method='POST',
@@ -40,7 +37,6 @@ def pre_recebimento(request):
             )
             result = request_client.send_api_request()
             if result.get('status_code') != 200:
-                # Se a requisição falhar, exibe uma mensagem de erro
                 form.add_error(
                     None, 'Atenção: {}'.format(result.get('detail')))
                 return render(request, 'logistica/pre_recebimento.html', {'form': form})
@@ -52,7 +48,7 @@ def pre_recebimento(request):
     return render(request, 'logistica/pre_recebimento.html', {'form': form})
 
 @login_required(login_url='logistica:login')
-@permission_required('logistica.pode_visualizar_telas', raise_exception=True)
+@permission_required('logistica.usuario_credenciado', raise_exception=True)
 def recebimento(request):
     if request.method == 'POST':
         form = RecebimentoForm(request.POST)

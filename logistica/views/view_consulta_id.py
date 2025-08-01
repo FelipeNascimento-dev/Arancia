@@ -4,7 +4,7 @@ from utils.request import RequestClient
 from django.contrib.auth.decorators import login_required, permission_required
 
 @login_required(login_url='logistica:login')
-@permission_required('logistica.pode_visualizar_telas', raise_exception=True)
+@permission_required('logistica.usuario_credenciado', raise_exception=True)
 def consulta_id_form(request):
     form = ConsultaForm()
     exibir_formulario = True
@@ -35,7 +35,7 @@ def consulta_id_form(request):
     return render(request, 'logistica/consulta_id_form.html', context)
 
 @login_required(login_url='logistica:login')
-@permission_required('logistica.pode_visualizar_telas', raise_exception=True)
+@permission_required('logistica.usuario_credenciado', raise_exception=True)
 def consulta_id_table(request, id):
     tabela_dados = request.session.get('tabela_dados')
     exibir_formulario = False
