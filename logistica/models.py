@@ -37,7 +37,7 @@ class PontoAtendimentoInfo(models.Model):
         return f"{self.group.name} - {self.endereco}"
 
 class GroupAditionalInformation(models.Model):
-    group = models.OneToOneField(Group, on_delete=models.CASCADE, related_name='informacoes_adicionais')
+    group = models.ManyToManyField(Group, related_name='informacoes_adicionais')
     logradouro = models.CharField(max_length=255, verbose_name="Logradouro", blank=True, null=True)
     numero = models.CharField(max_length=10, verbose_name="Número", blank=True, null=True)
     complemento = models.CharField(max_length=100, verbose_name="Complemento", blank=True, null=True)
@@ -54,7 +54,7 @@ class GroupAditionalInformation(models.Model):
 
     def __str__(self):
         return f"{self.group.name} - Contato"
-
+    
 class PermissaoUsuarioDummy(models.Model):
     class Meta:
         verbose_name = "Transporte | Permissão de Usuario"
