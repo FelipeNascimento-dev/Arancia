@@ -26,5 +26,5 @@ class PontoAtendimentoInfoAdmin(admin.ModelAdmin):
 
 @admin.register(GroupAditionalInformation)
 class GroupAditionalInformationAdmin(admin.ModelAdmin):
-    list_display = ('group', 'cidade', 'estado', 'email', 'telefone1')
+    list_display = ('group', 'nome', 'cidade', 'estado', 'email', 'telefone1')
     search_fields = ('group__name', 'cidade', 'estado', 'email', 'responsavel')
