@@ -194,28 +194,52 @@
 }
 
 .register-login-container {
-  margin-top: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.95rem;
-  justify-content: center;
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    justify-content: center;
 }
 
 .btn-login-link {
-  padding: 8px 16px;
-  background-color: #2c3e50;
-  color: #fff;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: background 0.3s ease;
+    padding: 8px 16px;
+    background-color: #2c3e50;
+    color: #fff;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.3s ease;
 }
 
 .btn-login-link:hover {
-  background-color: #1a252f;
+    background-color: #1a252f;
+}
+
+.register-field textarea {
+    width: 100%;
+    padding: 12px 12px 12px 38px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+    resize: vertical;
+    transition: border-color 0.3s;
+    min-height: 100px;
+}
+
+.register-field textarea:focus {
+    border-color: #2c3e50;
+    outline: none;
+}
+
+.register-field textarea:focus+label,
+.register-field textarea:not(:placeholder-shown)+label {
+    top: -10px;
+    font-size: 12px;
+    color: #2c3e50;
 }
