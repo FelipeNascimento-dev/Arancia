@@ -53,7 +53,15 @@ class GroupAditionalInformation(models.Model):
     responsavel = models.CharField(max_length=100, verbose_name="Responsável", blank=True, null=True)
 
     def __str__(self):
-        return f"{self.group.name} - Contato" if self.group else "Sem grupo"
+        return f"{self.group.name}" if self.group else "Sem grupo"
+    
+
+class UserDesignation(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='designacao')
+    informacao_adicional = models.ForeignKey(GroupAditionalInformation, on_delete=models.SET_NULL, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.informacao_adicional}"
 
 class PermissaoUsuarioDummy(models.Model):
     class Meta:
