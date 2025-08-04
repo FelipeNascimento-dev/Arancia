@@ -1,15 +1,31 @@
-/* .register-left {
+.register-left {
     flex: 1;
     padding: 60px 40px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    background-color: #eaf3fa;
-    color: #2c3e50;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: white;
+    position: relative;
 }
 
 .logo-register {
     width: 300px;
+}
+
+.register-box img.logo-register {
+    display: block;
+    margin: 0 auto 20px auto;
+    width: 200px;
+}
+
+.register-service img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 
 .register-left p {
@@ -29,15 +45,15 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 1rem;
+    font-size: 1.2rem;
     font-weight: 500;
-    color: #2c3e50;
+    color: #000000;
     line-height: 1.4;
 }
 
 .register-service img {
-    width: 32px;
-    height: 32px;
+    width: 50px;
+    height: 50px;
     object-fit: contain;
     flex-shrink: 0;
 }
@@ -69,7 +85,7 @@
 
 .register-field {
     position: relative;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 .register-field i {
@@ -202,4 +218,4 @@
 
 .btn-login-link:hover {
   background-color: #1a252f;
-} */
+}

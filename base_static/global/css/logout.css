@@ -59,3 +59,9 @@
     border: 1.5px solid #2c3e50;
     text-decoration: none !important;
 }
+
+.logout-box img.logo-tela-login {
+    display: block;
+    margin: 0 auto 30px auto;
+    width: 280px; 
+}
