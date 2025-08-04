@@ -45,15 +45,15 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 1rem;
+    font-size: 1.2rem;
     font-weight: 500;
-    color: #2c3e50;
+    color: #000000;
     line-height: 1.4;
 }
 
 .register-service img {
-    width: 32px;
-    height: 32px;
+    width: 50px;
+    height: 50px;
     object-fit: contain;
     flex-shrink: 0;
 }
