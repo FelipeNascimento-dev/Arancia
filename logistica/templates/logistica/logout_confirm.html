@@ -8,8 +8,7 @@
 </head>
 
 <body>
-    <div class="left-panel">
-        <img class="logo-tela-login" src="{% static 'global/images/logo_flow.png' %}" alt="logo arancia">
+    <div class="left-panel" style="background-image: url('{% static "global/images/background.jpeg" %}');">
         <div class="services">
             <div class="service">
                 <img src="{% static 'global/images/call-center.png' %}" alt="logo"> Call Center
@@ -34,6 +33,7 @@
     <div class="right-panel">
         <form method="post" class="logout-box" action="{% url 'logistica:logout' %}">
             {% csrf_token %}
+            <img class="logo-tela-login" src="{% static 'global/images/logo_flow.png' %}" alt="logo arancia">
             <h2>Tem certeza que deseja sair?</h2>
             <br>
             <div class="logout-buttons">
