@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 @import url(navbar.css);
 @import url(login.css);
-/* @import url(logout.css);
-@import url(register.css); */
+@import url(logout.css);
+@import url(register.css);
 @import url(form_3col.css);
 @import url(form_2col.css);
 @import url(form_1col.css);
