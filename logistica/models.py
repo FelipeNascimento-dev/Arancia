@@ -12,7 +12,6 @@ class Romaneio(models.Model):
 
     def __str__(self):
         return f'Romaneio {self.numero}'
-    
 
 class ItemRomaneio(models.Model):
     romaneio = models.ForeignKey(Romaneio, on_delete=models.CASCADE, related_name='itens')
@@ -26,7 +25,7 @@ class ItemRomaneio(models.Model):
 
     def __str__(self):
         return f'Serial {self.serial} do {self.romaneio.numero}'
-    
+
 class PontoAtendimentoInfo(models.Model):
     group = models.OneToOneField(Group, on_delete=models.CASCADE, related_name='informacoes')
     endereco = models.CharField(max_length=255, verbose_name="Endereço")
@@ -54,7 +53,6 @@ class GroupAditionalInformation(models.Model):
 
     def __str__(self):
         return f"{self.group.name}" if self.group else "Sem grupo"
-    
 
 class UserDesignation(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='designacao')
@@ -71,7 +69,17 @@ class PermissaoUsuarioDummy(models.Model):
             ("pode_gerenciar_usuarios", "Pode gerenciar usuários"),
             ("pode_gerenciar_grupos", "Pode gerenciar grupos"),
             ("usuario_credenciado", "Usuário credenciado"),
-            ("pode_acessar_fulfillment","Pode acessar Fulfillment"),
+            ("pode_acessar_fulfillment", "Pode acessar Fulfillment"),
+            ("usuario_de_backoffice", "Usuário de Backoffice"),
+            ("usuario_de_logistica", "Usuário de Logística"),
+            ("usuario_de_transporte", "Usuário de Transporte"),
+            ("usuario_de_TI", "Usuário de TI"),
+            ("usuario_de_financeiro", "Usuário de Financeiro"),
+            ("usuario_de_PA", "Usuário de PA"),
+            ("usuario_administrador", "Usuário Administrador"),
+            ("usuario_de_gerencia", "Usuário de Gerência"),
+            ("usuario_de_supervisao", "Usuário de Supervisão"),
         ]
+
     def __str__(self):
         return "Permissões personalizadas"
