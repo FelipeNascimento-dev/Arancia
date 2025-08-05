@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
 
 @login_required(login_url='logistica:login')
+@permission_required('logistica.usuario_de_TI', raise_exception=True)
 @permission_required('logistica.usuario_credenciado', raise_exception=True)
 def buscar_dados(form):
     return [
@@ -18,6 +19,7 @@ def buscar_dados(form):
 
 @csrf_protect
 @login_required(login_url='logistica:login')
+@permission_required('logistica.usuario_de_TI', raise_exception=True)
 @permission_required('logistica.usuario_credenciado', raise_exception=True)
 def consulta_ec01(request, tp_reg: str):
     id_pre_recebido = request.session.pop('id_pre_recebido', None)
@@ -63,6 +65,7 @@ def consulta_ec01(request, tp_reg: str):
     })
 
 @login_required(login_url='logistica:login')
+@permission_required('logistica.usuario_de_TI', raise_exception=True)
 @permission_required('logistica.usuario_credenciado', raise_exception=True)
 def btn_ec_voltar(request, tp_reg):
     id_valor = request.POST.get('id') or request.GET.get('id')
