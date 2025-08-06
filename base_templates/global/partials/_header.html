@@ -52,10 +52,14 @@
                 <h5 class="submenu-toggle" data-target="estornos-sub">Entrada-Fulfillment</h5>
                 <div class="sub-submenu" id="estornos-sub">
                     <a href="{% url 'logistica:consulta_id_form' %}">Consulta ID</a>
-                    <a href="{% url 'logistica:pre_recebimento' %}">Pré-Recebimento</a>
-                    <a href="{% url 'logistica:recebimento' %}">Recebimento</a>
+                    <a href="{% url 'logistica:pre_recebimento' 13 %}">Pré-Recebimento</a>
+                    <a href="{% url 'logistica:recebimento' 15 %}">Recebimento</a>
                     <a href="{% url 'logistica:consulta_resultados' 0 %}">Consulta Resultados</a>
-                    <a href="{% url 'logistica:estorno' %}">Estornos</a>
+                    <h5 class="submenu-toggle" data-target="estornos-pre-sub">Estornos</h5>
+                    <div class="sub-submenu" id="estornos-pre-sub">
+                        <a href="{% url 'logistica:pre_recebimento' 14 %}">Estorno de Pré-Recebimento</a>
+                        <a href="{% url 'logistica:recebimento' 16 %}">Estorno de Recebimento</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -103,4 +107,4 @@
     </div>
 </div>
 
-    <script src="{% static 'global/javascript/script.js' %}"></script>
+<script src="{% static 'global/javascript/script.js' %}"></script>

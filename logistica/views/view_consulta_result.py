@@ -4,7 +4,6 @@ from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
 
-
 def buscar_dados(tp_reg,id_pre_recebido,serial_inserido):
 
     request_api = RequestClient(
