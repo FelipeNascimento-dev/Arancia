@@ -3,15 +3,6 @@ from ..forms import PreRecebimentoForm, RecebimentoForm
 from utils.request import RequestClient
 from django.contrib.auth.decorators import login_required, permission_required
 
-def enviar_para_api(tp_reg, payload):
-    request_client = RequestClient(
-        url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/mo/{tp_reg}',
-        method='POST',
-        headers={'Content-Type': 'application/json'},
-        request_data=payload
-    )
-    request_client.send_api_request()
-
 @login_required(login_url='logistica:login')
 @permission_required('logistica.usuario_de_TI', raise_exception=True)
 @permission_required('logistica.usuario_credenciado', raise_exception=True)
@@ -21,20 +12,32 @@ def pre_recebimento(request, tp_reg):
         form = PreRecebimentoForm(request.POST, nome_form=titulo)
         if form.is_valid():
             id_inserido = form.cleaned_data.get('id')
-            payload = {
-                "id_lote": id_inserido,
-                "nr_controle_transp": id_inserido,
-                "qtde_vol": form.cleaned_data.get('qtde_vol'),
-                "centro_origem": form.cleaned_data.get('centro_origem'),
-                "deposito_origem": form.cleaned_data.get('deposito_origem'),
-                "centro_destino": form.cleaned_data.get('centro_destino'),
-                "deposito_destino": form.cleaned_data.get('deposito_destino'),
-            }
+            qtde_vol_inserida = form.cleaned_data.get('qtde_vol')
+            centro_origem_inserido = form.cleaned_data.get(
+                'centro_origem')
+            deposito_origem_inserido = form.cleaned_data.get('deposito_origem')
+            centro_destino_inserido = form.cleaned_data.get('centro_destino')
+            deposito_destino_inserido = form.cleaned_data.get(
+                'deposito_destino')
 
             request.session['id_pre_recebido'] = id_inserido
             request.session['origem'] = 'pre-recebimento'
+            request_client = RequestClient(
+                url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/mo/{tp_reg}',
+                method='POST',
+                headers={'Content-Type': 'application/json'},
+                request_data={
+                    "id_lote": id_inserido,
+                    "nr_controle_transp": id_inserido,
+                    "qtde_vol": qtde_vol_inserida,
+                    "centro_origem": centro_origem_inserido,
+                    "deposito_origem": deposito_origem_inserido,
+                    "centro_destino": centro_destino_inserido,
+                    "deposito_destino": deposito_destino_inserido
+                }
+            )
+            request_client.send_api_request()
 
-            enviar_para_api(tp_reg, payload)
             return redirect('logistica:consulta_resultados', tp_reg=tp_reg)
     else:
         form = PreRecebimentoForm(nome_form=titulo)
@@ -52,10 +55,34 @@ def recebimento(request, tp_reg):
         if form.is_valid():
             id_inserido = form.cleaned_data.get('id')
             serial_inserido = form.cleaned_data.get('serial')
+            qtde_vol_inserida = form.cleaned_data.get('qtde_vol')
+            centro_origem_inserido = form.cleaned_data.get(
+                'centro_origem')
+            deposito_origem_inserido = form.cleaned_data.get('deposito_origem')
+            centro_destino_inserido = form.cleaned_data.get('centro_destino')
+            deposito_destino_inserido = form.cleaned_data.get(
+                'deposito_destino')
 
             request.session['id_pre_recebido'] = id_inserido
             request.session['origem'] = 'recebimento'
             request.session['serial_recebido'] = serial_inserido
+
+            request_client = RequestClient(
+                url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/mo/{tp_reg}',
+                method='POST',
+                headers={'Content-Type': 'application/json'},
+                request_data={
+                    "id_lote": id_inserido,
+                    "nr_controle_transp": id_inserido,
+                    "serge": serial_inserido,
+                    "qtde_vol": qtde_vol_inserida,
+                    "centro_origem": centro_origem_inserido,
+                    "deposito_origem": deposito_origem_inserido,
+                    "centro_destino": centro_destino_inserido,
+                    "deposito_destino": deposito_destino_inserido
+                }
+            )
+            request_client.send_api_request()
 
             return redirect('logistica:consulta_resultados', tp_reg=tp_reg)
     else:
