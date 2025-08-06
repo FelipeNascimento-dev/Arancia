@@ -1,19 +1,21 @@
 from ..forms.forms_consulta_result import ConsultaPreRecebimentoForm
+from utils.request import RequestClient
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
 
 
-def buscar_dados(form):
+def buscar_dados(tp_reg,id_pre_recebido,serial_inserido):
+
+    request_api = RequestClient(
+                headers={'Content-Type': 'application/json'},
+                method='get',
+                url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/mo/{tp_reg}/?id_lote={id_pre_recebido}&serge={serial_inserido}',
+            )
+    response = request_api.send_api_request()
     
     return [
-        {
-            'nr_arq': '123456',
-            'mensagem': 'sem erro',
-            'status': 'Enviado',
-            'data': '01/01/2025',
-            'hora': '12:00:00',
-        }
+        response
     ]
 
 @csrf_protect
@@ -57,7 +59,7 @@ def consulta_result(request, tp_reg: str):
 
         form = ConsultaPreRecebimentoForm(initial=initial_data)
 
-    dados = buscar_dados(form) if mostrar_tabela else None
+    dados = buscar_dados(tp_reg,id_pre_recebido,serial_inserido) if mostrar_tabela else None
 
     return render(request, 'logistica/consulta_result.html', {
         'form': form,
