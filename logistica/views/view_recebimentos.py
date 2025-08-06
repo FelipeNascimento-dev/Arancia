@@ -28,7 +28,7 @@ def pre_recebimento(request):
                 headers={'Content-Type': 'application/json'},
                 request_data={
                     "id_lote": id_inserido,
-                    "nr_controle_transp": "1234",
+                    "nr_controle_transp": id_inserido,
                     "qtde_vol": qtde_vol_inserida,
                     "centro_origem": centro_origem_inserido,
                     "deposito_origem": deposito_origem_inserido,
@@ -36,12 +36,8 @@ def pre_recebimento(request):
                     "deposito_destino": deposito_destino_inserido
                 }
             )
-            result = request_client.send_api_request()
-            if result.get('status_code') != 200:
-                form.add_error(
-                    None, 'Atenção: {}'.format(result.get('detail')))
-                return render(request, 'logistica/pre_recebimento.html', {'form': form})
-
+            request_client.send_api_request()
+            
             return redirect('logistica:consulta_resultados', tp_reg='13')
     else:
         form = PreRecebimentoForm()

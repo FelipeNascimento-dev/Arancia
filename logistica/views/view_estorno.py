@@ -40,6 +40,8 @@ def estorno_result(request):
             request.session['origem'] = 'estorno_result'
             request.session['mostrar_tabela'] = True
 
+            
+
             return redirect('logistica:consulta_resultados', tp_reg='16')
 
     else:
