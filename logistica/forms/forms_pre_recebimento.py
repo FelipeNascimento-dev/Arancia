@@ -2,8 +2,6 @@ from django import forms
 
 
 class PreRecebimentoForm(forms.Form):
-    nome_formulario = 'Pré-Recebimento'
-
     id = forms.CharField(label='ID', max_length=20, required=True)
 
     qtde_vol = forms.IntegerField(
@@ -56,3 +54,7 @@ class PreRecebimentoForm(forms.Form):
         ],
         required=True
     )
+
+    def __init__(self, *args, nome_form=None, **kwargs):
+        self.nome_formulario = nome_form or "Definir nome do formulário"
+        super().__init__(*args, **kwargs)
