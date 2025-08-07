@@ -1,20 +1,19 @@
 from ..forms import ConsultaResultEC01Form
+from utils.request import RequestClient
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
 
-@login_required(login_url='logistica:login')
-@permission_required('logistica.usuario_de_TI', raise_exception=True)
-@permission_required('logistica.usuario_credenciado', raise_exception=True)
-def buscar_dados(form):
+def buscar_dados(tp_reg, serial):
+    request_api = RequestClient(
+                headers={'Content-Type': 'application/json'},
+                method='get',
+                url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ec/{tp_reg}/{serial}',
+            )
+    response = request_api.send_api_request()
+    
     return [
-        {
-            'nr_arq': '123456',
-            'mensagem': 'sem erro',
-            'status': 'Enviado',
-            'data': '01/01/2025',
-            'hora': '12:00:00',
-        }
+        response
     ]
 
 @csrf_protect
