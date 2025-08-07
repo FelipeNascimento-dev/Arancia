@@ -8,7 +8,7 @@
       </div>
       
       <div class="etapa {% if etapa_ativa == 'reserva' %}ativa{% endif %}">
-        <a href="{% url 'logistica:reserva_equip' %}">Reserva</a>
+        <a href="{% url 'logistica:reserva_equip' 84 %}">Reserva</a>
       </div>
 
       <div class="etapa {% if etapa_ativa == 'consulta_result_ma' %}ativa{% endif %}">
@@ -24,7 +24,7 @@
       </div>
 
       <div class="etapa {% if etapa_ativa == 'saida_campo' %}ativa{% endif %}">
-        <a href="{% url 'logistica:saida_campo' %}">Saída</a>
+        <a href="{% url 'logistica:saida_campo' 01 %}">Saída</a>
       </div>
 
       <div class="etapa {% if etapa_ativa == 'consulta_result_ec' %}ativa{% endif %}">

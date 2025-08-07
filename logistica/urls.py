@@ -2,8 +2,8 @@ from .views import UserLoginView
 from django.contrib.auth.views import LogoutView
 from django.urls import path
 from .views import index, consulta_id_form, pre_recebimento, \
-recebimento, registrar_romaneio,consulta_id_table, consulta_result, \
-btn_voltar, reserva_equip, saida_campo, estorno_reserva, \
+recebimento, registrar_romaneio, consulta_id_table, consulta_result, \
+btn_voltar, reserva_equip, saida_campo, \
 cancelamento_saida_campo, consulta_ma84, btn_ma_voltar, consulta_ec01, btn_ec_voltar, \
 logout_confirm_view, logout_view, registrar_usuario
 
@@ -23,10 +23,10 @@ urlpatterns = [
     path('estorno/<str:tp_reg>/', recebimento, name='estorno_recebimento'),
     path('consulta/resultados/<str:tp_reg>/', consulta_result, name='consulta_resultados'),
     path('consulta/resultados/<str:tp_reg>/voltar/', btn_voltar, name='btn_voltar'),
-    path('reserva-equip/', reserva_equip, name='reserva_equip'),
-    path('saida-campo/', saida_campo, name='saida_campo'),
-    path('estorno/reserva-equip/', estorno_reserva, name='estorno_reserva'),
-    path('cancelamento/saida-campo/', cancelamento_saida_campo, name='cancelamento_saida_campo'),
+    path('reserva-equip/<str:tp_reg>/', reserva_equip, name='reserva_equip'),
+    path('estorno/reserva-equip/<str:tp_reg>/', reserva_equip, name='estorno_reserva'),
+    path('saida-campo/<str:tp_reg>/', saida_campo, name='saida_campo'),
+    path('cancelamento/saida-campo/<str:tp_reg>/', cancelamento_saida_campo, name='cancelamento_saida_campo'),
     path('consulta-ma/<str:tp_reg>/', consulta_ma84, name='consulta_result_ma'),
     path('consulta-ma/<str:tp_reg>/voltar/', btn_ma_voltar, name='btn_ma_voltar'),
     path('consulta-ec/<str:tp_reg>/', consulta_ec01, name='consulta_result_ec'),
