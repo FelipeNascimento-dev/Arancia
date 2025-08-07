@@ -1,4 +1,5 @@
 from ..forms import ReservaEquipamentosForm
+from utils.request import RequestClient
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, permission_required
 
@@ -12,8 +13,24 @@ def reserva_equip(request, tp_reg):
         if form.is_valid():
             centro = form.cleaned_data.get('centro')
             deposito = form.cleaned_data.get('deposito')
+            serial = form.cleaned_data.get('serial')
+
+            request.session['serge'] = serial
             request.session['centro'] = centro
             request.session['deposito'] = deposito
+
+            request_client = RequestClient(
+                url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ma/{tp_reg}',
+                method='POST',
+                headers={'Content-Type': 'application/json'},
+                request_data={
+                    "serge": serial,
+                    "centro": centro,
+                    "deposito": deposito
+                }
+            )
+            request_client.send_api_request()
+
             return redirect('logistica:consulta_result_ma', tp_reg=tp_reg)
     else:
         form = ReservaEquipamentosForm(nome_form=titulo)
