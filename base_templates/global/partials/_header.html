@@ -54,7 +54,7 @@
                     <a href="{% url 'logistica:consulta_id_form' %}">Consulta ID</a>
                     <a href="{% url 'logistica:pre_recebimento' 13 %}">Pré-Recebimento</a>
                     <a href="{% url 'logistica:recebimento' 15 %}">Recebimento</a>
-                    <a href="{% url 'logistica:consulta_resultados' 0 %}">Consulta Resultados</a>
+                    <a href="{% url 'logistica:consulta_resultados' %}">Consulta Resultados</a>
                     <h5 class="submenu-toggle" data-target="estornos-pre-sub">Estornos</h5>
                     <div class="sub-submenu" id="estornos-pre-sub">
                         <a href="{% url 'logistica:pre_recebimento' 14 %}">Estorno de Pré-Recebimento</a>
@@ -74,12 +74,12 @@
                 <h5 class="submenu-toggle" data-target="reserva-sub">Reserva de equipamento</h5>
                 <div class="sub-submenu" id="reserva-sub">
                     <a href="{% url 'logistica:reserva_equip' 84 %}">Reserva</a>
-                    <a href="{% url 'logistica:consulta_result_ma' 0 %}">Consulta</a>
+                    <a href="{% url 'logistica:consulta_result_ma' %}">Consulta</a>
                 </div>
                 <h5 class="submenu-toggle" data-target="saida-sub">Saída para Campo</h5>
                 <div class="sub-submenu" id="saida-sub">
                     <a href="{% url 'logistica:saida_campo' 1 %}">Saída</a>
-                    <a href="{% url 'logistica:consulta_result_ec' 0 %}">Consulta</a>
+                    <a href="{% url 'logistica:consulta_result_ec' %}">Consulta</a>
                 </div>
                 <h5 class="submenu-toggle" data-target="estornos-saida-reserva">Estornos</h5>
                 <div class="sub-submenu" id="estornos-saida-reserva">
