@@ -1,10 +1,11 @@
 from ..forms.forms_consulta_result import ConsultaPreRecebimentoForm
 from utils.request import RequestClient
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
 
-def buscar_dados(tp_reg,id_pre_recebido,serial_inserido):
+def buscar_dados(request,tp_reg,id_pre_recebido,serial_inserido):
 
     request_api = RequestClient(
                 headers={'Content-Type': 'application/json'},
@@ -21,44 +22,58 @@ def buscar_dados(tp_reg,id_pre_recebido,serial_inserido):
 @login_required(login_url='logistica:login')
 @permission_required('logistica.usuario_de_TI', raise_exception=True)
 @permission_required('logistica.usuario_credenciado', raise_exception=True)
-def consulta_result(request, tp_reg: str):
-    id_pre_recebido = request.session.pop('id_pre_recebido', None)
-    serial_inserido = request.session.pop('serial_recebido', None)
-    origem = request.session.pop('origem', None)
-    mostrar_tabela = request.session.pop('mostrar_tabela', False)
+def consulta_result(request):
+    id_pre_recebido = request.session.get('id_pre_recebido')
+    serial_inserido = request.session.get('serial_recebido')
+    origem = request.session.get('origem')
+    mostrar_tabela = request.session.get('mostrar_tabela', False)
 
     if request.method == 'POST':
         form = ConsultaPreRecebimentoForm(request.POST)
 
         if form.data.get('tp_reg') in ('15', '16') and form.data.get('serial') == '':
             form.add_error('serial', 'O serial não pode ser vazio para essa mensagem.')
-            return render(request, 'logistica/consulta_result.html', {'form': form})
+            return render(request, 'logistica/consulta_result.html', {
+                'form': form,
+                'tabela_dados': None,
+                'tp_reg': form.data.get('tp_reg', '')
+            })
 
         if form.is_valid():
             novo_tp_reg = form.cleaned_data['tp_reg']
+            serial = form.cleaned_data.get('serial', '')
+
+            request.session['tp_reg'] = novo_tp_reg
             request.session['id_pre_recebido'] = form.cleaned_data.get('id', '')
-            request.session['serial_recebido'] = form.cleaned_data.get('serial', '')
+            request.session['serial_recebido'] = serial
             request.session['origem'] = 'consulta_result'
             request.session['mostrar_tabela'] = True
 
-            return redirect('logistica:consulta_resultados', tp_reg=novo_tp_reg)
+            return redirect('logistica:consulta_resultados')
 
     else:
-        initial_data = {'tp_reg': tp_reg}
+        initial_data = {}
+        tp_reg = request.session.get('tp_reg', '')
+
         if id_pre_recebido:
             initial_data['id'] = id_pre_recebido
+
         if origem == 'pre-recebimento':
             initial_data['tp_reg'] = '13'
         elif origem == 'recebimento':
             initial_data['tp_reg'] = '15'
             initial_data['serial'] = serial_inserido
         elif origem == 'estorno_result':
-            dados_estorno = request.session.pop('dados_estorno', {})
+            dados_estorno = request.session.get('dados_estorno', {})
             initial_data.update(dados_estorno)
 
         form = ConsultaPreRecebimentoForm(initial=initial_data)
 
-    dados = buscar_dados(tp_reg,id_pre_recebido,serial_inserido) if mostrar_tabela else None
+    try:
+        dados = buscar_dados(request, tp_reg, id_pre_recebido, serial_inserido) if mostrar_tabela else None
+    except Exception as e:
+        messages.error(request, "Erro ao enviar requisição")
+        dados = None
 
     return render(request, 'logistica/consulta_result.html', {
         'form': form,
@@ -69,17 +84,27 @@ def consulta_result(request, tp_reg: str):
 @login_required(login_url='logistica:login')
 @permission_required('logistica.usuario_de_TI', raise_exception=True)
 @permission_required('logistica.usuario_credenciado', raise_exception=True)
-def btn_voltar(request, tp_reg):
+def btn_voltar(request):
+    tp_reg = (
+        request.POST.get('tp_reg') or
+        request.GET.get('tp_reg') or
+        request.session.get('tp_reg')
+    )
     id_valor = request.POST.get('id') or request.GET.get('id')
+
     if tp_reg == '13':
-        return redirect('logistica:pre_recebimento')
+        return redirect('logistica:pre_recebimento', tp_reg=tp_reg)
     elif tp_reg == '15':
         if id_valor:
             request.session['id_pre_recebido'] = id_valor
-        return redirect('logistica:recebimento')
-    elif tp_reg in ('14', '16'):
+        return redirect('logistica:recebimento', tp_reg=tp_reg)
+    elif tp_reg == '14':
         if id_valor:
             request.session['id_pre_recebido'] = id_valor
-        return redirect('logistica:estorno')
+        return redirect('logistica:estorno_recebimento', tp_reg=tp_reg)
+    elif tp_reg ==  '16':
+        if id_valor:
+            request.session['id_pre_recebido'] = id_valor
+        return redirect('logistica:estorno_pre_recebimento', tp_reg=tp_reg)
     else:
-        return redirect('logistica:consulta_resultados', tp_reg=tp_reg)
+        return redirect('logistica:consulta_resultados')

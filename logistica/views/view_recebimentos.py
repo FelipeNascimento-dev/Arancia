@@ -38,7 +38,7 @@ def pre_recebimento(request, tp_reg):
             )
             request_client.send_api_request()
 
-            return redirect('logistica:consulta_resultados', tp_reg=tp_reg)
+            return redirect('logistica:consulta_resultados')
     else:
         form = PreRecebimentoForm(nome_form=titulo)
 
@@ -67,6 +67,7 @@ def recebimento(request, tp_reg):
             request.session['origem'] = 'recebimento'
             request.session['serial_recebido'] = serial_inserido
 
+            print(qtde_vol_inserida)
             request_client = RequestClient(
                 url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/mo/{tp_reg}',
                 method='POST',
@@ -84,7 +85,7 @@ def recebimento(request, tp_reg):
             )
             request_client.send_api_request()
 
-            return redirect('logistica:consulta_resultados', tp_reg=tp_reg)
+            return redirect('logistica:consulta_resultados')
     else:
         id_inserido = request.session.get('id_pre_recebido')
         initial_data = {'id': id_inserido} if id_inserido else {}
