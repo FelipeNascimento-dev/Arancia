@@ -5,11 +5,11 @@ from django.contrib.auth.decorators import login_required, permission_required
 @login_required(login_url='logistica:login')
 @permission_required('logistica.usuario_de_TI', raise_exception=True)
 @permission_required('logistica.usuario_credenciado', raise_exception=True)
-def saida_campo(request):
+def saida_campo(request, tp_reg):
+    titulo = 'Saida para Campo' if tp_reg == '1' else 'Cancelamento de Saida para Campo'
     if request.method == 'POST':
-        form = SaidaCampoForm(request.POST)
+        form = SaidaCampoForm(request.POST, nome_form=titulo)
         if form.is_valid():
-            print('x'*100)
             serial = form.cleaned_data.get('serial')
             gtec = form.cleaned_data.get('gtec')
             centro = form.cleaned_data.get('centro')
@@ -18,10 +18,9 @@ def saida_campo(request):
             request.session['gtec'] = gtec
             request.session['centro'] = centro
             request.session['deposito'] = deposito
-            print('-'*100)
-            return redirect('logistica:consulta_result_ec', tp_reg='84')
+            return redirect('logistica:consulta_result_ec', tp_reg=tp_reg)
     else:
-        form = SaidaCampoForm()
+        form = SaidaCampoForm(nome_form=titulo)
     
     return render(request, 'logistica/saida_campo.html', {
         'form': form,

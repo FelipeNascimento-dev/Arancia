@@ -73,18 +73,18 @@
             <div class="dropdown-content">
                 <h5 class="submenu-toggle" data-target="reserva-sub">Reserva de equipamento</h5>
                 <div class="sub-submenu" id="reserva-sub">
-                    <a href="{% url 'logistica:reserva_equip' %}">Reserva</a>
+                    <a href="{% url 'logistica:reserva_equip' 84 %}">Reserva</a>
                     <a href="{% url 'logistica:consulta_result_ma' 0 %}">Consulta</a>
                 </div>
                 <h5 class="submenu-toggle" data-target="saida-sub">Saída para Campo</h5>
                 <div class="sub-submenu" id="saida-sub">
-                    <a href="{% url 'logistica:saida_campo' %}">Saída</a>
+                    <a href="{% url 'logistica:saida_campo' 1 %}">Saída</a>
                     <a href="{% url 'logistica:consulta_result_ec' 0 %}">Consulta</a>
                 </div>
                 <h5 class="submenu-toggle" data-target="estornos-saida-reserva">Estornos</h5>
                 <div class="sub-submenu" id="estornos-saida-reserva">
-                    <a href="{% url 'logistica:estorno_reserva' %}">Estorno Reserva de Equipamento</a>
-                    <a href="{% url 'logistica:cancelamento_saida_campo' %}">Estorno Saida para Campo</a>
+                    <a href="{% url 'logistica:estorno_reserva' 85 %}">Estorno Reserva de Equipamento</a>
+                    <a href="{% url 'logistica:cancelamento_saida_campo' 2 %}">Estorno Saida para Campo</a>
                 </div>
             </div>
         </div>
