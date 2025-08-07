@@ -6,6 +6,5 @@ from .forms_consulta_result import ConsultaPreRecebimentoForm
 from .forms_estorno import EstornoForm
 from .forms_reserva_equip import ReservaEquipamentosForm
 from .forms_saida_campo import SaidaCampoForm
-from .forms_cancelamento_saida import CancelamentoSaidaCampoForm
 from .forms_consulta_result_ma84 import ConsultaResultMA84Form
 from .forms_consulta_result_ec01 import ConsultaResultEC01Form
