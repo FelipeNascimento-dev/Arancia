@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 @permission_required('logistica.usuario_de_TI', raise_exception=True)
 @permission_required('logistica.usuario_credenciado', raise_exception=True)
 def reserva_equip(request, tp_reg):
-    titulo = 'Reserva de Equipamento' if tp_reg == '84' else 'Estorno Reserva de Equipamento'
+    titulo = 'SAP - Reserva de Equipamento' if tp_reg == '84' else 'SAP - Estorno Reserva de Equipamento'
     if request.method == 'POST':
         form = ReservaEquipamentosForm(request.POST, nome_form=titulo)
         if form.is_valid():
@@ -31,11 +31,12 @@ def reserva_equip(request, tp_reg):
             )
             request_client.send_api_request()
 
-            return redirect('logistica:consulta_result_ma', tp_reg=tp_reg)
+            return redirect('logistica:consulta_result_ma')
     else:
         form = ReservaEquipamentosForm(nome_form=titulo)
     
     return render(request, 'logistica/reserva_equip.html', {
         'form': form,
-        'etapa_ativa': 'reserva'
+        'etapa_ativa': 'reserva',
+        'botao_texto': 'Enviar',
         })

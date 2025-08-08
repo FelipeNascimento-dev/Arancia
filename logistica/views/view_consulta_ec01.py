@@ -52,7 +52,8 @@ def consulta_ec01(request):
                 'form': form,
                 'tabela_dados': dados,
                 'etapa_ativa': 'consulta_result_ec',
-                'tp_reg': tp_reg
+                'tp_reg': tp_reg,
+                'botao_texto': 'Consultar',
             })
 
     else:
@@ -72,6 +73,7 @@ def consulta_ec01(request):
         'tabela_dados': None,
         'etapa_ativa': 'consulta_result_ec',
         'tp_reg': initial_data.get('tp_reg', ''),
+        'botao_texto': 'Consultar',
     })
 
 @login_required(login_url='logistica:login')

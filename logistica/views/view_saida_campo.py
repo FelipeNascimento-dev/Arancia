@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 @permission_required('logistica.usuario_de_TI', raise_exception=True)
 @permission_required('logistica.usuario_credenciado', raise_exception=True)
 def saida_campo(request, tp_reg:str):
-    titulo = 'Saida para Campo' if tp_reg == '1' else 'Cancelamento de Saida para Campo'
+    titulo = 'SAP - Saida para Campo' if tp_reg == '1' else 'SAP - Cancelamento de Saida para Campo'
     tp_reg_new = tp_reg.zfill(2)
     if request.method == 'POST':
         form = SaidaCampoForm(request.POST, nome_form=titulo)
@@ -54,4 +54,5 @@ def saida_campo(request, tp_reg:str):
     return render(request, 'logistica/saida_campo.html', {
         'form': form,
         'etapa_ativa': 'saida_campo',
+        'botao_texto': 'Enviar',
         })
