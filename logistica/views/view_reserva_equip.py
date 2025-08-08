@@ -31,11 +31,12 @@ def reserva_equip(request, tp_reg):
             )
             request_client.send_api_request()
 
-            return redirect('logistica:consulta_result_ma', tp_reg=tp_reg)
+            return redirect('logistica:consulta_result_ma')
     else:
         form = ReservaEquipamentosForm(nome_form=titulo)
     
     return render(request, 'logistica/reserva_equip.html', {
         'form': form,
-        'etapa_ativa': 'reserva'
+        'etapa_ativa': 'reserva',
+        'botao_texto': 'Enviar',
         })

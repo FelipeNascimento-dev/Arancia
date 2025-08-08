@@ -79,6 +79,7 @@ def consulta_result(request):
         'form': form,
         'tabela_dados': dados,
         'tp_reg': tp_reg,
+        'botao_texto': 'Consultar',
     })
 
 @login_required(login_url='logistica:login')

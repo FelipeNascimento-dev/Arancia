@@ -54,4 +54,5 @@ def saida_campo(request, tp_reg:str):
     return render(request, 'logistica/saida_campo.html', {
         'form': form,
         'etapa_ativa': 'saida_campo',
+        'botao_texto': 'Enviar',
         })

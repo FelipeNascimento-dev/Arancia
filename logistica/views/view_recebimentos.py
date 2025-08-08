@@ -42,7 +42,10 @@ def pre_recebimento(request, tp_reg):
     else:
         form = PreRecebimentoForm(nome_form=titulo)
 
-    return render(request, 'logistica/pre_recebimento.html', {'form': form})
+    return render(request, 'logistica/pre_recebimento.html', {
+        'form': form,
+        'botao_texto': 'Enviar',
+        })
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.usuario_de_TI', raise_exception=True)
@@ -91,4 +94,7 @@ def recebimento(request, tp_reg):
         initial_data = {'id': id_inserido} if id_inserido else {}
         form = RecebimentoForm(initial=initial_data, nome_form=titulo)
 
-    return render(request, 'logistica/recebimento.html', {'form': form})
+    return render(request, 'logistica/recebimento.html', {
+        'form': form,
+        'botao_texto': 'Enviar',
+        })

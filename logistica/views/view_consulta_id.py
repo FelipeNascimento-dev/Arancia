@@ -32,6 +32,7 @@ def consulta_id_form(request):
     context = {
         'form': form,
         'exibir_formulario': exibir_formulario,
+        'botao_texto': 'Consultar',
     }
     return render(request, 'logistica/consulta_id_form.html', context)
 
