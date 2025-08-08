@@ -1,7 +1,7 @@
 from django import forms
 
 class ConsultaPreRecebimentoForm(forms.Form):
-    nome_formulario = 'Consulta Resultados SAP'
+    nome_formulario = 'SAP - Consulta Resultados'
     id = forms.CharField(label='ID', max_length=20)
     tp_reg = forms.ChoiceField(label='Tipo de Registro', choices=[
         ('', ''), 

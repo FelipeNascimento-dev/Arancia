@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 @permission_required('logistica.usuario_de_TI', raise_exception=True)
 @permission_required('logistica.usuario_credenciado', raise_exception=True)
 def pre_recebimento(request, tp_reg):
-    titulo = 'Pré-Recebimento' if tp_reg == '13' else 'Estorno de Pré-Recebimento'
+    titulo = 'SAP - Pré-Recebimento' if tp_reg == '13' else 'SAP - Estorno de Pré-Recebimento'
     if request.method == 'POST':
         form = PreRecebimentoForm(request.POST, nome_form=titulo)
         if form.is_valid():
@@ -51,7 +51,7 @@ def pre_recebimento(request, tp_reg):
 @permission_required('logistica.usuario_de_TI', raise_exception=True)
 @permission_required('logistica.usuario_credenciado', raise_exception=True)
 def recebimento(request, tp_reg):
-    titulo = 'Recebimento' if tp_reg == '15' else 'Estorno de Recebimento'
+    titulo = 'SAP - Recebimento' if tp_reg == '15' else 'SAP - Estorno de Recebimento'
     if request.method == 'POST':
 
         form = RecebimentoForm(request.POST, nome_form=titulo)

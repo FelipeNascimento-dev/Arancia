@@ -1,7 +1,7 @@
 from django import forms
 
 class ConsultaResultMA84Form(forms.Form):
-    nome_formulario = 'Consulta Resultados MA'
+    nome_formulario = 'SAP - Consulta Resultados MA'
     tp_reg = forms.ChoiceField(label='Tipo de Registro', choices=[
         ('', ''), 
         ('84', 'Reserva de Equipamento'), 

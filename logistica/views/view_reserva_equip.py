@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 @permission_required('logistica.usuario_de_TI', raise_exception=True)
 @permission_required('logistica.usuario_credenciado', raise_exception=True)
 def reserva_equip(request, tp_reg):
-    titulo = 'Reserva de Equipamento' if tp_reg == '84' else 'Estorno Reserva de Equipamento'
+    titulo = 'SAP - Reserva de Equipamento' if tp_reg == '84' else 'SAP - Estorno Reserva de Equipamento'
     if request.method == 'POST':
         form = ReservaEquipamentosForm(request.POST, nome_form=titulo)
         if form.is_valid():
