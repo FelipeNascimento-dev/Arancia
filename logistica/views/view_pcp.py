@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from ..forms import PcpForm
+from ..forms import trackingIPForm
 
-def pcp(request):
-    form = PcpForm(request.POST or None)
+def trackingIP(request):
+    titulo = 'IP - PCP' 
+    form = trackingIPForm(request.POST or None, nome_form=titulo, show_serial=False)
 
     return render(request, "logistica/pcp.html", {
         "form": form,

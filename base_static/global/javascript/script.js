@@ -315,47 +315,50 @@ document.addEventListener("DOMContentLoaded", () => {
   const render = () => {
     const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
 
-    // exige prefixo /arancia
     const m = pathname.match(/\/arancia(\/.*)?$/i);
     if (!m) { macroGuia.innerHTML = ""; return; }
 
-    const relPath = m[1] || "/"; // path relativo a /arancia
+    const relPath = m[1] || "/";
     const isHome = relPath === "/" || /^\/home(?:\/|$)/i.test(relPath);
     if (isHome) { macroGuia.innerHTML = ""; return; }
 
     const rotasMap = [
-      // Transporte
-      { regex: /^\/consulta-id(?:\/|$)/i,                 macro: ["Transporte","Entrada-Fulfillment","Consulta ID"] },
-      { regex: /^\/pre-recebimento(?:\/|$)/i,             macro: ["Transporte","Entrada-Fulfillment","Pré-Recebimento"] },
-      { regex: /^\/recebimento(?:\/|$)/i,                 macro: ["Transporte","Entrada-Fulfillment","Recebimento"] },
-      { regex: /^\/consulta\/resultados\/[^/]+(?:\/|$)/i, macro: ["Transporte","Entrada-Fulfillment","Consulta Resultados"] },
-      { regex: /^\/estorno(?:\/|$)/i,                     macro: ["Transporte","Entrada-Fulfillment","Estornos"] },
+      { regex: /^\/consulta-id(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Consulta ID"] },
+      { regex: /^\/pre-recebimento(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Pré-Recebimento"] },
+      { regex: /^\/recebimento(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Recebimento"] },
+      { regex: /^\/consulta\/resultados\/[^/]+(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Consulta Resultados"] },
+      { regex: /^\/estorno(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Estornos"] },
+      {
+        regex: /^(?:\/consulta-ec|\/consulta\/ec|\/consulta-saida|\/saida-campo\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Saída para Campo", "Consulta Saída"]
+      },
+      {
+        regex: /^\/cancelamento\/saida-campo(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Estornos", "Estorno Saída para Campo"]
+      },
+      {
+        regex: /^\/saida-campo(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Saída para Campo", "Saída"]
+      },
+      {
+        regex: /^(?:\/consulta-ma|\/consulta\/reserva|\/consulta-reserva|\/reserva-equip\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Reserva de equipamento", "Consulta Reserva"]
+      },
+      {
+        regex: /^\/reserva-equip(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Reserva de equipamento", "Reserva"]
+      },
+      {
+        regex: /^\/estorno\/reserva-equip(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Estornos", "Estorno Reserva de Equipamento"]
+      },
 
-      // Saída (específicas primeiro)
-      { regex: /^(?:\/consulta-ec|\/consulta\/ec|\/consulta-saida|\/saida-campo\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
-        macro: ["Logística","Lastmile (B2C)","Saída para Campo","Consulta Saída"] },
-      { regex: /^\/cancelamento\/saida-campo(?:\/|$)/i,
-        macro: ["Logística","Lastmile (B2C)","Estornos","Estorno Saída para Campo"] },
-
-      // Saída base (depois dos específicos para não capturar /consulta)
-      { regex: /^\/saida-campo(?:\/|$)/i,
-        macro: ["Logística","Lastmile (B2C)","Saída para Campo","Saída"] },
-
-      // Reserva
-      { regex: /^(?:\/consulta-ma|\/consulta\/reserva|\/consulta-reserva|\/reserva-equip\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
-        macro: ["Logística","Lastmile (B2C)","Reserva de equipamento","Consulta Reserva"] },
-      { regex: /^\/reserva-equip(?:\/|$)/i,
-        macro: ["Logística","Lastmile (B2C)","Reserva de equipamento","Reserva"] },
-      { regex: /^\/estorno\/reserva-equip(?:\/|$)/i,
-        macro: ["Logística","Lastmile (B2C)","Estornos","Estorno Reserva de Equipamento"] },
-
-      // Outros
-      { regex: /^\/pcp(?:\/|$)/i,                         macro: ["Logística","Lastmile (B2C)","PCP"] }
+      { regex: /^\/pcp(?:\/|$)/i, macro: ["Logística", "Lastmile (B2C)", "PCP"] }
     ];
 
     const match = rotasMap.find(r => r.regex.test(relPath));
     macroGuia.innerHTML = match
-      ? match.macro.map((p,i)=> i<match.macro.length-1 ? `<span>${p}</span><span>›</span>` : `<span>${p}</span>`).join("")
+      ? match.macro.map((p, i) => i < match.macro.length - 1 ? `<span>${p}</span><span>›</span>` : `<span>${p}</span>`).join("")
       : "";
   };
 
@@ -364,6 +367,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.body.addEventListener("click", e => {
     const a = e.target.closest('a[href]');
     if (!a) return;
-    setTimeout(render, 0); // re-render se a navegação usa pushState
+    setTimeout(render, 0);
   });
 });
