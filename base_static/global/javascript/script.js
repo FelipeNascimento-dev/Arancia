@@ -310,16 +310,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.addEventListener("DOMContentLoaded", () => {
   const macroGuia = document.getElementById("macroGuia");
-  const path = window.location.pathname;
+  if (!macroGuia) return;
 
-  const isHome =
-    path === "/" || path === "/home/" || path === "{% url 'logistica:index' %}";
+  const rawPath = window.location.pathname;
+  const path = rawPath.replace(/\/+$/, "") || "/";
+  const isHome = path === "/" || /^(?:\/.+)?\/arancia$/i.test(path);
 
   if (isHome) {
     sessionStorage.removeItem("macroGuia");
     macroGuia.innerHTML = "";
     return;
   }
+
+  const afterArancia = path.toLowerCase().split("/arancia")[1] || "/";
+  const relPath = afterArancia === "" ? "/" : (afterArancia.startsWith("/") ? afterArancia : `/${afterArancia}`);
 
   const rotasMap = [
     { regex: /^\/consulta-id(\/.*)?$/, macro: ["Transporte", "Entrada-Fulfillment", "Consulta ID"] },
@@ -335,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { regex: /^\/cancelamento\/saida-campo\/?$/, macro: ["Logística", "Estornos", "Estorno Saída para Campo"] }
   ];
 
-  const rotaAtual = rotasMap.find(r => r.regex.test(path));
+  const rotaAtual = rotasMap.find(r => r.regex.test(relPath));
   if (rotaAtual) {
     const html = rotaAtual.macro.map((parte, index) => {
       return index < rotaAtual.macro.length - 1
