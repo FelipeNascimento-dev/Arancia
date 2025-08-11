@@ -3,8 +3,8 @@
 <div id="etapas-logistica" class="etapas-container active">
   <div class="background-etapas">
     <div class="etapas">
-      <div class="etapa {% if etapa_ativa == 'PCP' %}ativa{% endif %}">
-        <a href="#">PCP</a>
+      <div class="etapa {% if etapa_ativa == 'pcp' %}ativa{% endif %}">
+        <a href="{% url 'logistica:pcp' %}">PCP</a>
       </div>
       
       <div class="etapa {% if etapa_ativa == 'reserva' %}ativa{% endif %}">
@@ -18,10 +18,6 @@
       <div class="etapa {% if etapa_ativa == 'troca de custodia' %}ativa{% endif %}">
         <a href="#">Retorno do Picking</a>
       </div>
-
-      <!-- <div class="etapa {% if etapa_ativa == 'retorno do picking' %}ativa{% endif %}">
-        <a href="#">Retorno do Picking</a>
-      </div> -->
 
       <div class="etapa {% if etapa_ativa == 'consolidacao' %}ativa{% endif %}">
         <a href="#">Consolidação</a>
