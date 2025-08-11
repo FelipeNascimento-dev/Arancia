@@ -15,6 +15,10 @@
         <a href="{% url 'logistica:consulta_result_ma'  %}">Consulta Reserva</a>
       </div>
 
+      <div class="etapa {% if etapa_ativa == 'troca de custodia' %}ativa{% endif %}">
+        <a href="#">Retorno do Picking</a>
+      </div>
+
       <!-- <div class="etapa {% if etapa_ativa == 'retorno do picking' %}ativa{% endif %}">
         <a href="#">Retorno do Picking</a>
       </div> -->
@@ -35,9 +39,6 @@
         <a href="#">Expedição</a>
       </div>
 
-      <div class="etapa {% if etapa_ativa == 'troca de custodia' %}ativa{% endif %}">
-        <a href="#">Troca de custódia</a>
-      </div>
     </div>
   </div>
 </div>
