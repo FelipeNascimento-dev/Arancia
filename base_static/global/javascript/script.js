@@ -312,100 +312,58 @@ document.addEventListener("DOMContentLoaded", () => {
   const macroGuia = document.getElementById("macroGuia");
   if (!macroGuia) return;
 
-  const rawPath = window.location.pathname;
-  const path = rawPath.replace(/\/+$/, "") || "/";
-  const isHome = path === "/" || /^(?:\/.+)?\/arancia$/i.test(path);
+  const render = () => {
+    const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
 
-  if (isHome) {
-    sessionStorage.removeItem("macroGuia");
-    macroGuia.innerHTML = "";
-    return;
-  }
+    // exige prefixo /arancia
+    const m = pathname.match(/\/arancia(\/.*)?$/i);
+    if (!m) { macroGuia.innerHTML = ""; return; }
 
-  const afterArancia = path.toLowerCase().split("/arancia")[1] || "/";
-  const relPath = afterArancia === "" ? "/" : (afterArancia.startsWith("/") ? afterArancia : `/${afterArancia}`);
+    const relPath = m[1] || "/"; // path relativo a /arancia
+    const isHome = relPath === "/" || /^\/home(?:\/|$)/i.test(relPath);
+    if (isHome) { macroGuia.innerHTML = ""; return; }
 
-  const rotasMap = [
-    { regex: /^\/consulta-id(\/.*)?$/, macro: ["Transporte", "Entrada-Fulfillment", "Consulta ID"] },
-    { regex: /^\/pre-recebimento\/?$/, macro: ["Transporte", "Entrada-Fulfillment", "Pré-Recebimento"] },
-    { regex: /^\/recebimento\/?$/, macro: ["Transporte", "Entrada-Fulfillment", "Recebimento"] },
-    { regex: /^\/consulta\/resultados\/[^/]+\/?$/, macro: ["Transporte", "Entrada-Fulfillment", "Consulta Resultados"] },
-    { regex: /^\/estorno\/?$/, macro: ["Transporte", "Entrada-Fulfillment", "Estornos"] },
-    { regex: /^\/saida-campo\/?$/, macro: ["Logística", "Saída para Campo", "Saída"] },
-    { regex: /^\/consulta-ec\/[^/]+\/?$/, macro: ["Logística", "Saída para Campo", "Consulta Saída"] },
-    { regex: /^\/reserva-equip\/?$/, macro: ["Logística", "Reserva de equipamento", "Reserva"] },
-    { regex: /^\/consulta-ma\/[^/]+\/?$/, macro: ["Logística", "Reserva de equipamento", "Consulta Reserva"] },
-    { regex: /^\/estorno\/reserva-equip\/?$/, macro: ["Logística", "Estornos", "Estorno Reserva de Equipamento"] },
-    { regex: /^\/cancelamento\/saida-campo\/?$/, macro: ["Logística", "Estornos", "Estorno Saída para Campo"] }
-  ];
+    const rotasMap = [
+      // Transporte
+      { regex: /^\/consulta-id(?:\/|$)/i,                 macro: ["Transporte","Entrada-Fulfillment","Consulta ID"] },
+      { regex: /^\/pre-recebimento(?:\/|$)/i,             macro: ["Transporte","Entrada-Fulfillment","Pré-Recebimento"] },
+      { regex: /^\/recebimento(?:\/|$)/i,                 macro: ["Transporte","Entrada-Fulfillment","Recebimento"] },
+      { regex: /^\/consulta\/resultados\/[^/]+(?:\/|$)/i, macro: ["Transporte","Entrada-Fulfillment","Consulta Resultados"] },
+      { regex: /^\/estorno(?:\/|$)/i,                     macro: ["Transporte","Entrada-Fulfillment","Estornos"] },
 
-  const rotaAtual = rotasMap.find(r => r.regex.test(relPath));
-  if (rotaAtual) {
-    const html = rotaAtual.macro.map((parte, index) => {
-      return index < rotaAtual.macro.length - 1
-        ? `<span>${parte}</span><span>›</span>`
-        : `<span>${parte}</span>`;
-    }).join("");
+      // Saída (específicas primeiro)
+      { regex: /^(?:\/consulta-ec|\/consulta\/ec|\/consulta-saida|\/saida-campo\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
+        macro: ["Logística","Lastmile (B2C)","Saída para Campo","Consulta Saída"] },
+      { regex: /^\/cancelamento\/saida-campo(?:\/|$)/i,
+        macro: ["Logística","Lastmile (B2C)","Estornos","Estorno Saída para Campo"] },
 
-    macroGuia.innerHTML = html;
-    sessionStorage.setItem("macroGuia", html);
-  } else {
-    const macroSalva = sessionStorage.getItem("macroGuia");
-    if (macroSalva && !macroSalva.includes("Home")) {
-      macroGuia.innerHTML = macroSalva;
-    } else {
-      macroGuia.innerHTML = "";
-      sessionStorage.removeItem("macroGuia");
-    }
-  }
+      // Saída base (depois dos específicos para não capturar /consulta)
+      { regex: /^\/saida-campo(?:\/|$)/i,
+        macro: ["Logística","Lastmile (B2C)","Saída para Campo","Saída"] },
 
-  // Submenus
-  document.querySelectorAll(".sub-submenu a").forEach(link => {
-    link.addEventListener("click", () => {
-      const submenu = link.closest(".sub-submenu");
-      const submenuTitle = submenu.previousElementSibling?.textContent?.trim();
-      const dropdown = link.closest(".dropdown");
-      const dropbtn = dropdown.querySelector(".dropbtn .texto-item")?.textContent?.trim();
-      const linkText = link.textContent.trim();
+      // Reserva
+      { regex: /^(?:\/consulta-ma|\/consulta\/reserva|\/consulta-reserva|\/reserva-equip\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
+        macro: ["Logística","Lastmile (B2C)","Reserva de equipamento","Consulta Reserva"] },
+      { regex: /^\/reserva-equip(?:\/|$)/i,
+        macro: ["Logística","Lastmile (B2C)","Reserva de equipamento","Reserva"] },
+      { regex: /^\/estorno\/reserva-equip(?:\/|$)/i,
+        macro: ["Logística","Lastmile (B2C)","Estornos","Estorno Reserva de Equipamento"] },
 
-      const partes = [dropbtn, submenuTitle, linkText].filter(Boolean);
-      if (partes.length <= 1 || partes.includes("Home")) {
-        sessionStorage.removeItem("macroGuia");
-        macroGuia.innerHTML = "";
-        return;
-      }
+      // Outros
+      { regex: /^\/pcp(?:\/|$)/i,                         macro: ["Logística","Lastmile (B2C)","PCP"] }
+    ];
 
-      const html = partes.map((parte, index) => {
-        return index < partes.length - 1
-          ? `<span>${parte}</span><span>›</span>`
-          : `<span>${parte}</span>`;
-      }).join("");
+    const match = rotasMap.find(r => r.regex.test(relPath));
+    macroGuia.innerHTML = match
+      ? match.macro.map((p,i)=> i<match.macro.length-1 ? `<span>${p}</span><span>›</span>` : `<span>${p}</span>`).join("")
+      : "";
+  };
 
-      sessionStorage.setItem("macroGuia", html);
-    });
-  });
-
-  // Links diretos (sem submenu)
-  document.querySelectorAll(".dropdown-content > a").forEach(link => {
-    link.addEventListener("click", () => {
-      const dropdown = link.closest(".dropdown");
-      const dropbtn = dropdown.querySelector(".dropbtn .texto-item")?.textContent?.trim();
-      const linkText = link.textContent.trim();
-
-      const partes = [dropbtn, linkText].filter(Boolean);
-      if (partes.length <= 1 || partes.includes("Home")) {
-        sessionStorage.removeItem("macroGuia");
-        macroGuia.innerHTML = "";
-        return;
-      }
-
-      const html = partes.map((parte, index) => {
-        return index < partes.length - 1
-          ? `<span>${parte}</span><span>›</span>`
-          : `<span>${parte}</span>`;
-      }).join("");
-
-      sessionStorage.setItem("macroGuia", html);
-    });
+  render();
+  window.addEventListener("popstate", render);
+  document.body.addEventListener("click", e => {
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+    setTimeout(render, 0); // re-render se a navegação usa pushState
   });
 });
