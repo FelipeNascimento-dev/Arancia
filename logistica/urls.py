@@ -5,7 +5,7 @@ from .views import index, consulta_id_form, pre_recebimento, \
 recebimento, registrar_romaneio, consulta_id_table, consulta_result, \
 btn_voltar, reserva_equip, saida_campo, \
 consulta_ma84, btn_ma_voltar, consulta_ec01, btn_ec_voltar, \
-logout_confirm_view, logout_view, registrar_usuario, pcp
+logout_confirm_view, logout_view, registrar_usuario, trackingIP
 
 app_name = 'logistica'
 
@@ -31,5 +31,9 @@ urlpatterns = [
     path('consulta-ma/voltar/', btn_ma_voltar, name='btn_ma_voltar'),
     path('consulta-ec/', consulta_ec01, name='consulta_result_ec'),
     path('consulta-ec/voltar/', btn_ec_voltar, name='btn_ec_voltar'),
-    path('pcp/', pcp, name='pcp'),
+    path('ip/<str:code>/', trackingIP, name='pcp'),
+    path('ip/<str:code>/', trackingIP, name='retorno_picking'),
+    path('ip/<str:code>/', trackingIP, name='consolidacao'),
+    path('ip/<str:code>/', trackingIP, name='expedicao'),
+    path('ip/<str:code>/', trackingIP, name='troca_custodia'),
 ]
