@@ -31,5 +31,9 @@ urlpatterns = [
     path('consulta-ma/voltar/', btn_ma_voltar, name='btn_ma_voltar'),
     path('consulta-ec/', consulta_ec01, name='consulta_result_ec'),
     path('consulta-ec/voltar/', btn_ec_voltar, name='btn_ec_voltar'),
-    path('pcp/', trackingIP, name='pcp'),
+    path('ip/<str:code>/', trackingIP, name='pcp'),
+    path('ip/<str:code>/', trackingIP, name='retorno_picking'),
+    path('ip/<str:code>/', trackingIP, name='consolidacao'),
+    path('ip/<str:code>/', trackingIP, name='expedicao'),
+    path('ip/<str:code>/', trackingIP, name='troca_custodia'),
 ]

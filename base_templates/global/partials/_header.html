@@ -73,21 +73,21 @@
             <div class="dropdown-content">
                 <h5 class="submenu-toggle" data-target="lastmile-sub">Lastmile (B2C)</h5>
                 <div class="sub-submenu" id="lastmile-sub">
-                    <a href="{% url 'logistica:pcp' %}">IP - PCP</a>
+                    <a href="{% url 'logistica:pcp' 201 %}">IP - PCP</a>
                     <h5 class="submenu-toggle" data-target="reserva-sub">SAP - Reserva de equipamento</h5>
                     <div class="sub-submenu" id="reserva-sub">
                         <a href="{% url 'logistica:reserva_equip' 84 %}">SAP - Reserva</a>
                         <a href="{% url 'logistica:consulta_result_ma' %}">SAP - Consulta</a>
                     </div>
-                    <a href="#">IP - Retorno do Picking</a>
-                    <a href="#">IP - Consolidação</a>
+                    <a href="{% url 'logistica:retorno_picking' 202 %}">IP - Retorno do Picking</a>
+                    <a href="{% url 'logistica:consolidacao' 203 %}">IP - Consolidação</a>
                     <h5 class="submenu-toggle" data-target="saida-sub">SAP - Saída para Campo</h5>
                     <div class="sub-submenu" id="saida-sub">
                         <a href="{% url 'logistica:saida_campo' 1 %}">SAP - Saída</a>
                         <a href="{% url 'logistica:consulta_result_ec' %}">SAP - Consulta</a>
                     </div>
-                    <a href="#">IP - Expedição</a>
-                    <a href="#">IP - Troca de Custódia</a>
+                    <a href="{% url 'logistica:expedicao' 204 %}">IP - Expedição</a>
+                    <a href="{% url 'logistica:troca_custodia' 205 %}">IP - Troca de Custódia</a>
                     <h5 class="submenu-toggle" data-target="estornos-saida-reserva">SAP - Estornos</h5>
                     <div class="sub-submenu" id="estornos-saida-reserva">
                         <a href="{% url 'logistica:estorno_reserva' 85 %}">SAP - Estorno Reserva de Equipamento</a>

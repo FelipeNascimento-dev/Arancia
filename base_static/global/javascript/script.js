@@ -323,37 +323,32 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isHome) { macroGuia.innerHTML = ""; return; }
 
     const rotasMap = [
-      { regex: /^\/consulta-id(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Consulta ID"] },
-      { regex: /^\/pre-recebimento(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Pré-Recebimento"] },
-      { regex: /^\/recebimento(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Recebimento"] },
-      { regex: /^\/consulta\/resultados\/[^/]+(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Consulta Resultados"] },
-      { regex: /^\/estorno(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Estornos"] },
-      {
-        regex: /^(?:\/consulta-ec|\/consulta\/ec|\/consulta-saida|\/saida-campo\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Saída para Campo", "Consulta Saída"]
-      },
-      {
-        regex: /^\/cancelamento\/saida-campo(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Estornos", "Estorno Saída para Campo"]
-      },
-      {
-        regex: /^\/saida-campo(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Saída para Campo", "Saída"]
-      },
-      {
-        regex: /^(?:\/consulta-ma|\/consulta\/reserva|\/consulta-reserva|\/reserva-equip\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Reserva de equipamento", "Consulta Reserva"]
-      },
-      {
-        regex: /^\/reserva-equip(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Reserva de equipamento", "Reserva"]
-      },
-      {
-        regex: /^\/estorno\/reserva-equip(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Estornos", "Estorno Reserva de Equipamento"]
-      },
-
-      { regex: /^\/pcp(?:\/|$)/i, macro: ["Logística", "Lastmile (B2C)", "PCP"] }
+      {regex: /^\/consulta-id(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Consulta ID"] },
+      {regex: /^\/pre-recebimento(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Pré-Recebimento"] },
+      {regex: /^\/recebimento(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Recebimento"] },
+      {regex: /^\/consulta\/resultados\/[^/]+(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Consulta Resultados"] },
+      {regex: /^\/estorno(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Estornos"] },
+      {regex: /^(?:\/consulta-ec|\/consulta\/ec|\/consulta-saida|\/saida-campo\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Saída para Campo", "Consulta Saída"]},
+      {regex: /^\/cancelamento\/saida-campo(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Estornos", "Estorno Saída para Campo"]},
+      {regex: /^\/saida-campo(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Saída para Campo", "Saída"]},
+      {regex: /^(?:\/consulta-ma|\/consulta\/reserva|\/consulta-reserva|\/reserva-equip\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Reserva de equipamento", "Consulta Reserva"]},
+      {regex: /^\/reserva-equip(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Reserva de equipamento", "Reserva"]},
+      {regex: /^\/estorno\/reserva-equip(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Estornos", "Estorno Reserva de Equipamento"]},
+      {regex: /^\/ip(?:\/|$)/i, macro: ["Logística", "Lastmile (B2C)", "PCP"] },
+      {regex: /^\/(?:ip\/)?retorno_picking(?:\/\d+)?(?:\/|$)/i,    
+        macro: ["Logística","Lastmile (B2C)","IP","Retorno do Picking"] },
+      {regex: /^\/(?:ip\/)?consolidacao(?:\/\d+)?(?:\/|$)/i,       
+        macro: ["Logística","Lastmile (B2C)","IP","Consolidação"] },
+      {regex: /^\/(?:ip\/)?expedicao(?:\/\d+)?(?:\/|$)/i,          
+        macro: ["Logística","Lastmile (B2C)","IP","Expedição"] },
+      {regex: /^\/(?:ip\/)?troca_custodia(?:\/\d+)?(?:\/|$)/i,     
+        macro: ["Logística","Lastmile (B2C)","IP","Troca de Custódia"] },
     ];
 
     const match = rotasMap.find(r => r.regex.test(relPath));
