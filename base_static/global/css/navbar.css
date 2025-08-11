@@ -210,8 +210,8 @@
 
 .column h4,
 .submenu-toggle {
-  font-size: 14px;
-  color: var(--muted-color);
+  font-size: 15px;
+  color: var(--text-color);
   font-weight: 600;
   cursor: pointer;
   padding: 6px 12px;
@@ -238,7 +238,7 @@
   padding: 8px 14px;
   text-decoration: none;
   color: var(--text-color);
-  font-size: 14px;
+  font-size: 15px;
   border-radius: 6px;
   transition: background 0.2s;
 }
