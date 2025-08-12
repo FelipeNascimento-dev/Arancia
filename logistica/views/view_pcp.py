@@ -65,9 +65,17 @@ def trackingIP(request, code):
         
         try:
             request_client.send_api_request()
-            messages.sucess(request, f'A mensagem "{code_info.description}" foi enviada com sucesso!')
-            if code == 201:
-                return redirect 
+            messages.success(request, f'A mensagem "{code_info.description}" foi enviada com sucesso!')
+            if code == '201':
+                return redirect('logistica:reserva_equip', tp_reg = 84)
+            elif code == '203':
+                return redirect('logistica:saida_campo', tp_reg = 1 )
+            elif code == '204':
+                return redirect('logistica:pcp', code= 201)
+            else:
+                code = int(code) + 1
+                return redirect('logistica:pcp', code=code )
+
         except Exception as e:
             print(e)
             if DEBUG:
