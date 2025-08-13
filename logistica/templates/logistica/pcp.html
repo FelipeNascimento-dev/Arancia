@@ -152,7 +152,7 @@
         width: 48px;
         height: 48px;
         border-radius: 9999px;
-        background: var(--button-form-color, #2563eb);
+        background: var(--button-form-color);
         color: #fff;
         display: flex;
         align-items: center;
@@ -199,6 +199,101 @@
     .serial-actions .push-left {
         margin-right: auto;
     }
+
+    .confirm-clear {
+        position: fixed;
+        inset: 0;
+        display: none;
+        z-index: 999;
+    }
+
+    .confirm-clear.open {
+        display: block;
+    }
+
+    .confirm-clear__backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    .confirm-clear__dialog {
+        position: relative;
+        z-index: 1;
+        width: min(460px, 92vw);
+        margin: 12vh auto 0;
+        background: var(--chip-bg, #fff);
+        color: var(--chip-text, #334155);
+        border-radius: 12px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25),
+            0 2px 8px rgba(0, 0, 0, 0.15);
+        padding: 18px 18px 14px;
+        animation: scaleIn 0.18s ease-out;
+    }
+
+    .confirm-clear__dialog h3 {
+        margin: 0 0 6px;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .confirm-clear__dialog p {
+        margin: 0;
+        opacity: 0.85;
+        font-size: 14px;
+    }
+
+    .confirm-clear__actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    .confirm-clear .cc-no {
+        background: transparent;
+        color: var(--chip-text, #334155);
+        border: 1px solid var(--chip-border, #cbd5e1);
+        transition: background 0.15s ease;
+    }
+
+    .confirm-clear .cc-no:hover {
+        background: var(--chip-x-bg, #f8fafc);
+    }
+
+    .confirm-clear #cc-yes {
+        background: var(--button-form-color);
+        color: #fff;
+        border: none;
+        transition: background 0.15s ease;
+    }
+
+    .confirm-clear #cc-yes:hover {
+        background: var(--button-form-color-hover);
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes scaleIn {
+        from {
+            transform: scale(0.96);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
 </style>
 
 <div class="page-center">
@@ -207,6 +302,22 @@
             <form method="POST">
                 {% include 'global/partials/_form_2col.html' %}
             </form>
+
+            {% if etapa_ativa == 'retorno_picking' %}
+            <div class="confirm-clear" id="confirm-clear" aria-hidden="true" role="dialog" aria-modal="true"
+                aria-labelledby="cc-title" aria-describedby="cc-desc">
+                <div class="confirm-clear__backdrop" data-close="1"></div>
+                <div class="confirm-clear__dialog">
+                    <h3 id="cc-title">Limpar seriais?</h3>
+                    <p id="cc-desc">Todos os seriais bipados serão descartados. Esta ação NÃO pode ser desfeita!</p>
+
+                    <div class="confirm-clear__actions">
+                        <button type="button" class="submit-button-right cc-no" data-close="1">Cancelar</button>
+                        <button type="button" class="submit-button-right" id="cc-yes">Sim, limpar</button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -253,6 +364,103 @@
         });
     })();
 </script>
+
+<script>
+    (function () {
+        if ("{{ etapa_ativa }}" !== "retorno_picking") return;
+
+        const modal = document.getElementById('confirm-clear');
+        const openBtn = document.querySelector('button[name="clear_serials"]');
+        const yesBtn = document.getElementById('cc-yes');
+
+        // acha o form mais próximo do modal; se não achar, pega o primeiro da página
+        const form = modal?.closest('.form-card-2col')?.querySelector('form') || document.querySelector('form');
+
+        if (!modal || !openBtn || !yesBtn || !form) return;
+
+        let lastFocused = null;
+
+        function openModal(e) {
+            // impede o submit imediato do botão Limpar
+            if (e) e.preventDefault();
+
+            lastFocused = document.activeElement;
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            yesBtn.focus({ preventScroll: true });
+            trapFocus(true);
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            trapFocus(false);
+            if (lastFocused && typeof lastFocused.focus === 'function') {
+                lastFocused.focus({ preventScroll: true });
+            }
+        }
+
+        // abre o modal ao clicar em "Limpar" (submit original)
+        openBtn.addEventListener('click', openModal);
+
+        // confirma limpeza: injeta um hidden clear_serials=1 e envia
+        yesBtn.addEventListener('click', function () {
+            let hidden = form.querySelector('input[name="clear_serials"][type="hidden"]');
+            if (!hidden) {
+                hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'clear_serials';
+                form.appendChild(hidden);
+            }
+            hidden.value = '1';
+            form.noValidate = true;
+            form.submit();
+        });
+
+        // fechar por clique no backdrop ou no botão "Cancelar"
+        modal.addEventListener('click', function (e) {
+            if (e.target.dataset.close === '1') closeModal();
+        });
+
+        // fechar com ESC
+        document.addEventListener('keydown', function (e) {
+            if (modal.classList.contains('open') && e.key === 'Escape') {
+                e.preventDefault();
+                closeModal();
+            }
+        });
+
+        // focus trap dentro do modal
+        let focusables = [];
+        function trapFocus(enable) {
+            if (!enable) return;
+            focusables = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+
+            function handleTab(e) {
+                if (e.key !== 'Tab' || focusables.length === 0) return;
+                if (e.shiftKey) {
+                    if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+                } else {
+                    if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+                }
+            }
+            modal.addEventListener('keydown', handleTab);
+
+            const obs = new MutationObserver(() => {
+                if (!modal.classList.contains('open')) {
+                    modal.removeEventListener('keydown', handleTab);
+                    obs.disconnect();
+                }
+            });
+            obs.observe(modal, { attributes: true, attributeFilter: ['class'] });
+        }
+    })();
+</script>
+
 
 
 {% endblock content %}
