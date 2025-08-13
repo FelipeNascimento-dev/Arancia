@@ -220,17 +220,19 @@
         margin: 0 0 6px;
         font-size: 18px;
         font-weight: 600;
+        text-align: center;
     }
 
     .confirm-clear__dialog p {
         margin: 0;
         opacity: 0.85;
         font-size: 14px;
+        text-align: center;
     }
 
     .confirm-clear__actions {
         display: flex;
-        justify-content: flex-end;
+        justify-content: center;
         gap: 8px;
         margin-top: 16px;
     }
