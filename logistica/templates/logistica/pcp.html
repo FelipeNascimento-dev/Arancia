@@ -6,293 +6,11 @@
 
 <style>
     .form-card-2col {
-        min-height: 280px;
         height: auto;
     }
 
     .form-actions .push-left {
         margin-right: auto;
-    }
-
-    .page-center {
-        width: 100%;
-        min-height: calc(100vh - 140px);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 16px;
-        padding: 12px 0 24px;
-    }
-
-    .chips-wrap {
-        justify-content: left;
-        width: 1067px;
-        margin-top: 12px;
-    }
-
-    :root {
-        --chip-bg: #fff;
-        --chip-text: #334155;
-        --chip-border: #cbd5e1;
-        --chip-border-hover: #94a3b8;
-        --chip-x-bg: #f8fafc;
-        --chip-x-border: #cbd5e1;
-        --input-border: #cbd5e1;
-        --input-focus: #4f46e5;
-    }
-
-    .add-serial-form {
-        display: flex;
-        gap: .5rem;
-        align-items: center;
-        flex-wrap: wrap;
-        margin: 8px 0 10px;
-    }
-
-    .add-label {
-        font-weight: 600;
-        margin-right: .25rem;
-    }
-
-    .add-input {
-        flex: 1 1 280px;
-        min-width: 240px;
-        padding: 8px 10px;
-        border: 1px solid var(--input-border);
-        border-radius: 8px;
-        background: var(--chip-bg);
-        color: var(--chip-text);
-    }
-
-    .add-input:focus {
-        outline: 2px solid var(--input-focus);
-        outline-offset: 1px;
-    }
-
-    .add-btn {
-        padding: 8px 12px;
-        border: 1px solid var(--input-border);
-        border-radius: 8px;
-        background: var(--chip-bg);
-        cursor: pointer;
-    }
-
-    .link-btn {
-        background: none;
-        border: none;
-        color: #64748b;
-        cursor: pointer;
-        text-decoration: underline;
-    }
-
-    .chips-wrap {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 8px;
-        border: 1px solid var(--chip-border);
-        border-radius: 10px;
-        background: var(--chip-bg);
-    }
-
-    .chip {
-        display: inline-flex;
-        align-items: left;
-        gap: 8px;
-        padding: 4px 8px;
-        border: 1px solid var(--chip-border);
-        border-radius: 9999px;
-        background: var(--chip-bg);
-        color: var(--chip-text);
-    }
-
-    .chip:hover {
-        border-color: var(--chip-border-hover);
-    }
-
-    .chip-text {
-        font-weight: 600;
-        white-space: nowrap;
-        max-width: 300px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .chip-x {
-        width: 18px;
-        height: 18px;
-        line-height: 16px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid var(--chip-x-border);
-        background: var(--chip-x-bg);
-        border-radius: 9999px;
-        cursor: pointer;
-        padding: 0;
-    }
-
-    .chips-empty {
-        color: #64748b;
-        margin: 6px 0 0;
-    }
-
-    .form-card-2col {
-        position: relative;
-    }
-
-    .form-card-2col.has-counter {
-        padding-top: 56px;
-    }
-
-    .serial-counter {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 48px;
-        height: 48px;
-        border-radius: 9999px;
-        background: var(--button-form-color);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 800;
-        font-size: 18px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
-        border: 2px solid #fff;
-        z-index: 2;
-        user-select: none;
-        animation: serial-pop .18s ease-out;
-    }
-
-    @keyframes serial-pop {
-        from {
-            transform: translateX(-50%) scale(.9);
-            opacity: .0;
-        }
-
-        to {
-            transform: translateX(-50%) scale(1);
-            opacity: 1;
-        }
-    }
-
-    .serial-actions {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        flex-wrap: wrap;
-        margin: 10px 0 6px;
-    }
-
-    .form-actions {
-        width: 100%;
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 10px;
-    }
-
-    .form-actions .push-left,
-    .serial-actions .push-left {
-        margin-right: auto;
-    }
-
-    .confirm-clear {
-        position: fixed;
-        inset: 0;
-        display: none;
-        z-index: 999;
-    }
-
-    .confirm-clear.open {
-        display: block;
-    }
-
-    .confirm-clear__backdrop {
-        position: absolute;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.45);
-        animation: fadeIn 0.2s ease-out;
-    }
-
-    .confirm-clear__dialog {
-        position: relative;
-        z-index: 1;
-        width: min(460px, 92vw);
-        margin: 12vh auto 0;
-        background: var(--chip-bg, #fff);
-        color: var(--chip-text, #334155);
-        border-radius: 12px;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25),
-            0 2px 8px rgba(0, 0, 0, 0.15);
-        padding: 18px 18px 14px;
-        animation: scaleIn 0.18s ease-out;
-    }
-
-    .confirm-clear__dialog h3 {
-        margin: 0 0 6px;
-        font-size: 18px;
-        font-weight: 600;
-    }
-
-    .confirm-clear__dialog p {
-        margin: 0;
-        opacity: 0.85;
-        font-size: 14px;
-    }
-
-    .confirm-clear__actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-        margin-top: 16px;
-    }
-
-    .confirm-clear .cc-no {
-        background: transparent;
-        color: var(--chip-text, #334155);
-        border: 1px solid var(--chip-border, #cbd5e1);
-        transition: background 0.15s ease;
-    }
-
-    .confirm-clear .cc-no:hover {
-        background: var(--chip-x-bg, #f8fafc);
-    }
-
-    .confirm-clear #cc-yes {
-        background: var(--button-form-color);
-        color: #fff;
-        border: none;
-        transition: background 0.15s ease;
-    }
-
-    .confirm-clear #cc-yes:hover {
-        background: var(--button-form-color-hover);
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-
-        to {
-            opacity: 1;
-        }
-    }
-
-    @keyframes scaleIn {
-        from {
-            transform: scale(0.96);
-            opacity: 0;
-        }
-
-        to {
-            transform: scale(1);
-            opacity: 1;
-        }
     }
 </style>
 
@@ -373,7 +91,6 @@
         const openBtn = document.querySelector('button[name="clear_serials"]');
         const yesBtn = document.getElementById('cc-yes');
 
-        // acha o form mais próximo do modal; se não achar, pega o primeiro da página
         const form = modal?.closest('.form-card-2col')?.querySelector('form') || document.querySelector('form');
 
         if (!modal || !openBtn || !yesBtn || !form) return;
@@ -381,7 +98,6 @@
         let lastFocused = null;
 
         function openModal(e) {
-            // impede o submit imediato do botão Limpar
             if (e) e.preventDefault();
 
             lastFocused = document.activeElement;
@@ -401,11 +117,8 @@
                 lastFocused.focus({ preventScroll: true });
             }
         }
-
-        // abre o modal ao clicar em "Limpar" (submit original)
         openBtn.addEventListener('click', openModal);
 
-        // confirma limpeza: injeta um hidden clear_serials=1 e envia
         yesBtn.addEventListener('click', function () {
             let hidden = form.querySelector('input[name="clear_serials"][type="hidden"]');
             if (!hidden) {
@@ -419,12 +132,10 @@
             form.submit();
         });
 
-        // fechar por clique no backdrop ou no botão "Cancelar"
         modal.addEventListener('click', function (e) {
             if (e.target.dataset.close === '1') closeModal();
         });
 
-        // fechar com ESC
         document.addEventListener('keydown', function (e) {
             if (modal.classList.contains('open') && e.key === 'Escape') {
                 e.preventDefault();
@@ -432,7 +143,6 @@
             }
         });
 
-        // focus trap dentro do modal
         let focusables = [];
         function trapFocus(enable) {
             if (!enable) return;
@@ -460,7 +170,5 @@
         }
     })();
 </script>
-
-
 
 {% endblock content %}

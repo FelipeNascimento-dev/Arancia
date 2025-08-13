@@ -61,34 +61,3 @@
 .submit-button-right:hover {
     background-color: var(--button-form-color-hover);
 }
-
-@media screen and (max-width: 1280px) {
-    .form-1col {
-        width: 1150px;
-        max-width: 1150px;
-        padding: 32px;
-    }
-
-    .form-group-1col input,
-    .form-group-1col select,
-    .form-group-1col textarea {
-        width: 1065px;
-        font-size: 16px;
-        padding: 12px;
-    }
-
-    .form-group-1col h2 {
-        font-size: 24px;
-    }
-
-    label {
-        font-size: 16px;
-    }
-
-    .submit-button-right {
-        font-size: 17px;
-        padding: 12px 28px;
-        min-width: 180px;
-        margin-right: 20px;
-    }
-}
