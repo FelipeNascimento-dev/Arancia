@@ -171,7 +171,6 @@ def trackingIP(request, code):
                         if code == '202':
                             request.session[_session_key(numero_pedido)] = []
                             request.session.modified = True
-
                         if code == '201':
                             return redirect('logistica:reserva_equip', tp_reg=84)
                         elif code == '203':

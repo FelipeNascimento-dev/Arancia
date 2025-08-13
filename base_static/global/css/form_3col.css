@@ -35,7 +35,7 @@ label {
 .form-3col input,
 .form-3col select,
 .form-3col textarea {
-  width: 366px;
+  width: 380px;
   padding: 10px;
   background: var(--form-input-color);
   border: 1px solid var(--form-input-border);
