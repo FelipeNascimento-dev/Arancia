@@ -47,7 +47,7 @@ def saida_campo(request, tp_reg:str):
                     'etapa_ativa': 'saida_campo',
                 })
 
-            return redirect('logistica:consulta_result_ec', tp_reg=tp_reg)
+            return redirect('logistica:consulta_result_ec')
     else:
         form = SaidaCampoForm(nome_form=titulo)
     
