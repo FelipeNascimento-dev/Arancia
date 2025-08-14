@@ -15,14 +15,10 @@ def saida_campo(request, tp_reg:str):
         if form.is_valid():
             serial = form.cleaned_data.get('serial')
             gtec = form.cleaned_data.get('gtec')
-            centro = form.cleaned_data.get('centro')
-            deposito = form.cleaned_data.get('deposito')
             origem_os = form.cleaned_data.get('origem_os')
 
             request.session['serial'] = serial
             request.session['gtec'] = gtec
-            request.session['centro'] = centro
-            request.session['deposito'] = deposito
             request.session['origem_os'] = origem_os
 
             request_client = RequestClient(
@@ -32,8 +28,8 @@ def saida_campo(request, tp_reg:str):
                 request_data={
                     "serge": serial,
                     "znum_gt": gtec,
-                    "centro": centro,
-                    "deposito": deposito,
+                    "centro": "CTRD",
+                    "deposito": "989A",
                     "bktxt": "0",
                     "origem_os": origem_os,
                 }
