@@ -270,7 +270,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const sidebar = document.querySelector(".sidebar");
 
   toggleBtn.addEventListener("click", function (e) {
-    e.stopPropagation(); // evita que o clique no botão feche a sidebar
+    e.stopPropagation();
     sidebar.classList.toggle("colapsada");
 
     if (sidebar.classList.contains("colapsada")) {
@@ -279,8 +279,7 @@ document.addEventListener("DOMContentLoaded", function () {
       toggleBtn.classList.replace("fa-angles-right", "fa-angles-left");
     }
   });
-
-  // Fecha a sidebar ao clicar fora dela
+  
   document.addEventListener("click", function (e) {
     if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
       if (!sidebar.classList.contains("colapsada")) {
