@@ -138,20 +138,48 @@ def trackingIP(request, code):
         if 'enviar_evento' in request.POST:
             if form.is_valid():
                 numero_pedido = str(form.cleaned_data.get('pedido'))
+                seriais_concat = "|".join(serials)
                 request.session['pedido'] = numero_pedido
+
+                serials_for_request = []
+                if code == '202':
+                    serials_for_request = request.session.get(_session_key(numero_pedido), []) or []
+                    seen = set()
+                    raw_serials = request.session.get(_session_key(numero_pedido), []) or []
+                    seen = set()
+                    serials_for_request = []
+                    for s in raw_serials:
+                        s_up = (s or "").strip().upper()
+                        if s_up and s_up not in seen:
+                            seen.add(s_up)
+                            serials_for_request.append(s_up)
+                    if not serials_for_request:
+                        messages.error(request, 'Adicione ao menos 1 serial antes de enviar o Retorno do picking.')
+                        return render(request, "logistica/pcp.html", {
+                            "form": form,
+                            "etapa_ativa": code_info.etapa_ativa,
+                            "botao_texto": "Enviar",
+                            "serials": request.session.get(_session_key(numero_pedido), []),
+                            "show_serial": code_info.show_serial,
+                        })
+
+                event_payload = {
+                    "event_date": datetime.datetime.now().astimezone().isoformat(),
+                    "original_code": code_info.original_code,
+                    "original_message": code_info.description,
+                }
+
+                if code == '202':
+                    event_payload["extra"] = {
+                        "serialNumbers": seriais_concat
+                    }
 
                 request_data = {
                     "shipper": "C-Trends",
                     "shipper_federal_tax_id": "20056828000179",
                     "order_number": numero_pedido,
                     "volume_number": 1,
-                    "events": [
-                        {
-                            "event_date": datetime.datetime.now().astimezone().isoformat(),
-                            "original_code": code_info.original_code,
-                            "original_message": code_info.description,
-                        }
-                    ]
+                    "events": [event_payload],
                 }
 
                 request_client = RequestClient(
@@ -171,6 +199,7 @@ def trackingIP(request, code):
                         if code == '202':
                             request.session[_session_key(numero_pedido)] = []
                             request.session.modified = True
+
                         if code == '201':
                             return redirect('logistica:reserva_equip', tp_reg=84)
                         elif code == '203':
