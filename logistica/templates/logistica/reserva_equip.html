@@ -19,33 +19,4 @@
     </div>
 </div>
 
-<script>
-(function() {
-  const map = JSON.parse('{{ depositos_map_json|escapejs }}');
-  const selCentro = document.getElementById('id_centro');
-  const selDeposito = document.getElementById('id_deposito');
-
-  if (!selCentro || !selDeposito) return;
-
-  function fill(select, options) {
-    select.innerHTML = '';
-    select.add(new Option('— Selecione —', ''));
-    for (const [value, label] of options || []) {
-      select.add(new Option(label, value));
-    }
-  }
-
-  function onCentroChange() {
-    const cod = selCentro.value || '';
-    fill(selDeposito, map[cod]);
-  }
-
-  selCentro.addEventListener('change', onCentroChange);
-
-  // se já veio selecionado (ex.: após erro de validação), repovoa depósitos
-  if (selCentro.value) onCentroChange();
-})();
-</script>
-
-
 {% endblock content %}
