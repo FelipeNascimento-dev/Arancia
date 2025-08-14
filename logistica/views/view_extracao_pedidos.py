@@ -1,82 +1,78 @@
-import csv
-from datetime import datetime, date
-from typing import Iterable, Iterator, List, Dict, Any, Optional
 from django.http import StreamingHttpResponse, HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.contrib import messages
+
 from ..forms import ExtracaoForm
+from utils.request import RequestClient
 
-def _normalize_value(v: Any) -> str:
-    if v is None:
-        return ""
-    if isinstance(v, (datetime, date)):
-        return v.strftime("%Y-%m-%d %H:%M:%S") if isinstance(v, datetime) else v.strftime("%Y-%m-%d")
-    return str(v)
-
-def _rows_to_stream(rows: Iterable[Dict[str, Any]],
-                    headers: List[str],
-                    delimiter: str = ";") -> Iterator[str]:
-    class Echo:
-        def write(self, value):
-            return value
-
-    echo = Echo()
-    writer = csv.writer(echo, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL)
-
-    yield "\ufeff"
-    yield writer.writerow(headers)
-
-    for row in rows:
-        values = [_normalize_value(row.get(h)) for h in headers]
-        yield writer.writerow(values)
-
-def _fetch_pedidos(tp_reg: str) -> List[Dict[str, Any]]:
-    if tp_reg == "All":
-        return [
-            {
-                "order_number": "12345",
-                "cliente": "ACME LTDA",
-                "status": "PCP",
-                "criado_em": datetime(2025, 7, 16, 11, 0, 0),
-                "qtd_itens": 4,
-            },
-            {
-                "order_number": "98765",
-                "cliente": "Foo Bar",
-                "status": "Consolidação",
-                "criado_em": datetime(2025, 7, 18, 15, 30, 0),
-                "qtd_itens": 2,
-            },
-        ]
-    return []
+DEFAULT_CT = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+DEFAULT_CD = 'attachment; filename="order_sumary.xlsx"'
 
 def extracao_pedidos(request: HttpRequest) -> HttpResponse:
+    # GET com ?download=1 -> retorna o arquivo
+    if request.method == "GET" and request.GET.get("download") == "1":
+        sales_channel = request.session.get("sales_channel") or "All"
+
+        client = RequestClient(
+            url=f"http://192.168.0.216/homo-fulfillment/api/order-sumary/{sales_channel}/xlsx",
+            method="GET",
+            headers={"Accept": DEFAULT_CT},  # GET -> use Accept (não Content-Type)
+        )
+
+        # Simples e seguro: não use streaming aqui
+        resp = client.send_api_request_no_json(stream=False)  # httpx.Response
+
+        status = int(getattr(resp, "status_code", 0) or 0)
+        if status == 200:
+            ct = resp.headers.get("Content-Type", DEFAULT_CT)
+            cd = resp.headers.get("Content-Disposition", DEFAULT_CD)
+            content = resp.content
+
+            # (opcional) valida se parece um XLSX (arquivo ZIP: começa com PK\x03\x04)
+            if not content.startswith(b"PK\x03\x04"):
+                messages.error(request, "O servidor retornou um conteúdo inesperado (não parece um XLSX).")
+                form = ExtracaoForm(initial={"sales_channel": sales_channel})
+                return render(request, "logistica/extracao_pedidos.html", {
+                    "form": form,
+                    "botao_texto": "Exportar",
+                })
+
+            # Retorna o arquivo
+            response = HttpResponse(content, content_type=ct)
+            response["Content-Disposition"] = cd
+            # (opcional) Content-Length se presente
+            cl = resp.headers.get("Content-Length")
+            if cl:
+                response["Content-Length"] = cl
+            return response
+
+        # Erro da API → volta ao template com mensagem
+        messages.error(request, f"Erro ao baixar (status {status}).")
+        form = ExtracaoForm(initial={"sales_channel": sales_channel})
+        return render(request, "logistica/extracao_pedidos.html", {
+            "form": form,
+            "botao_texto": "Exportar",
+        })
+
+    # POST -> valida e redireciona para o download na MESMA URL
     if request.method == "POST":
         form = ExtracaoForm(request.POST)
         if form.is_valid():
-            tp_reg = form.cleaned_data["tp_reg"]
+            sales_channel = form.cleaned_data["sales_channel"]
+            request.session["sales_channel"] = sales_channel
+            #messages.success(request, "Arquivo gerado com sucesso. O download iniciará em instantes.")
+            return redirect(f"{reverse('logistica:extracao_pedidos')}?download=1")
+        else:
+            messages.error(request, "Corrija os erros do formulário.")
+            return render(request, "logistica/extracao_pedidos.html", {
+                "form": form,
+                "botao_texto": "Exportar",
+            })
 
-            rows = _fetch_pedidos(tp_reg)
-
-            if not rows:
-                messages.info(request, "Nenhum registro encontrado para os filtros selecionados.")
-                return render(request, "logistica/extracao_pedidos.html", {"form": form})
-
-            headers = list(rows[0].keys())
-
-            agora = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"extracao_pedidos_{agora}.csv"
-            response = StreamingHttpResponse(
-                _rows_to_stream(rows, headers, delimiter=";"),
-                content_type="text/csv; charset=utf-8",
-            )
-            response["Content-Disposition"] = f'attachment; filename="{filename}"'
-            return response
-        messages.error(request, "Corrija os erros do formulário.")
-        return render(request, "logistica/extracao_pedidos.html", {"form": form})
-
-    form = ExtracaoForm()
+    # GET normal -> exibe o formulário
+    form = ExtracaoForm(initial={"sales_channel": request.session.get("sales_channel")})
     return render(request, "logistica/extracao_pedidos.html", {
         "form": form,
-        "botao_texto": "Exportar CSV", 
-        })
+        "botao_texto": "Exportar",
+    })
