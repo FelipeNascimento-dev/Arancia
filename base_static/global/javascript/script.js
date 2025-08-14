@@ -269,13 +269,23 @@ document.addEventListener("DOMContentLoaded", function () {
   const toggleBtn = document.getElementById("toggle-sidebar");
   const sidebar = document.querySelector(".sidebar");
 
-  toggleBtn.addEventListener("click", function () {
+  toggleBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
     sidebar.classList.toggle("colapsada");
 
     if (sidebar.classList.contains("colapsada")) {
       toggleBtn.classList.replace("fa-angles-left", "fa-angles-right");
     } else {
       toggleBtn.classList.replace("fa-angles-right", "fa-angles-left");
+    }
+  });
+  
+  document.addEventListener("click", function (e) {
+    if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
+      if (!sidebar.classList.contains("colapsada")) {
+        sidebar.classList.add("colapsada");
+        toggleBtn.classList.replace("fa-angles-left", "fa-angles-right");
+      }
     }
   });
 });
@@ -323,35 +333,59 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isHome) { macroGuia.innerHTML = ""; return; }
 
     const rotasMap = [
-      {regex: /^\/consulta-id(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Consulta ID"] },
-      {regex: /^\/pre-recebimento(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Pré-Recebimento"] },
-      {regex: /^\/recebimento(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Recebimento"] },
-      {regex: /^\/consulta\/resultados\/[^/]+(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Consulta Resultados"] },
-      {regex: /^\/estorno(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Estornos"] },
-      {regex: /^(?:\/consulta-ec|\/consulta\/ec|\/consulta-saida|\/saida-campo\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Saída para Campo", "Consulta Saída"]},
-      {regex: /^\/cancelamento\/saida-campo(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Estornos", "Estorno Saída para Campo"]},
-      {regex: /^\/saida-campo(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Saída para Campo", "Saída"]},
-      {regex: /^(?:\/consulta-ma|\/consulta\/reserva|\/consulta-reserva|\/reserva-equip\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Reserva de equipamento", "Consulta Reserva"]},
-      {regex: /^\/reserva-equip(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Reserva de equipamento", "Reserva"]},
-      {regex: /^\/estorno\/reserva-equip(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Estornos", "Estorno Reserva de Equipamento"]},
-      {regex: /^\/ip\/200(?:\/|$)/i, 
-        macro: ["Logística","Lastmile (B2C)","IP","Recebido para Picking"] },
-      {regex: /^\/ip\/201(?:\/|$)/i,
-        macro: ["Logística","Lastmile (B2C)","IP","PCP"] },
-      {regex: /^\/ip\/202(?:\/|$)/i, 
-        macro: ["Logística","Lastmile (B2C)","IP","Retorno do Picking"] },
-      {regex: /^\/ip\/203(?:\/|$)/i, 
-        macro: ["Logística","Lastmile (B2C)","IP","Consolidação"] },
-      {regex: /^\/ip\/204(?:\/|$)/i, 
-        macro: ["Logística","Lastmile (B2C)","IP","Expedição"] },
-      {regex: /^\/ip\/205(?:\/|$)/i, 
-        macro: ["Logística","Lastmile (B2C)","IP","Troca de Custódia"] },
+      { regex: /^\/consulta-id(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Consulta ID"] },
+      { regex: /^\/pre-recebimento(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Pré-Recebimento"] },
+      { regex: /^\/recebimento(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Recebimento"] },
+      { regex: /^\/consulta\/resultados\/[^/]+(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Consulta Resultados"] },
+      { regex: /^\/estorno(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Estornos"] },
+      {
+        regex: /^(?:\/consulta-ec|\/consulta\/ec|\/consulta-saida|\/saida-campo\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Saída para Campo", "Consulta Saída"]
+      },
+      {
+        regex: /^\/cancelamento\/saida-campo(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Estornos", "Estorno Saída para Campo"]
+      },
+      {
+        regex: /^\/saida-campo(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Saída para Campo", "Saída"]
+      },
+      {
+        regex: /^(?:\/consulta-ma|\/consulta\/reserva|\/consulta-reserva|\/reserva-equip\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Reserva de equipamento", "Consulta Reserva"]
+      },
+      {
+        regex: /^\/reserva-equip(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Reserva de equipamento", "Reserva"]
+      },
+      {
+        regex: /^\/estorno\/reserva-equip(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Estornos", "Estorno Reserva de Equipamento"]
+      },
+      {
+        regex: /^\/ip\/200(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP", "Recebido para Picking"]
+      },
+      {
+        regex: /^\/ip\/201(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP", "PCP"]
+      },
+      {
+        regex: /^\/ip\/202(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP", "Retorno do Picking"]
+      },
+      {
+        regex: /^\/ip\/203(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP", "Consolidação"]
+      },
+      {
+        regex: /^\/ip\/204(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP", "Expedição"]
+      },
+      {
+        regex: /^\/ip\/205(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP", "Troca de Custódia"]
+      },
     ];
 
     const match = rotasMap.find(r => r.regex.test(relPath));
