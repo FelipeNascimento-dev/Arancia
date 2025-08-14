@@ -14,4 +14,29 @@
   </form>
 </div>
 
+
+<script>
+(function() {
+  const MAP = JSON.parse('{{ depositos_map_json|escapejs }}');
+
+  function fill(select, options) {
+    select.innerHTML = '';
+    select.add(new Option('', ''));
+    (options || []).forEach(function(item){ select.add(new Option(item[1], item[0])); });
+  }
+
+  function wirePair(idCentro, idDeposito) {
+    const c = document.getElementById(idCentro);
+    const d = document.getElementById(idDeposito);
+    if (!c || !d) return;
+    c.addEventListener('change', function() {
+      fill(d, MAP[c.value]);
+    });
+    if (c.value) fill(d, MAP[c.value]);
+  }
+
+  wirePair('id_centro_origem',  'id_deposito_origem');
+  wirePair('id_centro_destino', 'id_deposito_destino');
+})();
+</script>
 {% endblock content %}

@@ -11,13 +11,9 @@ def reserva_equip(request, tp_reg):
     if request.method == 'POST':
         form = ReservaEquipamentosForm(request.POST, nome_form=titulo)
         if form.is_valid():
-            centro = form.cleaned_data.get('centro')
-            deposito = form.cleaned_data.get('deposito')
             serial = form.cleaned_data.get('serial')
 
             request.session['serge'] = serial
-            request.session['centro'] = centro
-            request.session['deposito'] = deposito
 
             request_client = RequestClient(
                 url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ma/{tp_reg}',
@@ -25,8 +21,8 @@ def reserva_equip(request, tp_reg):
                 headers={'Content-Type': 'application/json'},
                 request_data={
                     "serge": serial,
-                    "centro": centro,
-                    "deposito": deposito
+                    "centro": "CTRD",
+                    "deposito": "989A"
                 }
             )
             request_client.send_api_request()
