@@ -164,10 +164,6 @@ def _handle_clear_serials(request: HttpRequest, code_info: TrackingOriginalCode,
 def _dispatch_serial_actions_if_any(
     request: HttpRequest, code_info: TrackingOriginalCode, pedido_atual: Optional[str], form
 ) -> Optional[HttpResponse]:
-    """
-    Se a requisição conter uma ação específica de seriais (add/remove/clear),
-    executa e retorna a resposta; senão, retorna None.
-    """
     if code_info.original_code != "202":
         return None
 
@@ -221,13 +217,14 @@ def _send_tracking(request_data: dict) -> Tuple[bool, int, Optional[object]]:
 
 
 def _post_success_redirect(code_info: TrackingOriginalCode, numero_pedido: str) -> HttpResponse:
-    # Limpa seriais de 202 e faz os redirecionamentos de fluxo
     if code_info.original_code == "201":
         return redirect("logistica:reserva_equip", tp_reg=84)
     elif code_info.original_code == "203":
         return redirect("logistica:saida_campo", tp_reg=1)
     elif code_info.original_code == "204":
         return redirect("logistica:pcp", code=201)
+    elif code_info.original_code == "205":
+        return redirect("logistica:pcp", code=205)
     else:
         prox = int(code_info.original_code) + 1
         return redirect("logistica:pcp", code=prox)
