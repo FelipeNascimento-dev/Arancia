@@ -10,3 +10,4 @@ from .forms_consulta_result_ma84 import ConsultaResultMA84Form
 from .forms_consulta_result_ec01 import ConsultaResultEC01Form
 from .forms_trackingIP import trackingIPForm
 from .forms_extracao_pedidos import ExtracaoForm
+from .forms_consulta_etiqueta import EtiquetasForm
