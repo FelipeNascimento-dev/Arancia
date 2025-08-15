@@ -386,6 +386,14 @@ document.addEventListener("DOMContentLoaded", () => {
         regex: /^\/ip\/205(?:\/|$)/i,
         macro: ["Logística", "Lastmile (B2C)", "IP", "Troca de Custódia"]
       },
+      {
+        regex: /^\/extracao-pedidos(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP", "Extração de Pedidos"]
+      },
+      {
+        regex: /^\/consulta-etiquetas(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP", "Consulta de Etiquetas"]
+      }
     ];
 
     const match = rotasMap.find(r => r.regex.test(relPath));
