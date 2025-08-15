@@ -12,4 +12,5 @@ from .view_consulta_ec01 import consulta_ec01, btn_ec_voltar
 from .view_extracao_pedidos import extracao_pedidos
 from .view_pcp import trackingIP
 from .register_view import registrar_usuario
+from .view_consulta_etiquetas import consulta_etiquetas
 from .login_view import UserLoginView
