@@ -2,12 +2,11 @@
 import re
 from typing import List, Tuple, Optional, Dict, Any
 from django.shortcuts import render
-from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from ..forms import EtiquetasForm
 from utils.request import RequestClient
 
-LABEL_API_URL = "http://192.168.0.214/IntegrationXmlAPI/api/v2/labels/get-link"
+LABEL_API_URL = "https://api.intelipost.com.br/api/v1/shipment_order/get_label"
 SESSION_KEY = "consulta_etiquetas_itens"
 
 def _parse_pedidos(raw: str) -> List[Tuple[str, int]]:
@@ -25,20 +24,28 @@ def _parse_pedidos(raw: str) -> List[Tuple[str, int]]:
     return out
 
 def _get_label_url(pedido: str, volume: int) -> Optional[str]:
+    url_request = f'{LABEL_API_URL}/{pedido}/{volume}'
     client = RequestClient(
-        url=LABEL_API_URL,
-        method="POST",
-        headers={"Content-Type": "application/json", "Accept": "application/json"},
-        request_data={"order_number": pedido, "volume_number": int(volume)},
+        url=url_request,
+        method="GET",
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/json",
+            "api-key": "2c7b1f95-9dfc-2e5e-d844-ece50622eb54eacv",
+            },
     )
     resp = client.send_api_request_no_json(stream=False)
+    
     if getattr(resp, "status_code", 0) != 200:
         return None
     try:
         data: Dict[str, Any] = resp.json()
     except Exception:
         return None
-    return data.get("url") or data.get("link") or data.get("label_url")
+    
+    content = data.get("content") or {}
+    link = content.get("label_url")
+    return link
 
 def _get_items(request: HttpRequest) -> List[List]:
     return list(request.session.get(SESSION_KEY, []))
@@ -59,47 +66,28 @@ def _rows_from_items_with_api(items: List[List]) -> List[Dict[str, Any]]:
 
 def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
     if request.method == "GET":
-        _save_items(request, [])  
-        form = EtiquetasForm()
+        _save_items(request, [])
         return render(request, "logistica/consulta_etiquetas.html", {
-            "form": form,
-            "botao_texto": "Adicionar", 
-            "rows": [],  
+            "form": EtiquetasForm(),
+            "botao_texto": "Consultar",
+            "rows": [],
         })
 
     items = _get_items(request)
-    rows: List[Dict[str, Any]] = []
     form = EtiquetasForm(request.POST)
-
-    if "remove" in request.POST:
-        try:
-            idx = int(request.POST.get("remove", -1))
-            if 0 <= idx < len(items):
-                items.pop(idx)
-                _save_items(request, items)
-        except Exception:
-            pass
-        rows = _rows_from_items_no_api(items)
-        return render(request, "logistica/consulta_etiquetas.html", {
-            "form": EtiquetasForm(), "botao_texto": "Adicionar", "rows": rows,
-        })
-    
-    if "clear" in request.POST:
-        _save_items(request, [])
-        return render(request, "logistica/consulta_etiquetas.html", {
-            "form": EtiquetasForm(), "botao_texto": "Adicionar", "rows": [],
-        })
 
     if "consultar" in request.POST:
         rows = _rows_from_items_with_api(items)
         _save_items(request, [])
         return render(request, "logistica/consulta_etiquetas.html", {
-            "form": EtiquetasForm(), "botao_texto": "Adicionar", "rows": rows,
+            "form": EtiquetasForm(),
+            "botao_texto": "Consultar",
+            "rows": rows,
         })
-    
+
     if form.is_valid():
-        raw = form.cleaned_data.get("pedidos")
-        novos = _parse_pedidos(raw) if raw else []
+        labels = []
+        novos = items
         if not novos:
             pedido = (form.cleaned_data.get("pedido") or "").strip()
             vol = int(form.cleaned_data.get("qtde_vol") or 1)
@@ -110,7 +98,15 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
             pair = [ped, int(vol)]
             if pair not in items:
                 items.append(pair)
-
+            label = _get_label_url(pedido=ped,volume=vol)
+            row = {
+                "pedido":ped,
+                "volume":vol,
+                "url":label
+            }
+            labels.append(row)
+        
+        #print(labels)
         _save_items(request, items)
         rows = _rows_from_items_no_api(items)
     else:
@@ -118,6 +114,6 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
 
     return render(request, "logistica/consulta_etiquetas.html", {
         "form": EtiquetasForm(),
-        "botao_texto": "Adicionar",
-        "rows": rows, 
+        "botao_texto": "Consultar", 
+        "rows": labels,
     })
