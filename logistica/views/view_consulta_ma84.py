@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 
+
 def buscar_dados(tp_reg, serial):
     request_api = RequestClient(
         headers={'Content-Type': 'application/json'},
@@ -14,10 +15,10 @@ def buscar_dados(tp_reg, serial):
     response = request_api.send_api_request()
     return [response]
 
+
 @csrf_protect
 @login_required(login_url='logistica:login')
-@permission_required('logistica.usuario_de_TI', raise_exception=True)
-@permission_required('logistica.usuario_credenciado', raise_exception=True)
+@permission_required('logistica.lastmile_b2c', raise_exception=True)
 def consulta_ma84(request):
     id_pre_recebido = request.session.get('id_pre_recebido')
     serial_inserido = request.session.get('serial_recebido')
@@ -34,7 +35,8 @@ def consulta_ma84(request):
         form = ConsultaResultMA84Form(request.POST)
 
         if form.data.get('tp_reg') in ('84', '85') and form.data.get('serial') == '':
-            form.add_error('serial', 'O serial não pode ser vazio para essa mensagem.')
+            form.add_error(
+                'serial', 'O serial não pode ser vazio para essa mensagem.')
             return render(request, 'logistica/consulta_result_ma.html', {
                 'form': form,
                 'tabela_dados': None,
@@ -47,7 +49,8 @@ def consulta_ma84(request):
             serial = form.cleaned_data.get('serial', '')
 
             request.session['tp_reg'] = novo_tp_reg
-            request.session['id_pre_recebido'] = form.cleaned_data.get('id', '')
+            request.session['id_pre_recebido'] = form.cleaned_data.get(
+                'id', '')
             request.session['serial_recebido'] = serial
             request.session['origem'] = 'consulta_result'
             request.session['mostrar_tabela'] = True
@@ -69,7 +72,8 @@ def consulta_ma84(request):
         form = ConsultaResultMA84Form(initial=initial_data)
 
     try:
-        dados = buscar_dados(tp_reg, serial_inserido) if mostrar_tabela else None
+        dados = buscar_dados(
+            tp_reg, serial_inserido) if mostrar_tabela else None
     except Exception:
         messages.error(request, "Erro ao enviar requisição")
         dados = None
@@ -81,6 +85,7 @@ def consulta_ma84(request):
         'tp_reg': tp_reg,
         'botao_texto': 'Consultar',
     })
+
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.usuario_de_TI', raise_exception=True)

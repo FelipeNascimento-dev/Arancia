@@ -4,24 +4,25 @@ from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
 
+
 def buscar_dados(tp_reg, serial):
     tp_reg_new = tp_reg.zfill(2)
 
     request_api = RequestClient(
-                headers={'Content-Type': 'application/json'},
-                method='get',
-                url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ec/{tp_reg_new}/{serial}',
-            )
+        headers={'Content-Type': 'application/json'},
+        method='get',
+        url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ec/{tp_reg_new}/{serial}',
+    )
     response = request_api.send_api_request()
-    
+
     return [
         response
     ]
 
+
 @csrf_protect
 @login_required(login_url='logistica:login')
-@permission_required('logistica.usuario_de_TI', raise_exception=True)
-@permission_required('logistica.usuario_credenciado', raise_exception=True)
+@permission_required('logistica.lastmile_b2c', raise_exception=True)
 def consulta_ec01(request):
     id_pre_recebido = request.session.pop('id_pre_recebido', None)
     serial = request.session.pop('serial', None)
@@ -32,16 +33,18 @@ def consulta_ec01(request):
         form = ConsultaResultEC01Form(request.POST)
 
         if form.data.get('tp_reg') in ('01', '02') and form.data.get('serial') == '':
-            form.add_error('serial', 'O serial não pode ser vazio para essa mensagem.')
+            form.add_error(
+                'serial', 'O serial não pode ser vazio para essa mensagem.')
             return render(request, 'logistica/consulta_result_ec.html', {'form': form,
-                'etapa_ativa': 'consulta_result_ec'})
+                                                                         'etapa_ativa': 'consulta_result_ec'})
 
         if form.is_valid():
             tp_reg = form.cleaned_data.get('tp_reg')
             serial = form.cleaned_data.get('serial')
 
             request.session['tp_reg'] = tp_reg
-            request.session['id_pre_recebido'] = form.cleaned_data.get('id', '')
+            request.session['id_pre_recebido'] = form.cleaned_data.get(
+                'id', '')
             request.session['serial_recebido'] = serial
             request.session['origem'] = 'consulta_result'
             request.session['mostrar_tabela'] = True
@@ -75,6 +78,7 @@ def consulta_ec01(request):
         'tp_reg': initial_data.get('tp_reg', ''),
         'botao_texto': 'Consultar',
     })
+
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.usuario_de_TI', raise_exception=True)

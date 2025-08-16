@@ -5,23 +5,24 @@ from django.contrib import messages
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
 
-def buscar_dados(request,tp_reg,id_pre_recebido,serial_inserido):
+
+def buscar_dados(request, tp_reg, id_pre_recebido, serial_inserido):
 
     request_api = RequestClient(
-                headers={'Content-Type': 'application/json'},
-                method='get',
-                url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/mo/{tp_reg}/?id_lote={id_pre_recebido}&serge={serial_inserido}',
-            )
+        headers={'Content-Type': 'application/json'},
+        method='get',
+        url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/mo/{tp_reg}/?id_lote={id_pre_recebido}&serge={serial_inserido}',
+    )
     response = request_api.send_api_request()
-    
+
     return [
         response
     ]
 
+
 @csrf_protect
 @login_required(login_url='logistica:login')
-@permission_required('logistica.usuario_de_TI', raise_exception=True)
-@permission_required('logistica.usuario_credenciado', raise_exception=True)
+@permission_required('logistica.entrada_flfm', raise_exception=True)
 def consulta_result(request):
     id_pre_recebido = request.session.get('id_pre_recebido')
     serial_inserido = request.session.get('serial_recebido')
@@ -32,7 +33,8 @@ def consulta_result(request):
         form = ConsultaPreRecebimentoForm(request.POST)
 
         if form.data.get('tp_reg') in ('15', '16') and form.data.get('serial') == '':
-            form.add_error('serial', 'O serial não pode ser vazio para essa mensagem.')
+            form.add_error(
+                'serial', 'O serial não pode ser vazio para essa mensagem.')
             return render(request, 'logistica/consulta_result.html', {
                 'form': form,
                 'tabela_dados': None,
@@ -44,7 +46,8 @@ def consulta_result(request):
             serial = form.cleaned_data.get('serial', '')
 
             request.session['tp_reg'] = novo_tp_reg
-            request.session['id_pre_recebido'] = form.cleaned_data.get('id', '')
+            request.session['id_pre_recebido'] = form.cleaned_data.get(
+                'id', '')
             request.session['serial_recebido'] = serial
             request.session['origem'] = 'consulta_result'
             request.session['mostrar_tabela'] = True
@@ -70,7 +73,8 @@ def consulta_result(request):
         form = ConsultaPreRecebimentoForm(initial=initial_data)
 
     try:
-        dados = buscar_dados(request, tp_reg, id_pre_recebido, serial_inserido) if mostrar_tabela else None
+        dados = buscar_dados(request, tp_reg, id_pre_recebido,
+                             serial_inserido) if mostrar_tabela else None
     except Exception as e:
         messages.error(request, "Erro ao enviar requisição")
         dados = None
@@ -82,9 +86,9 @@ def consulta_result(request):
         'botao_texto': 'Consultar',
     })
 
+
 @login_required(login_url='logistica:login')
-@permission_required('logistica.usuario_de_TI', raise_exception=True)
-@permission_required('logistica.usuario_credenciado', raise_exception=True)
+@permission_required('logistica.entrada_flfm', raise_exception=True)
 def btn_voltar(request):
     tp_reg = (
         request.POST.get('tp_reg') or
@@ -103,7 +107,7 @@ def btn_voltar(request):
         if id_valor:
             request.session['id_pre_recebido'] = id_valor
         return redirect('logistica:estorno_recebimento', tp_reg=tp_reg)
-    elif tp_reg ==  '16':
+    elif tp_reg == '16':
         if id_valor:
             request.session['id_pre_recebido'] = id_valor
         return redirect('logistica:estorno_pre_recebimento', tp_reg=tp_reg)

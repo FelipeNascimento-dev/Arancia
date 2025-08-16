@@ -3,9 +3,9 @@ from utils.request import RequestClient
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, permission_required
 
+
 @login_required(login_url='logistica:login')
-@permission_required('logistica.usuario_de_TI', raise_exception=True)
-@permission_required('logistica.usuario_credenciado', raise_exception=True)
+@permission_required('logistica.lastmile_b2c', raise_exception=True)
 def reserva_equip(request, tp_reg):
     titulo = 'SAP - Reserva de Equipamento' if tp_reg == '84' else 'SAP - Estorno Reserva de Equipamento'
     if request.method == 'POST':
@@ -30,9 +30,9 @@ def reserva_equip(request, tp_reg):
             return redirect('logistica:consulta_result_ma')
     else:
         form = ReservaEquipamentosForm(nome_form=titulo)
-    
+
     return render(request, 'logistica/reserva_equip.html', {
         'form': form,
         'etapa_ativa': 'reserva',
         'botao_texto': 'Enviar',
-        })
+    })

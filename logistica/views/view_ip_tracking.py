@@ -7,10 +7,13 @@ from django.http import HttpRequest, HttpResponse
 from ..forms import trackingIPForm
 from utils.request import RequestClient
 from setup.local_settings import DEBUG
+from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required, permission_required
 
 SESSION_PREFIX = "retorno_serials_"
 TRACKING_URL = "http://192.168.0.216/homo-fulfillment/api/order-sumary/add-tracking"
-TRACKING_HEADERS = {"Content-Type": "application/json", "accept": "application/json"}
+TRACKING_HEADERS = {"Content-Type": "application/json",
+                    "accept": "application/json"}
 
 
 class TrackingOriginalCode:
@@ -117,7 +120,8 @@ def _handle_add_serial(request: HttpRequest, code_info: TrackingOriginalCode, pe
     s = (request.POST.get("serial") or "").strip().upper()
 
     if not pedido_atual:
-        messages.error(request, "Informe o número do pedido antes de inserir seriais.")
+        messages.error(
+            request, "Informe o número do pedido antes de inserir seriais.")
     elif not s:
         messages.info(request, "Digite um serial.")
     else:
@@ -131,7 +135,8 @@ def _handle_add_serial(request: HttpRequest, code_info: TrackingOriginalCode, pe
 
     _ensure_pedido_in_session(request, pedido_atual)
     initial = _build_initial(form, request, pedido_atual, exclude=("serial",))
-    form = trackingIPForm(initial=initial, nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
+    form = trackingIPForm(
+        initial=initial, nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
     serials = _get_serials_from_session(request, pedido_atual)
     return _render_pcp(request, form, code_info, serials)
 
@@ -148,7 +153,8 @@ def _handle_remove_serial(request: HttpRequest, code_info: TrackingOriginalCode,
         messages.error(request, "Não foi possível remover o serial.")
 
     initial = _build_initial(form, request, pedido_atual, exclude=())
-    form = trackingIPForm(initial=initial, nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
+    form = trackingIPForm(
+        initial=initial, nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
     return _render_pcp(request, form, code_info, serials)
 
 
@@ -157,7 +163,8 @@ def _handle_clear_serials(request: HttpRequest, code_info: TrackingOriginalCode,
     messages.success(request, "Lista de seriais limpa.")
 
     initial = _build_initial(form, request, pedido_atual, exclude=("serial",))
-    form = trackingIPForm(initial=initial, nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
+    form = trackingIPForm(
+        initial=initial, nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
     return _render_pcp(request, form, code_info, [])
 
 
@@ -208,11 +215,12 @@ def _build_request_data(numero_pedido: str, event_payload: dict) -> dict:
 
 
 def _send_tracking(request_data: dict) -> Tuple[bool, int, Optional[object]]:
-    client = RequestClient(url=TRACKING_URL, method="POST", headers=TRACKING_HEADERS, request_data=request_data)
+    client = RequestClient(url=TRACKING_URL, method="POST",
+                           headers=TRACKING_HEADERS, request_data=request_data)
     resp = client.send_api_request()
-    
+
     status = resp['status'] if "status" in resp else 'error'
-    #detail = getattr(resp, "detail", 'no detail') 
+    # detail = getattr(resp, "detail", 'no detail')
     return (status, resp)
 
 
@@ -237,7 +245,8 @@ def _process_enviar_evento(
         return None
 
     if not form.is_valid():
-        messages.error(request, f"Corrija os erros do formulário: {form.errors.as_text()}")
+        messages.error(
+            request, f"Corrija os erros do formulário: {form.errors.as_text()}")
         return _render_pcp(request, form, code_info, serials)
 
     numero_pedido = str(form.cleaned_data.get("pedido"))
@@ -248,7 +257,8 @@ def _process_enviar_evento(
         serials = _get_serials_from_session(request, numero_pedido)
         serials = _dedup_upper(serials)
         if not serials:
-            messages.error(request, "Adicione ao menos 1 serial antes de enviar o Retorno do picking.")
+            messages.error(
+                request, "Adicione ao menos 1 serial antes de enviar o Retorno do picking.")
             return _render_pcp(request, form, code_info, _get_serials_from_session(request, numero_pedido))
         seriais_concat = "|".join(serials)
     else:
@@ -258,9 +268,10 @@ def _process_enviar_evento(
     request_data = _build_request_data(numero_pedido, event_payload)
 
     try:
-        status,resp = _send_tracking(request_data)
-        if status=='success':
-            messages.success(request, f'A mensagem "{code_info.description}" foi enviada com sucesso!')
+        status, resp = _send_tracking(request_data)
+        if status == 'success':
+            messages.success(
+                request, f'A mensagem "{code_info.description}" foi enviada com sucesso!')
 
             if code_info.original_code == "202":
                 _save_serials_to_session(request, numero_pedido, [])
@@ -269,7 +280,8 @@ def _process_enviar_evento(
         elif 'detail' in resp:
             messages.error(request, resp['detail'])
         else:
-            messages.error(request, f"Falha ao enviar rastreamento (status {status}).")
+            messages.error(
+                request, f"Falha ao enviar rastreamento (status {status}).")
     except Exception as e:
         if DEBUG:
             messages.error(request, f"{e}")
@@ -281,19 +293,24 @@ def _process_enviar_evento(
 
 
 # ---------- View principal ----------
-
+@csrf_protect
+@login_required(login_url='logistica:login')
+@permission_required('logistica.lastmile_b2c', raise_exception=True)
 def trackingIP(request: HttpRequest, code: str) -> HttpResponse:
     code_info = TrackingOriginalCode(code)
     titulo = f"IP - {code_info.description}"
 
     pedido_atual = _get_pedido_atual(request)
-    serials = _get_serials_from_session(request, pedido_atual) if code == "202" else []
+    serials = _get_serials_from_session(
+        request, pedido_atual) if code == "202" else []
 
     if request.method == "POST":
-        form = trackingIPForm(request.POST, nome_form=titulo, show_serial=code_info.show_serial)
+        form = trackingIPForm(request.POST, nome_form=titulo,
+                              show_serial=code_info.show_serial)
 
         # Ações de seriais (add/remove/clear) — retornam imediatamente se ocorrerem
-        resp = _dispatch_serial_actions_if_any(request, code_info, pedido_atual, form)
+        resp = _dispatch_serial_actions_if_any(
+            request, code_info, pedido_atual, form)
         if resp is not None:
             return resp
 

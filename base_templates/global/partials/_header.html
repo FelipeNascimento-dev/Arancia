@@ -42,7 +42,7 @@
             </div>
         </div>
 
-        <!-- Transporte -->
+        <!-- Transporte
         <div class="dropdown">
             <button type="button" class="dropbtn itens-sidebar">
                 <i class="fa-solid fa-truck"></i>
@@ -62,7 +62,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <!-- Logística -->
         <div class="dropdown">
@@ -71,6 +71,21 @@
                 <span class="texto-item">&nbsp; Logística</span>
             </button>
             <div class="dropdown-content">
+                {% if perms.logistica.entrada_flfm %}
+                <h5 class="submenu-toggle" data-target="estornos-sub">Entrada (Fulfillment)</h5>
+                <div class="sub-submenu" id="estornos-sub">
+                    <a href="{% url 'logistica:consulta_id_form' %}">SAP - Consulta ID</a>
+                    <a href="{% url 'logistica:pre_recebimento' 13 %}">SAP - Pré-Recebimento</a>
+                    <a href="{% url 'logistica:recebimento' 15 %}">SAP - Recebimento</a>
+                    <a href="{% url 'logistica:consulta_resultados' %}">SAP - Consulta Resultados</a>
+                    <h5 class="submenu-toggle" data-target="estornos-pre-sub">Estornos</h5>
+                    <div class="sub-submenu" id="estornos-pre-sub">
+                        <a href="{% url 'logistica:pre_recebimento' 14 %}">SAP - Estorno de Pré-Recebimento</a>
+                        <a href="{% url 'logistica:recebimento' 16 %}">SAP - Estorno de Recebimento</a>
+                    </div>
+                </div>
+                {% endif %}
+                {% if perms.logistica.lastmile_b2c %}
                 <h5 class="submenu-toggle" data-target="lastmile-sub">Lastmile (B2C)</h5>
                 <div class="sub-submenu" id="lastmile-sub">
                     <a href="{% url 'logistica:extracao_pedidos' %}">IP - Extração de Pedidos</a>
@@ -96,6 +111,7 @@
                         <a href="{% url 'logistica:cancelamento_saida_campo' 2 %}">SAP - Estorno Saida para Campo</a>
                     </div>
                 </div>
+                {% endif %}
             </div>
         </div>
 
@@ -103,7 +119,7 @@
         <div class="dropdown">
             <button type="button" class="dropbtn itens-sidebar">
                 <i class="fa-solid fa-globe"></i>
-                <span class="texto-item">&nbsp; Sistemas</span>
+                <span class="texto-item">&nbsp; Sistemas (Legados)</span>
             </button>
             <div class="dropdown-content">
                 <a href="http://192.168.0.214/erp/login.aspx" target="_blank">Agendamentos</a>

@@ -2,6 +2,8 @@ from django.http import StreamingHttpResponse, HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required, permission_required
 
 from ..forms import ExtracaoForm
 from utils.request import RequestClient
@@ -9,6 +11,10 @@ from utils.request import RequestClient
 DEFAULT_CT = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 DEFAULT_CD = 'attachment; filename="order_sumary.xlsx"'
 
+
+@csrf_protect
+@login_required(login_url='logistica:login')
+@permission_required('logistica.lastmile_b2c', raise_exception=True)
 def extracao_pedidos(request: HttpRequest) -> HttpResponse:
     if request.method == "GET" and request.GET.get("download") == "1":
         sales_channel = request.session.get("sales_channel") or "All"
@@ -28,7 +34,8 @@ def extracao_pedidos(request: HttpRequest) -> HttpResponse:
             content = resp.content
 
             if not content.startswith(b"PK\x03\x04"):
-                messages.error(request, "O servidor retornou um conteúdo inesperado (não parece um XLSX).")
+                messages.error(
+                    request, "O servidor retornou um conteúdo inesperado (não parece um XLSX).")
                 form = ExtracaoForm(initial={"sales_channel": sales_channel})
                 return render(request, "logistica/extracao_pedidos.html", {
                     "form": form,
@@ -62,7 +69,8 @@ def extracao_pedidos(request: HttpRequest) -> HttpResponse:
                 "botao_texto": "Exportar",
             })
 
-    form = ExtracaoForm(initial={"sales_channel": request.session.get("sales_channel")})
+    form = ExtracaoForm(
+        initial={"sales_channel": request.session.get("sales_channel")})
     return render(request, "logistica/extracao_pedidos.html", {
         "form": form,
         "botao_texto": "Exportar",

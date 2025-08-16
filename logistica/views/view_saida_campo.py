@@ -4,10 +4,10 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 
+
 @login_required(login_url='logistica:login')
-@permission_required('logistica.usuario_de_TI', raise_exception=True)
-@permission_required('logistica.usuario_credenciado', raise_exception=True)
-def saida_campo(request, tp_reg:str):
+@permission_required('logistica.lastmile_b2c', raise_exception=True)
+def saida_campo(request, tp_reg: str):
     titulo = 'SAP - Saida para Campo' if tp_reg == '1' else 'SAP - Cancelamento de Saida para Campo'
     tp_reg_new = tp_reg.zfill(2)
     if request.method == 'POST':
@@ -46,9 +46,9 @@ def saida_campo(request, tp_reg:str):
             return redirect('logistica:consulta_result_ec')
     else:
         form = SaidaCampoForm(nome_form=titulo)
-    
+
     return render(request, 'logistica/saida_campo.html', {
         'form': form,
         'etapa_ativa': 'saida_campo',
         'botao_texto': 'Enviar',
-        })
+    })
