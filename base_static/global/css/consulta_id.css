@@ -1,9 +1,11 @@
 .tabela-container {
     margin-top: 50px;
     display: block;
-    max-width: 100vw;
+    max-width: 1150px;
     margin-bottom: 100px;
     border: 1px solid #ccc;
+    margin-left: 65px;
+    padding: 24px;
 }
 
 .tabela-consulta {
@@ -16,7 +18,7 @@
 }
 
 .tabela-consulta thead {
-    background-color: #004085;
+    background-color: #4a90e2;
     color: #fff;
 }
 
@@ -52,7 +54,7 @@
 }
 
 .btn-p-rec{
-    background-color: #004085;
+    background-color: #fc9b63;
     color: #fff;
     border: none;
     padding: 10px 20px;
@@ -63,7 +65,7 @@
 
 .btn-rec{
     margin: 10px;
-    background-color: #004085;
+    background-color: #fc9b63;
     color: #fff;
     border: none;
     padding: 10px 20px;
