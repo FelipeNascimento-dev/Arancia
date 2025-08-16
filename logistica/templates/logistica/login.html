@@ -1,0 +1,87 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    {% include 'global/partials/_head.html' %}
+    <meta charset="UTF-8">
+    <title>Login C-Trends BPO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="left-panel" style="background-image: url('{% static "global/images/background.jpeg" %}');">
+        <!-- <img class="logo-tela-login" src="{% static 'global/images/logo_flow.png' %}" alt="logo arancia"> -->
+        <div class="services">
+            <div class="service">
+                <img src="{% static 'global/images/call-center.png' %}" alt="logo"> Call Center
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/central-retencao.png' %}" alt="logo"> Central Retenção
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/cobranca.png' %}" alt="logo"> Cobrança
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/operador-logistico.png' %}" alt="logo"> Operador Logístico
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/caca-pos.png' %}" alt="logo"> Caça Pos
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/sac.png' %}" alt="logo"> SAC
+            </div>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <form method="post" class="login-box">
+            {% csrf_token %}
+            <img class="logo-tela-login" src="{% static 'global/images/logo_flow.png' %}" alt="logo arancia">
+            <h2>Login</h2>
+
+            {% if request.COOKIES.mensagem_bloqueio %}
+            <div class="alert">{{ request.COOKIES.mensagem_bloqueio }}</div>
+            {% endif %}
+
+            {% if form.non_field_errors %}
+            <div class="error">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="form-login">
+                <i class="fa-regular fa-user"></i>
+                <input type="text" name="{{ form.username.name }}" id="{{ form.username.id_for_label }}"
+                    value="{{ form.username.value|default_if_none:'' }}" placeholder=" " required>
+                <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                {% if form.username.errors %}
+                <div class="error">{{ form.username.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-login">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" name="{{ form.password.name }}" id="{{ form.password.id_for_label }}"
+                    placeholder=" " required>
+                <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+                {% if form.password.errors %}
+                <div class="error">{{ form.password.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="top-register-button">
+                <span>Novo por aqui?</span>
+                <a href="{% url 'logistica:register' %}" class="btn-create-account">
+                    <i class="fa fa-user-plus"></i> Criar Conta
+                </a>
+            </div>
+
+            <button type="submit" class="login-button">Entrar</button>
+            <p class="link-forgot">
+                <a href="#">Esqueceu sua senha?</a>
+            </p>
+        </form>
+    </div>
+</body>
+
+</html>

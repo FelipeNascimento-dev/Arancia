@@ -1,0 +1,82 @@
+.etapas-container {
+    width: 100% !important;
+    background-color: #ffffff;
+    /* padding: 0 0 20px; */
+    box-sizing: border-box;
+    margin-top: 50px;
+    margin-bottom: 15px;
+    margin-left: 27px;
+}
+
+.etapas-container::after {
+    content: '';
+    position: fixed;
+    top: calc(50px + 35px);
+    left: 0;
+    width: 100vw;
+    height: 1px;
+    background-color: #ccc;
+}
+
+.background-etapas {
+    background-color: #cacaca;
+    width: 100%;
+}
+
+.etapas-container.active {
+    display: block;
+}
+
+.etapas {
+    display: flex;
+    overflow-x: auto;
+}
+
+.etapa {
+    position: relative;
+    background-color: var(--sidebar-bg);
+    color: #000;
+    padding: 10px 25px;
+    font-weight: bold;
+    font-size: 13px;
+    min-width: 180px;
+    text-align: center;
+    z-index: 1;
+    transition: background-color 0.3s ease;
+    clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%, 15px 50%);
+    margin-right: -13px;
+}
+
+.etapa:first-child {
+    clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%);
+    margin-left: 0;
+}
+
+.etapa:last-child {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%, 15px 50%);
+    margin-right: 0;
+    width: 100%;
+    text-align: left;
+    padding: 10px 55px;
+}
+
+.etapa.ativa {
+    background-color: #81C784;
+    color: #fff;
+    z-index: 2;
+}
+
+.etapa.ativa:hover {
+    background-color: #81C784;
+}
+
+.etapa a {
+    color: inherit;
+    text-decoration: none;
+    display: block;
+}
+
+.etapa:hover {
+    background-color: #f7f7f7;
+    cursor: pointer;
+}

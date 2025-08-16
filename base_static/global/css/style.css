@@ -1,21 +1,41 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 @import url(navbar.css);
+@import url(login.css);
+@import url(logout.css);
+@import url(register.css);
+@import url(form_3col.css);
 @import url(form_2col.css);
 @import url(form_1col.css);
 @import url(button_1b.css);
 @import url(button_2b.css);
 @import url(consulta_id.css);
 @import url(pagination.css);
-@import url(login.css);
+@import url(barra_progresso.css);
+@import url(nav_usuario.css);
+@import url(trackingIP.css);
+@import url(responsividade.css);
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Roboto', sans-serif;
+:root {
+  --background-formularios: #fff;
+  --box-shadow-formularios: 0 0 17px rgba(0, 0, 0, 0.05);
+  --borda-formularios: #cccccc3d;
+  --form-titulo: #3F3F3F;
+  --form-label-color: #3f3f3f;
+  --form-input-color: #fff;
+  --form-input-border: #cccccc77;
+  --button-form-color: #fc9b63;
+  --button-form-color-hover: #ff833c;
 }
 
-html, body {
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+}
+
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -26,12 +46,10 @@ html, body {
   width: 100%;
   display: flex;
   justify-content: center;
-  align-items: flex-start; 
+  align-items: flex-start;
   box-sizing: border-box;
   position: relative;
-  padding-top: 100px; 
 }
-
 
 .forma::before {
   content: "";
@@ -43,4 +61,18 @@ html, body {
   z-index: -1;
   background: #f5f5f5;
   clip-path: polygon(0 0, 60% 0, 100% 100%, 0% 200%);
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-100%);
+  transition: all 0.4s ease;
+}
+
+.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition: all 0.4s ease;
 }

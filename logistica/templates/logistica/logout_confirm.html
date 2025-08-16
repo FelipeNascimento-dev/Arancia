@@ -1,0 +1,47 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    {% include 'global/partials/_head.html' %}
+</head>
+
+<body>
+    <div class="left-panel" style="background-image: url('{% static "global/images/background.jpeg" %}');">
+        <div class="services">
+            <div class="service">
+                <img src="{% static 'global/images/call-center.png' %}" alt="logo"> Call Center
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/central-retencao.png' %}" alt="logo"> Central Retenção
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/cobranca.png' %}" alt="logo"> Cobrança
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/operador-logistico.png' %}" alt="logo"> Operador Logístico
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/caca-pos.png' %}" alt="logo"> Caça Pos
+            </div>
+            <div class="service">
+                <img src="{% static 'global/images/sac.png' %}" alt="logo"> SAC
+            </div>
+        </div>
+    </div>
+    <div class="right-panel">
+        <form method="post" class="logout-box" action="{% url 'logistica:logout' %}">
+            {% csrf_token %}
+            <img class="logo-tela-login" src="{% static 'global/images/logo_flow.png' %}" alt="logo arancia">
+            <h2>Tem certeza que deseja sair?</h2>
+            <br>
+            <div class="logout-buttons">
+                <button type="submit" class="logout-confirm-button">Sim, sair</button>
+                <a href="{% url 'logistica:index' %}" class="logout-cancel-button">Cancelar</a>
+            </div>
+        </form>
+    </div> 
+</body>
+
+</html>
