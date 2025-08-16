@@ -43,3 +43,59 @@ class RequestClient:
             log_request_result('request_success', self.url,
                                self.method, self.request_data, response)
             return response.json()
+        
+    def send_api_request_no_json(self, *, stream: bool = True):
+        """
+        Envia a requisição e SEMPRE retorna httpx.Response (sem fazer .json()).
+        - stream=True: mantém o corpo em streaming (use response.iter_bytes()).
+        - Em erro HTTP (4xx/5xx), retorna exc.response (também httpx.Response).
+        """
+        method = (self.method or "GET").upper()
+        url = self.url
+        headers = self.headers or {}
+        data = self.request_data
+
+        logger.info("Sending %s %s", method, url)
+        logger.info("Request params/json: %r", data)
+        logger.info("Request headers: %r", headers)
+
+        # Monta kwargs corretos para httpx (params para GET/DELETE, json para outros)
+        req_kwargs = {"headers": headers}
+        if method in ("GET", "DELETE"):
+            req_kwargs["params"] = data
+        else:
+            req_kwargs["json"] = data
+
+        try:
+            with httpx.Client(timeout=getattr(self, "timeout", None), follow_redirects=True) as client:
+                request = client.build_request(method, url, **req_kwargs)
+                # stream=True => permite iterar com response.iter_bytes() sem carregar tudo em memória
+                response = client.send(request, stream=stream)
+
+                try:
+                    response.raise_for_status()
+                except httpx.HTTPStatusError as exc:
+                    resp = exc.response  # httpx.Response
+                    # LOG: não tente resp.json() aqui — pode ser binário
+                    ct = resp.headers.get("content-type")
+                    logger.warning("HTTP error %s on %s (CT: %s)", resp.status_code, url, ct)
+                    # Seu logger custom
+                    try:
+                        log_request_result("request_error", url, method, data, resp)
+                    except Exception:
+                        pass
+                    return resp
+
+        except httpx.RequestError as exc:
+            # Erros de rede/DNS/timeout
+            logger.exception("Network error on %s %s: %s", method, url, exc)
+            raise
+
+        # Sucesso
+        try:
+            log_request_result("request_success", url, method, data, response)
+        except Exception:
+            pass
+
+        return response
+

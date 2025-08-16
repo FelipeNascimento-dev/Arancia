@@ -1,0 +1,41 @@
+<div class="user-navbar">
+    <div class="macro-guia" id="macroGuia"></div>
+
+    <div class="form-container-center">
+        <form method="get" action="" class="form-pesquisa">
+            <i class="fa-solid fa-magnifying-glass search-icon-inside"></i>
+            <input type="text" name="q" id="q" placeholder="Pesquisar..." value="{{ request.GET.q }}">
+        </form>
+    </div>
+
+    <div class="items-nav-user">
+        <div class="user-dropdown">
+            <button class="user-dropdown-toggle" onclick="toggleUserDropdown()">
+                <i class="fa fa-user"></i>
+                <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+                <i class="fa fa-chevron-down arrow-icon"></i>
+            </button>
+
+            <ul class="user-dropdown-menu" id="userDropdownMenu">
+                <li><a href="#"><i class="fa fa-cog"></i> Configurações</a></li>
+                <li><a href="#"><i class="fa fa-question-circle"></i> Ajuda</a></li>
+                <li><a href="{% url 'logistica:logout_confirm' %}"><i class="fa fa-sign-out-alt"></i> Sair</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleUserDropdown() {
+        const menu = document.getElementById('userDropdownMenu');
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    document.addEventListener('click', function (e) {
+        const button = document.querySelector('.user-dropdown-toggle');
+        const menu = document.getElementById('userDropdownMenu');
+        if (!button.contains(e.target) && !menu.contains(e.target)) {
+            menu.style.display = 'none';
+        }
+    });
+</script>

@@ -1,0 +1,67 @@
+.form-logout {
+    background: #fff4f4;
+    border: 1.5px solid #ef9a9a;
+    border-radius: 14px;
+    box-shadow: 0 4px 24px #b7dfce30;
+    padding: 36px 36px 32px 36px;
+    max-width: 370px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.logout-box h2 {
+    color: #2c3e50;
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin-bottom: 18px;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+
+.logout-buttons {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+}
+
+.logout-confirm-button,
+.logout-cancel-button {
+    width: 100%;
+    height: 48px;
+    font-size: 1.12rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    outline: none;
+    border: none;
+    box-shadow: none;
+    text-decoration: none;
+    transition: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.logout-confirm-button {
+    background: #2c3e50;
+    color: #fff;
+    border: none;
+}
+
+.logout-cancel-button {
+    background: #eaf3fa;
+    color: #2c3e50;
+    border: 1.5px solid #2c3e50;
+    text-decoration: none !important;
+}
+
+.logout-box img.logo-tela-login {
+    display: block;
+    margin: 0 auto 30px auto;
+    width: 280px; 
+}

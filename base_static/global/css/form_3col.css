@@ -1,0 +1,67 @@
+.form-card {
+  background: var(--background-formularios);
+  padding: 24px;
+  border-radius: 10px;
+  box-shadow: var(--box-shadow-formularios);
+  width: 1300px;
+  max-width: 1300px;
+  border: 1px solid var(--borda-formularios);
+  margin-left: 65px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 50px;
+}
+
+.form-card h2 {
+  font-weight: bold;
+  text-align: left;
+  justify-content: center;
+  margin-bottom: 20px;
+  margin-top: 20px;
+  color: var(--form-titulo);
+}
+
+label {
+  font-weight: bold;
+  color: var(--form-label-color);
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+
+.form-3col input,
+.form-3col select,
+.form-3col textarea {
+  width: 380px;
+  padding: 10px;
+  background: var(--form-input-color);
+  border: 1px solid var(--form-input-border);
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+.error {
+  color: red;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.submit-button-right {
+  background-color: var(--button-form-color);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  min-width: 160px;
+  display: inline-block;
+}
+
+.submit-button-right:hover {
+  background-color: var(--button-form-color-hover);
+}

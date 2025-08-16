@@ -1,0 +1,178 @@
+@media screen and (max-width: 1280px) {
+    .etapas-container {
+        width: 100% !important;
+        background-color: #ffffff;
+        /* padding: 0 0 20px; */
+        box-sizing: border-box;
+        margin-top: 50px;
+        margin-bottom: 15px;
+        margin-left: 14px;
+    }
+
+    .etapa {
+        position: relative;
+        background-color: var(--sidebar-bg);
+        color: #000;
+        padding: 10px 25px;
+        font-weight: bold;
+        font-size: 13.7px;
+        min-width: 165px;
+        text-align: center;
+        z-index: 1;
+        transition: background-color 0.3s ease;
+        clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%, 15px 50%);
+        margin-right: -13px;
+    }
+
+    .etapas-container::after {
+        content: '';
+        position: fixed;
+        top: calc(50px + 36px);
+        left: 0;
+        width: 100vw;
+        height: 1px;
+        background-color: #ccc;
+    }
+
+}
+
+@media screen and (max-width: 1440px) {
+    .form-1col {
+        width: 1150px;
+        max-width: 1150px;
+        padding: 32px;
+    }
+
+    .form-group-1col input,
+    .form-group-1col select,
+    .form-group-1col textarea {
+        width: 1085px;
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    .form-group-1col h2 {
+        font-size: 24px;
+    }
+
+    label {
+        font-size: 16px;
+    }
+
+    .submit-button-right {
+        font-size: 17px;
+        padding: 12px 28px;
+        min-width: 180px;
+    }
+}
+
+@media screen and (max-width: 1280px) {
+    .form-card-2col {
+        width: 1150px;
+        max-width: 1150px;
+        padding: 32px;
+    }
+
+    .form-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 60px;
+    }
+
+    .form-card-2col input,
+    .form-card-2col select,
+    .form-card-2col textarea {
+        width: 530px;
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    .form-card-2col h2 {
+        font-size: 24px;
+    }
+
+    label {
+        font-size: 16px;
+    }
+
+    .submit-button-right {
+        font-size: 17px;
+        padding: 12px 28px;
+        min-width: 200px;
+    }
+}
+
+@media screen and (max-width: 1280px) {
+    .form-card {
+        width: 1150px;
+        max-width: 1150px;
+        padding: 32px;
+    }
+
+    .form-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 60px;
+    }
+
+    .form-3col input,
+    .form-3col select,
+    .form-3col textarea {
+        width: 322px;
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    .form-card h2 {
+        font-size: 24px;
+    }
+
+    label {
+        font-size: 16px;
+    }
+
+    .submit-button-right {
+        font-size: 17px;
+        padding: 12px 28px;
+        min-width: 180px;
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .form-card {
+        width: 900px;
+        max-width: 900px;
+        padding: 32px;
+    }
+
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 60px;
+    }
+
+    .form-3col input,
+    .form-3col select,
+    .form-3col textarea {
+        width: 300px;
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    .form-card h2 {
+        font-size: 24px;
+    }
+
+    label {
+        font-size: 16px;
+    }
+
+    .submit-button-right {
+        font-size: 17px;
+        padding: 12px 28px;
+        min-width: 180px;
+    }
+
+    .chips-wrap {
+        justify-content: left;
+        width: 1067px;
+        margin-top: 12px;
+    }
+}

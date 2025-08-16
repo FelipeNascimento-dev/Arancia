@@ -1,0 +1,19 @@
+{% load static %}
+
+<div id="navbar-vertical" class="nav-operacoes-vertical hidden">
+
+    <a href="{% url 'logistica:index' %}">
+        <img class="nav-logo-vertical" src="{% static 'global/images/10 anos.png' %}" alt="Logo">
+    </a>
+
+    <div class="divider-horizontal"></div>
+
+    <h3>Operações</h3>
+    <ul>
+        <li class="opcoes-verticais"><a href="{% url 'logistica:consulta_id_form' %}">Consulta ID</a></li>
+        <li class="opcoes-verticais"><a href="{% url 'logistica:pre_recebimento' %}">Pré-Recebimento</a></li>
+        <li class="opcoes-verticais"><a href="{% url 'logistica:recebimento' %}">Recebimento</a></li>
+        <li class="opcoes-verticais"><a href="{% url 'logistica:consulta_resultados' 0 %}">Consulta Resultados</a></li>
+        <li class="opcoes-verticais"><a href="{% url 'logistica:estorno' %}">Estornos</a></li>
+    </ul>
+</div
