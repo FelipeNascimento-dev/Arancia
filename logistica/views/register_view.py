@@ -15,4 +15,7 @@ def registrar_usuario(request):
             messages.error(request, "Erro ao cadastrar. Verifique os dados.")
     else:
         form = CustomUserCreationForm()
-    return render(request, 'logistica/register.html', {'form': form})
+    return render(request, 'logistica/register.html', {
+        'form': form,
+        'site_title': 'Cadastro',
+        })
