@@ -37,4 +37,135 @@
   </div>
 </div>
 
+<script>
+  (function () {
+    if ("{{ etapa_ativa }}" !== "saida_campo") return;
+
+    function focusSerial() {
+      var el = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
+      if (!el || el.disabled || el.offsetParent === null) return;
+      el.focus({ preventScroll: true });
+      try { el.setSelectionRange(el.value.length, el.value.length); } catch (_) { }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', focusSerial);
+    } else {
+      focusSerial();
+    }
+
+    var input = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
+    if (!input) return;
+    var form = input.closest('form');
+    if (!form) return;
+
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        var v = (input.value || '').trim();
+        if (!v) return;
+        var hidden = form.querySelector('input[name="add_serial"]');
+        if (!hidden) {
+          hidden = document.createElement('input');
+          hidden.type = 'hidden';
+          hidden.name = 'add_serial';
+          form.appendChild(hidden);
+        }
+        hidden.value = '1';
+        form.noValidate = true;
+
+        form.submit();
+      }
+    });
+  })();
+</script>
+
+<script>
+  (function () {
+    if ("{{ etapa_ativa }}" !== "saida_campo") return;
+
+    const modal = document.getElementById('confirm-clear');
+    const openBtn = document.querySelector('button[name="clear_serials"]');
+    const yesBtn = document.getElementById('cc-yes');
+
+    const form = modal?.closest('.form-card-2col')?.querySelector('form') || document.querySelector('form');
+
+    if (!modal || !openBtn || !yesBtn || !form) return;
+
+    let lastFocused = null;
+
+    function openModal(e) {
+      if (e) e.preventDefault();
+
+      lastFocused = document.activeElement;
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      yesBtn.focus({ preventScroll: true });
+      trapFocus(true);
+    }
+
+    function closeModal() {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      trapFocus(false);
+      if (lastFocused && typeof lastFocused.focus === 'function') {
+        lastFocused.focus({ preventScroll: true });
+      }
+    }
+    openBtn.addEventListener('click', openModal);
+
+    yesBtn.addEventListener('click', function () {
+      let hidden = form.querySelector('input[name="clear_serials"][type="hidden"]');
+      if (!hidden) {
+        hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = 'clear_serials';
+        form.appendChild(hidden);
+      }
+      hidden.value = '1';
+      form.noValidate = true;
+      form.submit();
+    });
+
+    modal.addEventListener('click', function (e) {
+      if (e.target.dataset.close === '1') closeModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (modal.classList.contains('open') && e.key === 'Escape') {
+        e.preventDefault();
+        closeModal();
+      }
+    });
+
+    let focusables = [];
+    function trapFocus(enable) {
+      if (!enable) return;
+      focusables = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+
+      function handleTab(e) {
+        if (e.key !== 'Tab' || focusables.length === 0) return;
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      }
+      modal.addEventListener('keydown', handleTab);
+
+      const obs = new MutationObserver(() => {
+        if (!modal.classList.contains('open')) {
+          modal.removeEventListener('keydown', handleTab);
+          obs.disconnect();
+        }
+      });
+      obs.observe(modal, { attributes: true, attributeFilter: ['class'] });
+    }
+  })();
+</script>
+
 {% endblock content %}
