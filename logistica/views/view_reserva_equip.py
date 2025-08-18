@@ -35,4 +35,5 @@ def reserva_equip(request, tp_reg):
         'form': form,
         'etapa_ativa': 'reserva',
         'botao_texto': 'Enviar',
+        'site_title': titulo,
     })

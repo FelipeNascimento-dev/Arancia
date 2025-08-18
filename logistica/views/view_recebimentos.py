@@ -106,6 +106,7 @@ def pre_recebimento(request, tp_reg):
         'form': form,
         'botao_texto': 'Enviar',
         'depositos_map_json': json.dumps(depositos_by_centro),
+        'site_title': titulo,
     })
 
 
@@ -180,4 +181,5 @@ def recebimento(request, tp_reg):
         'form': form,
         'botao_texto': 'Enviar',
         'depositos_map_json': json.dumps(depositos_by_centro),
+        'site_title': titulo,
     })

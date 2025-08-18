@@ -84,6 +84,7 @@ def consulta_ma84(request):
         'etapa_ativa': 'consulta_result_ma',
         'tp_reg': tp_reg,
         'botao_texto': 'Consultar',
+        'site_title': 'SAP - Consulta Resultados MA'
     })
 
 

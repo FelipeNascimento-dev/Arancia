@@ -33,6 +33,7 @@ def consulta_id_form(request):
         'form': form,
         'exibir_formulario': exibir_formulario,
         'botao_texto': 'Consultar',
+        'site_title': 'SAP - Consulta de ID'
     }
     return render(request, 'logistica/consulta_id_form.html', context)
 

@@ -57,6 +57,7 @@ def consulta_ec01(request):
                 'etapa_ativa': 'consulta_result_ec',
                 'tp_reg': tp_reg,
                 'botao_texto': 'Consultar',
+                'site_title': 'SAP - Consulta Resultados EC',
             })
 
     else:
@@ -77,6 +78,7 @@ def consulta_ec01(request):
         'etapa_ativa': 'consulta_result_ec',
         'tp_reg': initial_data.get('tp_reg', ''),
         'botao_texto': 'Consultar',
+        'site_title': 'SAP - Consulta Resultados EC',
     })
 
 

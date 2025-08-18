@@ -43,7 +43,7 @@
   {% endif %}
 
   <div class="form-actions">
-    {% if etapa_ativa == 'retorno_picking' or 'reserva' or 'saida_campo' %}
+    {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' %}
       <button type="submit" class="submit-button-right push-left" name="clear_serials" value="1" formnovalidate>
         Limpar
       </button>

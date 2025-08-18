@@ -102,6 +102,7 @@ def _dedup_upper(values: Iterable[str]) -> list[str]:
 # ---------- Render ----------
 
 def _render_pcp(request: HttpRequest, form, code_info: TrackingOriginalCode, serials: list[str]) -> HttpResponse:
+    titulo = f"IP - {code_info.description}"
     return render(
         request,
         "logistica/pcp.html",
@@ -111,6 +112,7 @@ def _render_pcp(request: HttpRequest, form, code_info: TrackingOriginalCode, ser
             "botao_texto": "Enviar",
             "serials": serials if code_info.original_code == "202" else [],
             "show_serial": code_info.show_serial,
+            "site_title": titulo,
         },
     )
 

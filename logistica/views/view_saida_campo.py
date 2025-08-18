@@ -51,4 +51,5 @@ def saida_campo(request, tp_reg: str):
         'form': form,
         'etapa_ativa': 'saida_campo',
         'botao_texto': 'Enviar',
+        'site_title': titulo,
     })
