@@ -28,7 +28,7 @@
     {% endfor %}
   </div>
 
-  {% if etapa_ativa == 'retorno_picking' %}
+  {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' %}
     {% if serials %}
       <div class="chips-wrap" aria-label="Seriais adicionados">
         {% for s in serials %}
