@@ -47,6 +47,7 @@ def consulta_ec01(request):
                 'id', '')
             request.session['serial_recebido'] = serial
             request.session['origem'] = 'consulta_result'
+            mostrar_tabela=True
             request.session['mostrar_tabela'] = True
 
             dados = buscar_dados(tp_reg, serial) if mostrar_tabela else None

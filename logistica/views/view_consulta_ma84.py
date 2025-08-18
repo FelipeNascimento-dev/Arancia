@@ -7,10 +7,11 @@ from django.contrib import messages
 
 
 def buscar_dados(tp_reg, serial):
+    url = f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ma/{tp_reg}?serge={serial}',
     request_api = RequestClient(
         headers={'Content-Type': 'application/json'},
         method='get',
-        url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ma/{tp_reg}/?serge={serial}',
+        url=url[0],
     )
     response = request_api.send_api_request()
     return [response]
