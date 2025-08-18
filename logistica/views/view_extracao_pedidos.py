@@ -20,7 +20,7 @@ def extracao_pedidos(request: HttpRequest) -> HttpResponse:
         sales_channel = request.session.get("sales_channel") or "All"
 
         client = RequestClient(
-            url=f"http://192.168.0.216/homo-fulfillment/api/order-sumary/{sales_channel}/xlsx",
+            url=f"http://192.168.0.216/fulfillment/api/order-sumary/{sales_channel}/xlsx",
             method="GET",
             headers={"Accept": DEFAULT_CT},
         )
