@@ -77,7 +77,7 @@ def consulta_ec01(request):
                 'site_title': 'SAP - Consulta Resultados EC',
             })
 
-        messages.error(request, 'Corrija os erros do formulário.')
+        messages.warning(request, 'Corrija os erros do formulário.')
         return render(request, 'logistica/consulta_result_ec.html', {
             'form': form,
             'tabela_dados': None,

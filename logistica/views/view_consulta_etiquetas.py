@@ -1,4 +1,3 @@
-# views/view_consulta_etiquetas.py
 import re
 from typing import List, Tuple, Optional, Dict, Any
 from django.shortcuts import render
