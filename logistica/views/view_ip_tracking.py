@@ -7,11 +7,23 @@ from django.http import HttpRequest, HttpResponse
 from ..forms import trackingIPForm
 from utils.request import RequestClient
 from setup.local_settings import DEBUG
+from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required, permission_required
+from setup.local_settings import API_URL
 
 SESSION_PREFIX = "retorno_serials_"
-TRACKING_URL = "http://192.168.0.216/homo-fulfillment/api/order-sumary/add-tracking"
-TRACKING_HEADERS = {"Content-Type": "application/json", "accept": "application/json"}
+TRACKING_URL = API_URL + "/api/order-sumary/add-tracking"
+TRACKING_HEADERS = {"Content-Type": "application/json",
+                    "accept": "application/json"}
 
+CARRY_PEDIDO_KEY = "carry_pedido_next"
+
+def _mark_carry_next(request: HttpRequest) -> None:
+    request.session[CARRY_PEDIDO_KEY] = True
+    request.session.modified = True
+
+def _consume_carry_next(request: HttpRequest) -> bool:
+    return request.session.pop(CARRY_PEDIDO_KEY, False)
 
 class TrackingOriginalCode:
     def __init__(self, code: str):
@@ -98,6 +110,7 @@ def _dedup_upper(values: Iterable[str]) -> list[str]:
 # ---------- Render ----------
 
 def _render_pcp(request: HttpRequest, form, code_info: TrackingOriginalCode, serials: list[str]) -> HttpResponse:
+    titulo = f"IP - {code_info.description}"
     return render(
         request,
         "logistica/pcp.html",
@@ -107,6 +120,7 @@ def _render_pcp(request: HttpRequest, form, code_info: TrackingOriginalCode, ser
             "botao_texto": "Enviar",
             "serials": serials if code_info.original_code == "202" else [],
             "show_serial": code_info.show_serial,
+            "site_title": titulo,
         },
     )
 
@@ -117,7 +131,8 @@ def _handle_add_serial(request: HttpRequest, code_info: TrackingOriginalCode, pe
     s = (request.POST.get("serial") or "").strip().upper()
 
     if not pedido_atual:
-        messages.error(request, "Informe o número do pedido antes de inserir seriais.")
+        messages.error(
+            request, "Informe o número do pedido antes de inserir seriais.")
     elif not s:
         messages.info(request, "Digite um serial.")
     else:
@@ -131,7 +146,8 @@ def _handle_add_serial(request: HttpRequest, code_info: TrackingOriginalCode, pe
 
     _ensure_pedido_in_session(request, pedido_atual)
     initial = _build_initial(form, request, pedido_atual, exclude=("serial",))
-    form = trackingIPForm(initial=initial, nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
+    form = trackingIPForm(
+        initial=initial, nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
     serials = _get_serials_from_session(request, pedido_atual)
     return _render_pcp(request, form, code_info, serials)
 
@@ -148,7 +164,8 @@ def _handle_remove_serial(request: HttpRequest, code_info: TrackingOriginalCode,
         messages.error(request, "Não foi possível remover o serial.")
 
     initial = _build_initial(form, request, pedido_atual, exclude=())
-    form = trackingIPForm(initial=initial, nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
+    form = trackingIPForm(
+        initial=initial, nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
     return _render_pcp(request, form, code_info, serials)
 
 
@@ -157,7 +174,8 @@ def _handle_clear_serials(request: HttpRequest, code_info: TrackingOriginalCode,
     messages.success(request, "Lista de seriais limpa.")
 
     initial = _build_initial(form, request, pedido_atual, exclude=("serial",))
-    form = trackingIPForm(initial=initial, nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
+    form = trackingIPForm(
+        initial=initial, nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
     return _render_pcp(request, form, code_info, [])
 
 
@@ -208,11 +226,12 @@ def _build_request_data(numero_pedido: str, event_payload: dict) -> dict:
 
 
 def _send_tracking(request_data: dict) -> Tuple[bool, int, Optional[object]]:
-    client = RequestClient(url=TRACKING_URL, method="POST", headers=TRACKING_HEADERS, request_data=request_data)
+    client = RequestClient(url=TRACKING_URL, method="POST",
+                           headers=TRACKING_HEADERS, request_data=request_data)
     resp = client.send_api_request()
-    
+
     status = resp['status'] if "status" in resp else 'error'
-    #detail = getattr(resp, "detail", 'no detail') 
+    # detail = getattr(resp, "detail", 'no detail')
     return (status, resp)
 
 
@@ -237,7 +256,8 @@ def _process_enviar_evento(
         return None
 
     if not form.is_valid():
-        messages.error(request, f"Corrija os erros do formulário: {form.errors.as_text()}")
+        messages.error(
+            request, f"Corrija os erros do formulário: {form.errors.as_text()}")
         return _render_pcp(request, form, code_info, serials)
 
     numero_pedido = str(form.cleaned_data.get("pedido"))
@@ -248,7 +268,8 @@ def _process_enviar_evento(
         serials = _get_serials_from_session(request, numero_pedido)
         serials = _dedup_upper(serials)
         if not serials:
-            messages.error(request, "Adicione ao menos 1 serial antes de enviar o Retorno do picking.")
+            messages.error(
+                request, "Adicione ao menos 1 serial antes de enviar o Retorno do picking.")
             return _render_pcp(request, form, code_info, _get_serials_from_session(request, numero_pedido))
         seriais_concat = "|".join(serials)
     else:
@@ -258,30 +279,37 @@ def _process_enviar_evento(
     request_data = _build_request_data(numero_pedido, event_payload)
 
     try:
-        status,resp = _send_tracking(request_data)
-        if status=='success':
-            messages.success(request, f'A mensagem "{code_info.description}" foi enviada com sucesso!')
+        status, resp = _send_tracking(request_data)
+        if status == 'success':
+            messages.success(
+                request, f'A mensagem "{code_info.description}" foi enviada com sucesso!'
+            )
 
             if code_info.original_code == "202":
                 _save_serials_to_session(request, numero_pedido, [])
+
+            _ensure_pedido_in_session(request, numero_pedido)
+            _mark_carry_next(request)
 
             return _post_success_redirect(code_info, numero_pedido)
         elif 'detail' in resp:
             messages.error(request, resp['detail'])
         else:
-            messages.error(request, f"Falha ao enviar rastreamento (status {status}).")
+            messages.error(
+                request, f"Falha ao enviar rastreamento (status {status}).")
     except Exception as e:
         if DEBUG:
             messages.error(request, f"{e}")
         else:
             messages.error(request, "Erro ao enviar requisição!")
 
-    # Em caso de erro, volta para a tela
     return _render_pcp(request, form, code_info, serials)
 
 
 # ---------- View principal ----------
-
+@csrf_protect
+@login_required(login_url='logistica:login')
+@permission_required('logistica.lastmile_b2c', raise_exception=True)
 def trackingIP(request: HttpRequest, code: str) -> HttpResponse:
     code_info = TrackingOriginalCode(code)
     titulo = f"IP - {code_info.description}"
@@ -290,21 +318,31 @@ def trackingIP(request: HttpRequest, code: str) -> HttpResponse:
     serials = _get_serials_from_session(request, pedido_atual) if code == "202" else []
 
     if request.method == "POST":
+        posted_pedido = (request.POST.get("pedido") or "").strip()
+        if posted_pedido:
+            _ensure_pedido_in_session(request, posted_pedido)
+            pedido_atual = posted_pedido
+
         form = trackingIPForm(request.POST, nome_form=titulo, show_serial=code_info.show_serial)
 
-        # Ações de seriais (add/remove/clear) — retornam imediatamente se ocorrerem
         resp = _dispatch_serial_actions_if_any(request, code_info, pedido_atual, form)
         if resp is not None:
             return resp
 
-        # Enviar evento
         resp = _process_enviar_evento(request, code_info, form, serials)
         if resp is not None:
             return resp
 
-        # POST sem ação específica: apenas renderiza
         return _render_pcp(request, form, code_info, serials)
 
-    # GET
-    form = trackingIPForm(nome_form=titulo, show_serial=code_info.show_serial)
+    initial = {}
+    if _consume_carry_next(request):
+        ped = (request.session.get("pedido") or "").strip()
+        if ped:
+            initial["pedido"] = ped
+
+    form = trackingIPForm(initial=initial,
+                        nome_form=titulo,
+                        show_serial=code_info.show_serial)
+
     return _render_pcp(request, form, code_info, serials)

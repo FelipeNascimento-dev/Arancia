@@ -5,9 +5,13 @@ from django.shortcuts import render
 from django.http import HttpRequest, HttpResponse
 from ..forms import EtiquetasForm
 from utils.request import RequestClient
+from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required, permission_required
+from setup.local_settings import API_KEY_INTELIPOST
 
 LABEL_API_URL = "https://api.intelipost.com.br/api/v1/shipment_order/get_label"
 SESSION_KEY = "consulta_etiquetas_itens"
+
 
 def _parse_pedidos(raw: str) -> List[Tuple[str, int]]:
     lines = [l.strip() for l in (raw or "").splitlines() if l.strip()]
@@ -23,39 +27,44 @@ def _parse_pedidos(raw: str) -> List[Tuple[str, int]]:
         out.append((pedido, vol))
     return out
 
+
 def _get_label_url(pedido: str, volume: int) -> Optional[str]:
     url_request = f'{LABEL_API_URL}/{pedido}/{volume}'
     client = RequestClient(
         url=url_request,
         method="GET",
         headers={
-            "Content-Type": "application/json", 
+            "Content-Type": "application/json",
             "Accept": "application/json",
-            "api-key": "2c7b1f95-9dfc-2e5e-d844-ece50622eb54eacv",
-            },
+            "api-key": API_KEY_INTELIPOST,
+        },
     )
     resp = client.send_api_request_no_json(stream=False)
-    
+
     if getattr(resp, "status_code", 0) != 200:
         return None
     try:
         data: Dict[str, Any] = resp.json()
     except Exception:
         return None
-    
+
     content = data.get("content") or {}
     link = content.get("label_url")
     return link
 
+
 def _get_items(request: HttpRequest) -> List[List]:
     return list(request.session.get(SESSION_KEY, []))
+
 
 def _save_items(request: HttpRequest, items: List[List]) -> None:
     request.session[SESSION_KEY] = items
     request.session.modified = True
 
+
 def _rows_from_items_no_api(items: List[List]) -> List[Dict[str, Any]]:
     return [{"pedido": ped, "volume": int(vol), "url": None} for ped, vol in items]
+
 
 def _rows_from_items_with_api(items: List[List]) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
@@ -64,6 +73,10 @@ def _rows_from_items_with_api(items: List[List]) -> List[Dict[str, Any]]:
         rows.append({"pedido": ped, "volume": int(vol), "url": url})
     return rows
 
+
+@csrf_protect
+@login_required(login_url='logistica:login')
+@permission_required('logistica.lastmile_b2c', raise_exception=True)
 def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
     if request.method == "GET":
         _save_items(request, [])
@@ -98,15 +111,15 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
             pair = [ped, int(vol)]
             if pair not in items:
                 items.append(pair)
-            label = _get_label_url(pedido=ped,volume=vol)
+            label = _get_label_url(pedido=ped, volume=vol)
             row = {
-                "pedido":ped,
-                "volume":vol,
-                "url":label
+                "pedido": ped,
+                "volume": vol,
+                "url": label
             }
             labels.append(row)
-        
-        #print(labels)
+
+        # print(labels)
         _save_items(request, items)
         rows = _rows_from_items_no_api(items)
     else:
@@ -114,6 +127,6 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
 
     return render(request, "logistica/consulta_etiquetas.html", {
         "form": EtiquetasForm(),
-        "botao_texto": "Consultar", 
+        "botao_texto": "Consultar",
         "rows": labels,
     })

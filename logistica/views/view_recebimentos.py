@@ -9,11 +9,14 @@ from utils.request import RequestClient
 
 API_URL = "http://192.168.0.214/IntegrationXmlAPI/api/v2/centros_e_deps/O"
 
+
 def _fetch_api_rows():
-    client = RequestClient(url=API_URL, method="GET", headers={"Accept": "application/json"})
+    client = RequestClient(url=API_URL, method="GET", headers={
+                           "Accept": "application/json"})
     resp = client.send_api_request_no_json(stream=False)
     data = resp.json() if hasattr(resp, "json") else []
     return data if isinstance(data, list) else []
+
 
 def _build_choices(rows):
     centro_label = {}
@@ -31,13 +34,13 @@ def _build_choices(rows):
             label = f"{cod_d} — {nome_d}" if nome_d else cod_d
             depositos_map[cod_c].add((cod_d, label))
     centro_choices = sorted(centro_label.items(), key=lambda kv: kv[1])
-    depositos_by_centro = {k: sorted(list(v), key=lambda t: t[1]) for k, v in depositos_map.items()}
+    depositos_by_centro = {
+        k: sorted(list(v), key=lambda t: t[1]) for k, v in depositos_map.items()}
     return centro_choices, depositos_by_centro
 
 
 @login_required(login_url='logistica:login')
-@permission_required('logistica.usuario_de_TI', raise_exception=True)
-@permission_required('logistica.usuario_credenciado', raise_exception=True)
+@permission_required('logistica.entrada_flfm', raise_exception=True)
 def pre_recebimento(request, tp_reg):
     titulo = 'SAP - Pré-Recebimento' if tp_reg == '13' else 'SAP - Estorno de Pré-Recebimento'
     try:
@@ -48,10 +51,12 @@ def pre_recebimento(request, tp_reg):
 
     centro_choices, depositos_by_centro = _build_choices(rows)
 
-    sel_c_origem  = request.POST.get("centro_origem")  or request.GET.get("centro_origem")  or ""
-    sel_c_destino = request.POST.get("centro_destino") or request.GET.get("centro_destino") or ""
-    deps_origem   = depositos_by_centro.get(sel_c_origem, [])
-    deps_destino  = depositos_by_centro.get(sel_c_destino, [])
+    sel_c_origem = request.POST.get(
+        "centro_origem") or request.GET.get("centro_origem") or ""
+    sel_c_destino = request.POST.get(
+        "centro_destino") or request.GET.get("centro_destino") or ""
+    deps_origem = depositos_by_centro.get(sel_c_origem, [])
+    deps_destino = depositos_by_centro.get(sel_c_destino, [])
 
     if request.method == 'POST':
         form = PreRecebimentoForm(
@@ -62,12 +67,12 @@ def pre_recebimento(request, tp_reg):
             depositos_by_centro=depositos_by_centro,
         )
         if form.is_valid():
-            id_lote  = form.cleaned_data['id']
+            id_lote = form.cleaned_data['id']
             qtde_vol = form.cleaned_data['qtde_vol']
-            c_ori    = form.cleaned_data['centro_origem']
-            d_ori    = form.cleaned_data['deposito_origem']
-            c_des    = form.cleaned_data['centro_destino']
-            d_des    = form.cleaned_data['deposito_destino']
+            c_ori = form.cleaned_data['centro_origem']
+            d_ori = form.cleaned_data['deposito_origem']
+            c_des = form.cleaned_data['centro_destino']
+            d_des = form.cleaned_data['deposito_destino']
 
             request.session['id_pre_recebido'] = id_lote
             request.session['origem'] = 'pre-recebimento'
@@ -75,7 +80,8 @@ def pre_recebimento(request, tp_reg):
             RequestClient(
                 url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/mo/{tp_reg}',
                 method='POST',
-                headers={'Content-Type': 'application/json', 'Accept': 'application/json'},
+                headers={'Content-Type': 'application/json',
+                         'Accept': 'application/json'},
                 request_data={
                     "id_lote": id_lote,
                     "nr_controle_transp": id_lote,
@@ -100,12 +106,12 @@ def pre_recebimento(request, tp_reg):
         'form': form,
         'botao_texto': 'Enviar',
         'depositos_map_json': json.dumps(depositos_by_centro),
+        'site_title': titulo,
     })
 
 
 @login_required(login_url='logistica:login')
-@permission_required('logistica.usuario_de_TI', raise_exception=True)
-@permission_required('logistica.usuario_credenciado', raise_exception=True)
+@permission_required('logistica.entrada_flfm', raise_exception=True)
 def recebimento(request, tp_reg):
     titulo = 'SAP - Recebimento' if tp_reg == '15' else 'SAP - Estorno de Recebimento'
     try:
@@ -116,10 +122,12 @@ def recebimento(request, tp_reg):
 
     centro_choices, depositos_by_centro = _build_choices(rows)
 
-    sel_c_origem  = request.POST.get("centro_origem")  or request.GET.get("centro_origem")  or ""
-    sel_c_destino = request.POST.get("centro_destino") or request.GET.get("centro_destino") or ""
-    deps_origem   = depositos_by_centro.get(sel_c_origem, [])
-    deps_destino  = depositos_by_centro.get(sel_c_destino, [])
+    sel_c_origem = request.POST.get(
+        "centro_origem") or request.GET.get("centro_origem") or ""
+    sel_c_destino = request.POST.get(
+        "centro_destino") or request.GET.get("centro_destino") or ""
+    deps_origem = depositos_by_centro.get(sel_c_origem, [])
+    deps_destino = depositos_by_centro.get(sel_c_destino, [])
 
     if request.method == 'POST':
         form = RecebimentoForm(
@@ -130,13 +138,13 @@ def recebimento(request, tp_reg):
             depositos_by_centro=depositos_by_centro,
         )
         if form.is_valid():
-            id_lote  = form.cleaned_data['id']
-            serial   = form.cleaned_data['serial']
+            id_lote = form.cleaned_data['id']
+            serial = form.cleaned_data['serial']
             qtde_vol = form.cleaned_data['qtde_vol']
-            c_ori    = form.cleaned_data['centro_origem']
-            d_ori    = form.cleaned_data['deposito_origem']
-            c_des    = form.cleaned_data['centro_destino']
-            d_des    = form.cleaned_data['deposito_destino']
+            c_ori = form.cleaned_data['centro_origem']
+            d_ori = form.cleaned_data['deposito_origem']
+            c_des = form.cleaned_data['centro_destino']
+            d_des = form.cleaned_data['deposito_destino']
 
             request.session['id_pre_recebido'] = id_lote
             request.session['origem'] = 'recebimento'
@@ -145,7 +153,8 @@ def recebimento(request, tp_reg):
             RequestClient(
                 url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/mo/{tp_reg}',
                 method='POST',
-                headers={'Content-Type': 'application/json', 'Accept': 'application/json'},
+                headers={'Content-Type': 'application/json',
+                         'Accept': 'application/json'},
                 request_data={
                     "id_lote": id_lote,
                     "nr_controle_transp": id_lote,
@@ -172,4 +181,5 @@ def recebimento(request, tp_reg):
         'form': form,
         'botao_texto': 'Enviar',
         'depositos_map_json': json.dumps(depositos_by_centro),
+        'site_title': titulo,
     })

@@ -3,9 +3,9 @@ from django.shortcuts import render, redirect
 from utils.request import RequestClient
 from django.contrib.auth.decorators import login_required, permission_required
 
+
 @login_required(login_url='logistica:login')
-@permission_required('logistica.usuario_de_TI', raise_exception=True)
-@permission_required('logistica.usuario_credenciado', raise_exception=True)
+@permission_required('logistica.entrada_flfm', raise_exception=True)
 def consulta_id_form(request):
     form = ConsultaForm()
     exibir_formulario = True
@@ -33,8 +33,10 @@ def consulta_id_form(request):
         'form': form,
         'exibir_formulario': exibir_formulario,
         'botao_texto': 'Consultar',
+        'site_title': 'SAP - Consulta de ID'
     }
     return render(request, 'logistica/consulta_id_form.html', context)
+
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.usuario_de_TI', raise_exception=True)
