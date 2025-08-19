@@ -6,6 +6,15 @@ from django.contrib.auth.decorators import login_required, permission_required
 
 SAIDA_SERIALS_KEY = "saida_serials"
 
+CARRY_PEDIDO_KEY = "carry_pedido_next"
+
+def _mark_carry_next(request):
+    request.session[CARRY_PEDIDO_KEY] = True
+    request.session.modified = True
+
+def _consume_carry_next(request) -> bool:
+    return request.session.pop(CARRY_PEDIDO_KEY, False)
+
 def saida_get_serials(request) -> list[str]:
     return request.session.get(SAIDA_SERIALS_KEY, [])
 
@@ -38,6 +47,11 @@ def saida_campo(request, tp_reg: str):
         gtec_post = request.POST.get('gtec')
         origem_os_post = request.POST.get('origem_os')
         initial = {'gtec': gtec_post, 'origem_os': origem_os_post}
+
+        posted_gtec = (request.POST.get('gtec') or '').strip()
+        if posted_gtec:
+            request.session['pedido'] = posted_gtec
+            request.session.modified = True
 
         if 'add_serial' in request.POST:
             if not posted_serial:
@@ -115,18 +129,12 @@ def saida_campo(request, tp_reg: str):
                     })
                 serials = [unico]
 
-            print(serials) 
-
             request.session['serials_ec'] = serials
             request.session['gtec'] = gtec
             request.session['origem_os'] = origem_os
 
             ok_count = 0
             failed = []
-
-            request.session['serials_ec'] = serials
-            request.session['gtec'] = gtec
-            request.session['origem_os'] = origem_os
 
             for s in serials:
                 request_client = RequestClient(
@@ -167,6 +175,7 @@ def saida_campo(request, tp_reg: str):
                 })
 
             saida_save_serials(request, [])
+            _mark_carry_next(request)
             return redirect('logistica:consulta_result_ec')
 
         messages.error(request, f"Corrija os erros do formulário: {form.errors.as_text()}")
@@ -179,7 +188,13 @@ def saida_campo(request, tp_reg: str):
             'show_serial': True,
         })
 
-    form = SaidaCampoForm(nome_form=titulo)
+    initial = {}
+    if _consume_carry_next(request):
+        ped = (request.session.get('pedido') or '').strip()
+        if ped:
+            initial['gtec'] = ped
+
+    form = SaidaCampoForm(nome_form=titulo, initial=initial)
     return render(request, 'logistica/saida_campo.html', {
         'form': form,
         'etapa_ativa': 'saida_campo',
