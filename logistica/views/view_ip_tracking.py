@@ -22,6 +22,9 @@ def _mark_carry_next(request: HttpRequest) -> None:
     request.session[CARRY_PEDIDO_KEY] = True
     request.session.modified = True
 
+def _consume_carry_next(request: HttpRequest) -> bool:
+    return request.session.pop(CARRY_PEDIDO_KEY, False)
+
 class TrackingOriginalCode:
     def __init__(self, code: str):
         self.original_code = code
@@ -300,7 +303,6 @@ def _process_enviar_evento(
         else:
             messages.error(request, "Erro ao enviar requisição!")
 
-    # Em caso de erro, volta para a tela
     return _render_pcp(request, form, code_info, serials)
 
 
@@ -333,5 +335,14 @@ def trackingIP(request: HttpRequest, code: str) -> HttpResponse:
 
         return _render_pcp(request, form, code_info, serials)
 
-    form = trackingIPForm(nome_form=titulo, show_serial=code_info.show_serial)
+    initial = {}
+    if _consume_carry_next(request):
+        ped = (request.session.get("pedido") or "").strip()
+        if ped:
+            initial["pedido"] = ped
+
+    form = trackingIPForm(initial=initial,
+                        nome_form=titulo,
+                        show_serial=code_info.show_serial)
+
     return _render_pcp(request, form, code_info, serials)
