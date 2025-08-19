@@ -1,6 +1,7 @@
 from django import forms
 
 class ReservaEquipamentosForm(forms.Form):
+    pedido = forms.CharField(label='Pedido', max_length=50, required=False)
     serial = forms.CharField(label='Serial', max_length=50, required=False)
 
     def __init__(self, *args, nome_form=None, **kwargs):
