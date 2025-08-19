@@ -9,7 +9,7 @@ def registrar_usuario(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, "Cadastro realizado com sucesso!")
+            messages.info(request, "Cadastro realizado com sucesso!" "Seu username é ")
             return redirect('logistica:index')
         else:
             messages.error(request, "Erro ao cadastrar. Verifique os dados.")
