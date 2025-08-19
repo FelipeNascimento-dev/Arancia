@@ -63,7 +63,7 @@ def saida_campo(request, tp_reg: str):
                     saida_save_serials(request, serials)
                     messages.success(request, "Serial inserido.")
                 else:
-                    messages.info(request, "Serial já está na lista.")
+                    messages.warning(request, "Serial já está na lista.")
             form = SaidaCampoForm(nome_form=titulo, initial=initial)
             return render(request, 'logistica/saida_campo.html', {
                 'form': form,
@@ -118,7 +118,7 @@ def saida_campo(request, tp_reg: str):
             if not serials:
                 unico = (form.cleaned_data.get('serial') or '').strip().upper()
                 if not unico:
-                    messages.error(request, "Adicione ao menos 1 serial antes de enviar.")
+                    messages.warning(request, "Adicione ao menos 1 serial antes de enviar.")
                     return render(request, 'logistica/saida_campo.html', {
                         'form': form,
                         'etapa_ativa': 'saida_campo',

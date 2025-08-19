@@ -35,7 +35,7 @@ def extracao_pedidos(request: HttpRequest) -> HttpResponse:
 
             if not content.startswith(b"PK\x03\x04"):
                 messages.error(
-                    request, "O servidor retornou um conteúdo inesperado (não parece um XLSX).")
+                    request, "O servidor retornou um conteúdo inesperado.")
                 form = ExtracaoForm(initial={"sales_channel": sales_channel})
                 return render(request, "logistica/extracao_pedidos.html", {
                     "form": form,
@@ -63,7 +63,7 @@ def extracao_pedidos(request: HttpRequest) -> HttpResponse:
             request.session["sales_channel"] = sales_channel
             return redirect(f"{reverse('logistica:extracao_pedidos')}?download=1")
         else:
-            messages.error(request, "Corrija os erros do formulário.")
+            messages.warning(request, "Corrija os erros do formulário.")
             return render(request, "logistica/extracao_pedidos.html", {
                 "form": form,
                 "botao_texto": "Exportar",

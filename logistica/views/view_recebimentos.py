@@ -92,7 +92,7 @@ def pre_recebimento(request, tp_reg):
             ).send_api_request()
             return redirect('logistica:consulta_resultados')
         else:
-            messages.error(request, "Corrija os erros do formulário.")
+            messages.warning(request, "Corrija os erros do formulário.")
     else:
         form = PreRecebimentoForm(
             nome_form=titulo,
@@ -166,7 +166,7 @@ def recebimento(request, tp_reg):
             ).send_api_request()
             return redirect('logistica:consulta_resultados')
         else:
-            messages.error(request, "Corrija os erros do formulário.")
+            messages.warning(request, "Corrija os erros do formulário.")
     else:
         initial = {'id': request.session.get('id_pre_recebido') or ""}
         form = RecebimentoForm(

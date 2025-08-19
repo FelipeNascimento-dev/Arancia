@@ -256,7 +256,7 @@ def _process_enviar_evento(
         return None
 
     if not form.is_valid():
-        messages.error(
+        messages.warning(
             request, f"Corrija os erros do formulário: {form.errors.as_text()}")
         return _render_pcp(request, form, code_info, serials)
 
@@ -268,7 +268,7 @@ def _process_enviar_evento(
         serials = _get_serials_from_session(request, numero_pedido)
         serials = _dedup_upper(serials)
         if not serials:
-            messages.error(
+            messages.warning(
                 request, "Adicione ao menos 1 serial antes de enviar o Retorno do picking.")
             return _render_pcp(request, form, code_info, _get_serials_from_session(request, numero_pedido))
         seriais_concat = "|".join(serials)
@@ -295,7 +295,7 @@ def _process_enviar_evento(
         elif 'detail' in resp:
             messages.error(request, resp['detail'])
         else:
-            messages.error(
+            messages.warning(
                 request, f"Falha ao enviar rastreamento (status {status}).")
     except Exception as e:
         if DEBUG:

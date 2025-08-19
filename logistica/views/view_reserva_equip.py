@@ -74,7 +74,7 @@ def reserva_equip(request, tp_reg):
                 reserva_save_serials(request, serials)
                 messages.success(request, "Serial inserido.")
             else:
-                messages.info(request, "Serial já está na lista.")
+                messages.warning(request, "Serial já está na lista.")
         form = ReservaEquipamentosForm(nome_form=titulo, initial=initial)
         return render(request, 'logistica/reserva_equip.html', {
             'form': form,
@@ -124,7 +124,7 @@ def reserva_equip(request, tp_reg):
         if not serials:
             unico = (form.cleaned_data.get('serial') or '').strip().upper()
             if not unico:
-                messages.error(request, "Adicione ao menos 1 serial antes de enviar.")
+                messages.warning(request, "Adicione ao menos 1 serial antes de enviar.")
                 return render(request, 'logistica/reserva_equip.html', {
                     'form': form,
                     'etapa_ativa': 'reserva',
@@ -169,7 +169,7 @@ def reserva_equip(request, tp_reg):
             'show_serial': True,
         })
     else:
-        messages.error(request, f"Corrija os erros do formulário: {form.errors.as_text()}")
+        messages.warning(request, f"Corrija os erros do formulário: {form.errors.as_text()}")
         return render(request, 'logistica/reserva_equip.html', {
             'form': form,
             'etapa_ativa': 'reserva',
