@@ -12,11 +12,15 @@
         <div class="user-dropdown">
             <button class="user-dropdown-toggle" onclick="toggleUserDropdown()">
                 <i class="fa fa-user"></i>
-                <span class="user-name">{{ request.user.username }}</span>
+                <span class="user-name">{{ request.user.first_name }} - {{ request.user.username }}</span>
                 <i class="fa fa-chevron-down arrow-icon"></i>
             </button>
 
             <ul class="user-dropdown-menu" id="userDropdownMenu">
+                <li class="user-greeting">
+                    👋 Olá, {{ request.user.first_name }} {{ request.user.last_name }}
+                </li>
+                <hr>
                 <li><a href="#"><i class="fa fa-cog"></i> Configurações</a></li>
                 <li><a href="#"><i class="fa fa-question-circle"></i> Ajuda</a></li>
                 <li><a href="{% url 'logistica:logout_confirm' %}"><i class="fa fa-sign-out-alt"></i> Sair</a></li>
