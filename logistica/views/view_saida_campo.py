@@ -132,39 +132,28 @@ def saida_campo(request, tp_reg: str):
             request.session['serials_ec'] = serials
             request.session['gtec'] = gtec
             request.session['origem_os'] = origem_os
-
-            ok_count = 0
-            failed = []
-
-            for s in serials:
-                request_client = RequestClient(
-                    url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ec/{tp_reg_new}',
-                    method='POST',
-                    headers={'Content-Type': 'application/json'},
-                    request_data={
-                        "serge": s,
-                        "znum_gt": gtec,
-                        "centro": "CTRD",
-                        "deposito": "989A",
-                        "bktxt": "0",
-                        "origem_os": origem_os,
-                    }
-                )
-                try:
-                    resp = request_client.send_api_request()
-                    if isinstance(resp, dict) and (resp.get('status') == 'success' or resp.get('ok') is True):
-                        ok_count += 1
-                    else:
-                        detail = resp.get('detail') if isinstance(resp, dict) else None
-                        failed.append((s, detail or "Falha no envio"))
-                except Exception as e:
-                    failed.append((s, str(e)))
-
-            if ok_count:
-                messages.success(request, f"{ok_count} serial(is) enviado(s) com sucesso.")
-
-            if failed:
-                saida_save_serials(request, [s for s, _ in failed])
+            
+            request_client = RequestClient(
+                url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ec/{tp_reg_new}/list',
+                method='POST',
+                headers={'Content-Type': 'application/json'},
+                request_data={
+                    "serges": serials,
+                    "znum_gt": gtec,
+                    "centro": "CTRD",
+                    "deposito": "989A",
+                    "bktxt": "0",
+                    "origem_os": origem_os,
+                }
+            )
+            try:
+                resp=request_client.send_api_request() 
+                if not isinstance(resp, list):
+                    if isinstance(resp, dict) and resp.get("detail"):
+                        raise Exception(resp)
+                messages.success(request,'Mensagem enviada com sucesso')
+            except Exception as e:
+                messages.error(request, f"Erro ao enviar requisição: {e}")
                 return render(request, 'logistica/saida_campo.html', {
                     'form': SaidaCampoForm(nome_form=titulo, initial={'gtec': gtec, 'origem_os': origem_os}),
                     'etapa_ativa': 'saida_campo',

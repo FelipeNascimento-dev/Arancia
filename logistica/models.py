@@ -52,6 +52,8 @@ class GroupAditionalInformation(models.Model):
         max_length=100, verbose_name="Código IATA", blank=True, null=True)
     sales_channel = models.CharField(
         max_length=100, verbose_name="Sales Channel", blank=True, null=True)
+    deposito = models.CharField(
+        max_length=100, verbose_name="Depósito", blank=True, null=True)
     logradouro = models.CharField(
         max_length=255, verbose_name="Logradouro", blank=True, null=True)
     numero = models.CharField(

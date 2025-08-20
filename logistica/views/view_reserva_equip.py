@@ -136,27 +136,24 @@ def reserva_equip(request, tp_reg):
             serials = [unico]
 
         request_client = RequestClient(
-            url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ma/{tp_reg}',
+            url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ma/{tp_reg}/list',
             method='POST',
             headers={'Content-Type': 'application/json'},
             request_data={
-                "serge": serials,
+                "serges": serials,
                 "centro": "CTRD",
                 "deposito": "989A"
             }
         )
 
         try:
-            resp = request_client.send_api_request()
-            ok = isinstance(resp, dict) and (resp.get('status') == 'success' or resp.get('ok') is True)
-            if ok:
-                messages.success(request, f"{len(serials)} serial(is) enviado(s) com sucesso.")
-                reserva_save_serials(request, [])
-                _mark_carry_next(request)
-                return redirect('logistica:consulta_result_ma')
-            else:
-                detail = resp.get('detail') if isinstance(resp, dict) else None
-                messages.error(request, detail or "Falha ao enviar os seriais (lote).")
+            request_client.send_api_request()
+            
+            messages.success(request, f"{len(serials)} serial(is) enviado(s) com sucesso.")
+            reserva_save_serials(request, [])
+            _mark_carry_next(request)
+            return redirect('logistica:consulta_result_ma')
+           
         except Exception as e:
             messages.error(request, f"Erro ao enviar requisição: {e}")
 

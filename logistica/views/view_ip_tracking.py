@@ -11,8 +11,8 @@ from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
 from setup.local_settings import API_URL
 
-SESSION_PREFIX = "retorno_serials_"
 TRACKING_URL = API_URL + "/api/order-sumary/add-tracking"
+SESSION_PREFIX = "retorno_serials_"
 TRACKING_HEADERS = {"Content-Type": "application/json",
                     "accept": "application/json"}
 
