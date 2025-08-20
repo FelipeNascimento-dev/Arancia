@@ -138,11 +138,11 @@ def saida_campo(request, tp_reg: str):
 
             for s in serials:
                 request_client = RequestClient(
-                    url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ec/{tp_reg_new}',
+                    url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ec/{tp_reg_new}/list',
                     method='POST',
                     headers={'Content-Type': 'application/json'},
                     request_data={
-                        "serge": s,
+                        "serges": s,
                         "znum_gt": gtec,
                         "centro": "CTRD",
                         "deposito": "989A",

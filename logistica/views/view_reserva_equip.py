@@ -136,11 +136,11 @@ def reserva_equip(request, tp_reg):
             serials = [unico]
 
         request_client = RequestClient(
-            url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ma/{tp_reg}',
+            url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ma/{tp_reg}/list',
             method='POST',
             headers={'Content-Type': 'application/json'},
             request_data={
-                "serge": serials,
+                "serges": serials,
                 "centro": "CTRD",
                 "deposito": "989A"
             }

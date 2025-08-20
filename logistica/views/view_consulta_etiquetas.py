@@ -118,7 +118,6 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
             }
             labels.append(row)
 
-        # print(labels)
         _save_items(request, items)
         rows = _rows_from_items_no_api(items)
     else:
