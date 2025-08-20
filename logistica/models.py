@@ -48,6 +48,10 @@ class GroupAditionalInformation(models.Model):
                               blank=True, null=True, on_delete=models.CASCADE)
     nome = models.CharField(
         max_length=100, verbose_name="Nome", blank=True, null=True)
+    cod_iata = models.CharField(
+        max_length=100, verbose_name="Código IATA", blank=True, null=True)
+    sales_channel = models.CharField(
+        max_length=100, verbose_name="Sales Channel", blank=True, null=True)
     logradouro = models.CharField(
         max_length=255, verbose_name="Logradouro", blank=True, null=True)
     numero = models.CharField(
@@ -71,6 +75,7 @@ class GroupAditionalInformation(models.Model):
     email = models.EmailField(verbose_name="E-mail", blank=True, null=True)
     responsavel = models.CharField(
         max_length=100, verbose_name="Responsável", blank=True, null=True)
+    
 
     def __str__(self):
         return f"{self.group.name}" if self.group else "Sem grupo"
