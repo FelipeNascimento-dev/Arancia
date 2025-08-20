@@ -8,9 +8,7 @@ def registrar_usuario(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
-            messages.info(request, "Cadastro realizado com sucesso!" "Seu username é ")
-            return redirect('logistica:index')
+            messages.info(request, "Cadastro realizado com sucesso!")
         else:
             messages.error(request, "Erro ao cadastrar. Verifique os dados.")
     else:
