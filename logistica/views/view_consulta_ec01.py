@@ -22,7 +22,7 @@ def buscar_dados(tp_reg: str, serial: str):
         url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ec/{tp_reg_new}/{serial}',
     )
     response = request_api.send_api_request()
-    return [response]
+    return response
 
 
 @csrf_protect
