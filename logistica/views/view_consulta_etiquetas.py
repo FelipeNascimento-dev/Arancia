@@ -1,4 +1,3 @@
-# views/view_consulta_etiquetas.py
 import re
 from typing import List, Tuple, Optional, Dict, Any
 from django.shortcuts import render
@@ -119,7 +118,6 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
             }
             labels.append(row)
 
-        # print(labels)
         _save_items(request, items)
         rows = _rows_from_items_no_api(items)
     else:

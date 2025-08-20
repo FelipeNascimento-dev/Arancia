@@ -84,6 +84,7 @@ def consulta_result(request):
         'tabela_dados': dados,
         'tp_reg': tp_reg,
         'botao_texto': 'Consultar',
+        'site_title': 'SAP - Consulta Resultados',
     })
 
 
