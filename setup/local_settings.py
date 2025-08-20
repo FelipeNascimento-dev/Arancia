@@ -1,6 +1,6 @@
 SECRET_KEY = ']s5n/RoBy<&r;f91C2C|1F"{SDJ!dr!("[)DvU#jzC6Gu.y">LozaG"{>A.te'
 DEBUG = True # NUNCA mude para FALSE. Se não para de funcionar
-LOCAL_DEBUG = True
+LOCAL_DEBUG = False
 if LOCAL_DEBUG:
     API_KEY_INTELIPOST = '2c7b1f95-9dfc-2e5e-d844-ece50622eb54eacv'
     API_URL = 'http://192.168.0.216/homo-fulfillment'
