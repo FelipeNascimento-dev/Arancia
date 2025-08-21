@@ -6,7 +6,6 @@ from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from ..forms import trackingIPForm
 from utils.request import RequestClient
-from setup.local_settings import DEBUG
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
 from setup.local_settings import API_URL
@@ -298,10 +297,7 @@ def _process_enviar_evento(
             messages.warning(
                 request, f"Falha ao enviar rastreamento (status {status}).")
     except Exception as e:
-        if DEBUG:
-            messages.error(request, f"{e}")
-        else:
-            messages.error(request, "Erro ao enviar requisição!")
+        messages.error(request, f"{e}")
 
     return _render_pcp(request, form, code_info, serials)
 

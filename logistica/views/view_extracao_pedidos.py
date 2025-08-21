@@ -101,4 +101,5 @@ def extracao_pedidos(request: HttpRequest) -> HttpResponse:
     return render(request, "logistica/extracao_pedidos.html", {
         "form": form,
         "botao_texto": "Exportar",
+        'site_title': 'Extração de Pedidos'
     })
