@@ -77,7 +77,6 @@ body {
   transition: all 0.4s ease;
 }
 
-
 .welcome-banner {
   background: linear-gradient(135deg, #ffffff, #f7fafc);
   border: 1px solid #e2e8f0;
@@ -87,8 +86,9 @@ body {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
   color: #1f2937;
   animation: fadeIn .5s ease;
-  margin-left: 50px;
-  margin-top: 30px;
+  margin-left: 90px;
+  margin-top: 70px;
+  margin-right: 20px;
 }
 
 .welcome-banner h2 {
