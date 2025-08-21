@@ -95,32 +95,17 @@
         
         <div class="register-field">
           <i class="fa-solid fa-building"></i>
-          <select name="{{ form.grupo.name }}" id="{{ form.grupo.id_for_label }}" required>
-            <option value="">Selecione o Tipo de usuário</option>
-            {% for group in form.grupo.field.queryset %}
-            <option value="{{ group.id }}">
-              {{ group.name }}
-            </option>
-            {% endfor %}
-          </select>
-          <label for="{{ form.grupo.id_for_label }}"></label>
+          {{ form.grupo }}
           {% if form.grupo.errors %}
           <div class="register-error">{{ form.grupo.errors }}</div>
           {% endif %}
         </div>
+
         <div class="register-field">
           <i class="fa-solid fa-building"></i>
-          <select name="{{ form.aditionalinformation.nome }}" id="{{ form.aditionalinformation.id_for_label }}" required>
-            <option value="">Selecione o Setor</option>
-            {% for group in form.aditionalinformation.field.queryset %}
-            <option value="{{ group.cod_iata }}">
-              {{ group.cod_iata }}-{{ group.nome }}
-            </option>
-            {% endfor %}
-          </select>
-          <label for="{{ form.aditionalinformation.id_for_label }}"></label>
+          {{ form.aditionalinformation }}
           {% if form.aditionalinformation.errors %}
-          <div class="register-error">{{ form.grupo.errors }}</div>
+          <div class="register-error">{{ form.aditionalinformation.errors }}</div>
           {% endif %}
         </div>
         

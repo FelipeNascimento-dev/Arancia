@@ -77,10 +77,9 @@ class GroupAditionalInformation(models.Model):
     email = models.EmailField(verbose_name="E-mail", blank=True, null=True)
     responsavel = models.CharField(
         max_length=100, verbose_name="Responsável", blank=True, null=True)
-    
 
     def __str__(self):
-        return f"{self.group.name}" if self.group else "Sem grupo"
+        return f"{self.cod_iata}-{self.nome}" if self.group else "Sem grupo"
 
 
 class UserDesignation(models.Model):

@@ -12,9 +12,17 @@ def registrar_usuario(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            messages.info(request, "Cadastro realizado com sucesso!")
+            messages.success(request, "Cadastro realizado com sucesso!")
+            messages.info(request, f"Anote o username: {user.username}")
+            form = CustomUserCreationForm()
+            return render(request, 'logistica/register.html', {
+                'form': form,
+                'site_title': 'Cadastro',
+            })
+
         else:
-            messages.error(request, "Erro ao cadastrar. Verifique os dados.")
+            messages.error(request, form.errors)
+
     else:
         form = CustomUserCreationForm()
     return render(request, 'logistica/register.html', {
