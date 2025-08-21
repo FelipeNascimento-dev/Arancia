@@ -8,7 +8,8 @@ from django.contrib.auth.decorators import login_required, permission_required
 @permission_required('logistica.entrada_flfm', raise_exception=True)
 def consulta_id_form(request):
     form = ConsultaForm()
-    exibir_formulario = True
+    tabela_dados = None
+
     if request.method == 'POST':
         form = ConsultaForm(request.POST)
         if form.is_valid():
@@ -19,21 +20,20 @@ def consulta_id_form(request):
                 url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/lm/{id}',
             )
             response = request_api.send_api_request()
+
             if not response:
                 form.add_error(
                     None, 'Nenhum dado encontrado para o ID informado.')
-                return render(request, 'logistica/consulta_id_form.html', {'form': form, 'exibir_formulario': exibir_formulario})
+            else:
+                tabela_dados = response.get('items', []) or []
+                request.session['tabela_dados'] = tabela_dados
 
-            tabela_dados = response.get('items', [])
-
-            request.session['tabela_dados'] = tabela_dados
-
-            return redirect('logistica:consulta_id_table', id=id)
     context = {
         'form': form,
-        'exibir_formulario': exibir_formulario,
+        'exibir_formulario': True,
         'botao_texto': 'Consultar',
-        'site_title': 'SAP - Consulta de ID'
+        'site_title': 'SAP - Consulta de ID',
+        'tabela_dados': tabela_dados,
     }
     return render(request, 'logistica/consulta_id_form.html', context)
 
