@@ -1,11 +1,9 @@
-# views.py
 from typing import List, Dict, Any, Optional
 from django.shortcuts import render
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
-
 from ..forms import EtiquetasForm
 from utils.request import RequestClient
 from setup.local_settings import API_KEY_INTELIPOST

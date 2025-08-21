@@ -6,8 +6,11 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 
 CARRY_PEDIDO_KEY = "carry_pedido_next"
+
+
 def _consume_carry_next(request) -> bool:
     return request.session.pop(CARRY_PEDIDO_KEY, False)
+
 
 def buscar_dados(tp_reg: str, serial: str):
     tp_reg_new = str(tp_reg).strip().zfill(2)
@@ -19,6 +22,7 @@ def buscar_dados(tp_reg: str, serial: str):
     )
     response = request_api.send_api_request()
     return [response]
+
 
 @csrf_protect
 @login_required(login_url='logistica:login')
@@ -44,7 +48,8 @@ def consulta_ma84(request):
         form = ConsultaResultMA84Form(request.POST)
 
         if form.data.get('tp_reg') in ('84', '85') and not (form.data.get('serial') or '').strip():
-            form.add_error('serial', 'O serial não pode ser vazio para essa mensagem.')
+            form.add_error(
+                'serial', 'O serial não pode ser vazio para essa mensagem.')
             return render(request, 'logistica/consulta_result_ma.html', {
                 'form': form,
                 'tabela_dados': None,
@@ -59,7 +64,8 @@ def consulta_ma84(request):
             serial = (form.cleaned_data.get('serial') or '').strip()
 
             request.session['tp_reg'] = novo_tp_reg
-            request.session['id_pre_recebido'] = form.cleaned_data.get('id', '')
+            request.session['id_pre_recebido'] = form.cleaned_data.get(
+                'id', '')
             request.session['serial_recebido'] = serial
             request.session['origem'] = 'consulta_result'
             request.session['mostrar_tabela'] = True
@@ -97,7 +103,10 @@ def consulta_ma84(request):
     form = ConsultaResultMA84Form(initial=initial_data)
 
     try:
-        dados = buscar_dados(tp_reg, serial_inserido) if (mostrar_tabela and tp_reg and serial_inserido) else None
+        dados = buscar_dados(tp_reg, serial_inserido) if (
+            mostrar_tabela and tp_reg and serial_inserido) else None
+        if 'detail' in dados[0]:
+            messages.error(request, dados[0]['detail'])
     except Exception:
         messages.error(request, "Erro ao enviar requisição")
         dados = None
@@ -110,6 +119,7 @@ def consulta_ma84(request):
         'botao_texto': 'Consultar',
         'site_title': 'SAP - Consulta Resultados MA',
     })
+
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.usuario_de_TI', raise_exception=True)
