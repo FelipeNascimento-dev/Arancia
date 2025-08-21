@@ -82,5 +82,19 @@
             if (el) el.focus({ preventScroll: true });
         });
     });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const pedidoField = document.getElementById("id_pedido");
+        if (pedidoField) {
+            pedidoField.focus({ preventScroll: true });
+
+            pedidoField.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    this.form.requestSubmit();
+                }
+            });
+        }
+    });
 </script>
 {% endblock content %}

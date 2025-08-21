@@ -136,3 +136,17 @@
 .user-dropdown-menu li:hover {
   background-color: #f2f2f2;
 }
+
+.user-dropdown-menu .user-greeting {
+  padding: 10px;
+  font-weight: bold;
+  color: #333;
+  background: #f9f9f9;
+  cursor: default;
+}
+
+.user-dropdown-menu hr {
+  margin: 5px 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
