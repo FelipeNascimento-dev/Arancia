@@ -78,6 +78,7 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
             "form": EtiquetasForm(),
             "botao_texto": "Consultar",
             "rows": [],
+            'site_title': 'Consulta de Etiquetas'
         })
 
     items = _get_items(request)
@@ -113,4 +114,5 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
         "form": EtiquetasForm(),
         "botao_texto": "Consultar",
         "rows": items,
+        'site_title': 'Consulta de Etiquetas'
     })
