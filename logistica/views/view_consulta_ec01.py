@@ -7,12 +7,15 @@ from django.contrib import messages
 
 CARRY_PEDIDO_KEY = "carry_pedido_next"
 
+
 def _mark_carry_next(request):
     request.session[CARRY_PEDIDO_KEY] = True
     request.session.modified = True
 
+
 def _consume_carry_next(request) -> bool:
     return request.session.pop(CARRY_PEDIDO_KEY, False)
+
 
 def buscar_dados(tp_reg: str, serial: str):
     tp_reg_new = str(tp_reg).zfill(2)
@@ -45,7 +48,8 @@ def consulta_ec01(request):
             request.session.modified = True
 
         if form.data.get('tp_reg') in ('1', '2') and (form.data.get('serial') or '').strip() == '':
-            form.add_error('serial', 'O serial não pode ser vazio para essa mensagem.')
+            form.add_error(
+                'serial', 'O serial não pode ser vazio para essa mensagem.')
             return render(request, 'logistica/consulta_result_ec.html', {
                 'form': form,
                 'tabela_dados': None,
@@ -60,13 +64,18 @@ def consulta_ec01(request):
             serial = form.cleaned_data.get('serial', '') or ''
 
             request.session['tp_reg'] = tp_reg
-            request.session['id_pre_recebido'] = form.cleaned_data.get('id', '')
+            request.session['id_pre_recebido'] = form.cleaned_data.get(
+                'id', '')
             request.session['serial_recebido'] = serial
             request.session['origem'] = 'consulta_result'
             mostrar_tabela = True
             request.session['mostrar_tabela'] = True
 
-            dados = buscar_dados(tp_reg, serial) if mostrar_tabela else None
+            dados = buscar_dados(
+                tp_reg, serial) if mostrar_tabela else None
+
+            if 'detail' in dados:
+                messages.error(request, dados['detail'])
 
             return render(request, 'logistica/consulta_result_ec.html', {
                 'form': form,
