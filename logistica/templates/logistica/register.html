@@ -56,47 +56,47 @@
         <div class="register-field">
           <i class="fa-regular fa-user"></i>
           <input type="text" name="{{ form.first_name.name }}" id="{{ form.first_name.id_for_label }}"
-            value="{{ form.first_name.value|default_if_none:'' }}" placeholder=" " required>
+          value="{{ form.first_name.value|default_if_none:'' }}" placeholder=" " required>
           <label for="{{ form.first_name.id_for_label }}">Primeiro Nome</label>
           {% if form.first_name.errors %}
           <div class="register-error">{{ form.first_name.errors }}</div>
           {% endif %}
         </div>
-
+        
         <div class="register-field">
           <i class="fa-regular fa-user"></i>
           <input type="text" name="{{ form.last_name.name }}" id="{{ form.last_name.id_for_label }}"
-            value="{{ form.last_name.value|default_if_none:'' }}" placeholder=" " required>
+          value="{{ form.last_name.value|default_if_none:'' }}" placeholder=" " required>
           <label for="{{ form.last_name.id_for_label }}">Último Nome</label>
           {% if form.last_name.errors %}
           <div class="register-error">{{ form.last_name.errors }}</div>
           {% endif %}
         </div>
-
+        
         <div class="register-field">
           <i class="fa-solid fa-envelope"></i>
           <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}"
-            value="{{ form.email.value|default_if_none:'' }}" placeholder=" " required>
+          value="{{ form.email.value|default_if_none:'' }}" placeholder=" " required>
           <label for="{{ form.email.id_for_label }}">E-mail</label>
           {% if form.email.errors %}
           <div class="register-error">{{ form.email.errors }}</div>
           {% endif %}
         </div>
-
+        
         <div class="register-field">
           <i class="fa-solid fa-id-card"></i>
           <input type="text" name="{{ form.cpf.name }}" id="{{ form.cpf.id_for_label }}"
             value="{{ form.cpf.value|default_if_none:'' }}" placeholder=" " required>
-          <label for="{{ form.cpf.id_for_label }}">CPF</label>
+            <label for="{{ form.cpf.id_for_label }}">CPF</label>
           {% if form.cpf.errors %}
           <div class="register-error">{{ form.cpf.errors }}</div>
           {% endif %}
         </div>
-
+        
         <div class="register-field">
           <i class="fa-solid fa-building"></i>
           <select name="{{ form.grupo.name }}" id="{{ form.grupo.id_for_label }}" required>
-            <option value="">Selecione o Setor</option>
+            <option value="">Selecione o Tipo de usuário</option>
             {% for group in form.grupo.field.queryset %}
             <option value="{{ group.id }}">
               {{ group.name }}
@@ -108,7 +108,22 @@
           <div class="register-error">{{ form.grupo.errors }}</div>
           {% endif %}
         </div>
-
+        <div class="register-field">
+          <i class="fa-solid fa-building"></i>
+          <select name="{{ form.aditionalinformation.nome }}" id="{{ form.aditionalinformation.id_for_label }}" required>
+            <option value="">Selecione o Setor</option>
+            {% for group in form.aditionalinformation.field.queryset %}
+            <option value="{{ group.cod_iata }}">
+              {{ group.cod_iata }}-{{ group.nome }}
+            </option>
+            {% endfor %}
+          </select>
+          <label for="{{ form.aditionalinformation.id_for_label }}"></label>
+          {% if form.aditionalinformation.errors %}
+          <div class="register-error">{{ form.grupo.errors }}</div>
+          {% endif %}
+        </div>
+        
         <div class="register-field">
           <i class="fa-solid fa-lock"></i>
           <input type="password" name="{{ form.password1.name }}" id="{{ form.password1.id_for_label }}" placeholder=" "

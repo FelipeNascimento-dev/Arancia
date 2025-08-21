@@ -11,6 +11,61 @@
     <div class="forma">
         <main class="container">
             {% block content %}
+
+            <div class="welcome-banner">
+                <h2>👋 Olá, {{ request.user.first_name }} {{ request.user.last_name }}!</h2>
+                <p>
+                    Seja bem-vindo ao <strong>Arancia</strong> — nossa nova plataforma de gestão e operações.
+                    O nome vem do italiano <em>“Laranja”</em>, em homenagem ao nosso antigo app
+                    <strong>Laranjinha</strong>,
+                    criado para apoiar técnicos em campo. O Arancia nasce da evolução da <strong>C‑Trends Flow Systems
+                        Ltda.</strong>
+                    e marca uma fase de transformação, com foco em agilidade, clareza e colaboração.
+                </p>
+
+                <hr>
+
+                <h3>🌊 O que está por trás do Arancia</h3>
+                <p>
+                    Inspirado em <em>Flow Systems</em>, o Arancia segue princípios de fluxo contínuo,
+                    melhoria constante e trabalho em equipe:
+                </p>
+                <ul>
+                    <li>🏭 <strong>Eficiência</strong>: processos que fluem com menos retrabalho e mais previsibilidade.
+                    </li>
+                    <li>🧠 <strong>Gestão moderna</strong>: foco em valor, autonomia e aprendizado contínuo.</li>
+                    <li>📈 <strong>Visibilidade</strong>: tudo mais claro — do pedido à etiqueta, do status à entrega.
+                    </li>
+                </ul>
+
+                <hr>
+
+                <h3>🧭 O que você encontra aqui</h3>
+                <ul>
+                    <li>📦 <strong>Pedidos & Etiquetas</strong>: consulte etiquetas e movimente pedidos em poucos
+                        cliques.
+                    </li>
+                    <li>🧭 <strong>Navegação simples</strong>: acesse módulos pelo menu e pelos atalhos do cabeçalho.
+                    </li>
+                    <li>⚙️ <strong>Perfil & Ajuda</strong>: no seu avatar, acesse configurações e materiais de suporte.
+                    </li>
+                </ul>
+
+                <hr>
+
+                <p class="tip">
+                    Dica: se algum módulo estiver indisponível para você, fale com o seu gestor para ajustar permissões.
+                </p>
+
+                <hr>
+
+                <p class="closing">
+                    Estamos felizes em ter você aqui. O Arancia foi feito para deixar seu dia a dia mais simples e
+                    produtivo.
+                    Conte com a gente!
+                </p>
+            </div>
+
             {% endblock %}
         </main>
 
@@ -36,4 +91,5 @@
         {% endif %}
     </div>
 </body>
+
 </html>

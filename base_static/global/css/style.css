@@ -76,3 +76,69 @@ body {
   transform: translateY(0);
   transition: all 0.4s ease;
 }
+
+.welcome-banner {
+  background: linear-gradient(135deg, #ffffff, #f7fafc);
+  border: 1px solid #e2e8f0;
+  padding: 24px;
+  border-radius: 14px;
+  margin: 20px 0;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+  color: #1f2937;
+  animation: fadeIn .5s ease;
+  margin-left: 90px;
+  margin-top: 70px;
+  margin-right: 20px;
+}
+
+.welcome-banner h2 {
+  margin: 0 0 10px;
+  font-size: 1.6rem;
+  color: #0f172a;
+}
+
+.welcome-banner h3 {
+  margin: 14px 0 6px;
+  font-size: 1.1rem;
+  color: #1e293b;
+}
+
+.welcome-banner p,
+.welcome-banner li {
+  line-height: 1.55;
+}
+
+.welcome-banner ul,
+.welcome-banner ol {
+  margin: 8px 0 10px 20px;
+}
+
+.welcome-banner hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 14px 0;
+}
+
+.welcome-banner .tip {
+  background: #eef6ff;
+  border-left: 4px solid #3b82f6;
+  padding: 10px 12px;
+  border-radius: 6px;
+}
+
+.welcome-banner .closing {
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
