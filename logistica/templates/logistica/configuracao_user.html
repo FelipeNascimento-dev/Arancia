@@ -1,0 +1,106 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<div class="profile-modal">
+  <div class="profile-header">
+    <h2>Meu Perfil</h2>
+    <a class="btn-link" href="#" onclick="history.back();return false;">✕</a>
+  </div>
+
+  <div class="profile-tabs">
+    <a class="profile-tab active" href="javascript:void(0)">Dados do Usuário</a>
+    {# se quiser outras abas, adicione aqui #}
+  </div>
+
+  <div class="profile-body">
+    <form method="post" enctype="multipart/form-data" action="{% url 'logistica:settings' %}">
+      {% csrf_token %}
+
+      <div class="profile-grid">
+        <div class="avatar-col">
+          <label for="id_avatar" class="avatar"
+                 id="avatarPreview"
+                 style="background-image:url('{{ request.user.profile_photo_url|default:"" }}');">
+          </label>
+          {# Se tiver um campo de upload no form, exiba-o. Se não tiver, remova este bloco. #}
+          {% if form.avatar %}
+            <label for="{{ form.avatar.id_for_label }}" class="avatar-btn">Alterar foto</label>
+            {{ form.avatar }}
+            <div class="form-hint">PNG/JPG até 2MB.</div>
+          {% else %}
+            <div class="form-hint">Foto do perfil (opcional)</div>
+          {% endif %}
+          <a href="{% url 'logistica:password_change' %}" class="btn btn-outline">Alterar senha</a>
+        </div>
+
+        <div class="fields">
+          <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">Login (e-mail)</label>
+            {{ form.email }}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.first_name.id_for_label }}">Nome</label>
+            {{ form.first_name }}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.last_name.id_for_label }}">Sobrenome</label>
+            {{ form.last_name }}
+          </div>
+
+          {# Telefone/Celular/Birthdate/Prestador — use se existirem no seu form #}
+          {% if form.telefone %}
+          <div class="form-group">
+            <label for="{{ form.telefone.id_for_label }}">Telefone</label>
+            {{ form.telefone }}
+          </div>
+          {% endif %}
+
+          {% if form.celular %}
+          <div class="form-group">
+            <label for="{{ form.celular.id_for_label }}">Celular</label>
+            {{ form.celular }}
+          </div>
+          {% endif %}
+
+          {% if form.data_nascimento %}
+          <div class="form-group">
+            <label for="{{ form.data_nascimento.id_for_label }}">Data de Nascimento</label>
+            {{ form.data_nascimento }}
+          </div>
+          {% endif %}
+
+          {% if form.prestador %}
+          <div class="form-group">
+            <label for="{{ form.prestador.id_for_label }}">Prestador</label>
+            {{ form.prestador }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="actions">
+        <div></div>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const fileInput = document.querySelector('input[type="file"][id^="id_avatar"]');
+    const preview   = document.getElementById('avatarPreview');
+    if (fileInput && preview) {
+      fileInput.addEventListener('change', (e) => {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        const url = URL.createObjectURL(f);
+        preview.style.backgroundImage = `url('${url}')`;
+      });
+    }
+  });
+</script>
+{% endblock content %}

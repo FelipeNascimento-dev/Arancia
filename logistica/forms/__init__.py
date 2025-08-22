@@ -11,3 +11,4 @@ from .forms_consulta_result_ec01 import ConsultaResultEC01Form
 from .forms_trackingIP import trackingIPForm
 from .forms_extracao_pedidos import ExtracaoForm
 from .forms_consulta_etiqueta import EtiquetasForm
+from .forms_configuracao_user import ConfiguracaoUserForm

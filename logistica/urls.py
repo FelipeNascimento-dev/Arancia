@@ -2,11 +2,11 @@ from .views import UserLoginView
 from django.contrib.auth.views import LogoutView
 from django.urls import path
 from .views import index, consulta_id_form, pre_recebimento, \
-recebimento, registrar_romaneio, consulta_id_table, consulta_result, \
-btn_voltar, reserva_equip, saida_campo, \
-consulta_ma84, btn_ma_voltar, consulta_ec01, btn_ec_voltar, \
-logout_confirm_view, logout_view, registrar_usuario, trackingIP, \
-extracao_pedidos, consulta_etiquetas
+    recebimento, registrar_romaneio, consulta_id_table, consulta_result, \
+    btn_voltar, reserva_equip, saida_campo, \
+    consulta_ma84, btn_ma_voltar, consulta_ec01, btn_ec_voltar, \
+    logout_confirm_view, logout_view, registrar_usuario, trackingIP, \
+    extracao_pedidos, consulta_etiquetas, settings_view, UserPasswordChangeView
 
 app_name = 'logistica'
 
@@ -16,18 +16,25 @@ urlpatterns = [
     path('register/', registrar_usuario, name='register'),
     path('logout/', logout_confirm_view, name='logout_confirm'),
     path('logout/confirm/', logout_view, name='logout'),
+    path("settings/", settings_view, name="settings"),
+    path("settings/password/", UserPasswordChangeView.as_view(),
+         name="password_change"),
     path('consulta-id/', consulta_id_form, name='consulta_id_form'),
     path('consulta-id/<str:id>/', consulta_id_table, name='consulta_id_table'),
-    path('pre-recebimento/<str:tp_reg>/', pre_recebimento, name='pre_recebimento'),
+    path('pre-recebimento/<str:tp_reg>/',
+         pre_recebimento, name='pre_recebimento'),
     path('recebimento/<str:tp_reg>/', recebimento, name='recebimento'),
-    path('estorno/<str:tp_reg>/', pre_recebimento, name='estorno_pre_recebimento'),
+    path('estorno/<str:tp_reg>/', pre_recebimento,
+         name='estorno_pre_recebimento'),
     path('estorno/<str:tp_reg>/', recebimento, name='estorno_recebimento'),
     path('consulta/resultados/', consulta_result, name='consulta_resultados'),
     path('consulta/resultados/voltar/', btn_voltar, name='btn_voltar'),
     path('reserva-equip/<str:tp_reg>/', reserva_equip, name='reserva_equip'),
-    path('estorno/reserva-equip/<str:tp_reg>/', reserva_equip, name='estorno_reserva'),
+    path('estorno/reserva-equip/<str:tp_reg>/',
+         reserva_equip, name='estorno_reserva'),
     path('saida-campo/<str:tp_reg>/', saida_campo, name='saida_campo'),
-    path('cancelamento/saida-campo/<str:tp_reg>/', saida_campo, name='cancelamento_saida_campo'),
+    path('cancelamento/saida-campo/<str:tp_reg>/',
+         saida_campo, name='cancelamento_saida_campo'),
     path('consulta-ma/', consulta_ma84, name='consulta_result_ma'),
     path('consulta-ma/voltar/', btn_ma_voltar, name='btn_ma_voltar'),
     path('consulta-ec/', consulta_ec01, name='consulta_result_ec'),

@@ -13,6 +13,7 @@
 @import url(barra_progresso.css);
 @import url(nav_usuario.css);
 @import url(trackingIP.css);
+@import url(configuracao_user.css);
 @import url(responsividade.css);
 
 :root {
