@@ -8,6 +8,68 @@
     .form-card-2col {
         height: auto;
     }
+
+    .cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+        align-items: start;
+        margin-left: 85px;
+    }
+
+    .card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
+        overflow: hidden;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: flex-start;
+        padding: 12px 14px;
+        background: #f7f7f7;
+    }
+
+    .badge-num {
+        background: #4CAF50;
+        color: #fff;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: .9rem;
+        flex: 0 0 28px;
+    }
+
+    .card-title {
+        margin: 0;
+        font-size: 1rem;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .card-body {
+        padding: 12px 14px;
+    }
+
+    .card-body p {
+        margin: 6px 0;
+        color: #555;
+        font-size: .92rem;
+    }
+
+    .card-body strong {
+        color: #222;
+    }
 </style>
 
 <div class="form-container">
@@ -19,36 +81,77 @@
 </div>
 
 {% if tabela_dados %}
-<div class="tabela-container">
-    <table class="tabela-consulta">
-        <thead>
-            <tr>
-                <th>nr_arq</th>
-                <th>mensagem</th>
-                <th>status</th>
-                <th>data</th>
-                <th>hora</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in tabela_dados %}
-            <tr>
-                <td>{{ item.nr_arq }}</td>
-                <td>{{ item.mensagem }}</td>
-                <td>{{ item.status }}</td>
-                <td>{{ item.data }}</td>
-                <td>{{ item.hora }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="cards-container">
+    {% for item in tabela_dados %}
+    <div class="card">
+        <div class="card-header">
+            <span class="badge-num">{{ forloop.revcounter }}</span>
+            <h3 class="card-title">{{ item.mensagem }}</h3>
+        </div>
 
-    <form action="{% url 'logistica:btn_ma_voltar' %}" method="POST">
-        {% csrf_token %}
-        <input type="hidden" name="id" value="{{ form.id.value }}">
-        <button class="btn-voltar" type="submit">Voltar</button>
-    </form>
+        <div class="card-body">
+            <p><strong>nr_arq:</strong> {{ item.nr_arq }}</p>
+            <p><strong>status:</strong> {{ item.status }}</p>
+            <p><strong>data:</strong> {{ item.data }}</p>
+            <p><strong>hora:</strong> {{ item.hora }}</p>
+        </div>
+    </div>
+    {% endfor %}
 </div>
+
+<form action="{% url 'logistica:btn_ma_voltar' %}" method="POST" style="margin-top:16px">
+    {% csrf_token %}
+    <input type="hidden" name="id" value="{{ form.id.value }}">
+    <button class="btn-voltar" type="submit">Voltar</button>
+</form>
 {% endif %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const cards = Array.from(document.querySelectorAll(".card"));
+
+        function closeAll(except = null) {
+            cards.forEach(c => {
+                if (c !== except) {
+                    c.classList.remove("open");
+                    const btn = c.querySelector(".toggle-btn");
+                    if (btn) { btn.textContent = "+"; btn.setAttribute("aria-expanded", "false"); }
+                }
+            });
+        }
+
+        cards.forEach(card => {
+            const btn = card.querySelector(".toggle-btn");
+            if (!btn) return;
+
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const isOpen = card.classList.contains("open");
+                closeAll();
+                if (!isOpen) {
+                    card.classList.add("open");
+                    btn.textContent = "−";
+                    btn.setAttribute("aria-expanded", "true");
+
+                    const fly = card.querySelector(".card-flyout");
+                    if (fly) {
+                        const rect = fly.getBoundingClientRect();
+                        const overflowRight = rect.right - window.innerWidth + 8;
+                        if (overflowRight > 0) {
+                            fly.style.left = `${8 - overflowRight}px`;
+                            fly.style.right = `8px`;
+                        } else {
+                            fly.style.left = "8px";
+                            fly.style.right = "8px";
+                        }
+                    }
+                }
+            });
+        });
+
+        document.addEventListener("click", () => closeAll());
+    });
+</script>
+
 
 {% endblock content %}
