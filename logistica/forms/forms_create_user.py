@@ -10,24 +10,26 @@ from ..models import (
     UserDesignation,
 )
 
+
 class CustomUserCreationForm(UserCreationForm):
     first_name = forms.CharField(label="Primeiro nome", max_length=30)
-    last_name  = forms.CharField(label="Último nome", max_length=30)
-    email      = forms.EmailField(label="E-mail")
-    cpf        = forms.CharField(label="CPF", max_length=14)
+    last_name = forms.CharField(label="Último nome", max_length=30)
+    email = forms.EmailField(label="E-mail")
+    cpf = forms.CharField(label="CPF", max_length=14)
 
     grupo = forms.ModelChoiceField(
-        label="Setor",
         queryset=Group.objects.filter(name__startswith="arancia_"),
         required=True,
+        empty_label="Selecione a Skill do usuário",
+        help_text="Cuidado, o setor é usado para definir as permissões do usuário",
     )
 
     aditionalinformation = forms.ModelChoiceField(
         label="Informação Adicional (Grupo)",
         queryset=GroupAditionalInformation.objects.all(),
         required=True,
-        empty_label="Selecione a informação adicional",
-        help_text="Registros de informações adicionais vinculados ao grupo selecionado.",
+        empty_label="Selecione o Setor/PA",
+        help_text="Selecione para definir o Setor/PA do usuário",
     )
 
     class Meta:
@@ -45,7 +47,8 @@ class CustomUserCreationForm(UserCreationForm):
             grupo_id = g.id if hasattr(g, "id") else g
 
         if grupo_id:
-            self.fields["aditionalinformation"].queryset = GroupAditionalInformation.objects.filter(group_id=grupo_id)
+            self.fields["aditionalinformation"].queryset = GroupAditionalInformation.objects.filter(
+                group_id=grupo_id)
         else:
             self.fields["aditionalinformation"].queryset = GroupAditionalInformation.objects.all()
 
@@ -58,24 +61,26 @@ class CustomUserCreationForm(UserCreationForm):
     def clean(self):
         cleaned = super().clean()
         grupo = cleaned.get("grupo")
-        gai   = cleaned.get("aditionalinformation")
+        gai = cleaned.get("aditionalinformation")
         if grupo and gai and gai.group_id != grupo.id:
-            self.add_error("aditionalinformation", "A informação adicional selecionada não pertence ao grupo escolhido.")
+            self.add_error("aditionalinformation",
+                           "A informação adicional selecionada não pertence ao grupo escolhido.")
         return cleaned
 
     @transaction.atomic
     def save(self, commit=True):
         user = super().save(commit=False)
 
-        ultimo = User.objects.filter(username__startswith="ARC").order_by("-id").first()
+        ultimo = User.objects.filter(
+            username__startswith="ARC").order_by("-id").first()
         if ultimo and ultimo.username.startswith("ARC") and ultimo.username[3:].isdigit():
             numero = int(ultimo.username[3:]) + 1
         else:
             numero = 1
-        user.username   = f"ARC{numero:04d}"
+        user.username = f"ARC{numero:04d}"
         user.first_name = self.cleaned_data["first_name"]
-        user.last_name  = self.cleaned_data["last_name"]
-        user.email      = self.cleaned_data["email"]
+        user.last_name = self.cleaned_data["last_name"]
+        user.email = self.cleaned_data["email"]
 
         if commit:
             user.save()
