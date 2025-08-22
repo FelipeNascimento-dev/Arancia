@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 class ConfiguracaoUserForm(forms.ModelForm):
     username = forms.CharField(
-        label="Username", max_length=30, required=True)
+        label="Username", max_length=30, required=False, disabled=True)
     first_name = forms.CharField(
         label="Primeiro nome", max_length=30, required=False)
     last_name = forms.CharField(
@@ -13,7 +13,7 @@ class ConfiguracaoUserForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "email"]
+        fields = ["username", "first_name", "last_name", "email"]
 
     def clean_email(self):
         email = self.cleaned_data["email"].strip().lower()

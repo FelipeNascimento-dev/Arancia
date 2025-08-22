@@ -35,51 +35,11 @@
         </div>
 
         <div class="fields">
-          <div class="form-group">
-            <label for="{{ form.email.id_for_label }}">Login (e-mail)</label>
-            {{ form.email }}
-          </div>
-
-          <div class="form-group">
-            <label for="{{ form.first_name.id_for_label }}">Nome</label>
-            {{ form.first_name }}
-          </div>
-
-          <div class="form-group">
-            <label for="{{ form.last_name.id_for_label }}">Sobrenome</label>
-            {{ form.last_name }}
-          </div>
-
-          {# Telefone/Celular/Birthdate/Prestador — use se existirem no seu form #}
-          {% if form.telefone %}
-          <div class="form-group">
-            <label for="{{ form.telefone.id_for_label }}">Telefone</label>
-            {{ form.telefone }}
-          </div>
-          {% endif %}
-
-          {% if form.celular %}
-          <div class="form-group">
-            <label for="{{ form.celular.id_for_label }}">Celular</label>
-            {{ form.celular }}
-          </div>
-          {% endif %}
-
-          {% if form.data_nascimento %}
-          <div class="form-group">
-            <label for="{{ form.data_nascimento.id_for_label }}">Data de Nascimento</label>
-            {{ form.data_nascimento }}
-          </div>
-          {% endif %}
-
-          {% if form.prestador %}
-          <div class="form-group">
-            <label for="{{ form.prestador.id_for_label }}">Prestador</label>
-            {{ form.prestador }}
-          </div>
-          {% endif %}
+            {% for field in form %}
+            <label for={{ field.id_for_label }} class="avatar-btn">{{ field.label }}</label> 
+            {{ field }}
+            {% endfor %}
         </div>
-      </div>
 
       <div class="actions">
         <div></div>
