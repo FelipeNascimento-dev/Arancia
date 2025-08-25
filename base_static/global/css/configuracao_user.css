@@ -133,6 +133,12 @@
       box-shadow: 0 4px 16px rgba(0, 0, 0, .12);
   }
 
+  .foto-perfil {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+  }
+
   .file-input-visually-hidden {
       position: absolute;
       width: 1px;
@@ -218,10 +224,29 @@
       text-decoration: none;
   }
 
+  .fields {
+      align-items: start;
+  }
+
   .btn-outline {
-      border-color: var(--brand);
-      color: var(--brand);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      margin-top: 20px;
+      width: 100%;
+      border: 1px solid var(--brand);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: .95rem;
       background: #fff;
+      color: var(--brand);
+      cursor: pointer;
+      transition: border-color .2s, color .2s, box-shadow .2s, background-color .2s;
+      text-decoration: none;
+      height: auto;
+      line-height: 1.25rem;
+      align-self: start;
   }
 
   @media (max-width: 860px) {

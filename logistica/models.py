@@ -20,7 +20,7 @@ class UserProfile(models.Model):
                 return self.avatar.url
             except Exception:
                 pass
-        return "/static/global/images/default-avatar.png"
+        return "/static/global/images/default-avatar.jpg"
 
 
 class Romaneio(models.Model):
