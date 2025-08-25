@@ -99,7 +99,7 @@
     {% endfor %}
 </div>
 
-<form action="{% url 'logistica:btn_ma_voltar' %}" method="POST" style="margin-top:16px">
+<form action="{% url 'logistica:btn_ma_voltar' %}" method="POST" style="margin-top:16px" >
     {% csrf_token %}
     <input type="hidden" name="id" value="{{ form.id.value }}">
     <button class="btn-voltar" type="submit">Voltar</button>
