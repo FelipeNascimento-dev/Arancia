@@ -17,12 +17,15 @@ TRACKING_HEADERS = {"Content-Type": "application/json",
 
 CARRY_PEDIDO_KEY = "carry_pedido_next"
 
+
 def _mark_carry_next(request: HttpRequest) -> None:
     request.session[CARRY_PEDIDO_KEY] = True
     request.session.modified = True
 
+
 def _consume_carry_next(request: HttpRequest) -> bool:
     return request.session.pop(CARRY_PEDIDO_KEY, False)
+
 
 class TrackingOriginalCode:
     def __init__(self, code: str):
@@ -311,7 +314,8 @@ def trackingIP(request: HttpRequest, code: str) -> HttpResponse:
     titulo = f"IP - {code_info.description}"
 
     pedido_atual = _get_pedido_atual(request)
-    serials = _get_serials_from_session(request, pedido_atual) if code == "202" else []
+    serials = _get_serials_from_session(
+        request, pedido_atual) if code == "202" else []
 
     if request.method == "POST":
         posted_pedido = (request.POST.get("pedido") or "").strip()
@@ -319,9 +323,11 @@ def trackingIP(request: HttpRequest, code: str) -> HttpResponse:
             _ensure_pedido_in_session(request, posted_pedido)
             pedido_atual = posted_pedido
 
-        form = trackingIPForm(request.POST, nome_form=titulo, show_serial=code_info.show_serial)
+        form = trackingIPForm(request.POST, nome_form=titulo,
+                              show_serial=code_info.show_serial)
 
-        resp = _dispatch_serial_actions_if_any(request, code_info, pedido_atual, form)
+        resp = _dispatch_serial_actions_if_any(
+            request, code_info, pedido_atual, form)
         if resp is not None:
             return resp
 
@@ -338,7 +344,7 @@ def trackingIP(request: HttpRequest, code: str) -> HttpResponse:
             initial["pedido"] = ped
 
     form = trackingIPForm(initial=initial,
-                        nome_form=titulo,
-                        show_serial=code_info.show_serial)
+                          nome_form=titulo,
+                          show_serial=code_info.show_serial)
 
     return _render_pcp(request, form, code_info, serials)
