@@ -64,6 +64,7 @@
   }
 
   .profile-modal {
+      min-width: 1000px;
       width: auto;
       margin-top: 70px;
       margin-left: 85px;
