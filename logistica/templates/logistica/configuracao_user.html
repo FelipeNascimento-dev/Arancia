@@ -1,4 +1,6 @@
 {% extends 'global/base.html' %}
+{% load static %}
+
 {% block content %}
 
 <div class="profile-modal">
@@ -17,9 +19,9 @@
 
       <div class="profile-grid">
         <div class="avatar-col">
-          <label class="avatar" id="avatarPreview" style="background-image:url('{{ avatar_url }}');"></label>
-
-          <a href="#" id="btnToggleSenha" class="btn btn-outline">Alterar senha</a>
+          <label class="avatar" id="avatarPreview">
+            <img class="foto-perfil" src="{% static 'global/images/default-avatar.jpg' %}" alt="foto">
+          </label>
         </div>
 
         <div class="fields">
@@ -40,7 +42,6 @@
             {{ form.last_name }} {{ form.last_name.errors }}
           </div>
 
-          {# Senha atual SEMPRE visível #}
           <div class="form-group" id="grpSenhaAtual">
             <label for="{{ form.senha_atual.id_for_label }}" class="label">
               {{ form.senha_atual.label }}
@@ -54,30 +55,37 @@
             <small class="helper">Para trocar sua senha, clique em “Alterar senha”.</small>
           </div>
 
-          {# Nova senha e confirmação: escondidos até clicar em Alterar senha #}
-          <div class="form-group hidden" id="grpNovaSenha1">
-            <label for="{{ form.nova_senha1.id_for_label }}" class="label">
-              {{ form.nova_senha1.label }}
-            </label>
-            <div class="input-with-eye">
-              {{ form.nova_senha1 }}
-              <button type="button" class="eye-btn" data-eye="nova_senha1" aria-label="Mostrar/ocultar senha">
-                <i class="fa-solid fa-eye"></i>
-              </button>
-            </div>
-          </div>
 
-          <div class="form-group hidden" id="grpNovaSenha2">
-            <label for="{{ form.nova_senha2.id_for_label }}" class="label">
-              {{ form.nova_senha2.label }}
-            </label>
-            <div class="input-with-eye">
-              {{ form.nova_senha2 }}
-              <button type="button" class="eye-btn" data-eye="nova_senha2" aria-label="Mostrar/ocultar senha">
-                <i class="fa-solid fa-eye"></i>
-              </button>
+          <label for="{{ form.senha_atual.id_for_label }}" class="label">
+            <a href="#" id="btnToggleSenha" class="btn btn-outline btn-outline-input" aria-expanded="false">
+              <i class="fa-solid fa-key" aria-hidden="true"></i>
+              <span>Alterar senha</span>
+            </a>
+          </label>
+
+            <div class="form-group hidden" id="grpNovaSenha1">
+              <label for="{{ form.nova_senha1.id_for_label }}" class="label">
+                {{ form.nova_senha1.label }}
+              </label>
+              <div class="input-with-eye">
+                {{ form.nova_senha1 }}
+                <button type="button" class="eye-btn" data-eye="nova_senha1" aria-label="Mostrar/ocultar senha">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>
             </div>
-          </div>
+
+            <div class="form-group hidden" id="grpNovaSenha2">
+              <label for="{{ form.nova_senha2.id_for_label }}" class="label">
+                {{ form.nova_senha2.label }}
+              </label>
+              <div class="input-with-eye">
+                {{ form.nova_senha2 }}
+                <button type="button" class="eye-btn" data-eye="nova_senha2" aria-label="Mostrar/ocultar senha">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+            </div>
 
         </div>
       </div>

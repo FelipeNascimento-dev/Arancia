@@ -7,11 +7,11 @@ from django.contrib.auth.password_validation import validate_password
 class ConfiguracaoUserForm(forms.ModelForm):
     username = forms.CharField(
         label="Username", max_length=30, required=False, disabled=True)
-    email = forms.EmailField(label="E-mail", required=True)
+    email = forms.EmailField(label="E-mail", required=True, disabled=True)
     first_name = forms.CharField(
-        label="Primeiro nome", max_length=30, required=False)
+        label="Primeiro nome", max_length=30, required=False, disabled=True)
     last_name = forms.CharField(
-        label="Último nome", max_length=30, required=False)
+        label="Último nome", max_length=30, required=False, disabled=True)
 
     senha_atual = forms.CharField(
         label="Senha atual",
