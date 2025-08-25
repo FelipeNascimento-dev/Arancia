@@ -1,5 +1,4 @@
 {% extends 'global/base.html' %}
-
 {% block content %}
 
 <div class="profile-modal">
@@ -10,7 +9,6 @@
 
   <div class="profile-tabs">
     <a class="profile-tab active" href="javascript:void(0)">Dados do Usuário</a>
-    {# se quiser outras abas, adicione aqui #}
   </div>
 
   <div class="profile-body">
@@ -19,31 +17,74 @@
 
       <div class="profile-grid">
         <div class="avatar-col">
-          <label for="id_avatar" class="avatar"
-                 id="avatarPreview"
-                 style="background-image:url('{{ request.user.profile_photo_url|default:"" }}');">
-          </label>
-          {# Se tiver um campo de upload no form, exiba-o. Se não tiver, remova este bloco. #}
-          {% if form.avatar %}
-            <label for="{{ form.avatar.id_for_label }}" class="avatar-btn">Alterar foto</label>
-            {{ form.avatar }}
-            <div class="form-hint">PNG/JPG até 2MB.</div>
-          {% else %}
-            <div class="form-hint">Foto do perfil (opcional)</div>
-          {% endif %}
-          <a href="{% url 'logistica:password_change' %}" class="btn btn-outline">Alterar senha</a>
+          <label class="avatar" id="avatarPreview" style="background-image:url('{{ avatar_url }}');"></label>
+
+          <a href="#" id="btnToggleSenha" class="btn btn-outline">Alterar senha</a>
         </div>
 
         <div class="fields">
-            {% for field in form %}
-            <label for={{ field.id_for_label }} class="avatar-btn">{{ field.label }}</label> 
-            {{ field }}
-            {% endfor %}
+          <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+            {{ form.username }} {{ form.username.errors }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+            {{ form.email }} {{ form.email.errors }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+            {{ form.first_name }} {{ form.first_name.errors }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+            {{ form.last_name }} {{ form.last_name.errors }}
+          </div>
+
+          {# Senha atual SEMPRE visível #}
+          <div class="form-group" id="grpSenhaAtual">
+            <label for="{{ form.senha_atual.id_for_label }}" class="label">
+              {{ form.senha_atual.label }}
+            </label>
+            <div class="input-with-eye">
+              {{ form.senha_atual }}
+              <button type="button" class="eye-btn" data-eye="senha_atual" aria-label="Mostrar/ocultar senha">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+            <small class="helper">Para trocar sua senha, clique em “Alterar senha”.</small>
+          </div>
+
+          {# Nova senha e confirmação: escondidos até clicar em Alterar senha #}
+          <div class="form-group hidden" id="grpNovaSenha1">
+            <label for="{{ form.nova_senha1.id_for_label }}" class="label">
+              {{ form.nova_senha1.label }}
+            </label>
+            <div class="input-with-eye">
+              {{ form.nova_senha1 }}
+              <button type="button" class="eye-btn" data-eye="nova_senha1" aria-label="Mostrar/ocultar senha">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group hidden" id="grpNovaSenha2">
+            <label for="{{ form.nova_senha2.id_for_label }}" class="label">
+              {{ form.nova_senha2.label }}
+            </label>
+            <div class="input-with-eye">
+              {{ form.nova_senha2 }}
+              <button type="button" class="eye-btn" data-eye="nova_senha2" aria-label="Mostrar/ocultar senha">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
         </div>
+      </div>
 
       <div class="actions">
         <div></div>
-        <button type="submit" class="btn btn-primary">Salvar</button>
+        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
       </div>
     </form>
   </div>
@@ -51,16 +92,55 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const fileInput = document.querySelector('input[type="file"][id^="id_avatar"]');
-    const preview   = document.getElementById('avatarPreview');
-    if (fileInput && preview) {
-      fileInput.addEventListener('change', (e) => {
+    const inputFoto = document.getElementById('id_foto_perfil');
+    const preview = document.getElementById('avatarPreview');
+    if (inputFoto && preview) {
+      inputFoto.addEventListener('change', (e) => {
         const f = e.target.files && e.target.files[0];
         if (!f) return;
         const url = URL.createObjectURL(f);
         preview.style.backgroundImage = `url('${url}')`;
       });
     }
+
+    const btnToggle = document.getElementById('btnToggleSenha');
+    const grp1 = document.getElementById('grpNovaSenha1');
+    const grp2 = document.getElementById('grpNovaSenha2');
+
+    let aberto = false;
+    btnToggle?.addEventListener('click', (e) => {
+      e.preventDefault();
+      aberto = !aberto;
+      grp1.classList.toggle('hidden', !aberto);
+      grp2.classList.toggle('hidden', !aberto);
+      btnToggle.textContent = aberto ? 'Cancelar' : 'Alterar senha';
+
+      if (!aberto) {
+        const i1 = document.getElementById('id_nova_senha1');
+        const i2 = document.getElementById('id_nova_senha2');
+        if (i1) i1.value = '';
+        if (i2) i2.value = '';
+      }
+    });
+
+    document.querySelectorAll('.eye-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = btn.getAttribute('data-eye');
+        const input = document.getElementById('id_' + name);
+        const icon = btn.querySelector('i');
+        if (!input || !icon) return;
+
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.classList.remove('fa-eye');
+          icon.classList.add('fa-eye-slash');
+        } else {
+          input.type = 'password';
+          icon.classList.remove('fa-eye-slash');
+          icon.classList.add('fa-eye');
+        }
+      });
+    });
   });
 </script>
 {% endblock content %}

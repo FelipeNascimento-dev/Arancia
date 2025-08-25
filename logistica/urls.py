@@ -1,4 +1,6 @@
 from .views import UserLoginView
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib.auth.views import LogoutView
 from django.urls import path
 from .views import index, consulta_id_form, pre_recebimento, \
@@ -46,4 +48,4 @@ urlpatterns = [
     path('ip/<str:code>/', trackingIP, name='troca_custodia'),
     path('extracao-pedidos/', extracao_pedidos, name='extracao_pedidos'),
     path('consulta-etiquetas/', consulta_etiquetas, name='consulta_etiquetas'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

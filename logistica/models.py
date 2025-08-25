@@ -1,10 +1,26 @@
 from django.db import models
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User, Group
+
+
+def user_avatar_path(instance, filename):
+    return f"avatars/user_{instance.user_id}/{filename}"
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    cpf = models.CharField(max_length=14, unique=True)
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="perfil")
+    cpf = models.CharField(max_length=14, unique=True,
+                           blank=True, null=True)
+    avatar = models.ImageField(
+        upload_to=user_avatar_path, blank=True, null=True)
+
+    def avatar_url(self):
+        if self.avatar:
+            try:
+                return self.avatar.url
+            except Exception:
+                pass
+        return "/static/global/images/default-avatar.png"
 
 
 class Romaneio(models.Model):
@@ -77,7 +93,6 @@ class GroupAditionalInformation(models.Model):
     email = models.EmailField(verbose_name="E-mail", blank=True, null=True)
     responsavel = models.CharField(
         max_length=100, verbose_name="Responsável", blank=True, null=True)
-    
 
     def __str__(self):
         return f"{self.group.name}" if self.group else "Sem grupo"

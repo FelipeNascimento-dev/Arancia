@@ -1,6 +1,5 @@
   :root {
       --brand: #4a90e2;
-      /* azul do seu sistema */
       --bg-soft: #f7f7f7;
       --text: #333;
       --muted: #7a7a7a;
@@ -8,9 +7,66 @@
       --shadow: 0 8px 24px rgba(0, 0, 0, .10);
   }
 
+  .hidden {
+      display: none !important;
+  }
+
+  .label {
+      display: block;
+      font-size: .875rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: .25rem;
+  }
+
+  .form-group input[type="password"],
+  .form-group input[type="text"],
+  .form-group input[type="email"] {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: .5rem;
+      padding: .5rem .75rem;
+      line-height: 1.25rem;
+  }
+
+  .input-with-eye {
+      position: relative;
+      display: flex;
+      align-items: center;
+  }
+
+  .input-with-eye input {
+      padding-right: 2.5rem;
+  }
+
+  .eye-btn {
+      position: absolute;
+      right: .5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      padding: .25rem;
+      line-height: 1;
+      color: #6b7280;
+  }
+
+  .eye-btn:hover {
+      color: #374151;
+  }
+
+  .helper {
+      display: block;
+      margin-top: .25rem;
+      font-size: .75rem;
+      color: #6b7280;
+  }
+
   .profile-modal {
-      max-width: 900px;
-      margin: 70px auto 40px;
+      width: auto;
+      margin-top: 70px;
+      margin-left: 85px;
       background: #fff;
       border-radius: var(--radius);
       box-shadow: var(--shadow);
@@ -70,15 +126,24 @@
   }
 
   .avatar {
-      width: 140px;
-      height: 140px;
+      width: 200px;
+      height: 200px;
       border-radius: 50%;
       background: #ddd center/cover no-repeat;
       box-shadow: 0 4px 16px rgba(0, 0, 0, .12);
   }
 
-  .avatar input[type="file"] {
-      display: none;
+  .file-input-visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      border: 0;
+      white-space: nowrap;
   }
 
   .avatar-btn {
