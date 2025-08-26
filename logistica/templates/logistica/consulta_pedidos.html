@@ -7,6 +7,71 @@
     height: auto;
     margin-top: 65px;
   }
+
+  .form-card-2col {
+    height: auto;
+  }
+
+  .cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+    align-items: start;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
+    overflow: hidden;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-start;
+    padding: 12px 14px;
+    background: #f7f7f7;
+  }
+
+  .badge-num {
+    background: #4CAF50;
+    color: #fff;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: .9rem;
+    flex: 0 0 28px;
+  }
+
+  .card-title {
+    margin: 0;
+    font-size: 1rem;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-body {
+    padding: 12px 14px;
+  }
+
+  .card-body p {
+    margin: 6px 0;
+    color: #555;
+    font-size: .92rem;
+  }
+
+  .card-body strong {
+    color: #222;
+  }
 </style>
 
 <div class="form-container">
@@ -23,14 +88,17 @@
   <div class="card">
     <div class="card-header">
       <span class="badge-num">{{ forloop.revcounter }}</span>
-      <h3 class="card-title">{{ item.mensagem }}</h3>
+      <h3 class="card-title">{{ item.order_number }}</h3>
     </div>
 
     <div class="card-body">
-      <p><strong>nr_arq:</strong> {{ item.nr_arq }}</p>
-      <p><strong>status:</strong> {{ item.status }}</p>
-      <p><strong>data:</strong> {{ item.data }}</p>
-      <p><strong>hora:</strong> {{ item.hora }}</p>
+      <p><strong>Ultima Tracking:</strong> <br> {{ item.ultima_tracking }}</p>
+      <p><strong>Data de Criação:</strong> <br> 
+        <time class="js-dt" datetime="{{ item.created_at }}">
+          {{ item.created_at}}
+        </time> 
+      </p>
+      <p><strong>Canal de Vendas:</strong> <br> {{ item.sales_channel }}</p>
     </div>
   </div>
   {% endfor %}
@@ -87,6 +155,26 @@
     });
 
     document.addEventListener("click", () => closeAll());
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const fmt = new Intl.DateTimeFormat('pt-BR', {
+      dateStyle: 'short',
+      timeStyle: 'medium',
+      timeZone: 'America/Sao_Paulo'
+    });
+
+    document.querySelectorAll('time.js-dt').forEach(el => {
+      let raw = el.getAttribute('datetime') || el.textContent.trim();
+      if (!raw) return;
+
+      raw = raw.replace(/(\.\d{3})\d+/, '$1');
+      if (/^\d{4}-\d{2}-\d{2}\s+\d/.test(raw)) raw = raw.replace(' ', 'T');
+      if (!/[zZ]|[+-]\d{2}:\d{2}$/.test(raw)) raw += 'Z';
+
+      const d = new Date(raw);
+      if (!isNaN(d)) el.textContent = fmt.format(d);
+    });
   });
 </script>
 
