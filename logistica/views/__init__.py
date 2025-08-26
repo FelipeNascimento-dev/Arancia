@@ -13,5 +13,6 @@ from .view_extracao_pedidos import extracao_pedidos
 from .view_ip_tracking import trackingIP
 from .register_view import registrar_usuario
 from .view_consulta_etiquetas import consulta_etiquetas
+from .view_consulta_pedidos import consulta_pedidos
 from .login_view import UserLoginView
 from .configuracao_user_view import UserPasswordChangeView, settings_view

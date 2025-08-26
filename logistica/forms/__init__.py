@@ -12,3 +12,4 @@ from .forms_trackingIP import trackingIPForm
 from .forms_extracao_pedidos import ExtracaoForm
 from .forms_consulta_etiqueta import EtiquetasForm
 from .forms_configuracao_user import ConfiguracaoUserForm
+from .forms_consulta_pedidos import ConsultaPedForm

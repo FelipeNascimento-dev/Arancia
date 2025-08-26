@@ -132,8 +132,7 @@ def consulta_ma84(request):
 
 
 @login_required(login_url='logistica:login')
-@permission_required('logistica.usuario_de_TI', raise_exception=True)
-@permission_required('logistica.usuario_credenciado', raise_exception=True)
+@permission_required('logistica.lastmile_b2c', raise_exception=True)
 def btn_ma_voltar(request):
     tp_reg = (
         request.POST.get('tp_reg') or
