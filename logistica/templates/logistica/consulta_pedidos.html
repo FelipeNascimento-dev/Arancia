@@ -93,8 +93,11 @@
 
     <div class="card-body">
       <p><strong>Ultima Tracking:</strong> <br> {{ item.ultima_tracking }}</p>
-      <p><strong>Data de Criação:</strong> <br> <time class="js-dt" datetime="{{ item.created_at }}">{{ item.created_at
-          }}</time> </p>
+      <p><strong>Data de Criação:</strong> <br> 
+        <time class="js-dt" datetime="{{ item.created_at }}">
+          {{ item.created_at}}
+        </time> 
+      </p>
       <p><strong>Canal de Vendas:</strong> <br> {{ item.sales_channel }}</p>
     </div>
   </div>
