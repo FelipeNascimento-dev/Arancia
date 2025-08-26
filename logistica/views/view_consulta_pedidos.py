@@ -1,13 +1,14 @@
 from urllib.parse import quote as urlquote
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from ..forms import ConsultaPedForm
 from ..models import GroupAditionalInformation
 
 
-@login_required
+@login_required(login_url='logistica:login')
+@permission_required('logistica.lastmile_b2c', raise_exception=True)
 def consulta_pedidos(request):
 
     qs = (
