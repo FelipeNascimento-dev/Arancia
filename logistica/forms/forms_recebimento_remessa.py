@@ -1,9 +1,6 @@
 from django import forms
 
-
-_PLACEHOLDER = [
-    ("", "")
-]
+_PLACEHOLDER = [(" ", " ")]
 
 
 class RecebimentoRemessaForm(forms.Form):
@@ -19,14 +16,16 @@ class RecebimentoRemessaForm(forms.Form):
     def __init__(
         self, *args, nome_form=None,
         distribution_center_choices=None,
-        ware_house_code_choices=None,
-
+        depositos_by_centro=None,
         **kwargs
     ):
         super().__init__(*args, **kwargs)
-        self.nome_formulario = nome_form or "Recebimento por Remessa"
+        self.nome_formulario = nome_form or "Pré-Recebimento"
         self.fields['volume_number'].initial = 1
-        self.fields["distribution_center"].choices = _PLACEHOLDER + \
-            list(distribution_center_choices or [])
-        self.fields["ware_house_code"].choices = _PLACEHOLDER + \
-            list(ware_house_code_choices or [])
+
+        dc = list(distribution_center_choices or [])
+        self.fields["distribution_center"].choices = _PLACEHOLDER + dc
+
+        self.fields["ware_house_code"].choices = list(_PLACEHOLDER)
+
+        self._depositos_by_centro = depositos_by_centro or {}
