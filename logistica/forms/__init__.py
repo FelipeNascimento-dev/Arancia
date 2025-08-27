@@ -13,3 +13,4 @@ from .forms_extracao_pedidos import ExtracaoForm
 from .forms_consulta_etiqueta import EtiquetasForm
 from .forms_configuracao_user import ConfiguracaoUserForm
 from .forms_consulta_pedidos import ConsultaPedForm
+from .forms_recebimento_remessa import RecebimentoRemessaForm
