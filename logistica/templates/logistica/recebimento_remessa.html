@@ -17,4 +17,41 @@
     </div>
 </div>
 
+<script>
+    (function () {
+        const MAP = JSON.parse('{{ depositos_map_json|escapejs }}');
+
+        function fill(select, options) {
+            select.innerHTML = '';
+            select.add(new Option('', ''));
+            (options || []).forEach(function (item) {
+                select.add(new Option(item[1], item[0]));
+            });
+        }
+
+        function wirePair(idCentro, idDeposito) {
+            const c = document.getElementById(idCentro);
+            const d = document.getElementById(idDeposito);
+            if (!c || !d) return;
+
+            if (!c.value) {
+                d.disabled = true;
+            }
+
+            c.addEventListener('change', function () {
+                fill(d, MAP[c.value]);
+                d.disabled = !c.value;
+                d.value = '';
+            });
+
+            if (c.value) {
+                fill(d, MAP[c.value]);
+                d.disabled = false;
+            }
+        }
+
+        wirePair('id_distribution_center', 'id_ware_house_code');
+    })();
+</script>
+
 {% endblock content %}
