@@ -5,7 +5,7 @@ from django.contrib.auth.views import LogoutView
 from django.urls import path
 from .views import index, consulta_id_form, pre_recebimento, \
     recebimento, registrar_romaneio, consulta_id_table, consulta_result, \
-    consulta_pedidos, \
+    consulta_pedidos, recebimento_remessa, \
     btn_voltar, reserva_equip, saida_campo, \
     consulta_ma84, btn_ma_voltar, consulta_ec01, btn_ec_voltar, \
     logout_confirm_view, logout_view, registrar_usuario, trackingIP, \
@@ -50,4 +50,5 @@ urlpatterns = [
     path('extracao-pedidos/', extracao_pedidos, name='extracao_pedidos'),
     path('consulta-etiquetas/', consulta_etiquetas, name='consulta_etiquetas'),
     path("consulta-pedidos/", consulta_pedidos, name="consulta_pedidos"),
+    path("recebimento-remessa/", recebimento_remessa, name="recebimento_remessa"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
