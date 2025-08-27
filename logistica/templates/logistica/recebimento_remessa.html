@@ -17,8 +17,22 @@
     </div>
 </div>
 
-{% if boxcodes %}
+{% if request.resolver_match.url_name == 'recebimento_remessa' %}
+<div class="confirm-clear" id="confirm-clear" aria-hidden="true" role="dialog" aria-modal="true"
+    aria-labelledby="cc-title" aria-describedby="cc-desc">
+    <div class="confirm-clear__backdrop" data-close="1"></div>
+    <div class="confirm-clear__dialog">
+        <h3 id="cc-title">Limpar seriais?</h3>
+        <p id="cc-desc">Todos os seriais bipados serão descartados.<br>
+            Esta ação NÃO pode ser desfeita!
+        </p>
 
+        <div class="confirm-clear__actions">
+            <button type="button" class="submit-button-right cc-no" data-close="1">Cancelar</button>
+            <button type="button" class="submit-button-right" id="cc-yes">Sim, limpar</button>
+        </div>
+    </div>
+</div>
 {% endif %}
 
 <script>
