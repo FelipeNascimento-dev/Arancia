@@ -64,6 +64,34 @@ def _ensure_pedido_in_session(request: HttpRequest, pedido: Optional[str]) -> No
 
 #####  AÇÕES PARA CODIGOS #####
 
+def _handle_add_codigos(request: HttpRequest, code_info: TrackingOriginalCode, pedido_atual: Optional[str], form) -> HttpResponse:
+    codes = (request.POST.get("codigos") or "").strip().upper()
+
+    if not pedido_atual:
+        messages.error(
+            request, "Informe o número do pedido antes de inserir seriais.")
+    elif not codes:
+        messages.info(request, "Digite um serial.")
+    else:
+        codigos = _get_codigos_from_session(request, pedido_atual)
+        if codes not in codigos:
+            codigos.append(codes)
+            messages.success(request, "Serial inserido.")
+        else:
+            messages.info(request, "Serial já está na lista.")
+        _save_codigos_to_session(request, pedido_atual, codigos)
+
+    _ensure_pedido_in_session(request, pedido_atual)
+    initial = _build_initial(form, request, pedido_atual, exclude=("codigo",))
+    form = trackingIPForm(
+        initial=initial, nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
+    codigos = _get_codigos_from_session(request, pedido_atual)
+    return _render_pcp(request, form, code_info, codigos)
+
+
+def _handle_remove_codigos
+
+
 def _dispatch_codigos_actions_if_any(
         request: HttpRequest, code_info: TrackingOriginalCode, pedido_atual: Optional[str], form
 ) -> Optional[HttpResponse]:
@@ -83,7 +111,7 @@ def _dispatch_codigos_actions_if_any(
 
     return None
 
-    ###### view principal tracking IP #####
+###### view principal tracking IP #####
 
 
 @csrf_protect
