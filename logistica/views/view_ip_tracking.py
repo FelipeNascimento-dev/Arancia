@@ -315,7 +315,7 @@ def trackingIP(request: HttpRequest, code: str) -> HttpResponse:
 
     pedido_atual = _get_pedido_atual(request)
     serials = _get_serials_from_session(
-        request, pedido_atual) if code == "202" else []
+        request, pedido_atual) if code in ["202", ""] else []
 
     if request.method == "POST":
         posted_pedido = (request.POST.get("pedido") or "").strip()
