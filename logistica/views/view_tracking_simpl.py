@@ -89,25 +89,49 @@ def _handle_add_codigos(request: HttpRequest, code_info: TrackingOriginalCode, p
     return _render_pcp(request, form, code_info, codigos)
 
 
-def _handle_remove_codigos
+def _handle_remove_codigos(request: HttpRequest, code_info: TrackingOriginalCode, pedido_atual: Optional[str], form) -> HttpResponse:
+    codigos = _get_codigos_from_session(request, pedido_atual)
+    try:
+        idx = int(request.POST.get("remove_codigo"))
+        if 0 <= len(codigos):
+            removido = codigos.pop(idx)
+            messages.success(request, f"Removido: {removido}")
+            _save_codigos_to_session(request, pedido_atual, codigos)
+    except Exception:
+        messages.error(request, "Não foi possivel remover o serial.")
+
+    initial = _build_initial(form, request, pedido_atual, exclude=())
+    form = trackingIPForm(
+        initial=initial, nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
+    return _render_pcp(request, form, code_info, codigos)
+
+
+def _handle_clear_codigos(request: HttpRequest, code_info: TrackingOriginalCode, pedido_atual: Optional[str], form) -> HttpResponse:
+    _save_codigos_to_session(request, pedido_atual, [])
+    messages.success(request, "Lista de seriais limpa.")
+
+    initial = _build_initial(form, request, pedido_atual, exclude=("codigo",))
+    form = trackingIPForm(
+        initial=initial, nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
+    return _render_pcp(request, form, code_info, [])
 
 
 def _dispatch_codigos_actions_if_any(
         request: HttpRequest, code_info: TrackingOriginalCode, pedido_atual: Optional[str], form
 ) -> Optional[HttpResponse]:
     if code_info.original_code != "202":
-         return None
+        return None
 
     posted_pedido = request.POST.get("pedido")
     if posted_pedido and request.session.get("pedido") != posted_pedido:
         request.session["pedido"] = posted_pedido
 
     if "add_serials" in request.POST:
-         return _handle_add_codigos(request, code_info, _get_pedido_atual(request), form)
+        return _handle_add_codigos(request, code_info, _get_pedido_atual(request), form)
     if "remove_serial" in request.POST:
-         return _handle_remove_codigos(request, code_info, _get_pedido_atual(request), form)
+        return _handle_remove_codigos(request, code_info, _get_pedido_atual(request), form)
     if "clear_serials" in request.POST:
-         return _handle_clear_codigos(request, code_info, _get_pedido_atual(request), form)
+        return _handle_clear_codigos(request, code_info, _get_pedido_atual(request), form)
 
     return None
 
@@ -117,24 +141,24 @@ def _dispatch_codigos_actions_if_any(
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
-    def trackingIP(request: HttpRequest, code: str) -> HttpResponse:
+def trackingIP(request: HttpRequest, code: str) -> HttpResponse:
     code_info = TrackingOriginalCode(code)
     titulo = f"IP - {code_info.description}"
 
     pedido_atual = _get_pedido_atual(request)
     codigos = _get_codigos_from_session(
-       request, pedido_atual) if code in ["202", "0001"] else []
+        request, pedido_atual) if code in ["202", "0001"] else []
 
-        if request.method == "POST":
+    if request.method == "POST":
         posted_pedido = (request.POST.get("pedido") or "").strip()
-        if posted_pedido:
+    if posted_pedido:
         _ensure_pedido_in_session(request, posted_pedido)
-            pedido_atual = posted_pedido
+        pedido_atual = posted_pedido
 
         form = trackingIPForm(request.POST, nome_form=titulo,
                               show_serial=code_info.show_serial)
 
-                              resp = _dispatch_codigos_actions_if_any(
+        resp = _dispatch_codigos_actions_if_any(
             request, code_info, pedido_atual, form)
-            if resp is not None:
+        if resp is not None:
             return resp
