@@ -3,6 +3,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth.views import LogoutView
 from django.urls import path
+from .viewsV2 import trackingIPV2
 from .views import index, consulta_id_form, pre_recebimento, \
     recebimento, registrar_romaneio, consulta_id_table, consulta_result, \
     consulta_pedidos, recebimento_remessa, \
