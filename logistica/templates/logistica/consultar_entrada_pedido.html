@@ -1,0 +1,41 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+<div class="form-container">
+  <div class="form-card-2col">
+    <form method="POST">
+      {% include 'global/partials/_form_2col.html' %}
+    </form>
+  </div>
+</div>
+
+{% if tabela_dados %}
+<div class="cards-container">
+  {% for item in tabela_dados %}
+  <div class="card">
+    <div class="card-header">
+      <span class="badge-num">{{ forloop.revcounter }}</span>
+      <h3 class="card-title">{{ item.order_number }}</h3>
+    </div>
+
+    <div class="card-body">
+      <p><strong>Ultima Tracking:</strong> <br> {{ item.ultima_tracking }}</p>
+      <p><strong>Data de Criação:</strong> <br> 
+        <time class="js-dt" datetime="{{ item.created_at }}">
+          {{ item.created_at}}
+        </time> 
+      </p>
+      <p><strong>Canal de Vendas:</strong> <br> {{ item.sales_channel }}</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<form action="{% url 'logistica:consulta_pedidos' %}" method="POST" style="margin-top:16px">
+  {% csrf_token %}
+  <input type="hidden" name="id" value="{{ form.id.value }}">
+  <button class="btn-voltar" type="submit">Voltar</button>
+</form>
+{% endif %}
+
+{% endblock %}
