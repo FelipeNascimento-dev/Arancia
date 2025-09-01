@@ -4,11 +4,6 @@
 {% block content %}
 
 <style>
-  .form-card-2col {
-    height: auto;
-    margin-top: 65px;
-  }
-
   .single-card {
     background: var(--card-bg, #fff);
     color: var(--card-fg, #0f172a);
@@ -125,15 +120,7 @@
 </style>
 
 
-<div class="form-container">
-  <div class="form-card-2col">
-    <form method="POST">
-      {% include 'global/partials/_form_2col.html' %}
-    </form>
-  </div>
-</div>
-
-<!-- {% if dados %}
+{% if dados %}
 <div class="single-card">
   <div class="card-header">
     <div class="left">
@@ -191,6 +178,6 @@
     {% endwith %}
   </div>
 </div>
-{% endif %} -->
+{% endif %}
 
 {% endblock %}
