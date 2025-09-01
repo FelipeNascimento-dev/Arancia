@@ -1,6 +1,95 @@
 {% extends 'global/base.html' %}
 
+
 {% block content %}
+
+<style>
+  .form-card-2col {
+    height: auto;
+    margin-top: 65px;
+  }
+
+  .single-card {
+    background: var(--card-bg, #fff);
+    color: var(--card-fg, #0f172a);
+    width: 1150px;
+    margin-left: auto;
+    border-radius: 16px;
+    border: 1px solid rgba(2, 6, 23, .08);
+    box-shadow: 0 6px 18px rgba(2, 6, 23, .06);
+    padding: 16px 18px;
+  }
+
+  .card-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .card-header .left {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .badge-num {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 12px;
+    background: #ef4444;
+    color: #fff;
+  }
+
+  .card-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: .2px;
+  }
+
+  .chip {
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(2, 6, 23, .06);
+  }
+
+  .card-body {
+    margin-top: 6px;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .grid-3 .col p {
+    margin: 8px 0 0;
+    line-height: 1.25rem;
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 980px) {
+    .grid-3 {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+
 <div class="form-container">
   <div class="form-card-2col">
     <form method="POST">
@@ -9,33 +98,55 @@
   </div>
 </div>
 
-{% if tabela_dados %}
-<div class="cards-container">
-  {% for item in tabela_dados %}
-  <div class="card">
-    <div class="card-header">
-      <span class="badge-num">{{ forloop.revcounter }}</span>
-      <h3 class="card-title">{{ item.order_number }}</h3>
+{% if dados %}
+<div class="single-card">
+  <div class="card-header">
+    <div class="left">
+      <span class="badge-num">#{{ dados.volume_number }}</span>
+      <h3 class="card-title">{{ dados.order_number }}</h3>
     </div>
-
-    <div class="card-body">
-      <p><strong>Ultima Tracking:</strong> <br> {{ item.ultima_tracking }}</p>
-      <p><strong>Data de Criação:</strong> <br> 
-        <time class="js-dt" datetime="{{ item.created_at }}">
-          {{ item.created_at}}
-        </time> 
-      </p>
-      <p><strong>Canal de Vendas:</strong> <br> {{ item.sales_channel }}</p>
+    <div class="right">
+      <span class="chip">{{ dados.volume_state|default:"-" }}</span>
     </div>
   </div>
-  {% endfor %}
-</div>
 
-<form action="{% url 'logistica:consulta_pedidos' %}" method="POST" style="margin-top:16px">
-  {% csrf_token %}
-  <input type="hidden" name="id" value="{{ form.id.value }}">
-  <button class="btn-voltar" type="submit">Voltar</button>
-</form>
+  <div class="card-body">
+    <div class="grid-3">
+      <div class="col">
+        <p><strong>Última Tracking:</strong><br>{{ dados.ultima_tracking }}</p>
+        <p><strong>Criação:</strong><br>
+          <time class="js-dt" datetime="{{ dados.created_at }}">{{ dados.created_at }}</time>
+        </p>
+        <p><strong>Atualização:</strong><br>
+          <time class="js-dt" datetime="{{ dados.updated_at }}">{{ dados.updated_at }}</time>
+        </p>
+        <p><strong>Canal de Vendas:</strong><br>{{ dados.sales_channel }}</p>
+        <p><strong>Provedor Logístico:</strong><br>{{ dados.logistic_provider_name }}</p>
+        <p><strong>Tipo de Pedido:</strong><br>{{ dados.shipment_order_type }}</p>
+      </div>
+
+      <div class="col">
+        <p><strong>Modelo:</strong><br>{{ dados.model }}</p>
+        <p><strong>MATNR:</strong><br>{{ dados.matnr }}</p>
+        <p><strong>Categoria:</strong><br>{{ dados.category }}</p>
+        <p><strong>Quantidade:</strong><br>{{ dados.quantity }}</p>
+        <p><strong>Terminal (Lógico):</strong><br>{{ dados.terminal_logical_numbers }}</p>
+        <p><strong>SIM Card (Prioridade):</strong><br>{{ dados.simcard_priority }}</p>
+        <p><strong>Chave Maquinetas:</strong><br>{{ dados.maquinetas_key }}</p>
+      </div>
+
+      <div class="col">
+        <p><strong>Origem:</strong><br>{{ dados.origin_name }}</p>
+        <p><strong>Bairro/Região:</strong><br>{{ dados.origin_quarter }}</p>
+        <p><strong>Cidade:</strong><br>{{ dados.origin_city }}</p>
+        <p><strong>UF:</strong><br>{{ dados.origin_state_code }}</p>
+        <p><strong>Estágio da Entrega:</strong><br>{{ dados.delivery_stage }}</p>
+        <p><strong>Cliente Final (ID):</strong><br>{{ dados.end_customer_id }}</p>
+        <p><strong>Volume:</strong><br>{{ dados.volume_name }}</p>
+      </div>
+    </div>
+  </div>
+</div>
 {% endif %}
 
 {% endblock %}
