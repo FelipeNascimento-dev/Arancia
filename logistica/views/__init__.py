@@ -17,3 +17,4 @@ from .view_consulta_pedidos import consulta_pedidos
 from .login_view import UserLoginView
 from .configuracao_user_view import UserPasswordChangeView, settings_view
 from .view_recebimento_remessa import recebimento_remessa
+from .view_consulta_entrada_pedido import entrada_pedido
