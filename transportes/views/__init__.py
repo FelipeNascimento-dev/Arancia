@@ -1,0 +1,1 @@
+from .list_technical import dashboard_view
