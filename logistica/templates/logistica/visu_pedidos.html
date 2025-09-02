@@ -196,63 +196,87 @@
 </div>
 
 <script>
-  (function () {
-    function pad(n) { return String(n).padStart(2, '0'); }
+    (function () {
+        const root = document.getElementById('agenda-tabs');
+        const tabs = root.querySelectorAll('[role="tab"]');
+        function activateTab(tab) {
+            tabs.forEach(t => {
+                const selected = (t === tab);
+                t.setAttribute('aria-selected', selected);
+                t.tabIndex = selected ? 0 : -1;
+                const panel = document.getElementById(t.getAttribute('aria-controls'));
+                panel.classList.toggle('active', selected);
+                panel.hidden = !selected;
+            });
+            tab.focus();
+        }
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => activateTab(tab));
+            tab.addEventListener('keydown', e => {
+                const list = Array.from(tabs);
+                const i = list.indexOf(tab);
+                if (e.key === 'ArrowRight') { e.preventDefault(); activateTab(list[(i + 1) % list.length]); }
+                if (e.key === 'ArrowLeft') { e.preventDefault(); activateTab(list[(i - 1 + list.length) % list.length]); }
+            });
+        });
+    })();
 
-    function parseIsoSmart(isoRaw) {
-      if (!isoRaw) return null;
-      let iso = String(isoRaw).trim();
+    (function () {
+        function pad(n) { return String(n).padStart(2, '0'); }
 
-      iso = iso.replace(/(\.\d{3})\d+$/, '$1');
+        function parseIsoSmart(isoRaw) {
+            if (!isoRaw) return null;
+            let iso = String(isoRaw).trim();
 
-      if (/[Zz]|[+\-]\d{2}:\d{2}$/.test(iso)) {
-        const d = new Date(iso);
-        return isNaN(d) ? null : d;
-      }
+            iso = iso.replace(/(\.\d{3})\d+$/, '$1');
 
-      const m = iso.match(
-        /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/
-      );
-      if (!m) return null;
-      const [_, Y, M, D, h, mnt, s] = m;
-      return new Date(
-        Number(Y), Number(M) - 1, Number(D),
-        Number(h), Number(mnt), s ? Number(s) : 0, 0
-      );
-    }
+            if (/[Zz]|[+\-]\d{2}:\d{2}$/.test(iso)) {
+                const d = new Date(iso);
+                return isNaN(d) ? null : d;
+            }
 
-    function formatBR(date) {
-      if (!date) return "";
-      const dd = pad(date.getDate());
-      const mm = pad(date.getMonth() + 1);
-      const yyyy = date.getFullYear();
-      const HH = pad(date.getHours());
-      const MM = pad(date.getMinutes());
-      return `${dd}/${mm}/${yyyy} ${HH}:${MM}`;
-    }
+            const m = iso.match(
+                /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/
+            );
+            if (!m) return null;
+            const [_, Y, M, D, h, mnt, s] = m;
+            return new Date(
+                Number(Y), Number(M) - 1, Number(D),
+                Number(h), Number(mnt), s ? Number(s) : 0, 0
+            );
+        }
 
-    const createdInput = document.getElementById('id_created_at');
-    const updatedInput = document.getElementById('id_updated_at');
+        function formatBR(date) {
+            if (!date) return "";
+            const dd = pad(date.getDate());
+            const mm = pad(date.getMonth() + 1);
+            const yyyy = date.getFullYear();
+            const HH = pad(date.getHours());
+            const MM = pad(date.getMinutes());
+            return `${dd}/${mm}/${yyyy} ${HH}:${MM}`;
+        }
 
-    if (createdInput && createdInput.value) {
-      const d = parseIsoSmart(createdInput.value);
-      if (d) createdInput.value = formatBR(d);
-    }
-    if (updatedInput && updatedInput.value) {
-      const d = parseIsoSmart(updatedInput.value);
-      if (d) updatedInput.value = formatBR(d);
-    }
+        const createdInput = document.getElementById('id_created_at');
+        const updatedInput = document.getElementById('id_updated_at');
 
-    const createdOut = document.getElementById('createdAtHeader');
-    const updatedOut = document.getElementById('updatedAtHeader');
-    if (createdOut && createdInput) {
-      createdOut.textContent = createdInput.value;
-    }
-    if (updatedOut && updatedInput) {
-      updatedOut.textContent = updatedInput.value;
-    }
-  })();
+        if (createdInput && createdInput.value) {
+            const d = parseIsoSmart(createdInput.value);
+            if (d) createdInput.value = formatBR(d);
+        }
+        if (updatedInput && updatedInput.value) {
+            const d = parseIsoSmart(updatedInput.value);
+            if (d) updatedInput.value = formatBR(d);
+        }
+
+        const createdOut = document.getElementById('createdAtHeader');
+        const updatedOut = document.getElementById('updatedAtHeader');
+        if (createdOut && createdInput) {
+            createdOut.textContent = createdInput.value;
+        }
+        if (updatedOut && updatedInput) {
+            updatedOut.textContent = updatedInput.value;
+        }
+    })();
 </script>
-
 
 {% endblock %}
