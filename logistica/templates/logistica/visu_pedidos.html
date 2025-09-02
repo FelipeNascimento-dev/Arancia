@@ -32,7 +32,7 @@
         padding: 8px 10px;
         border-radius: 12px;
         background: transparent;
-        transition: background .2s ease
+        transition: background .2s ease;
     }
 
     .form-field:hover {
@@ -79,7 +79,6 @@
         display: none !important
     }
 
-    /* --- Tabs --- */
     .tabs {
         width: 100%
     }
@@ -164,35 +163,31 @@
                 </div>
 
                 <section class="tab-panel active" role="tabpanel" id="panel-produto" aria-labelledby="tab-produto">
-                    <div class="tab-card">
-                        <div class="form-grid form-3col">
-                            {% for campo in produto_campos %}
-                            {% if campo %}
-                            <div class="form-field">
-                                <label>{{ campo.label }}</label>
-                                <input type="text" class="card-display"
-                                    value="{{ campo.value|default_if_none:campo.initial }}" disabled>
-                            </div>
-                            {% endif %}
-                            {% endfor %}
+                    <div class="form-grid form-3col">
+                        {% for campo in produto_campos %}
+                        {% if campo %}
+                        <div class="form-field">
+                            <label>{{ campo.label }}</label>
+                            <input type="text" class="card-display"
+                                value="{{ campo.value|default_if_none:campo.initial }}" disabled>
                         </div>
+                        {% endif %}
+                        {% endfor %}
                     </div>
                 </section>
 
                 <section class="tab-panel" role="tabpanel" id="panel-adicionais" aria-labelledby="tab-adicionais"
                     hidden>
-                    <div class="tab-card">
-                        <div class="form-grid form-3col">
-                            {% for campo in adicionais_campos %}
-                            {% if campo %}
-                            <div class="form-field">
-                                <label>{{ campo.label }}</label>
-                                <input type="text" class="card-display"
-                                    value="{{ campo.value|default_if_none:campo.initial }}" disabled>
-                            </div>
-                            {% endif %}
-                            {% endfor %}
+                    <div class="form-grid form-3col">
+                        {% for campo in adicionais_campos %}
+                        {% if campo %}
+                        <div class="form-field">
+                            <label>{{ campo.label }}</label>
+                            <input type="text" class="card-display"
+                                value="{{ campo.value|default_if_none:campo.initial }}" disabled>
                         </div>
+                        {% endif %}
+                        {% endfor %}
                     </div>
                 </section>
             </div>
@@ -201,30 +196,63 @@
 </div>
 
 <script>
-    (function () {
-        const root = document.getElementById('agenda-tabs');
-        const tabs = root.querySelectorAll('[role="tab"]');
-        function activateTab(tab) {
-            tabs.forEach(t => {
-                const selected = (t === tab);
-                t.setAttribute('aria-selected', selected);
-                t.tabIndex = selected ? 0 : -1;
-                const panel = document.getElementById(t.getAttribute('aria-controls'));
-                panel.classList.toggle('active', selected);
-                panel.hidden = !selected;
-            });
-            tab.focus();
-        }
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => activateTab(tab));
-            tab.addEventListener('keydown', e => {
-                const list = Array.from(tabs);
-                const i = list.indexOf(tab);
-                if (e.key === 'ArrowRight') { e.preventDefault(); activateTab(list[(i + 1) % list.length]); }
-                if (e.key === 'ArrowLeft') { e.preventDefault(); activateTab(list[(i - 1 + list.length) % list.length]); }
-            });
-        });
-    })();
+  (function () {
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function parseIsoSmart(isoRaw) {
+      if (!isoRaw) return null;
+      let iso = String(isoRaw).trim();
+
+      iso = iso.replace(/(\.\d{3})\d+$/, '$1');
+
+      if (/[Zz]|[+\-]\d{2}:\d{2}$/.test(iso)) {
+        const d = new Date(iso);
+        return isNaN(d) ? null : d;
+      }
+
+      const m = iso.match(
+        /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/
+      );
+      if (!m) return null;
+      const [_, Y, M, D, h, mnt, s] = m;
+      return new Date(
+        Number(Y), Number(M) - 1, Number(D),
+        Number(h), Number(mnt), s ? Number(s) : 0, 0
+      );
+    }
+
+    function formatBR(date) {
+      if (!date) return "";
+      const dd = pad(date.getDate());
+      const mm = pad(date.getMonth() + 1);
+      const yyyy = date.getFullYear();
+      const HH = pad(date.getHours());
+      const MM = pad(date.getMinutes());
+      return `${dd}/${mm}/${yyyy} ${HH}:${MM}`;
+    }
+
+    const createdInput = document.getElementById('id_created_at');
+    const updatedInput = document.getElementById('id_updated_at');
+
+    if (createdInput && createdInput.value) {
+      const d = parseIsoSmart(createdInput.value);
+      if (d) createdInput.value = formatBR(d);
+    }
+    if (updatedInput && updatedInput.value) {
+      const d = parseIsoSmart(updatedInput.value);
+      if (d) updatedInput.value = formatBR(d);
+    }
+
+    const createdOut = document.getElementById('createdAtHeader');
+    const updatedOut = document.getElementById('updatedAtHeader');
+    if (createdOut && createdInput) {
+      createdOut.textContent = createdInput.value;
+    }
+    if (updatedOut && updatedInput) {
+      updatedOut.textContent = updatedInput.value;
+    }
+  })();
 </script>
+
 
 {% endblock %}
