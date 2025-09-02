@@ -25,7 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'logistica',
+    'logistica','transportes',
 ]
 
 MIDDLEWARE = [
@@ -129,3 +129,4 @@ try:
     from setup.local_settings import *
 except ImportError:
     ...
+

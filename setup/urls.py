@@ -3,8 +3,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include
 
+
 urlpatterns = [
     path('arancia/', include('logistica.urls')),
+    path('arancia/', include('transportes.urls')),
     path('arancia/admin/', admin.site.urls),
 ]
 

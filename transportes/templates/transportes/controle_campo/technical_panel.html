@@ -1,51 +1,49 @@
-{% extends 'global/base.html' %}
-  <!-- Resumo Geral -->
-   {% block content %}
-  <div>
-    <h3 class="text-xl font-semibold mb-3">Resumo Geral</h3>
-    <div class="grid grid-cols-6 gap-2">
-      <div class="flex flex-col items-center">
-        <div class="text-[12px] text-slate-600 dark:text-slate-300">Total</div>
-        <div class="px-2 py-1 rounded-md font-semibold text-sm border border-slate-400 dark:border-slate-600 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-          {{ contadores_geral.values|sum }}
-        </div>
-      </div>
-      {% for key,label in status_labels.items %}
-      <div class="flex flex-col items-center">
-        <div class="text-[12px] text-slate-600 dark:text-slate-300">{{ label }}</div>
-        <div class="px-2 py-1 rounded-md font-semibold text-sm text-white {{ status_style.key.dot }}">
-          {{ contadores_geral.key|default:0 }}
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
+{% extends 'global/base.html' %} {% load static %} {% block content %}
 
+<style>
+  .forma {
+    visibility: none;
+  }
+</style>
+<!-- Container principal com espaçamento -->
+<div class="painel-container">
+  <!-- Resumo Geral -->
+  <h3 class="text-xl font-semibold mb-3">Resumo Geral</h3>
+  <div class="resumo-geral flex flex-wrap gap-3 justify-between">
+    <div class="status-item flex flex-col items-center">
+      <div class="status-label">Total</div>
+      <div class="status-value bg-gray-200 text-black">
+        {{ contadores_geral_total }}
+      </div>
+    </div>
+    {% for s in status_data %}
+    <div class="status-item flex flex-col items-center">
+      <div class="status-label">{{ s.label }}</div>
+      <div class="status-value {{ s.style }}">{{ s.value }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  <br />
   <!-- Resumo por Técnico -->
-  <div>
+  <div class="mt-10">
     <h3 class="text-xl font-semibold mb-3">Resumo por Técnico</h3>
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       {% for t in tecnicos %}
-      <div class="rounded-xl ring-1 ring-inset ring-slate-200 dark:ring-slate-700 bg-white/90 dark:bg-slate-900/80 shadow-sm p-4 flex flex-col justify-between min-h-[180px] hover:shadow-xl">
-        <div class="flex items-center justify-between">
+      <div class="card-tecnico">
+        <div class="header">
           <div class="flex items-center gap-3">
-            <div class="h-9 w-9 rounded-lg flex items-center justify-center font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 ring-1 ring-inset ring-slate-200 dark:ring-slate-700">
-              {{ t.iniciais }}
-            </div>
+            <div class="avatar">{{ t.iniciais }}</div>
             <div>
-              <p class="font-medium tracking-tight">{{ t.nome }}</p>
-              <p class="text-xs text-slate-500">UID {{ t.uid }}</p>
+              <p class="nome">{{ t.nome }}</p>
+              <p class="uid">UID {{ t.uid }}</p>
             </div>
           </div>
-          <span class="px-2.5 py-1 rounded-md text-3xs font-semibold ring-1 ring-inset ring-slate-200 dark:ring-slate-700 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-            Total: {{ t.total }}
-          </span>
+          <span class="total">Total: {{ t.total }}</span>
         </div>
-        <div class="mt-2 grid grid-cols-5 gap-2">
-          {% for key,label in status_labels.items %}
-          <div class="text-center px-2 py-1 rounded-md font-semibold text-sm text-white {{ status_style.key.dot }}">
-            {{ t.status_counts.key|default:0 }}
-          </div>
+
+        <div class="status-grid">
+          {% for s in t.status_counts %}
+          <div class="status-bar {{ s.style }}">{{ s.value }}</div>
           {% endfor %}
         </div>
       </div>
@@ -53,7 +51,4 @@
     </div>
   </div>
 </div>
-
-</body>
-</html>
 {% endblock content %}
