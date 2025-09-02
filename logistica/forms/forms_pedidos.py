@@ -4,6 +4,21 @@ from django import forms
 class Order(forms.Form):
     form_title = 'Número do Pedido'
     nome_formulario = form_title
+
+    GRUPO_1 = [
+        "sales_channel", "maquinetas_key", "quantity", "ultima_tracking",
+        "volume_number", "volume_name", "volume_state", "delivery_stage",
+        "shipment_order_type", "created_at", "updated_at",
+    ]
+    GRUPO_2 = [
+        "simcard_priority", "model", "matnr", "category",
+        "terminal_logical_numbers",
+    ]
+    GRUPO_3 = [
+        "logistic_provider_name", "origin_name", "origin_quarter",
+        "origin_city", "origin_state_code", "end_customer_id",
+    ]
+
     order_number = forms.HiddenInput()
     simcard_priority = forms.CharField(
         label='simcard_priority', max_length=50, required=True, disabled=True)
@@ -58,3 +73,9 @@ class Order(forms.Form):
             for field_name, value in dados.items():
                 if field_name in self.fields:
                     self.fields[field_name].initial = value
+
+        #     tipo = (dados.get("shipment_order_type") or "").lower()
+        #     self.fields["operation"].initial = "ESTOQUE" if tipo == "return" else "INSUCESSO"
+        #     self.botao_texto = "RECEBER ESTOQUE" if tipo == "return" else "RECEBER INSUCESSO"
+        # else:
+        #     self.botao_texto = "Enviar"

@@ -1,6 +1,5 @@
 {% extends 'global/base.html' %}
 
-
 {% block content %}
 
 <style>
@@ -9,29 +8,22 @@
         margin-top: 65px;
     }
 
-    .form-card {
-        background: var(--card-bg, #fff);
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
-        padding: 20px 22px;
-        border: 1px solid rgba(0, 0, 0, .06);
-    }
-
+    /* --- estilos que você já tinha (resumidos) --- */
     .form-grid.form-3col {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 12px 24px;
+        gap: 12px 24px
     }
 
-    @media (min-width: 720px) {
+    @media (min-width:720px) {
         .form-grid.form-3col {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr))
         }
     }
 
-    @media (min-width: 1040px) {
+    @media (min-width:1040px) {
         .form-grid.form-3col {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr))
         }
     }
 
@@ -40,11 +32,11 @@
         padding: 8px 10px;
         border-radius: 12px;
         background: transparent;
-        transition: background .2s ease;
+        transition: background .2s ease
     }
 
     .form-field:hover {
-        background: rgba(0, 0, 0, .02);
+        background: rgba(0, 0, 0, .02)
     }
 
     .form-field label {
@@ -53,13 +45,13 @@
         font-weight: 600;
         letter-spacing: .02em;
         color: #6b7280;
-        margin-bottom: 4px;
+        margin-bottom: 4px
     }
 
     .form-3col input {
         border: none !important;
         border-bottom: 1px solid #e5e7eb !important;
-        padding-bottom: 4px;
+        padding-bottom: 4px
     }
 
     .card-display {
@@ -75,36 +67,164 @@
         font-weight: 600;
         color: #111827;
         caret-color: transparent;
-        pointer-events: none;
+        pointer-events: none
     }
 
     .card-display[disabled] {
         opacity: 1 !important;
-        -webkit-text-fill-color: #111827;
-    }
-
-    textarea.card-display {
-        resize: none;
-        line-height: 1.35;
+        -webkit-text-fill-color: #111827
     }
 
     input[type="hidden"] {
-        display: none !important;
+        display: none !important
     }
 
-    .form-card>h2 {
-        margin: 0 0 10px 0;
-        font-size: 1.1rem;
-        font-weight: 800;
-        color: #111827;
+    /* --- Tabs --- */
+    .tabs {
+        width: 100%
+    }
+
+    .tab-list {
+        display: flex;
+        gap: 16px;
+        border-bottom: 1px solid #e5e7eb
+    }
+
+    .tab {
+        appearance: none;
+        background: transparent;
+        border: 0;
+        padding: 10px 8px;
+        font-weight: 600;
+        color: #6b7280;
+        cursor: pointer;
+        position: relative
+    }
+
+    .tab[aria-selected="true"] {
+        color: #111827
+    }
+
+    .tab[aria-selected="true"]::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 2px;
+        background: #6366f1;
+        border-radius: 2px
+    }
+
+    .tab-panel {
+        display: none;
+        padding-top: 16px
+    }
+
+    .tab-panel.active {
+        display: block
+    }
+
+    .tab-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, .06);
+        padding: 16px
+    }
+
+    .card-2col form .card-group:has([name="simcard_priority"]),
+    .card-2col form .card-group:has([name="model"]),
+    .card-2col form .card-group:has([name="matnr"]),
+    .card-2col form .card-group:has([name="category"]),
+    .card-2col form .card-group:has([name="terminal_logical_numbers"]),
+    .card-2col form .card-group:has([name="logistic_provider_name"]),
+    .card-2col form .card-group:has([name="origin_name"]),
+    .card-2col form .card-group:has([name="origin_quarter"]),
+    .card-2col form .card-group:has([name="origin_city"]),
+    .card-2col form .card-group:has([name="origin_state_code"]),
+    .card-2col form .card-group:has([name="end_customer_id"]) {
+        display: none !important;
     }
 </style>
 
 <div class="form-container">
     <div class="card-2col">
         <form method="POST">
+            {% csrf_token %}
+
             {% include 'global/partials/_form_card_2col.html' %}
+
+            <div class="tabs" id="agenda-tabs" style="margin-top:16px;">
+                <div class="tab-list" role="tablist" aria-label="Navegação">
+                    <button class="tab" role="tab" id="tab-produto" aria-controls="panel-produto"
+                        aria-selected="true">Produto</button>
+                    <button class="tab" role="tab" id="tab-adicionais" aria-controls="panel-adicionais"
+                        aria-selected="false">Adicionais</button>
+                </div>
+
+                <section class="tab-panel active" role="tabpanel" id="panel-produto" aria-labelledby="tab-produto">
+                    <div class="tab-card">
+                        <div class="form-grid form-3col">
+                            {% for campo in produto_campos %}
+                            {% if campo %}
+                            <div class="form-field">
+                                <label>{{ campo.label }}</label>
+                                <input type="text" class="card-display"
+                                    value="{{ campo.value|default_if_none:campo.initial }}" disabled>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+
+                <section class="tab-panel" role="tabpanel" id="panel-adicionais" aria-labelledby="tab-adicionais"
+                    hidden>
+                    <div class="tab-card">
+                        <div class="form-grid form-3col">
+                            {% for campo in adicionais_campos %}
+                            {% if campo %}
+                            <div class="form-field">
+                                <label>{{ campo.label }}</label>
+                                <input type="text" class="card-display"
+                                    value="{{ campo.value|default_if_none:campo.initial }}" disabled>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+            </div>
         </form>
     </div>
 </div>
+
+<script>
+    (function () {
+        const root = document.getElementById('agenda-tabs');
+        const tabs = root.querySelectorAll('[role="tab"]');
+        function activateTab(tab) {
+            tabs.forEach(t => {
+                const selected = (t === tab);
+                t.setAttribute('aria-selected', selected);
+                t.tabIndex = selected ? 0 : -1;
+                const panel = document.getElementById(t.getAttribute('aria-controls'));
+                panel.classList.toggle('active', selected);
+                panel.hidden = !selected;
+            });
+            tab.focus();
+        }
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => activateTab(tab));
+            tab.addEventListener('keydown', e => {
+                const list = Array.from(tabs);
+                const i = list.indexOf(tab);
+                if (e.key === 'ArrowRight') { e.preventDefault(); activateTab(list[(i + 1) % list.length]); }
+                if (e.key === 'ArrowLeft') { e.preventDefault(); activateTab(list[(i - 1 + list.length) % list.length]); }
+            });
+        });
+    })();
+</script>
+
 {% endblock %}

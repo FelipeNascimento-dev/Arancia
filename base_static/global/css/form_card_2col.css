@@ -20,7 +20,6 @@
 .card-grid-2col > div {
   display: grid;
   grid-template-columns: var(--label-width, 220px) 1fr;
-  
   align-items: center;
   column-gap: 14px;
   padding: 6px 10px;
@@ -44,9 +43,8 @@
   color: var(--form-label-color);
   display: block;
   margin: 0;
-  font-size: 15px;
-  text-align: right;
-  padding-right: 6px;
+  font-size: 18px;
+  text-align: left;
 }
 
 .card-grid-2col input,
@@ -86,6 +84,7 @@
   justify-content: flex-end;
   margin-top: 30px;
 }
+
 .submit-button-right {
   background-color: var(--button-form-color);
   color: white;
@@ -109,4 +108,10 @@
     row-gap: 6px;
   }
   .card-grid-2col label { text-align: left; padding-right: 0; }
+}
+
+@media (max-width: 1280px){
+    .card-2col{
+        width: 1150px;
+    }
 }

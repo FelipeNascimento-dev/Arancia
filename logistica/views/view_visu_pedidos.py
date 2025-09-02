@@ -68,9 +68,20 @@ def visu_pedido(request, order: str):
         }
     )
 
+    def bf(name):
+        try:
+            return form[name]
+        except Exception:
+            return None
+
+    produto_campos = [bf(n) for n in form.GRUPO_2 if n in form.fields]
+    adicionais_campos = [bf(n) for n in form.GRUPO_3 if n in form.fields]
+
     return render(request, "logistica/visu_pedidos.html", {
         "order": order,
         "form": form,
+        "produto_campos": produto_campos,
+        "adicionais_campos": adicionais_campos,
         "botao_texto": getattr(form, "botao_texto", "Enviar"),
         "site_title": "Consultar Pedido Entrada",
         "nome_formulario": form.form_title
