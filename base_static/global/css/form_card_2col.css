@@ -1,0 +1,117 @@
+.card-2col {
+  background: var(--background-formularios);
+  padding: 24px;
+  border-radius: 10px;
+  box-shadow: var(--box-shadow-formularios);
+  width: 1300px;
+  max-width: 1300px;
+  border: 1px solid var(--borda-formularios);
+  height: auto;
+  margin-left: 65px;
+}
+
+
+.card-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px 24px;
+}
+
+.card-grid-2col > div {
+  display: grid;
+  grid-template-columns: var(--label-width, 220px) 1fr;
+  align-items: center;
+  column-gap: 14px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  transition: background .2s ease;
+}
+
+.card-grid-2col > div:hover {
+  background: rgba(0,0,0,.02);
+}
+
+.card-2col h2 {
+  font-weight: bold;
+  text-align: left;
+  margin: 20px 0;
+  color: var(--form-titulo);
+}
+
+.card-grid-2col label {
+  font-weight: 700;
+  color: var(--form-label-color);
+  display: block;
+  margin: 0;
+  font-size: 18px;
+  text-align: left;
+}
+
+.card-grid-2col input,
+.card-grid-2col select,
+.card-grid-2col textarea {
+  width: 100%;
+  padding: 6px 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--form-input-border);
+  border-radius: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--form-value-color, #111827);
+  box-shadow: none;
+  outline: none;
+  caret-color: transparent;
+  pointer-events: none;
+}
+
+.card-grid-2col .is-editable {
+  pointer-events: auto;
+  caret-color: auto;
+}
+
+.card-grid-2col textarea { align-self: start; }
+
+.card-error {
+  grid-column: 2;
+  color: red;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
+}
+
+.submit-button-right {
+  background-color: var(--button-form-color);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .3s ease;
+  min-width: 160px;
+  display: inline-block;
+}
+.submit-button-right:hover {
+  background-color: var(--button-form-color-hover);
+}
+
+@media (max-width: 900px) {
+  .card-grid-2col { grid-template-columns: 1fr; }
+  .card-grid-2col > div {
+    grid-template-columns: 1fr;
+    row-gap: 6px;
+  }
+  .card-grid-2col label { text-align: left; padding-right: 0; }
+}
+
+@media (max-width: 1280px){
+    .card-2col{
+        width: 1150px;
+    }
+}

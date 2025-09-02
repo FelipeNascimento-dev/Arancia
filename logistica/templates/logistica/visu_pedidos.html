@@ -1,134 +1,282 @@
 {% extends 'global/base.html' %}
 
-
 {% block content %}
 
 <style>
-    .form-card-3col {
+    .card-2col {
         height: auto;
         margin-top: 65px;
     }
 
-    .single-card {
-        background: var(--card-bg, #fff);
-        color: var(--card-fg, #0f172a);
-        width: 1300px;
-        margin-left: 65px;
-        margin-top: 65px;
-        border-radius: 16px;
-        border: 1px solid rgba(2, 6, 23, .08);
-        box-shadow: 0 6px 18px rgba(2, 6, 23, .06);
-        padding: 16px 18px;
-    }
-
-    .card-header {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 10px;
-    }
-
-    .card-header .left {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .badge-num {
-        width: 100%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 28px;
-        height: 28px;
-        padding: 0 8px;
-        border-radius: 999px;
-        font-weight: 700;
-        font-size: 12px;
-        background: #ef4444;
-        color: #fff;
-    }
-
-    .card-title {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 800;
-        letter-spacing: .2px;
-    }
-
-    .chip {
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 600;
-        background: rgba(2, 6, 23, .06);
-    }
-
-    .card-body {
-        margin-top: 6px;
-    }
-
-    .grid-3 {
+    /* --- estilos que você já tinha (resumidos) --- */
+    .form-grid.form-3col {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 14px;
+        grid-template-columns: 1fr;
+        gap: 12px 24px
     }
 
-    .grid-3 .col p {
-        margin: 8px 0 0;
-        line-height: 1.25rem;
-        font-size: 0.95rem;
-    }
-
-    @media (max-width: 980px) {
-        .grid-3 {
-            grid-template-columns: 1fr;
-        }
-
-    }
-
-    @media (max-width: 1280px) {
-        .single-card {
-            width: 1150px;
+    @media (min-width:720px) {
+        .form-grid.form-3col {
+            grid-template-columns: repeat(2, minmax(0, 1fr))
         }
     }
 
-    .card-actions {
+    @media (min-width:1040px) {
+        .form-grid.form-3col {
+            grid-template-columns: repeat(3, minmax(0, 1fr))
+        }
+    }
+
+    .form-field {
+        display: block;
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: transparent;
+        transition: background .2s ease;
+    }
+
+    .form-field:hover {
+        background: rgba(0, 0, 0, .02)
+    }
+
+    .form-field label {
+        display: block;
+        font-size: .78rem;
+        font-weight: 600;
+        letter-spacing: .02em;
+        color: #6b7280;
+        margin-bottom: 4px
+    }
+
+    .form-3col input {
+        border: none !important;
+        border-bottom: 1px solid #e5e7eb !important;
+        padding-bottom: 4px
+    }
+
+    .card-display {
+        display: block;
+        width: 100%;
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        outline: none !important;
+        font-size: .98rem;
+        font-weight: 600;
+        color: #111827;
+        caret-color: transparent;
+        pointer-events: none
+    }
+
+    .card-display[disabled] {
+        opacity: 1 !important;
+        -webkit-text-fill-color: #111827
+    }
+
+    input[type="hidden"] {
+        display: none !important
+    }
+
+    .tabs {
+        width: 100%
+    }
+
+    .tab-list {
         display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 10px;
-        padding-top: 12px;
-        border-top: 1px solid rgba(2, 6, 23, .08);
+        gap: 16px;
+        border-bottom: 1px solid #e5e7eb
     }
 
-    .card-actions form {
-        margin: 0;
+    .tab {
+        appearance: none;
+        background: transparent;
+        border: 0;
+        padding: 10px 8px;
+        font-weight: 600;
+        color: #6b7280;
+        cursor: pointer;
+        position: relative
     }
 
-    .card-actions .submit-button-right {
-        min-width: 200px;
+    .tab[aria-selected="true"] {
+        color: #111827
     }
 
-    @media (max-width: 980px) {
-        .card-actions {
-            justify-content: stretch;
-        }
+    .tab[aria-selected="true"]::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 2px;
+        background: #6366f1;
+        border-radius: 2px
+    }
 
-        .card-actions .submit-button-right {
-            width: 100%;
-        }
+    .tab-panel {
+        display: none;
+        padding-top: 16px
+    }
+
+    .tab-panel.active {
+        display: block
+    }
+
+    .tab-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, .06);
+        padding: 16px
+    }
+
+    .card-2col form .card-group:has([name="simcard_priority"]),
+    .card-2col form .card-group:has([name="model"]),
+    .card-2col form .card-group:has([name="matnr"]),
+    .card-2col form .card-group:has([name="category"]),
+    .card-2col form .card-group:has([name="terminal_logical_numbers"]),
+    .card-2col form .card-group:has([name="logistic_provider_name"]),
+    .card-2col form .card-group:has([name="origin_name"]),
+    .card-2col form .card-group:has([name="origin_quarter"]),
+    .card-2col form .card-group:has([name="origin_city"]),
+    .card-2col form .card-group:has([name="origin_state_code"]),
+    .card-2col form .card-group:has([name="end_customer_id"]) {
+        display: none !important;
     }
 </style>
 
 <div class="form-container">
-  <div class="form-card-3col">
-    <form method="POST">
-      {% include 'global/partials/_form_3col.html' %}
-    </form>
-  </div>
+    <div class="card-2col">
+        <form method="POST">
+            {% csrf_token %}
+
+            {% include 'global/partials/_form_card_2col.html' %}
+
+            <div class="tabs" id="agenda-tabs" style="margin-top:16px;">
+                <div class="tab-list" role="tablist" aria-label="Navegação">
+                    <button class="tab" role="tab" id="tab-produto" aria-controls="panel-produto"
+                        aria-selected="true">Produto</button>
+                    <button class="tab" role="tab" id="tab-adicionais" aria-controls="panel-adicionais"
+                        aria-selected="false">Adicionais</button>
+                </div>
+
+                <section class="tab-panel active" role="tabpanel" id="panel-produto" aria-labelledby="tab-produto">
+                    <div class="form-grid form-3col">
+                        {% for campo in produto_campos %}
+                        {% if campo %}
+                        <div class="form-field">
+                            <label>{{ campo.label }}</label>
+                            <input type="text" class="card-display"
+                                value="{{ campo.value|default_if_none:campo.initial }}" disabled>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section class="tab-panel" role="tabpanel" id="panel-adicionais" aria-labelledby="tab-adicionais"
+                    hidden>
+                    <div class="form-grid form-3col">
+                        {% for campo in adicionais_campos %}
+                        {% if campo %}
+                        <div class="form-field">
+                            <label>{{ campo.label }}</label>
+                            <input type="text" class="card-display"
+                                value="{{ campo.value|default_if_none:campo.initial }}" disabled>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+        </form>
+    </div>
 </div>
+
+<script>
+    (function () {
+        const root = document.getElementById('agenda-tabs');
+        const tabs = root.querySelectorAll('[role="tab"]');
+        function activateTab(tab) {
+            tabs.forEach(t => {
+                const selected = (t === tab);
+                t.setAttribute('aria-selected', selected);
+                t.tabIndex = selected ? 0 : -1;
+                const panel = document.getElementById(t.getAttribute('aria-controls'));
+                panel.classList.toggle('active', selected);
+                panel.hidden = !selected;
+            });
+            tab.focus();
+        }
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => activateTab(tab));
+            tab.addEventListener('keydown', e => {
+                const list = Array.from(tabs);
+                const i = list.indexOf(tab);
+                if (e.key === 'ArrowRight') { e.preventDefault(); activateTab(list[(i + 1) % list.length]); }
+                if (e.key === 'ArrowLeft') { e.preventDefault(); activateTab(list[(i - 1 + list.length) % list.length]); }
+            });
+        });
+    })();
+
+    (function () {
+        function pad(n) { return String(n).padStart(2, '0'); }
+
+        function parseIsoSmart(isoRaw) {
+            if (!isoRaw) return null;
+            let iso = String(isoRaw).trim();
+
+            iso = iso.replace(/(\.\d{3})\d+$/, '$1');
+
+            if (/[Zz]|[+\-]\d{2}:\d{2}$/.test(iso)) {
+                const d = new Date(iso);
+                return isNaN(d) ? null : d;
+            }
+
+            const m = iso.match(
+                /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/
+            );
+            if (!m) return null;
+            const [_, Y, M, D, h, mnt, s] = m;
+            return new Date(
+                Number(Y), Number(M) - 1, Number(D),
+                Number(h), Number(mnt), s ? Number(s) : 0, 0
+            );
+        }
+
+        function formatBR(date) {
+            if (!date) return "";
+            const dd = pad(date.getDate());
+            const mm = pad(date.getMonth() + 1);
+            const yyyy = date.getFullYear();
+            const HH = pad(date.getHours());
+            const MM = pad(date.getMinutes());
+            return `${dd}/${mm}/${yyyy} ${HH}:${MM}`;
+        }
+
+        const createdInput = document.getElementById('id_created_at');
+        const updatedInput = document.getElementById('id_updated_at');
+
+        if (createdInput && createdInput.value) {
+            const d = parseIsoSmart(createdInput.value);
+            if (d) createdInput.value = formatBR(d);
+        }
+        if (updatedInput && updatedInput.value) {
+            const d = parseIsoSmart(updatedInput.value);
+            if (d) updatedInput.value = formatBR(d);
+        }
+
+        const createdOut = document.getElementById('createdAtHeader');
+        const updatedOut = document.getElementById('updatedAtHeader');
+        if (createdOut && createdInput) {
+            createdOut.textContent = createdInput.value;
+        }
+        if (updatedOut && updatedInput) {
+            updatedOut.textContent = updatedInput.value;
+        }
+    })();
+</script>
+
 {% endblock %}
