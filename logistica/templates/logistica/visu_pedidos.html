@@ -4,131 +4,107 @@
 {% block content %}
 
 <style>
-    .form-card-3col {
+    .card-2col {
         height: auto;
         margin-top: 65px;
     }
 
-    .single-card {
+    .form-card {
         background: var(--card-bg, #fff);
-        color: var(--card-fg, #0f172a);
-        width: 1300px;
-        margin-left: 65px;
-        margin-top: 65px;
         border-radius: 16px;
-        border: 1px solid rgba(2, 6, 23, .08);
-        box-shadow: 0 6px 18px rgba(2, 6, 23, .06);
-        padding: 16px 18px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+        padding: 20px 22px;
+        border: 1px solid rgba(0, 0, 0, .06);
     }
 
-    .card-header {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 10px;
-    }
-
-    .card-header .left {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .badge-num {
-        width: 100%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 28px;
-        height: 28px;
-        padding: 0 8px;
-        border-radius: 999px;
-        font-weight: 700;
-        font-size: 12px;
-        background: #ef4444;
-        color: #fff;
-    }
-
-    .card-title {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 800;
-        letter-spacing: .2px;
-    }
-
-    .chip {
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 600;
-        background: rgba(2, 6, 23, .06);
-    }
-
-    .card-body {
-        margin-top: 6px;
-    }
-
-    .grid-3 {
+    .form-grid.form-3col {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 14px;
+        grid-template-columns: 1fr;
+        gap: 12px 24px;
     }
 
-    .grid-3 .col p {
-        margin: 8px 0 0;
-        line-height: 1.25rem;
-        font-size: 0.95rem;
-    }
-
-    @media (max-width: 980px) {
-        .grid-3 {
-            grid-template-columns: 1fr;
-        }
-
-    }
-
-    @media (max-width: 1280px) {
-        .single-card {
-            width: 1150px;
+    @media (min-width: 720px) {
+        .form-grid.form-3col {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
 
-    .card-actions {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 10px;
-        padding-top: 12px;
-        border-top: 1px solid rgba(2, 6, 23, .08);
-    }
-
-    .card-actions form {
-        margin: 0;
-    }
-
-    .card-actions .submit-button-right {
-        min-width: 200px;
-    }
-
-    @media (max-width: 980px) {
-        .card-actions {
-            justify-content: stretch;
+    @media (min-width: 1040px) {
+        .form-grid.form-3col {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
         }
+    }
 
-        .card-actions .submit-button-right {
-            width: 100%;
-        }
+    .form-field {
+        display: block;
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: transparent;
+        transition: background .2s ease;
+    }
+
+    .form-field:hover {
+        background: rgba(0, 0, 0, .02);
+    }
+
+    .form-field label {
+        display: block;
+        font-size: .78rem;
+        font-weight: 600;
+        letter-spacing: .02em;
+        color: #6b7280;
+        margin-bottom: 4px;
+    }
+
+    .form-3col input {
+        border: none !important;
+        border-bottom: 1px solid #e5e7eb !important;
+        padding-bottom: 4px;
+    }
+
+    .card-display {
+        display: block;
+        width: 100%;
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        outline: none !important;
+        font-size: .98rem;
+        font-weight: 600;
+        color: #111827;
+        caret-color: transparent;
+        pointer-events: none;
+    }
+
+    .card-display[disabled] {
+        opacity: 1 !important;
+        -webkit-text-fill-color: #111827;
+    }
+
+    textarea.card-display {
+        resize: none;
+        line-height: 1.35;
+    }
+
+    input[type="hidden"] {
+        display: none !important;
+    }
+
+    .form-card>h2 {
+        margin: 0 0 10px 0;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #111827;
     }
 </style>
 
 <div class="form-container">
-  <div class="form-card-3col">
-    <form method="POST">
-      {% include 'global/partials/_form_3col.html' %}
-    </form>
-  </div>
+    <div class="card-2col">
+        <form method="POST">
+            {% include 'global/partials/_form_card_2col.html' %}
+        </form>
+    </div>
 </div>
 {% endblock %}

@@ -1,0 +1,36 @@
+<h2>{{ form.nome_formulario }}</h2>
+
+<form method="POST" class="card-2col">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    {% if impar %}
+    <div class="card-group card-centralizado">
+        {{ primeiro_campo.label_tag }}
+        {{ primeiro_campo }}
+        {% if primeiro_campo.errors %}
+        <div class="card-error">{{ primeiro_campo.errors }}</div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="card-grid-2col">
+        {% for campo in form %}
+        {% if campo.name != primeiro_campo.name %}
+        <div class="card-group">
+            {{ campo.label_tag }}
+            {{ campo }}
+            {% if campo.errors %}
+            <div class="card-error">{{ campo.errors }}</div>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="submit-button-right" name="enviar_evento" value="1">
+            {{ botao_texto }}
+        </button>
+    </div>
+</form>

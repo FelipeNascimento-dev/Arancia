@@ -3,8 +3,8 @@ from django import forms
 
 class Order(forms.Form):
     form_title = 'Número do Pedido'
-    order_number = forms.CharField(
-        label='order_number', max_length=50, required=True, disabled=True)
+    nome_formulario = form_title
+    order_number = forms.HiddenInput()
     simcard_priority = forms.CharField(
         label='simcard_priority', max_length=50, required=True, disabled=True)
     maquinetas_key = forms.CharField(
@@ -50,10 +50,10 @@ class Order(forms.Form):
     updated_at = forms.CharField(
         label='updated_at', max_length=50, required=True, disabled=True)
 
-    def __init__(self, *args, form_title=None, dados: dict = None, **kwargs):
+    def __init__(self, *args, form_title='order_number', dados: dict = None, **kwargs):
         super().__init__(*args, **kwargs)
-        if form_title:
-            self.form_title = form_title
+        self.form_title = f"Número do Pedido: {dados['order_number']}"
+        self.nome_formulario = self.form_title
         if dados:
             for field_name, value in dados.items():
                 if field_name in self.fields:

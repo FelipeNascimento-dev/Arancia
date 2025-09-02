@@ -73,5 +73,5 @@ def visu_pedido(request, order: str):
         "form": form,
         "botao_texto": getattr(form, "botao_texto", "Enviar"),
         "site_title": "Consultar Pedido Entrada",
-        "nome_form": getattr(form, "form_title", "Consultar Pedido Entrada"),
+        "nome_formulario": form.form_title
     })
