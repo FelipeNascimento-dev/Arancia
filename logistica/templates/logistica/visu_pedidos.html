@@ -151,11 +151,13 @@
         background-color: #fff;
     }
 
-    #id_sales_channel{
+    #id_sales_channel {
         background-color: transparent !important;
         border: none !important;
     }
 
+    .card-2col form .card-group:has([name="operation"]),
+    .card-2col form .card-group:has([name="order_number"]),
     .card-2col form .card-group:has([name="simcard_priority"]),
     .card-2col form .card-group:has([name="sales_channel"]),
     .card-2col form .card-group:has([name="maquinetas_key"]),
@@ -170,6 +172,70 @@
     .card-2col form .card-group:has([name="origin_state_code"]),
     .card-2col form .card-group:has([name="end_customer_id"]) {
         display: none !important;
+    }
+
+
+
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        max-width: 450px;
+        width: 90%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 20px;
+    }
+
+    .btn-sim {
+        background: #ff833c;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .btn-cancelar {
+        background: #ff833c;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
 </style>
 

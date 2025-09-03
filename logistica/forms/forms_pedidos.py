@@ -34,7 +34,7 @@ class Order(forms.Form):
     quantity = forms.IntegerField(
         label='Quantidade', required=True, disabled=True)
     ultima_tracking = forms.CharField(
-        label='Ultima Tracking', max_length=50, required=True, disabled=True)
+        label='Última Tracking', max_length=50, required=True, disabled=True)
     volume_number = forms.IntegerField(
         label='Número do Volume', required=True, disabled=True)
     volume_name = forms.CharField(
@@ -42,7 +42,7 @@ class Order(forms.Form):
     volume_state = forms.CharField(
         label='Estado do Volume', max_length=50, required=True, disabled=True)
     logistic_provider_name = forms.CharField(
-        label='Código Logistico', max_length=50, required=True, disabled=True)
+        label='Código Logístico', max_length=50, required=True, disabled=True)
     sales_channel = forms.CharField(
         label='Sales Channel', max_length=50, required=True, disabled=True)
     origin_name = forms.CharField(
