@@ -19,7 +19,8 @@ class Order(forms.Form):
         "origin_city", "origin_state_code", "end_customer_id", "maquinetas_key",
     ]
 
-    order_number = forms.HiddenInput()
+    order_number = forms.CharField(widget=forms.HiddenInput(), required=False)
+    operation = forms.CharField(widget=forms.HiddenInput(), required=False)
     simcard_priority = forms.CharField(
         label='Prioridade do Simcard', max_length=50, required=True, disabled=True)
     maquinetas_key = forms.CharField(
@@ -74,8 +75,8 @@ class Order(forms.Form):
                 if field_name in self.fields:
                     self.fields[field_name].initial = value
 
-        #     tipo = (dados.get("shipment_order_type") or "").lower()
-        #     self.fields["operation"].initial = "ESTOQUE" if tipo == "return" else "INSUCESSO"
-        #     self.botao_texto = "RECEBER ESTOQUE" if tipo == "return" else "RECEBER INSUCESSO"
-        # else:
-        #     self.botao_texto = "Enviar"
+        tipo = (dados or {}).get("shipment_order_type", "")
+        tipo = (tipo or "").strip().upper()
+
+        self.botao_texto = "RECEBER ESTOQUE" if tipo == "RETURN" else "RECEBER INSUCESSO"
+        self.fields["operation"].initial = "ESTOQUE" if tipo == "RETURN" else "INSUCESSO"
