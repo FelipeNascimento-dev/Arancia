@@ -34,9 +34,9 @@ def visu_pedido(request, order: str):
             "end_customer_id": 1738,
             "delivery_stage": "LASTMILE",
             "terminal_logical_numbers": "01657553",
-            "shipment_order_type": "NORMAL",
             "created_at": "2025-08-29T10:00:18.856254",
-            "updated_at": "2025-08-29T12:10:09.462959"
+            "updated_at": "2025-08-29T12:10:09.462959",
+            "shipment_order_type": "NORMAL",
         }
     )
 

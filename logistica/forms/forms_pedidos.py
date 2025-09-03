@@ -6,9 +6,9 @@ class Order(forms.Form):
     nome_formulario = form_title
 
     GRUPO_1 = [
-        "sales_channel", "quantity", "ultima_tracking",
+        "quantity", "ultima_tracking",
         "volume_number", "volume_name", "volume_state", "delivery_stage",
-        "shipment_order_type", "created_at", "updated_at",
+        "created_at", "updated_at", "shipment_order_type",
     ]
     GRUPO_2 = [
         "simcard_priority", "model", "matnr", "category",
@@ -21,49 +21,49 @@ class Order(forms.Form):
 
     order_number = forms.HiddenInput()
     simcard_priority = forms.CharField(
-        label='simcard_priority', max_length=50, required=True, disabled=True)
+        label='Prioridade do Simcard', max_length=50, required=True, disabled=True)
     maquinetas_key = forms.CharField(
-        label='maquinetas_key', max_length=50, required=True, disabled=True)
+        label='Maquineta', max_length=50, required=True, disabled=True)
     model = forms.CharField(
-        label='model', max_length=50, required=True, disabled=True)
+        label='Modelo', max_length=50, required=True, disabled=True)
     matnr = forms.CharField(
-        label='matnr', max_length=50, required=True, disabled=True)
+        label='SKU (Código de Material)', max_length=50, required=True, disabled=True)
     category = forms.CharField(
-        label='category', max_length=50, required=True, disabled=True)
+        label='Categoria', max_length=50, required=True, disabled=True)
     quantity = forms.IntegerField(
-        label='quantity', required=True, disabled=True)
+        label='Quantidade', required=True, disabled=True)
     ultima_tracking = forms.CharField(
-        label='ultima_tracking', max_length=50, required=True, disabled=True)
+        label='Ultima Tracking', max_length=50, required=True, disabled=True)
     volume_number = forms.IntegerField(
-        label='volume_number', required=True, disabled=True)
+        label='Número do Volume', required=True, disabled=True)
     volume_name = forms.CharField(
-        label='volume_name', max_length=50, required=True, disabled=True)
+        label='Nome do Volume', max_length=50, required=True, disabled=True)
     volume_state = forms.CharField(
-        label='volume_state', max_length=50, required=True, disabled=True)
+        label='Estado do Volume', max_length=50, required=True, disabled=True)
     logistic_provider_name = forms.CharField(
-        label='logistic_provider_name', max_length=50, required=True, disabled=True)
+        label='Código Logistico', max_length=50, required=True, disabled=True)
     sales_channel = forms.CharField(
-        label='sales_channel', max_length=50, required=True, disabled=True)
+        label='Sales Channel', max_length=50, required=True, disabled=True)
     origin_name = forms.CharField(
-        label='origin_name', max_length=50, required=True, disabled=True)
+        label='Origem', max_length=50, required=True, disabled=True)
     origin_quarter = forms.CharField(
-        label='origin_quarter', max_length=50, required=True, disabled=True)
+        label='Bairro de Origem', max_length=50, required=True, disabled=True)
     origin_city = forms.CharField(
-        label='origin_city', max_length=50, required=True, disabled=True)
+        label='Cidade de Origem', max_length=50, required=True, disabled=True)
     origin_state_code = forms.CharField(
-        label='origin_state_code', max_length=50, required=True, disabled=True)
+        label='Código do Estado', max_length=50, required=True, disabled=True)
     end_customer_id = forms.CharField(
-        label='end_customer_id', max_length=50, required=True, disabled=True)
+        label='ID', max_length=50, required=True, disabled=True)
     delivery_stage = forms.CharField(
-        label='delivery_stage', max_length=50, required=True, disabled=True)
+        label='Projeto', max_length=50, required=True, disabled=True)
     terminal_logical_numbers = forms.CharField(
-        label='terminal_logical_numbers', max_length=50, required=True, disabled=True)
+        label='Números Logicos', max_length=50, required=True, disabled=True)
     shipment_order_type = forms.CharField(
-        label='shipment_order_type', max_length=50, required=True, disabled=True)
+        label='Tipo do Pedido', max_length=50, required=True, disabled=True)
     created_at = forms.CharField(
-        label='created_at', max_length=50, required=True, disabled=True)
+        label='Criado em', max_length=50, required=True, disabled=True)
     updated_at = forms.CharField(
-        label='updated_at', max_length=50, required=True, disabled=True)
+        label='Atualizado em', max_length=50, required=True, disabled=True)
 
     def __init__(self, *args, form_title='order_number', dados: dict = None, **kwargs):
         super().__init__(*args, **kwargs)
