@@ -1,6 +1,6 @@
 <h2>{{ form.nome_formulario }}</h2>
 
-<form method="POST" class="card-2col">
+<form method="POST" action="{{ acao_url }}" class="card-2col">
     {% csrf_token %}
     {{ form.non_field_errors }}
 

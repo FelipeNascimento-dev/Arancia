@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from utils.request import RequestClient
 from ..forms import Order
 
@@ -36,7 +36,7 @@ def visu_pedido(request, order: str):
             "terminal_logical_numbers": "01657553",
             "created_at": "2025-08-29T10:00:18.856254",
             "updated_at": "2025-08-29T12:10:09.462959",
-            "shipment_order_type": "NORMAL",
+            "shipment_order_type": "RETURN",
         }
     )
 
@@ -46,6 +46,15 @@ def visu_pedido(request, order: str):
         except Exception:
             return None
 
+    tipo = (form.fields['shipment_order_type'].initial or '').strip().upper()
+    botao_texto = getattr(form, "botao_texto", None) or (
+        "RECEBER ESTOQUE" if tipo == "RETURN" else "RECEBER INSUCESSO")
+
+    if tipo == "RETURN":
+        acao_url = reverse('logistica:consulta_result_ma')
+    else:
+        acao_url = reverse('logistica:consulta_result_ma')
+
     produto_campos = [bf(n) for n in form.GRUPO_2 if n in form.fields]
     adicionais_campos = [bf(n) for n in form.GRUPO_3 if n in form.fields]
 
@@ -54,7 +63,8 @@ def visu_pedido(request, order: str):
         "form": form,
         "produto_campos": produto_campos,
         "adicionais_campos": adicionais_campos,
-        "botao_texto": getattr(form, "botao_texto", "Enviar"),
+        "botao_texto": botao_texto,
+        "acao_url": acao_url,
         "site_title": "Consultar Pedido Entrada",
         "nome_formulario": form.form_title
     })
