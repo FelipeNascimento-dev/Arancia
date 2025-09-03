@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect
 from django.urls import reverse  # <<<<<< CORRETO
 from ..forms import Order
 
+CARRY_PEDIDO_KEY = "carry_pedido_next"
+
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
@@ -58,6 +60,9 @@ def visu_pedido(request, order: str):
 
     if request.method == "POST":
         if tipo == "NORMAL":
+            request.session["pedido"] = str(order)
+            request.session[CARRY_PEDIDO_KEY] = True
+            request.session.modified = True
             return redirect('logistica:pcp', code='201')
         elif tipo == "RETURN":
             return redirect('logistica:consulta_result_ma')
