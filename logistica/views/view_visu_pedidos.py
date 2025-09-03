@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect
-from django.urls import reverse  # <<<<<< CORRETO
+from django.urls import reverse
 from ..forms import Order
 
 CARRY_PEDIDO_KEY = "carry_pedido_next"
