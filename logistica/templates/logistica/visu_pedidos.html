@@ -8,7 +8,11 @@
         margin-top: 65px;
     }
 
-    /* --- estilos que você já tinha (resumidos) --- */
+    .card-group input {
+        font-weight: normal;
+        font-weight: 500;
+    }
+
     .form-grid.form-3col {
         display: grid;
         grid-template-columns: 1fr;
@@ -132,7 +136,29 @@
         padding: 16px
     }
 
+    .signature {
+        position: absolute;
+        top: 100px;
+        right: 50px;
+        font-weight: bold;
+        color: var(--form-titulo);
+        margin: 0;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 100;
+        background-color: #fff;
+    }
+
+    #id_sales_channel{
+        background-color: transparent !important;
+        border: none !important;
+    }
+
     .card-2col form .card-group:has([name="simcard_priority"]),
+    .card-2col form .card-group:has([name="sales_channel"]),
+    .card-2col form .card-group:has([name="maquinetas_key"]),
     .card-2col form .card-group:has([name="model"]),
     .card-2col form .card-group:has([name="matnr"]),
     .card-2col form .card-group:has([name="category"]),
@@ -153,6 +179,10 @@
             {% csrf_token %}
 
             {% include 'global/partials/_form_card_2col.html' %}
+
+            <div class="signature">
+                {{ form.sales_channel }}
+            </div>
 
             <div class="tabs" id="agenda-tabs" style="margin-top:16px;">
                 <div class="tab-list" role="tablist" aria-label="Navegação">
