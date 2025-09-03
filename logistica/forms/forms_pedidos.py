@@ -6,7 +6,7 @@ class Order(forms.Form):
     nome_formulario = form_title
 
     GRUPO_1 = [
-        "sales_channel", "maquinetas_key", "quantity", "ultima_tracking",
+        "sales_channel", "quantity", "ultima_tracking",
         "volume_number", "volume_name", "volume_state", "delivery_stage",
         "shipment_order_type", "created_at", "updated_at",
     ]
@@ -16,7 +16,7 @@ class Order(forms.Form):
     ]
     GRUPO_3 = [
         "logistic_provider_name", "origin_name", "origin_quarter",
-        "origin_city", "origin_state_code", "end_customer_id",
+        "origin_city", "origin_state_code", "end_customer_id", "maquinetas_key",
     ]
 
     order_number = forms.HiddenInput()

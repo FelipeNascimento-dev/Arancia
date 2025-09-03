@@ -7,34 +7,6 @@ from ..forms import Order
 API_ENTRADA_PED = "http://192.168.0.214/IntegrationXmlAPI/api/v2/pedidos/entrada/"
 
 
-def _normalize_item(item: dict, order_number: str) -> dict:
-    return {
-        "order_number": item.get("order_number") or order_number,
-        "simcard_priority": item.get("simcard_priority"),
-        "maquinetas_key": item.get("maquinetas_key"),
-        "model": item.get("model"),
-        "matnr": item.get("matnr"),
-        "category": item.get("category"),
-        "quantity": item.get("quantity"),
-        "ultima_tracking": item.get("ultima_tracking"),
-        "volume_number": item.get("volume_number"),
-        "volume_name": item.get("volume_name"),
-        "volume_state": item.get("volume_state"),
-        "logistic_provider_name": item.get("logistic_provider_name"),
-        "sales_channel": item.get("sales_channel"),
-        "origin_name": item.get("origin_name"),
-        "origin_quarter": item.get("origin_quarter"),
-        "origin_city": item.get("origin_city"),
-        "origin_state_code": item.get("origin_state_code"),
-        "end_customer_id": item.get("end_customer_id"),
-        "delivery_stage": item.get("delivery_stage"),
-        "terminal_logical_numbers": item.get("terminal_logical_numbers"),
-        "shipment_order_type": item.get("shipment_order_type"),
-        "created_at": item.get("created_at"),
-        "updated_at": item.get("updated_at"),
-    }
-
-
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 def visu_pedido(request, order: str):
