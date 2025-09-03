@@ -53,6 +53,6 @@ urlpatterns = [
     path('consulta-pedidos/', consulta_pedidos, name='consulta_pedidos'),
     path('recebimento-remessa/', recebimento_remessa, name='recebimento_remessa'),
     path('entrada-pedido/', entrada_pedido, name='entrada_pedido'),
-    path('pedido/<str:order>/',
+    path('entrada-pedido/<str:order>/',
          visu_pedido, name='visu_pedido'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
