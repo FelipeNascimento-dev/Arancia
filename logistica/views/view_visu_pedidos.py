@@ -1,10 +1,7 @@
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib import messages
-from django.shortcuts import render, redirect, reverse
-from utils.request import RequestClient
+from django.shortcuts import render, redirect
+from django.urls import reverse  # <<<<<< CORRETO
 from ..forms import Order
-
-API_ENTRADA_PED = "http://192.168.0.214/IntegrationXmlAPI/api/v2/pedidos/entrada/"
 
 
 @login_required(login_url='logistica:login')
@@ -14,7 +11,7 @@ def visu_pedido(request, order: str):
     form = Order(
         request.POST or None,
         dados={
-            "order_number": "19113121917770",
+            "order_number": order,
             "simcard_priority": "1-CLARO|2-VIVO",
             "maquinetas_key": "2898704754",
             "model": "XI-POS COMBO NEWLAND SP930",
@@ -36,7 +33,7 @@ def visu_pedido(request, order: str):
             "terminal_logical_numbers": "01657553",
             "created_at": "2025-08-29T10:00:18.856254",
             "updated_at": "2025-08-29T12:10:09.462959",
-            "shipment_order_type": "RETURN",
+            "shipment_order_type": "NORMAL",
         }
     )
 
@@ -47,13 +44,25 @@ def visu_pedido(request, order: str):
             return None
 
     tipo = (form.fields['shipment_order_type'].initial or '').strip().upper()
-    botao_texto = getattr(form, "botao_texto", None) or (
-        "RECEBER ESTOQUE" if tipo == "RETURN" else "RECEBER INSUCESSO")
+
+    botao_texto = "RECEBER DESINSTALAÇÃO" if tipo == "NORMAL" else "RECEBER REVERSA"
 
     if tipo == "RETURN":
         acao_url = reverse('logistica:consulta_result_ma')
+    elif tipo == "NORMAL":
+        acao_url = reverse('logistica:pcp', kwargs={'code': '201'})
+    elif tipo == "REVERSE":
+        acao_url = reverse('logistica:consulta_result_ec')
     else:
-        acao_url = reverse('logistica:consulta_result_ma')
+        acao_url = request.path
+
+    if request.method == "POST":
+        if tipo == "NORMAL":
+            return redirect('logistica:pcp', code='201')
+        elif tipo == "RETURN":
+            return redirect('logistica:consulta_result_ma')
+        elif tipo == "REVERSE":
+            return redirect('logistica:consulta_result_ec')
 
     produto_campos = [bf(n) for n in form.GRUPO_2 if n in form.fields]
     adicionais_campos = [bf(n) for n in form.GRUPO_3 if n in form.fields]
