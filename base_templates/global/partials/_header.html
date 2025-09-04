@@ -71,7 +71,7 @@
                 <span class="texto-item">&nbsp; Logística</span>
             </button>
             <div class="dropdown-content">
-                {% if perms.logistica.entrada_flfm %}
+                <!-- {% if perms.logistica.entrada_flfm %}
                 <h5 class="submenu-toggle" data-target="estornos-sub">Entrada (Fulfillment)</h5>
                 <div class="sub-submenu" id="estornos-sub">
                     <a href="{% url 'logistica:consulta_id_form' %}">SAP - Consulta ID</a>
@@ -84,7 +84,7 @@
                         <a href="{% url 'logistica:recebimento' 16 %}">SAP - Estorno de Recebimento</a>
                     </div>
                 </div>
-                {% endif %}
+                {% endif %} -->
                 {% if perms.logistica.lastmile_b2c %}
                 <h5 class="submenu-toggle" data-target="lastmile-sub">Lastmile (B2C)</h5>
                 <div class="sub-submenu" id="lastmile-sub">
