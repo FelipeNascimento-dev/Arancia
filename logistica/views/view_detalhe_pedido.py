@@ -1,16 +1,16 @@
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from ..forms import Order
+from ..forms import OrderDetailForm
 
 CARRY_PEDIDO_KEY = "carry_pedido_next"
 
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
-def visu_pedido(request, order: str):
+def order_detail(request, order: str):
 
-    form = Order(
+    form = OrderDetailForm(
         request.POST or None,
         dados={
             "order_number": order,
