@@ -17,11 +17,11 @@ def order_consult(request):
         if not order:
             messages.warning(request, "Informe o número do pedido.")
         else:
-            return redirect('logistica:visu_pedido', order=order)
+            return redirect('logistica:detalhe_pedido', order=order)
 
     return render(
         request,
-        "logistica/consultar_entrada_pedido.html",
+        "logistica/consultar_pedido.html",
         {
             "form": form,
             "botao_texto": "Consultar",

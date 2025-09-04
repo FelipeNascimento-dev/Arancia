@@ -72,7 +72,7 @@ def order_detail(request, order: str):
     produto_campos = [bf(n) for n in form.GRUPO_2 if n in form.fields]
     adicionais_campos = [bf(n) for n in form.GRUPO_3 if n in form.fields]
 
-    return render(request, "logistica/visu_pedidos.html", {
+    return render(request, "logistica/detalhe_pedidos.html", {
         "order": order,
         "form": form,
         "produto_campos": produto_campos,
