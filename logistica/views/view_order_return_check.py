@@ -2,7 +2,7 @@ from ..forms import OrderReturnCheckForm
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect
 
-SAIDA_SERIALS_KEY = "saida_serials"
+ORDER_RETURN_SERIALS_KEY = "order_return_serials"
 
 CARRY_PEDIDO_KEY = "carry_pedido_next"
 
@@ -16,16 +16,16 @@ def _consume_carry_next(request) -> bool:
     return request.session.pop(CARRY_PEDIDO_KEY, False)
 
 
-def fallback_get_serials(request) -> list[str]:
-    return request.session.get(SAIDA_SERIALS_KEY, [])
+def order_return_get_serials(request) -> list[str]:
+    return request.session.get(ORDER_RETURN_SERIALS_KEY, [])
 
 
-def fallback_save_serials(request, serials: list[str]) -> None:
-    request.session[SAIDA_SERIALS_KEY] = serials
+def order_return_save_serials(request, serials: list[str]) -> None:
+    request.session[ORDER_RETURN_SERIALS_KEY] = serials
     request.session.modified = True
 
 
-def saida_dedup_upper(values) -> list[str]:
+def order_return_dedup_upper(values) -> list[str]:
     seen = set()
     out = []
     for v in values or []:
