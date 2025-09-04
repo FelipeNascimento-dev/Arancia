@@ -15,7 +15,7 @@
             {% include 'global/partials/_form_2col.html' %}
         </form>
 
-        {% if request.resolver_match.url_name == 'fallback_check' %}
+        {% if request.resolver_match.url_name == 'order_return_check' %}
         <div class="confirm-clear" id="confirm-clear" aria-hidden="true" role="dialog" aria-modal="true"
             aria-labelledby="cc-title" aria-describedby="cc-desc">
             <div class="confirm-clear__backdrop" data-close="1"></div>
@@ -35,7 +35,7 @@
     </div>
 </div>
 
-{% if request.resolver_match.url_name == 'fallback_check' %}
+{% if request.resolver_match.url_name == 'order_return_check' %}
 <script>
     (function () {
         function focusSerial() {

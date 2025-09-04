@@ -16,4 +16,4 @@ from .forms_consulta_pedidos import ConsultaPedForm
 from .forms_recebimento_remessa import RecebimentoRemessaForm
 from .forms_consulta_entrada_pedido import OrderConsultForm
 from .forms_detalhes_pedidos import OrderDetailForm
-from .forms_fallback_check import FallbackCheckForm
+from .forms_order_return_check import OrderReturnCheckForm

@@ -1,7 +1,7 @@
 from django import forms
 
 
-class FallbackCheckForm(forms.Form):
+class OrderReturnCheckForm(forms.Form):
     order = forms.CharField(label='Pedido', max_length=50, required=False)
     serial = forms.CharField(label='Serial', max_length=50, required=False)
 
