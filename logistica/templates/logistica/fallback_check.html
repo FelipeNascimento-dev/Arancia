@@ -5,17 +5,17 @@
 <style>
     .form-card-2col {
         height: auto; 
+        margin-top: 65px;
     }
 </style>
 
-{% include 'global/partials/_nav_chevron.html' %}
 <div class="form-container">
     <div class="form-card-2col">
         <form method="POST">
             {% include 'global/partials/_form_2col.html' %}
         </form>
 
-        {% if etapa_ativa == 'reserva' %}
+        {% if request.resolver_match.url_name == 'fallback_check' %}
             <div class="confirm-clear" id="confirm-clear" aria-hidden="true" role="dialog" aria-modal="true"
                 aria-labelledby="cc-title" aria-describedby="cc-desc">
                 <div class="confirm-clear__backdrop" data-close="1"></div>

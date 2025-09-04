@@ -373,6 +373,27 @@
             updatedOut.textContent = updatedInput.value;
         }
     })();
+
+    document.addEventListener('keydown', function (e) {
+        const isOpen = modal.classList.contains('open') && modal.getAttribute('aria-hidden') === 'false';
+        if (!isOpen) return;
+
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            closeModal();
+            return;
+        }
+
+        if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.altKey) {
+            const ae = document.activeElement;
+            if (ae && (ae.classList.contains('cc-no') || ae.getAttribute('data-close') === '1')) {
+                ae.click();
+                return;
+            }
+            e.preventDefault();
+            yesBtn.click();
+        }
+    });
 </script>
 
 {% endblock %}

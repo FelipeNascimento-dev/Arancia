@@ -11,5 +11,6 @@ def fallback_check(request):
     return render(request, 'logistica/fallback_check.html', {
         'form': form,
         'name_form': "Conferir Volume de Retirada",
+        'site_title': "Conferir Volume de Retirada",
         'botao_texto': "Conferir",
     })
