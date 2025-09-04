@@ -55,5 +55,5 @@ urlpatterns = [
     path('consultar-pedido/', order_consult, name='consultar_pedido'),
     path('consultar-pedido/<str:order>/',
          order_detail, name='detalhe_pedido'),
-    path('conferir-retirada', order_return_check, name='fallback_check'),
+    path('conferir-retirada', order_return_check, name='order_return_check'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
