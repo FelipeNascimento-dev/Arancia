@@ -1,7 +1,7 @@
 from django import forms
 
 
-class Order(forms.Form):
+class OrderDetailForm(forms.Form):
     form_title = 'Número do Pedido'
     nome_formulario = form_title
 

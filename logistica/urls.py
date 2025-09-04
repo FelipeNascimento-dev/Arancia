@@ -6,8 +6,8 @@ from django.urls import path
 from .viewsV2 import trackingIPV2
 from .views import index, consulta_id_form, pre_recebimento, \
     recebimento, registrar_romaneio, consulta_id_table, consulta_result, \
-    consulta_pedidos, recebimento_remessa, entrada_pedido, \
-    btn_voltar, reserva_equip, saida_campo, visu_pedido, fallback_check, \
+    consulta_pedidos, recebimento_remessa, order_consult, \
+    btn_voltar, reserva_equip, saida_campo, order_detail, fallback_check, \
     consulta_ma84, btn_ma_voltar, consulta_ec01, btn_ec_voltar, \
     logout_confirm_view, logout_view, registrar_usuario, trackingIP, \
     extracao_pedidos, consulta_etiquetas, settings_view, UserPasswordChangeView
@@ -52,8 +52,8 @@ urlpatterns = [
     path('consulta-etiquetas/', consulta_etiquetas, name='consulta_etiquetas'),
     path('consulta-pedidos/', consulta_pedidos, name='consulta_pedidos'),
     path('recebimento-remessa/', recebimento_remessa, name='recebimento_remessa'),
-    path('entrada-pedido/', entrada_pedido, name='entrada_pedido'),
-    path('entrada-pedido/<str:order>/',
-         visu_pedido, name='visu_pedido'),
+    path('consultar-pedido/', order_consult, name='consultar_pedido'),
+    path('consultar-pedido/<str:order>/',
+         order_detail, name='detalhe_pedido'),
     path('conferir-retirada', fallback_check, name='fallback_check'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

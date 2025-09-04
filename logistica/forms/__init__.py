@@ -14,6 +14,6 @@ from .forms_consulta_etiqueta import EtiquetasForm
 from .forms_configuracao_user import ConfiguracaoUserForm
 from .forms_consulta_pedidos import ConsultaPedForm
 from .forms_recebimento_remessa import RecebimentoRemessaForm
-from .forms_consulta_entrada_pedido import ConsultaEntradaPedForm
-from .forms_pedidos import Order
+from .forms_consulta_entrada_pedido import OrderConsultForm
+from .forms_detalhes_pedidos import OrderDetailForm
 from .forms_fallback_check import FallbackCheckForm
