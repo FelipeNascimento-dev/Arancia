@@ -22,7 +22,7 @@ def button_desn(request, order: str):
 
     result = client.send_api_request()
     if 'detail' not in result:
-        request.session['request_success'] = True  # ou False
+        request.session['request_success'] = True
         request.session.modified = True
     else:
         messages.error(request, f"{result['detail']}")

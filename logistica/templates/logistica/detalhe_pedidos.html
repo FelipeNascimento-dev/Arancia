@@ -288,7 +288,20 @@
                 </section>
 
                 {% if request_success == True %}
-
+                <div id="modalConfirm" class="modal">
+                    <div class="modal-content">
+                        <h3>Confirmação</h3>
+                        <br>
+                        <p>Tem certeza que deseja inserir no estoque?</p>
+                        <div class="modal-actions">
+                            <button id="confirmarSim" class="submit-button-right"
+                                data-url="{% url 'logistica:consultar_pedido' %}">
+                                Sim
+                            </button>
+                            <button id="fecharModal" class="submit-button-right">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
                 {% endif %}
             </div>
         </form>
