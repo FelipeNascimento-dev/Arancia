@@ -21,10 +21,17 @@ def order_detail(request, order: str):
         headers={"Accept": JSON_CT},
     )
 
+    request_success = request.session.pop('request_success', None)
+    if request_success:
+        print("Request success true")
+
     try:
         result = client.send_api_request()
     except Exception as e:
         messages.error(request, f"Erro ao consultar pedido: {e}")
+        return redirect('logistica:consultar_pedido')
+    if 'detail' in result and isinstance(result['detail'], str):
+        messages.error(request, f"{result['detail']}")
         return redirect('logistica:consultar_pedido')
 
     form = OrderDetailForm(
@@ -40,16 +47,16 @@ def order_detail(request, order: str):
 
     tipo = (form.fields['shipment_order_type'].initial or '').strip().upper()
 
-    botao_texto = "RECEBER DESINSTALAÇÃO" if tipo == "NORMAL" else "RECEBER REVERSA"
+    botao_texto = "RECEBER DESINSTALAÇÃO" if tipo == "RETURN" else "RECEBER REVERSA"
 
-    if tipo == "RETURN":
-        acao_url = reverse('logistica:consulta_result_ma')
-    elif tipo == "NORMAL":
-        acao_url = reverse('logistica:pcp', kwargs={'code': '201'})
-    elif tipo == "REVERSE":
-        acao_url = reverse('logistica:consulta_result_ec')
-    else:
-        acao_url = request.path
+    # if tipo == "RETURN":
+    #     acao_url = redirect('logistica:button_desn', kwargs={'order': order})
+    # elif tipo == "NORMAL":
+    #     acao_url = reverse('logistica:pcp', kwargs={'code': '201'})
+    # elif tipo == "REVERSE":
+    #     acao_url = reverse('logistica:consulta_result_ec')
+    # else:
+    #     acao_url = request.path
 
     if request.method == "POST":
         if tipo == "NORMAL":
@@ -58,7 +65,7 @@ def order_detail(request, order: str):
             request.session.modified = True
             return redirect('logistica:pcp', code='201')
         elif tipo == "RETURN":
-            return redirect('logistica:consulta_result_ma')
+            return redirect('logistica:button_desn', order=order)
         elif tipo == "REVERSE":
             return redirect('logistica:consulta_result_ec')
 
@@ -71,7 +78,7 @@ def order_detail(request, order: str):
         "produto_campos": produto_campos,
         "adicionais_campos": adicionais_campos,
         "botao_texto": botao_texto,
-        "acao_url": acao_url,
-        "site_title": "Consultar Pedido Entrada",
+        # "acao_url": acao_url,
+        "site_title": "Detalhe do Pedido",
         "nome_formulario": form.form_title
     })
