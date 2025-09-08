@@ -37,6 +37,10 @@
 
 {% if request.resolver_match.url_name == 'order_return_check' %}
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var si = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
+        if (si) si.value = '';
+    });
     (function () {
         function focusSerial() {
             var el = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
@@ -46,8 +50,14 @@
         }
 
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', focusSerial);
+            document.addEventListener('DOMContentLoaded', function () {
+                var si = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
+                if (si) si.value = '';
+                focusSerial();
+            });
         } else {
+            var si = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
+            if (si) si.value = '';
             focusSerial();
         }
 
@@ -61,6 +71,10 @@
                 e.preventDefault();
                 var v = (input.value || '').trim();
                 if (!v) return;
+
+                var pedido = form.querySelector('#id_pedido') || form.querySelector('input[name="pedido"]');
+                if (pedido && pedido.disabled) pedido.disabled = false;
+
                 var hidden = form.querySelector('input[name="add_serial"]');
                 if (!hidden) {
                     hidden = document.createElement('input');
@@ -70,7 +84,12 @@
                 }
                 hidden.value = '1';
                 form.noValidate = true;
+
                 form.submit();
+
+                setTimeout(function () {
+                    input.value = '';
+                }, 0);
             }
         });
     })();
@@ -134,6 +153,9 @@
         if (openBtn) openBtn.addEventListener('click', openModal);
 
         yesBtn.addEventListener('click', function () {
+            var pedido = form.querySelector('#id_pedido') || form.querySelector('input[name="pedido"]');
+            if (pedido && pedido.disabled) pedido.disabled = false;
+
             let hidden = form.querySelector('input[name="clear_serials"][type="hidden"]');
             if (!hidden) {
                 hidden = document.createElement('input');
@@ -173,6 +195,7 @@
     })();
 </script>
 {% endif %}
+
 
 
 {% endblock content %}
