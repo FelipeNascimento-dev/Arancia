@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.urls import reverse
 from setup.local_settings import API_URL
 from utils.request import RequestClient
@@ -19,8 +20,13 @@ def order_detail(request, order: str):
         method="GET",
         headers={"Accept": JSON_CT},
     )
-    result = client.send_api_request()
-    print(result)
+
+    try:
+        result = client.send_api_request()
+    except Exception as e:
+        messages.error(request, f"Erro ao consultar pedido: {e}")
+        return redirect('logistica:consultar_pedido')
+
     form = OrderDetailForm(
         request.POST or None,
         dados=result
