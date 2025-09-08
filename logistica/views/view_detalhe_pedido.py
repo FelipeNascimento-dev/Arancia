@@ -1,42 +1,42 @@
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.urls import reverse
+from setup.local_settings import API_URL
+from utils.request import RequestClient
 from ..forms import OrderDetailForm
 
 CARRY_PEDIDO_KEY = "carry_pedido_next"
+JSON_CT = "application/json"
 
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 def order_detail(request, order: str):
 
+    url = f"{API_URL}/api/order-sumary/{order}"
+    client = RequestClient(
+        url=url,
+        method="GET",
+        headers={"Accept": JSON_CT},
+    )
+
+    request_success = request.session.pop('request_success', None)
+    if request_success:
+        print("Request success true")
+
+    try:
+        result = client.send_api_request()
+    except Exception as e:
+        messages.error(request, f"Erro ao consultar pedido: {e}")
+        return redirect('logistica:consultar_pedido')
+    if 'detail' in result and isinstance(result['detail'], str):
+        messages.error(request, f"{result['detail']}")
+        return redirect('logistica:consultar_pedido')
+
     form = OrderDetailForm(
         request.POST or None,
-        dados={
-            "order_number": order,
-            "simcard_priority": "1-CLARO|2-VIVO",
-            "maquinetas_key": "2898704754",
-            "model": "XI-POS COMBO NEWLAND SP930",
-            "matnr": "605569",
-            "category": "Máquinas",
-            "quantity": 1,
-            "ultima_tracking": "200 - Recebido para picking",
-            "volume_number": 1,
-            "volume_name": "VOLUME 1",
-            "volume_state": "READY_FOR_SHIPPING",
-            "logistic_provider_name": "EuEntrego",
-            "sales_channel": "SFC-Ctrends Brasilia",
-            "origin_name": "C-Trends Sales Force Brasilia",
-            "origin_quarter": "Taguatinga Norte (Taguatinga)",
-            "origin_city": "Brasília",
-            "origin_state_code": "DF",
-            "end_customer_id": 1738,
-            "delivery_stage": "LASTMILE",
-            "terminal_logical_numbers": "01657553",
-            "created_at": "2025-08-29T10:00:18.856254",
-            "updated_at": "2025-08-29T12:10:09.462959",
-            "shipment_order_type": "NORMAL",
-        }
+        dados=result
     )
 
     def bf(name):
@@ -47,16 +47,16 @@ def order_detail(request, order: str):
 
     tipo = (form.fields['shipment_order_type'].initial or '').strip().upper()
 
-    botao_texto = "RECEBER DESINSTALAÇÃO" if tipo == "NORMAL" else "RECEBER REVERSA"
+    botao_texto = "RECEBER DESINSTALAÇÃO" if tipo == "RETURN" else "RECEBER REVERSA"
 
-    if tipo == "RETURN":
-        acao_url = reverse('logistica:consulta_result_ma')
-    elif tipo == "NORMAL":
-        acao_url = reverse('logistica:pcp', kwargs={'code': '201'})
-    elif tipo == "REVERSE":
-        acao_url = reverse('logistica:consulta_result_ec')
-    else:
-        acao_url = request.path
+    # if tipo == "RETURN":
+    #     acao_url = redirect('logistica:button_desn', kwargs={'order': order})
+    # elif tipo == "NORMAL":
+    #     acao_url = reverse('logistica:pcp', kwargs={'code': '201'})
+    # elif tipo == "REVERSE":
+    #     acao_url = reverse('logistica:consulta_result_ec')
+    # else:
+    #     acao_url = request.path
 
     if request.method == "POST":
         if tipo == "NORMAL":
@@ -65,7 +65,7 @@ def order_detail(request, order: str):
             request.session.modified = True
             return redirect('logistica:pcp', code='201')
         elif tipo == "RETURN":
-            return redirect('logistica:consulta_result_ma')
+            return redirect('logistica:button_desn', order=order)
         elif tipo == "REVERSE":
             return redirect('logistica:consulta_result_ec')
 
@@ -78,7 +78,7 @@ def order_detail(request, order: str):
         "produto_campos": produto_campos,
         "adicionais_campos": adicionais_campos,
         "botao_texto": botao_texto,
-        "acao_url": acao_url,
-        "site_title": "Consultar Pedido Entrada",
+        # "acao_url": acao_url,
+        "site_title": "Detalhe do Pedido",
         "nome_formulario": form.form_title
     })

@@ -6,7 +6,7 @@ from django.urls import path
 from .viewsV2 import trackingIPV2
 from .views import index, consulta_id_form, pre_recebimento, \
     recebimento, registrar_romaneio, consulta_id_table, consulta_result, \
-    consulta_pedidos, recebimento_remessa, order_consult, \
+    consulta_pedidos, recebimento_remessa, order_consult, button_desn, \
     btn_voltar, reserva_equip, saida_campo, order_detail, order_return_check, \
     consulta_ma84, btn_ma_voltar, consulta_ec01, btn_ec_voltar, \
     logout_confirm_view, logout_view, registrar_usuario, trackingIP, \
@@ -53,6 +53,7 @@ urlpatterns = [
     path('consulta-pedidos/', consulta_pedidos, name='consulta_pedidos'),
     path('recebimento-remessa/', recebimento_remessa, name='recebimento_remessa'),
     path('consultar-pedido/', order_consult, name='consultar_pedido'),
+    path('buttons-order/<str:order>', button_desn, name='button_desn'),
     path('consultar-pedido/<str:order>/',
          order_detail, name='detalhe_pedido'),
     path('conferir-retirada', order_return_check, name='order_return_check'),

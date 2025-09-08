@@ -19,4 +19,5 @@ from .configuracao_user_view import UserPasswordChangeView, settings_view
 from .view_recebimento_remessa import recebimento_remessa
 from .view_consulta_entrada_pedido import order_consult
 from .view_detalhe_pedido import order_detail
+from .view_button_desn import button_desn
 from .view_order_return_check import order_return_check
