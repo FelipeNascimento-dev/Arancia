@@ -320,8 +320,9 @@
                                 Receber novo pedido
                             </button>
                             <button id="option2" class="submit-button-right"
-                                data-url="{% url 'logistica:order_return_check' %}">
-                                Conferencia de pedido</button>
+                                data-url="{% url 'logistica:order_return_check' %}?order={{ order|urlencode }}">
+                                Conferência de pedido
+                            </button>
                         </div>
                     </div>
                 </div>

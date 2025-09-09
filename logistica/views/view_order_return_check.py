@@ -1,10 +1,13 @@
 from ..forms import OrderReturnCheckForm
 from utils.request import RequestClient
 from django.shortcuts import render, redirect
+from setup.local_settings import API_URL
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 
 CARRY_PEDIDO_KEY = "carry_pedido_next"
+
+JSON_CT = "application/json"
 
 
 def _mark_carry_next(request):
@@ -44,9 +47,15 @@ def reserva_dedup_upper(values) -> list[str]:
 def order_return_check(request):
 
     if request.method != 'POST':
-        initial = {
-            'order': (request.session.get('order') or '').strip()
-        }
+
+        pedido = (request.GET.get('order')
+                  or request.session.get('order') or '').strip()
+
+        if pedido:
+            request.session['order'] = pedido
+            request.session.modified = True
+
+        initial = {'order': pedido}
         if _consume_carry_next(request):
             initial['serial'] = ''
 
@@ -114,6 +123,36 @@ def order_return_check(request):
                 return redirect(request.path)
             serials = [unico]
             reserva_save_serials(request, serials)
+
+        pedido = (request.session.get('order') or '').strip()
+        if not pedido:
+            messages.error(request, "Pedido não informado.")
+            return redirect(request.path)
+
+        url = f"{API_URL}/api/v2/trackings/send"
+        payload = {
+            "order_number": pedido,
+            "volume_number": 1,
+            "order_type": "RETURN",
+            "tracking_code": "210",
+            "bar_codes": serials,
+            "to_location_id": 11
+        }
+
+        client = RequestClient(
+            url=url,
+            method="POST",
+            headers={"Accept": JSON_CT},
+            request_data=payload
+        )
+        print(payload)
+        print(serials)
+        result = client.send_api_request()
+
+        if isinstance(result, dict) and result.get('detail'):
+            messages.error(request, f"{result['detail']}")
+        else:
+            messages.success(request, "Conferência enviada com sucesso.")
 
         _mark_carry_next(request)
         return redirect(request.path)
