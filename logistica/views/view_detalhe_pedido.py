@@ -50,15 +50,6 @@ def order_detail(request, order: str):
 
     botao_texto = "RECEBER DESINSTALAÇÃO" if tipo == "RETURN" else "RECEBER REVERSA"
 
-    # if tipo == "RETURN":
-    #     acao_url = redirect('logistica:button_desn', kwargs={'order': order})
-    # elif tipo == "NORMAL":
-    #     acao_url = reverse('logistica:pcp', kwargs={'code': '201'})
-    # elif tipo == "REVERSE":
-    #     acao_url = reverse('logistica:consulta_result_ec')
-    # else:
-    #     acao_url = request.path
-
     if request.method == "POST":
         if tipo == "NORMAL":
             request.session["pedido"] = str(order)
