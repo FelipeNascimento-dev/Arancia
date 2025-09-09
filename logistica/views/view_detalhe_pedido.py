@@ -74,12 +74,12 @@ def order_detail(request, order: str):
     adicionais_campos = [bf(n) for n in form.GRUPO_3 if n in form.fields]
 
     return render(request, "logistica/detalhe_pedidos.html", {
-        "order": order,
+        'order': order,
+        'request_success': request_success,
         "form": form,
         "produto_campos": produto_campos,
         "adicionais_campos": adicionais_campos,
         "botao_texto": botao_texto,
-        'request_success': request_success,
         "site_title": "Detalhe do Pedido",
         "nome_formulario": form.form_title
     })
