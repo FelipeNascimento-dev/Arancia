@@ -155,8 +155,6 @@ def order_return_check(request):
             headers={"Accept": JSON_CT},
             request_data=payload
         )
-        print(payload)
-        print(serials)
         result = client.send_api_request()
 
         if isinstance(result, dict) and result.get('detail'):
