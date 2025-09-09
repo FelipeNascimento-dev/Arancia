@@ -6,7 +6,6 @@ JSON_CT = "application/json"
 
 
 def button_desn(request, order: str):
-    request_success = False
     url = f"{API_URL}/api/v2/trackings/send"
     client = RequestClient(
         url=url,
@@ -25,6 +24,7 @@ def button_desn(request, order: str):
         request.session['request_success'] = True
         request.session.modified = True
     else:
+        request.session['request_success'] = False
         messages.error(request, f"{result['detail']}")
 
     return redirect('logistica:detalhe_pedido', order=order)

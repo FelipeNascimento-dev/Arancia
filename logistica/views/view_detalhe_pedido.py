@@ -30,6 +30,7 @@ def order_detail(request, order: str):
     except Exception as e:
         messages.error(request, f"Erro ao consultar pedido: {e}")
         return redirect('logistica:consultar_pedido')
+
     if 'detail' in result and isinstance(result['detail'], str):
         messages.error(request, f"{result['detail']}")
         return redirect('logistica:consultar_pedido')
@@ -78,7 +79,7 @@ def order_detail(request, order: str):
         "produto_campos": produto_campos,
         "adicionais_campos": adicionais_campos,
         "botao_texto": botao_texto,
-        # "acao_url": acao_url,
+        'request_success': request_success,
         "site_title": "Detalhe do Pedido",
         "nome_formulario": form.form_title
     })
