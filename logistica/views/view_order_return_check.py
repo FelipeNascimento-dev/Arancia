@@ -1,5 +1,6 @@
 from ..forms import OrderReturnCheckForm
 from utils.request import RequestClient
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from setup.local_settings import API_URL
 from django.contrib import messages
@@ -45,9 +46,8 @@ def reserva_dedup_upper(values) -> list[str]:
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 def order_return_check(request):
-
+    user: User = request.user
     if request.method != 'POST':
-
         pedido = (request.GET.get('order')
                   or request.session.get('order') or '').strip()
 
@@ -128,6 +128,16 @@ def order_return_check(request):
         if not pedido:
             messages.error(request, "Pedido não informado.")
             return redirect(request.path)
+        try:
+            location_id = (user.designacao.informacao_adicional.id
+                           if user.designacao and user.designacao.informacao_adicional
+                           else None)
+        except Exception as e:
+            location_id = None
+            print(f"Erro ao obter location_id do user {user}: {e}")
+            messages.error(
+                request, f"Erro ao obter location_id do user {user}: {e}")
+            return redirect(request.path)
 
         url = f"{API_URL}/api/v2/trackings/send"
         payload = {
@@ -136,7 +146,7 @@ def order_return_check(request):
             "order_type": "RETURN",
             "tracking_code": "210",
             "bar_codes": serials,
-            "to_location_id": 11
+            "to_location_id": location_id
         }
 
         client = RequestClient(
