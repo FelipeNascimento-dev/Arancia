@@ -190,6 +190,10 @@
         justify-content: center;
     }
 
+    .modal.open {
+        display: flex;
+    }
+
     .modal-content {
         background: #fff;
         padding: 20px;
@@ -208,22 +212,39 @@
         margin-top: 20px;
     }
 
-    .btn-sim {
-        background: #ff833c;
-        color: white;
-        padding: 8px 16px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
+    .modal-redirect {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
     }
 
-    .btn-cancelar {
-        background: #ff833c;
-        color: white;
-        padding: 8px 16px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
+    .modal-redirect.open {
+        display: flex;
+    }
+
+    .modal-content-redirect {
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        max-width: 450px;
+        width: 90%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .modal-actions-redirect {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 20px;
     }
 
     @keyframes fadeIn {
@@ -287,18 +308,20 @@
                     </div>
                 </section>
 
-                {% if request_success == True %}
-                <div id="modalConfirm" class="modal">
-                    <div class="modal-content">
-                        <h3>Confirmação</h3>
+                {% if request_success %}
+                <div id="modalRedirect" class="modal-redirect">
+                    <div class="modal-content-redirect">
+                        <h3>Desinstalação Recebida</h3>
                         <br>
-                        <p>Tem certeza que deseja inserir no estoque?</p>
-                        <div class="modal-actions">
-                            <button id="confirmarSim" class="submit-button-right"
+                        <p>Qual ação deseja realizar a seguir?</p>
+                        <div class="modal-actions-redirect">
+                            <button id="option1" class="submit-button-right"
                                 data-url="{% url 'logistica:consultar_pedido' %}">
-                                Sim
+                                Receber novo pedido
                             </button>
-                            <button id="fecharModal" class="submit-button-right">Cancelar</button>
+                            <button id="option2" class="submit-button-right"
+                                data-url="{% url 'logistica:order_return_check' %}">
+                                Conferencia de pedido</button>
                         </div>
                     </div>
                 </div>
@@ -310,53 +333,113 @@
 
 <script>
     (function () {
-        const root = document.getElementById('agenda-tabs');
-        const tabs = root.querySelectorAll('[role="tab"]');
-        function activateTab(tab) {
-            tabs.forEach(t => {
-                const selected = (t === tab);
-                t.setAttribute('aria-selected', selected);
-                t.tabIndex = selected ? 0 : -1;
-                const panel = document.getElementById(t.getAttribute('aria-controls'));
-                panel.classList.toggle('active', selected);
-                panel.hidden = !selected;
-            });
-            tab.focus();
-        }
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => activateTab(tab));
-            tab.addEventListener('keydown', e => {
-                const list = Array.from(tabs);
-                const i = list.indexOf(tab);
-                if (e.key === 'ArrowRight') { e.preventDefault(); activateTab(list[(i + 1) % list.length]); }
-                if (e.key === 'ArrowLeft') { e.preventDefault(); activateTab(list[(i - 1 + list.length) % list.length]); }
-            });
-        });
-    })();
+        const modal = document.getElementById('modalRedirect');
+        if (!modal) return;
 
+        const btn1 = document.getElementById('option1');
+        const btn2 = document.getElementById('option2');
+
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-hidden', 'true');
+        modal.setAttribute('tabindex', '-1');
+
+        function openModal() {
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            (btn1 || btn2 || modal).focus();
+        }
+
+        function _closeInterno() {
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }
+
+        openModal();
+
+        modal.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        btn1?.addEventListener('click', () => {
+            const url = btn1.dataset.url;
+            if (url) {
+                _closeInterno();
+                window.location.href = url;
+            }
+        });
+
+        btn2?.addEventListener('click', () => {
+            const url = btn2.dataset.url;
+            if (url) {
+                _closeInterno();
+                window.location.href = url;
+            }
+        });
+
+        function getFocusable() {
+            return Array.from(
+                modal.querySelectorAll(
+                    'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
+                )
+            ).filter(el => !el.disabled && el.offsetParent !== null);
+        }
+
+        modal.addEventListener('keydown', (e) => {
+            if (modal.getAttribute('aria-hidden') === 'true') return;
+
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                return;
+            }
+
+            if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.altKey) {
+                const ae = document.activeElement;
+                if (ae && ae.tagName === 'BUTTON') {
+                    e.preventDefault();
+                    ae.click();
+                }
+                return;
+            }
+
+            if (e.key === 'Tab') {
+                const nodes = getFocusable();
+                if (!nodes.length) return;
+                const first = nodes[0];
+                const last = nodes[nodes.length - 1];
+
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
+        });
+
+        window._modalAPI = { modal };
+    })();
+</script>
+
+<script>
     (function () {
         function pad(n) { return String(n).padStart(2, '0'); }
 
         function parseIsoSmart(isoRaw) {
             if (!isoRaw) return null;
             let iso = String(isoRaw).trim();
-
             iso = iso.replace(/(\.\d{3})\d+$/, '$1');
-
             if (/[Zz]|[+\-]\d{2}:\d{2}$/.test(iso)) {
                 const d = new Date(iso);
                 return isNaN(d) ? null : d;
             }
-
-            const m = iso.match(
-                /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/
-            );
+            const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/);
             if (!m) return null;
             const [_, Y, M, D, h, mnt, s] = m;
-            return new Date(
-                Number(Y), Number(M) - 1, Number(D),
-                Number(h), Number(mnt), s ? Number(s) : 0, 0
-            );
+            return new Date(Number(Y), Number(M) - 1, Number(D), Number(h), Number(mnt), s ? Number(s) : 0, 0);
         }
 
         function formatBR(date) {
@@ -383,34 +466,24 @@
 
         const createdOut = document.getElementById('createdAtHeader');
         const updatedOut = document.getElementById('updatedAtHeader');
-        if (createdOut && createdInput) {
-            createdOut.textContent = createdInput.value;
-        }
-        if (updatedOut && updatedInput) {
-            updatedOut.textContent = updatedInput.value;
-        }
-    })();
+        if (createdOut && createdInput) createdOut.textContent = createdInput.value;
+        if (updatedOut && updatedInput) updatedOut.textContent = updatedInput.value;
 
-    document.addEventListener('keydown', function (e) {
-        const isOpen = modal.classList.contains('open') && modal.getAttribute('aria-hidden') === 'false';
-        if (!isOpen) return;
+        document.addEventListener('keydown', function (e) {
+            const api = window._modalAPI;
+            if (!api) return;
+            const { modal } = api;
 
-        if (e.key === 'Escape') {
-            e.preventDefault();
-            closeModal();
-            return;
-        }
+            const isOpen = modal.classList.contains('open') && modal.getAttribute('aria-hidden') === 'false';
+            if (!isOpen) return;
 
-        if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.altKey) {
-            const ae = document.activeElement;
-            if (ae && (ae.classList.contains('cc-no') || ae.getAttribute('data-close') === '1')) {
-                ae.click();
+            if (e.key === 'Escape') {
+                e.preventDefault();
                 return;
             }
-            e.preventDefault();
-            yesBtn.click();
-        }
-    });
+        });
+    })();
 </script>
+
 
 {% endblock %}
