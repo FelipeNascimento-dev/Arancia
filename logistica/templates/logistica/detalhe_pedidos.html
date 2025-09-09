@@ -55,7 +55,8 @@
     .form-3col input {
         border: none !important;
         border-bottom: 1px solid #e5e7eb !important;
-        padding-bottom: 4px
+        padding-bottom: 4px;
+        text-indent: .25rem;
     }
 
     .card-display {
@@ -174,7 +175,7 @@
         display: none !important;
     }
 
-    .back-detail{
+    .back-detail {
         position: absolute;
         top: 75px;
         left: 123px;
@@ -190,10 +191,10 @@
         border: 1px solid var(--form-titulo);
         padding: 4px 8px;
         border-radius: 8px;
-        
+
     }
 
-    .back-link{
+    .back-link {
         text-decoration: none;
         color: var(--form-titulo);
         font-size: 12px;
@@ -451,6 +452,31 @@
         });
 
         window._modalAPI = { modal };
+    })();
+
+    (function () {
+        const root = document.getElementById('agenda-tabs');
+        const tabs = root.querySelectorAll('[role="tab"]');
+        function activateTab(tab) {
+            tabs.forEach(t => {
+                const selected = (t === tab);
+                t.setAttribute('aria-selected', selected);
+                t.tabIndex = selected ? 0 : -1;
+                const panel = document.getElementById(t.getAttribute('aria-controls'));
+                panel.classList.toggle('active', selected);
+                panel.hidden = !selected;
+            });
+            tab.focus();
+        }
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => activateTab(tab));
+            tab.addEventListener('keydown', e => {
+                const list = Array.from(tabs);
+                const i = list.indexOf(tab);
+                if (e.key === 'ArrowRight') { e.preventDefault(); activateTab(list[(i + 1) % list.length]); }
+                if (e.key === 'ArrowLeft') { e.preventDefault(); activateTab(list[(i - 1 + list.length) % list.length]); }
+            });
+        });
     })();
 </script>
 
