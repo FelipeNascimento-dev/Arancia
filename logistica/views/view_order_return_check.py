@@ -157,14 +157,16 @@ def order_return_check(request):
         )
         result = client.send_api_request()
 
-        if isinstance(result, dict) and result.get('detail'):
-            messages.error(request, f"{result['detail']}")
-        else:
-            messages.success(request, "Conferência enviada com sucesso.")
-
+    if isinstance(result, dict) and result.get('detail'):
+        messages.error(request, f"{result['detail']}")
         _mark_carry_next(request)
         return redirect(request.path)
+    else:
+        messages.success(request, "Conferência enviada com sucesso.")
 
-    messages.warning(
-        request, f"Corrija os erros do formulário: {form.errors.as_text()}")
-    return redirect(request.path)
+        reserva_save_serials(request, [])
+        request.session.pop('order', None)
+        request.session.pop(CARRY_PEDIDO_KEY, None)
+        request.session.modified = True
+
+        return redirect('logistica:order_return_check')
