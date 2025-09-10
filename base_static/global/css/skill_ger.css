@@ -1,16 +1,58 @@
 .user-list-container {
-    max-width: 1300px;
-    min-width: 1300px;
+    width: 1300px;
     margin-left: 65px;
     margin-top: 65px;
     padding: 20px;
     background: #fff;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.user-list-container h2 {
-    text-align: center;
+.user-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.user-table-title {
+    margin: 0;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-user-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-user-search input[type="text"] {
+    padding: 8px 12px 8px 36px;
+    border: 1.5px solid var(--borda-formularios);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background-color: #ffffff;
+    color: var(--form-titulo);
+    transition: all 0.2s ease-in-out;
+    width: 400px;
+}
+
+.form-user-search input[type="text"]::placeholder {
+    color: var(--form-label-color);
+}
+
+.search-icon-inside {
+    position: absolute;
+    left: 10px;
+    font-size: 14px;
+    color: #777;
+    pointer-events: none;
+}
+
+.user-table-title {
+    text-align: left;
     margin-bottom: 20px;
     font-weight: 600;
     color: #333;
@@ -26,11 +68,12 @@
 }
 
 .user-table thead {
-    background: #dbdbdb;
+    background: #0077b6;
     color: #fff;
 }
 
-.user-table th, .user-table td {
+.user-table th,
+.user-table td {
     padding: 12px 16px;
     border-bottom: 1px solid #eaeaea;
     text-align: center;
