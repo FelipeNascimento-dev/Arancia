@@ -7,7 +7,6 @@
         <form method="get" action="" class="form-user-search">
             <i class="fa-solid fa-magnifying-glass search-icon-inside"></i>
             <input type="text" name="user_q" id="user_q" placeholder="Pesquisar..." value="{{ user_q }}">
-            <button type="submit" class="btn btn-primary">Filtrar</button>
         </form>
     </div>
 
@@ -49,7 +48,7 @@
                     </td>
                     <td>
                         <a href="#" class="action-btn edit-btn" title="Editar Usuário"
-                            onclick="openEditUserModal('{{ user.id }}')">
+                            onclick="openEditUserModal('{{ user.id }}'); return false;">
                             <i class="fa-solid fa-pencil"></i>
                         </a>
                     </td>
