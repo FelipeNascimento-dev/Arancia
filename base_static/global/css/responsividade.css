@@ -1,4 +1,8 @@
 @media screen and (max-width: 1280px) {
+    .user-list-container {
+        max-width: 1150px;
+    }
+    
     .etapas-container {
         width: 100% !important;
         background-color: #ffffff;
@@ -140,6 +144,10 @@
 }
 
 @media screen and (max-width: 1336px) {
+    .user-list-container {
+        max-width: 1150px;
+    }
+
     .etapas-container {
         width: 100% !important;
         background-color: #ffffff;

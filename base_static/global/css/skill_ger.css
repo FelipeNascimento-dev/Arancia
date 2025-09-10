@@ -1,6 +1,5 @@
 .user-list-container {
-    max-width: 1300px;
-    min-width: 1300px;
+    width: 1300px;
     margin-left: 65px;
     margin-top: 65px;
     padding: 20px;
@@ -85,3 +84,5 @@
     color: #999;
     pointer-events: none;
 }
+
+
