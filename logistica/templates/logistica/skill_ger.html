@@ -2,7 +2,14 @@
 
 {% block content %}
 <div class="user-list-container">
-    <h2><i class="fa-solid fa-address-book"></i> Usuários do Sistema</h2>
+    <div class="user-table-header">
+        <h2 class="user-table-title"><i class="fa-solid fa-address-book"></i> Usuários do Sistema</h2>
+        <form method="get" action="" class="form-user-search">
+            <i class="fa-solid fa-magnifying-glass search-icon-inside"></i>
+            <input type="text" name="user_q" id="user_q" placeholder="Pesquisar..." value="{{ user_q }}">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </form>
+    </div>
 
     <div class="table-wrapper">
         <table class="user-table">
@@ -26,7 +33,7 @@
                     <td>{{ user.perfil.cpf|default:"-" }}</td>
                     <td>
                         {% for group in user.groups.all %}
-                        {% if "CTB" in group.name   or "arancia" in group.name %}
+                        {% if "CTB" in group.name or "arancia" in group.name %}
                         <span class="tag">{{ group.name }}</span>
                         {% endif %}
                         {% empty %}
@@ -41,7 +48,8 @@
                         {% endif %}
                     </td>
                     <td>
-                        <a href="#" class="action-btn edit-btn" title="Editar Usuário" onclick="openEditUserModal('{{ user.id }}')">
+                        <a href="#" class="action-btn edit-btn" title="Editar Usuário"
+                            onclick="openEditUserModal('{{ user.id }}')">
                             <i class="fa-solid fa-pencil"></i>
                         </a>
                     </td>
@@ -58,10 +66,10 @@
     {% if usuarios.has_other_pages %}
     <div class="pagination-wrapper">
         {% if usuarios.has_previous %}
-        <a href="?page=1" class="page-btn">&laquo; Primeiro</a>
+        <a href="?page=1" class="page-btn"><i class="fa-solid fa-backward"></i> Primeiro</a>
         <a href="?page={{ usuarios.previous_page_number }}" class="page-btn">Anterior</a>
         {% else %}
-        <span class="page-btn disabled">&laquo; Primeiro</span>
+        <span class="page-btn disabled"><i class="fa-solid fa-backward"></i> Primeiro</span>
         <span class="page-btn disabled">Anterior</span>
         {% endif %}
 
@@ -75,10 +83,11 @@
 
             {% if usuarios.has_next %}
             <a href="?page={{ usuarios.next_page_number }}" class="page-btn">Próximo</a>
-            <a href="?page={{ usuarios.paginator.num_pages }}" class="page-btn">Último &raquo;</a>
+            <a href="?page={{ usuarios.paginator.num_pages }}" class="page-btn">Último <i
+                    class="fa-solid fa-forward"></i></a>
             {% else %}
             <span class="page-btn disabled">Próximo</span>
-            <span class="page-btn disabled">Último &raquo;</span>
+            <span class="page-btn disabled">Último <i class="fa-solid fa-forward"></i></span>
             {% endif %}
     </div>
     {% endif %}
