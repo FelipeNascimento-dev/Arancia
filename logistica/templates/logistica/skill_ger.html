@@ -1,4 +1,80 @@
 {% extends 'global/base.html' %}
-{% block content %}
 
-{% endblock content %}
+{% block content %}
+<div class="user-list-container">
+    <h2><i class="fa-solid fa-address-book"></i> Usuários do Sistema</h2>
+
+    <div class="table-wrapper">
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>Usuário</th>
+                    <th>Nome Completo</th>
+                    <th>Email</th>
+                    <th>CPF</th>
+                    <th>Grupos</th>
+                    <th>Informação Adicional</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in usuarios %}
+                <tr>
+                    <td><strong>{{ user.username }}</strong></td>
+                    <td>{{ user.get_full_name|default:"-" }}</td>
+                    <td>{{ user.email|default:"-" }}</td>
+                    <td>{{ user.perfil.cpf|default:"-" }}</td>
+                    <td>
+                        {% for group in user.groups.all %}
+                        {% if "CTB" in group.name   or "arancia" in group.name %}
+                        <span class="tag">{{ group.name }}</span>
+                        {% endif %}
+                        {% empty %}
+                        <span class="muted">-</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% if user.designacao and user.designacao.informacao_adicional %}
+                        {{ user.designacao.informacao_adicional.nome }}
+                        {% else %}
+                        <span class="muted">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="muted text-center">Nenhum usuário encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if usuarios.has_other_pages %}
+    <div class="pagination-wrapper">
+        {% if usuarios.has_previous %}
+        <a href="?page=1" class="page-btn">&laquo; Primeiro</a>
+        <a href="?page={{ usuarios.previous_page_number }}" class="page-btn">Anterior</a>
+        {% else %}
+        <span class="page-btn disabled">&laquo; Primeiro</span>
+        <span class="page-btn disabled">Anterior</span>
+        {% endif %}
+
+        {% for num in usuarios.paginator.page_range %}
+        {% if usuarios.number == num %}
+        <span class="page-btn active">{{ num }}</span>
+        {% elif num > usuarios.number|add:'-3' and num < usuarios.number|add:'3' %} <a href="?page={{ num }}"
+            class="page-btn">{{ num }}</a>
+            {% endif %}
+            {% endfor %}
+
+            {% if usuarios.has_next %}
+            <a href="?page={{ usuarios.next_page_number }}" class="page-btn">Próximo</a>
+            <a href="?page={{ usuarios.paginator.num_pages }}" class="page-btn">Último &raquo;</a>
+            {% else %}
+            <span class="page-btn disabled">Próximo</span>
+            <span class="page-btn disabled">Último &raquo;</span>
+            {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
