@@ -86,7 +86,7 @@
         <div class="register-field">
           <i class="fa-solid fa-id-card"></i>
           <input type="text" name="{{ form.cpf.name }}" id="{{ form.cpf.id_for_label }}"
-            value="{{ form.cpf.value|default_if_none:'' }}" placeholder=" " required>
+            value="{{ form.cpf.value|default_if_none:'' }}" placeholder=" ">
             <label for="{{ form.cpf.id_for_label }}">CPF</label>
           {% if form.cpf.errors %}
           <div class="register-error">{{ form.cpf.errors }}</div>
