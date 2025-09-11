@@ -15,6 +15,11 @@
 @import url(trackingIP.css);
 @import url(configuracao_user.css);
 @import url(responsividade.css);
+@import url(campo.css);
+
+
+
+
 
 :root {
   --background-formularios: #fff;
@@ -60,7 +65,7 @@ body {
   min-height: 100%;
   width: 100%;
   z-index: -1;
-  background: #f5f5f5;
+  background: #ffffff;
   clip-path: polygon(0 0, 60% 0, 100% 100%, 0% 200%);
 }
 
@@ -143,3 +148,8 @@ body {
     transform: translateY(0);
   }
 }
+
+
+
+
+

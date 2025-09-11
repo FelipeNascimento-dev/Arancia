@@ -50,12 +50,16 @@ DATABASES = {
 
 #CONTROLE DE CAMPO
 from datetime import date
-
-API_BASE = "http://192.168.0.214/RetencaoAPI/api/v3"
-API_TECNICOS = f"{API_BASE}/tecnicos/buscar_tec"
-API_RESUMO = f"{API_BASE}/Filtro_status/resumo-status-detalhado/CLARO?date={date.today()}"
+API_BASE = "http://127.0.0.1:8000/RetencaoAPI"
+COD_BASE = "CTBSEQ"
+COD_EMPRESA = "CLARO"
 TOKEN = "123"
 
+API_TECNICOS = f"{API_BASE}/api/v3/tecnicos/buscar_tec"
+API_RESUMO = f"{API_BASE}/api/v3/Filtro_status/resumo-status-detalhado/{COD_EMPRESA}?date={date.today()}"
+API_HORARIO = f"{API_BASE}/api/v3/dashboard/ocorrencias-por-horario/{COD_EMPRESA}?date={date.today()}"
+
+# Mapas
 status_labels = {
     "concluido": "Concluído",
     "no_tempo": "No Tempo",
@@ -63,11 +67,11 @@ status_labels = {
     "atrasado": "Atrasado",
     "sem_horario_definido": "Sem Horário",
 }
-
-status_style = {
-    "concluido": {"dot": "bg-blue-600", "pill": "bg-blue-600/15 text-blue-800 dark:text-blue-200"},
-    "no_tempo": {"dot": "bg-green-600", "pill": "bg-green-600/15 text-green-800 dark:text-green-200"},
-    "no_limite": {"dot": "bg-yellow-500", "pill": "bg-yellow-800/20 text-yellow-800 dark:text-yellow-200"},
-    "atrasado": {"dot": "bg-red-600", "pill": "bg-red-600/15 text-red-800 dark:text-red-200"},
-    "sem_horario_definido": {"dot": "bg-gray-500", "pill": "bg-gray-500/20 text-gray-800 dark:text-gray-200"},
+status_colors = {
+    "concluido": "bg-blue-600",
+    "no_tempo": "bg-green-600",
+    "no_limite": "bg-yellow-500",
+    "atrasado": "bg-red-600",
+    "sem_horario_definido": "bg-gray-500"
 }
+

@@ -127,13 +127,20 @@
                 <span class="texto-item">&nbsp;Transportes</span>
             </button>
             <div class="dropdown-content">
-
+                <a href="{% url 'transportes:gerar_etiquetas' %}">Gerar Etiquetas</a>
                 <h5 class="submenu-toggle" data-target="controle-campo">Controle de Campo</h5>
                 <div class="sub-submenu" id="controle-campo">
-                    <a href="{% url 'transportes:gerar_etiquetas' %}">Gerar Etiquetas</a>
+                   
                     <a href="{% url 'transportes:extrair_enderecos' %}">Extrair Endereços</a>
-                    <a href="{% url 'transportes:painel_tecnicos' %}">Painel de Técnicos</a>
-                    <a href="{% url 'transportes:painel' %}">Painel de Gerenciamento</a>
+                
+                 <h5 class="submenu-toggle" data-target="controle-campo1">Painel</h5>
+                <div class="sub-submenu" id="controle-campo1">
+                    
+                    <a href="{% url 'transportes:tecnicos' %}">Técnicos</a>
+                    <a href="{% url 'transportes:controle' %}">Controle</a>
+
+
+                </div>
 
                 </div>
             </div>

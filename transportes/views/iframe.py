@@ -3,13 +3,13 @@ from django.shortcuts import render
 
 # Views simples que apenas rendem um template com iframe
 def gerar_etiquetas_view(request):
-    return render(request, "transportes/controle_campo/iframe.html", {
+    return render(request, "transportes/controle_campo/frame2.html", {
         "titulo": "Gerar Etiquetas",
-        "url": "https://gerador-qr-code-1y1k.onrender.com"
+        "url": "https://86203ab90fdc.ngrok-free.app"
     })
 
 def extrair_enderecos_view(request):
-    return render(request, "transportes/controle_campo/iframe.html", {
+    return render(request, "transportes/controle_campo/frame2.html", {
         "titulo": "Extrair Endereços",
         "url": "http://192.168.0.221:8002"
     })
@@ -19,3 +19,4 @@ def painel_tecnicos_view(request):
         "titulo": "Painel de Técnicos",
         "url": "http://192.168.0.221:8000"
     })
+    

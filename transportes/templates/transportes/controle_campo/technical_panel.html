@@ -1,54 +1,512 @@
-{% extends 'global/base.html' %} {% load static %} {% block content %}
+{% extends 'global/base.html' %} {% block content %}
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+  integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+  crossorigin="anonymous"
+/>
+{% comment %} <meta http-equiv="refresh" content="30"> {% endcomment %}
 
-<style>
-  .forma {
-    visibility: none;
-  }
-</style>
-<!-- Container principal com espaçamento -->
-<div class="painel-container">
-  <!-- Resumo Geral -->
-  <h3 class="text-xl font-semibold mb-3">Resumo Geral</h3>
-  <div class="resumo-geral flex flex-wrap gap-3 justify-between">
-    <div class="status-item flex flex-col items-center">
-      <div class="status-label">Total</div>
-      <div class="status-value bg-gray-200 text-black">
-        {{ contadores_geral_total }}
-      </div>
-    </div>
-    {% for s in status_data %}
-    <div class="status-item flex flex-col items-center">
-      <div class="status-label">{{ s.label }}</div>
-      <div class="status-value {{ s.style }}">{{ s.value }}</div>
-    </div>
-    {% endfor %}
-  </div>
-  <br />
-  <!-- Resumo por Técnico -->
-  <div class="mt-10">
-    <h3 class="text-xl font-semibold mb-3">Resumo por Técnico</h3>
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {% for t in tecnicos %}
-      <div class="card-tecnico">
-        <div class="header">
-          <div class="flex items-center gap-3">
-            <div class="avatar">{{ t.iniciais }}</div>
-            <div>
-              <p class="nome">{{ t.nome }}</p>
-              <p class="uid">UID {{ t.uid }}</p>
-            </div>
-          </div>
-          <span class="total">Total: {{ t.total }}</span>
-        </div>
 
-        <div class="status-grid">
-          {% for s in t.status_counts %}
-          <div class="status-bar {{ s.style }}">{{ s.value }}</div>
-          {% endfor %}
+<div class="setcontainer">
+ 
+  
+<div class="container filter-group"  style="margin-top: 5px">
+
+  <div class="row">
+    <div class="col-md informacoes_basicas">
+      <div class="card-box border-black filter-card" data-filter="total">
+        <i class="fa-regular fa-clipboard icon black"></i>
+        <div class="card-text">
+          <span>Total</span>
+          <strong>{{ geral.total }}</strong>
         </div>
       </div>
-      {% endfor %}
+    </div>
+
+    <div class="col-md informacoes_basicas">
+      <div class="card-box border-blue1 filter-card" data-filter="concluido">
+        <i class="fa-regular fa-circle-check icon blue1"></i>
+        <div class="card-text">
+          <span>Concluído</span>
+          <strong>{{ status.concluido }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md informacoes_basicas">
+      <div class="card-box border-green1 filter-card" data-filter="no_tempo">
+        <i class="fa-regular fa-thumbs-up icon green1"></i>
+        <div class="card-text">
+          <span>No Tempo</span>
+          <strong>{{ status.no_tempo }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md informacoes_basicas">
+      <div class="card-box border-orange filter-card" data-filter="no_limite">
+        <i class="fa-regular fa-hourglass-half icon orange"></i>
+        <div class="card-text">
+          <span>No Limite</span>
+          <strong>{{ status.no_limite }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md informacoes_basicas">
+      <div class="card-box border-redore filter-card" data-filter="atrasado">
+        <i class="fa-solid fa-hourglass-end icon redore"></i>
+        <div class="card-text">
+          <span>Atrasado</span>
+          <strong>{{ status.atrasado }}</strong>
+        </div>
+      </div>
     </div>
   </div>
 </div>
-{% endblock content %}
+
+
+<div class="container filter-group" style="margin-top: 65px">
+
+  <div class="row">
+    <div class="col-md informacoes_basicas">
+      <div class="card-box border-blue filter-card" data-filter="flag_azul">
+        <i class="fa-solid fa-bookmark icon blue"></i>
+        <div class="card-text">
+          <strong>Casos Azuis</strong>
+          <strong>{{ status.flag_azul }}</strong>
+        </div>
+      </div>
+    </div>
+
+ 
+    {% comment %} <div class="col-md informacoes_basicas">
+      <div class="card-box border-yellow filter-card" data-filter="flag_amarelo">
+        <i class="fa-solid fa-bookmark icon yellow"></i>
+        <div class="card-text">
+          <strong>Casos Amarelos</strong>
+          <strong>{{ status.flag_amarelo }}</strong>
+        </div>
+      </div>
+    </div>
+     {% endcomment %}
+<div class="col-md informacoes_basicas">
+  <div class="card-box border-red filter-card" data-filter="flag_vermelha">
+    <i class="fa-solid fa-bookmark icon red"></i>
+    <div class="card-text">
+      <strong>Casos Vermelhos</strong>
+      <strong>{{ status.flag_vermelho}}</strong>
+    </div>
+  </div>
+</div>
+
+
+    <div class="col-md informacoes_basicas">
+      <div class="card-box border-green filter-card" data-filter="critico">
+        <i class="fa-solid fa-bookmark icon green"></i>
+        <div class="card-text">
+          <strong>Casos Críticos</strong>
+          <strong>{{ status.mensagem_critico }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="container" style="margin-top: 65px ;">
+  <div class="row">
+    <div class="col-md informacoes_basicas">
+      <div class="card-box border-black">
+        <i class="fa-regular fa-clock icon black"></i>
+        <div class="card-text">
+          <span>Média de Atraso</span>
+          <strong>{{ media_atraso }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md informacoes_basicas">
+      <!-- Card que abre o modal -->
+      <div
+        class="card-box border-redore1"
+        data-bs-toggle="modal"
+        data-bs-target="#modalOcioso"
+      >
+        <i class="fa-regular fa-user icon redore1"></i>
+        <div class="card-text">
+          Técnico Mais Ocioso {% if top %}
+          <strong>{{ top.nome }} <small>(UID {{ top.uid }})</small></strong>
+          <strong>{{ top.atraso_fmt }}</strong>
+          {% else %}
+          <strong>—</strong>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+</div>
+</div></div>
+    <div
+      class="modal fade"
+      id="modalOcioso"
+      tabindex="-1"
+      aria-labelledby="modalOciosoLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header text-white">
+            <h5 class="modal-title" id="modalOciosoLabel">
+              <strong>Técnico Mais Ocioso</strong> 
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Fechar"
+            ></button>
+          </div>
+          <div class="modal-body">
+            {% if top %}
+            
+
+            
+            <div class="tec-infos">
+              <p>Nome: <strong>{{ top.nome }}</strong></p>
+              <p>UID: <strong>{{ top.uid }}</strong></p>
+               <p>Total OS: <strong>{{ top.total }}</strong></p>
+              <p>Unidade: <strong>{{ top.area }}</strong></p>
+             
+              
+              <p >
+               OS Concluídas: <strong>{{ top.concluido }}</strong> 
+              </p>
+              <p >
+                OS No Tempo: <strong>{{ top.no_tempo }}</strong>
+              </p>
+              <p >
+                OS No Limite: <strong>{{ top.no_limite }}</strong>
+              </p>
+              <p >
+                OS Atrasadas: <strong>{{ top.atrasado }}</strong>
+              </p>
+              <p>Última Abertura: <strong>{{ top.lastopening }}</strong></p>
+               <p>Último Login: <strong>{{ top.lastlogin }}</strong></p>
+               <p >Atraso: <strong>{{ top.atraso_fmt }}</strong></p>
+              <p>
+                
+              Número:
+              {% if top.phone and top.phone != "-" %}
+                <strong><a href="https://wa.me/{{ top.phone }}" target="_blank" class="whatsapp-link">
+                  {{ top.phone }}
+                </a></strong>
+              {% else %}
+                —
+              {% endif %}
+
+                  
+                </a>
+              </p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary">
+                <i class="fa-solid fa-route"></i> Ver Rota
+              </button>
+            </div>
+
+            {% else %}
+            <p>Nenhum técnico disponível.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+
+
+<div class="modal fade" id="modalTecnico" tabindex="-1" aria-labelledby="modalTecnicoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      
+      <!-- Cabeçalho -->
+      <div class="modal-header text-white">
+        <h5 class="modal-title" id="modalTecnicoLabel"> <strong>Resumo do Técnico<strong></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      
+      <!-- Corpo -->
+      <div class="modal-body">
+      
+
+        <!-- Ficha -->
+        <div class="tec-ficha">
+           <div class="linha"><span class="titulo">Nome:</span> <span class="valor"id="tecNome"></span></div>
+           <div class="linha"><span class="titulo">UID:</span> <span class="valor" id="tecUid"></span></div>
+          <div class="linha"><span class="titulo">Unidade:</span> <span class="valor" id="tecArea"></span></div>
+          <div class="linha"><span class="titulo">Total OS:</span> <span class="valor" id="tecTotal"></span></div>
+          <div class="linha"><span class="titulo">OS Concluídas:</span> <span class="valor" id="tecConcluido"></span></div>
+          <div class="linha"><span class="titulo">OS No Tempo:</span> <span class="valor" id="tecNoTempo"></span></div>
+          <div class="linha"><span class="titulo">OS No Limite:</span> <span class="valor" id="tecNoLimite"></span></div>
+          <div class="linha"><span class="titulo">OS Atrasadas:</span> <span class="valor" id="tecAtrasado"></span></div>
+          <div class="linha"><span class="titulo">Último Login:</span> <span class="valor" id="tecLastlogin"></span></div>
+          <div class="linha"><span class="titulo">Última Abertura:</span> <span class="valor" id="tecLastopening"></span></div>
+          <div class="linha"><span class="titulo">Número:</span> <span class="valor"><a href="#" id="tecPhone" class="whatsapp-link" target="_blank"></a></span></div>
+        </div>
+      </div>
+
+      <!-- Rodapé -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary">
+          <i class="fa-solid fa-route"></i> Ver Rota
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+    <div class="setcontainer">
+
+   <div class="container" style="margin-top: 15px">
+  <div class="table-responsive">
+    <table class="styled-table dark">
+      <thead id="table-head"></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+
+
+  <div class="container" style="margin-top: 20px">
+  <div id="pagination" class="d-flex justify-content-center"></div>
+</div>
+</div>
+<script>
+  const tecnicos = {{ tecnicos|safe }};
+  const ordens = {{ ordens|safe }};
+  let currentPage = 1;
+  const pageSize = 20; //  quantidade de linhas por página
+
+  function paginate(data) {
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    return data.slice(start, end);
+  }
+
+  function renderTecnicos() {
+    const head = document.getElementById("table-head");
+    const body = document.getElementById("table-body");
+    head.innerHTML = `
+      <tr>
+        <th></i></th><th>Nome</th><th>UID</th><th>Unidade</th>
+        <th>Total OS</th><th>Concluído</th><th>No Tempo</th>
+        <th>No Limite</th><th>Atrasado</th>
+        <th>Último Login</th><th>Última OS</th><th>Tempo Ocioso</th>
+      </tr>`;
+    body.innerHTML = "";
+
+    const paged = paginate(tecnicos);
+    paged.forEach(t => {
+      const tr = document.createElement("tr");
+      if (t.atraso_min > 29) tr.classList.add("alert-row");
+      tr.innerHTML = `
+  <td>
+    <a href="#" class="abrir-modal" data-bs-toggle="modal" data-bs-target="#modalTecnico"
+       data-nome="${t.nome}" data-uid="${t.uid}" data-area="${t.area}" 
+       data-total="${t.total}" data-concluido="${t.concluido}"
+       data-no-tempo="${t.no_tempo}" data-no-limite="${t.no_limite}"
+       data-atrasado="${t.atrasado}" data-lastlogin="${t.lastlogin}"
+       data-lastopening="${t.lastopening}" data-phone="${t.phone}">
+       <i class="fa-regular fa-eye"></i>
+    </a>
+  </td>
+  <td>${t.nome}</td>
+  <td>${t.uid}</td>
+  <td>${t.area}</td>
+  <td>${t.total}</td>
+  <td>${t.concluido}</td>
+  <td>${t.no_tempo}</td>
+  <td>${t.no_limite}</td>
+  <td>${t.atrasado}</td>
+  <td>${t.lastlogin}</td>
+  <td>${t.lastopening}</td>
+  <td>${t.atraso_fmt}</td>
+`;
+
+      body.appendChild(tr);
+    });
+
+    renderPagination(tecnicos.length);
+  }
+
+  function renderOrdens(filtros) {
+    const head = document.getElementById("table-head");
+    const body = document.getElementById("table-body");
+    head.innerHTML = `
+      <tr>
+        <th>OS</th><th>Tecnico</th><th>UID</th><th>HF</th><th>Endereço</th>
+        <th>Bairro</th><th>Cidade</th><th>Status</th>
+        <th>Situação</th><th>Tipo</th><th>Mensagem</th>
+      </tr>`;
+    body.innerHTML = "";
+
+    let filtradas = ordens;
+    Object.values(filtros).forEach(f => {
+      if (f && f !== "total") {
+        filtradas = filtradas.filter(o => {
+          if (f === "critico") {
+            return o.mensagem && o.mensagem.trim() !== "";
+          }
+          if (f === "flag_azul") {
+            return o.flag && o.flag.toUpperCase() === "AZUL";
+          }
+          if (f === "flag_vermelha") {
+            return o.flag && o.flag.toUpperCase() === "VERMELHO";
+          }
+         
+          return (
+            o.tag === f ||
+            o.status_janela === f
+          );
+        });
+      }
+    });
+
+    const paged = paginate(filtradas);
+    paged.forEach(o => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${o.os}</td>
+         <td>${o.nome_tecnico}</td>
+        <td>${o.uid}</td>
+        <td>${o.hf || ""}</td>
+        <td>${o.endereco || ""}</td>
+        <td>${o.bairro || ""}</td>
+        <td>${o.cidade || ""}</td>
+        <td>${o.status_janela}</td>
+        <td>${o.tag}</td>
+        <td>${o.flag || ""}</td>
+        <td>${o.mensagem || ""}</td>`;
+
+      body.appendChild(tr);
+    });
+
+    renderPagination(filtradas.length, filtros);
+  }
+
+  function renderPagination(totalItems, filtros = null) {
+    const pagination = document.getElementById("pagination");
+    const totalPages = Math.ceil(totalItems / pageSize);
+    pagination.innerHTML = "";
+
+    if (totalPages <= 1) return;
+
+    const prevBtn = document.createElement("button");
+    prevBtn.innerText = "Anterior";
+    prevBtn.classList.add("btn", "btn-sm", "btn-secondary", "me-2");
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.onclick = () => {
+      currentPage--;
+      filtros ? renderOrdens(filtros) : renderTecnicos();
+    };
+
+    const nextBtn = document.createElement("button");
+    nextBtn.innerText = "Próxima";
+    nextBtn.classList.add("btn", "btn-sm", "btn-secondary", "ms-2");
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.onclick = () => {
+      currentPage++;
+      filtros ? renderOrdens(filtros) : renderTecnicos();
+    };
+
+    pagination.appendChild(prevBtn);
+    pagination.appendChild(document.createTextNode(` Página ${currentPage} de ${totalPages} `));
+    pagination.appendChild(nextBtn);
+  }
+
+  // inicia mostrando técnicos
+  renderTecnicos();
+
+  document.querySelectorAll(".filter-group").forEach(group => {
+    const cards = group.querySelectorAll(".filter-card");
+    cards.forEach(card => {
+      card.addEventListener("click", () => {
+        const jaAtivo = card.classList.contains("active");
+        cards.forEach(c => c.classList.remove("active"));
+        if (!jaAtivo) card.classList.add("active");
+
+        const ativos = {};
+        document.querySelectorAll(".filter-group").forEach((g, i) => {
+          const ativo = g.querySelector(".filter-card.active");
+          ativos[`grupo${i+1}`] = ativo ? ativo.dataset.filter : null;
+        });
+
+        currentPage = 1; //  sempre volta para página 1 ao mudar filtro
+
+        if (Object.values(ativos).every(v => !v)) {
+          renderTecnicos();
+        } else {
+          renderOrdens(ativos);
+        }
+      });
+    });
+  });
+
+
+  document.addEventListener("click", function (e) {
+  if (e.target.closest(".abrir-modal")) {
+    const btn = e.target.closest(".abrir-modal");
+
+    document.getElementById("tecNome").innerText = btn.dataset.nome;
+    document.getElementById("tecUid").innerText = `(${btn.dataset.uid})`;
+    document.getElementById("tecArea").innerText = btn.dataset.area;
+    document.getElementById("tecTotal").innerText = btn.dataset.total;
+    document.getElementById("tecConcluido").innerText = btn.dataset.concluido;
+    document.getElementById("tecNoTempo").innerText = btn.dataset.noTempo;
+    document.getElementById("tecNoLimite").innerText = btn.dataset.noLimite;
+    document.getElementById("tecAtrasado").innerText = btn.dataset.atrasado;
+    document.getElementById("tecLastlogin").innerText = btn.dataset.lastlogin;
+    document.getElementById("tecLastopening").innerText = btn.dataset.lastopening;
+
+    const phone = btn.dataset.phone;
+    const phoneLink = document.getElementById("tecPhone");
+    if (phone && phone !== "-") {
+      phoneLink.innerText = phone;
+      phoneLink.href = `https://wa.me/${phone}`;
+    } else {
+      phoneLink.innerText = "—";
+      phoneLink.removeAttribute("href");
+    }
+  }
+});
+
+</script>
+
+
+<!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+      crossorigin="anonymous"
+    ></script>
+    {% endblock %}
+  </div>
+</div>
