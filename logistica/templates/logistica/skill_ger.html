@@ -132,15 +132,16 @@
 
             <div class="user-form">
                 <h4>Vincular novo usuário:</h4>
-                <form method="post">
+                <form method="post" autocomplete="off">
                     {% csrf_token %}
                     <input type="hidden" name="add_user" value="1">
-                    <select name="user_id" required>
-                        <option value="">-- selecione --</option>
-                        {% for u in all_users %}
-                        <option value="{{ u.id }}">{{ u.username }} - {{ u.get_full_name }}</option>
-                        {% endfor %}
-                    </select>
+
+                    <div class="autocomplete">
+                        <input type="text" id="userSearch" placeholder="Digite para buscar usuário...">
+                        <input type="hidden" name="user_id" id="userId">
+                        <ul class="autocomplete-list" id="autocompleteList"></ul>
+                    </div>
+
                     <button type="submit" class="btn btn-primary">Vincular</button>
                 </form>
             </div>
@@ -149,6 +150,44 @@
     {% endif %}
 
 </div>
+
+<script>
+    const users = [
+    {% for u in all_users %}
+        { id: "{{ u.id }}", text: "{{ u.username }} - {{ u.get_full_name }}" },
+    {% endfor %}
+    ];
+
+    const input = document.getElementById("userSearch");
+    const hiddenInput = document.getElementById("userId");
+    const list = document.getElementById("autocompleteList");
+
+    input.addEventListener("input", function () {
+        const value = this.value.toLowerCase();
+        list.innerHTML = "";
+
+        if (value.length > 0) {
+            const filtered = users.filter(u => u.text.toLowerCase().includes(value));
+            filtered.slice(0, 8).forEach(u => {
+                const li = document.createElement("li");
+                li.textContent = u.text;
+                li.dataset.id = u.id;
+                li.addEventListener("click", () => {
+                    input.value = u.text;
+                    hiddenInput.value = u.id;
+                    list.innerHTML = "";
+                });
+                list.appendChild(li);
+            });
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest(".autocomplete")) {
+            list.innerHTML = "";
+        }
+    });
+</script>
 
 <script>
     const tabs = document.querySelectorAll(".tab-btn");
