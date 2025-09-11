@@ -21,4 +21,4 @@ from .view_consulta_entrada_pedido import order_consult
 from .view_detalhe_pedido import order_detail
 from .view_button_desn import button_desn
 from .view_order_return_check import order_return_check
-from .view_skill_ger import skill_ger
+from .view_user_ger import user_ger

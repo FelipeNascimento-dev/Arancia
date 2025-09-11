@@ -8,7 +8,7 @@ import json
 from django.core.serializers.json import DjangoJSONEncoder
 
 
-def skill_ger(request):
+def user_ger(request):
     user_q = request.GET.get("user_q", "")
 
     if request.method == "POST":
@@ -50,7 +50,7 @@ def skill_ger(request):
             user.designacao.save()
 
         messages.success(request, "Usuário atualizado com sucesso!")
-        return redirect("logistica:skill_ger")
+        return redirect("logistica:user_ger")
 
     usuarios_qs = (
         User.objects.filter(username__startswith="ARC")
@@ -91,12 +91,12 @@ def skill_ger(request):
 
     return render(
         request,
-        "logistica/skill_ger.html",
+        "logistica/user_ger.html",
         {
             "usuarios": usuarios,
             "user_q": user_q,
             "all_groups": all_groups,
-            "site_title": "Gerenciamento de Skills",
+            "site_title": "Gerenciamento de Usuários",
             "additional_infos": additional_infos,
             "usuarios_json": json.dumps(usuarios_data, cls=DjangoJSONEncoder),
         },

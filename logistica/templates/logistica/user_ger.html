@@ -104,7 +104,7 @@
     <div class="edit-modal-content">
         <span class="close-edit-modal" onclick="closeEditUserModal()">&times;</span>
         <h2>Editar Usuário</h2>
-        <form id="editUserForm" method="post" action="{% url 'logistica:skill_ger' %}">
+        <form id="editUserForm" method="post" action="{% url 'logistica:user_ger' %}">
             {% csrf_token %}
             <input type="hidden" name="user_id" id="edit_user_id">
             <!-- <div class="edit-form-group">
