@@ -6,7 +6,12 @@
 <div class="grid-container">
 
     <div class="box" id="box-group">
-        <h3>Grupos Existentes</h3>
+        <div class="box-header">
+            <h3>Grupos Existentes</h3>
+            <button type="button" class="btn btn-primary btn-sm" onclick="openCreateGroupModal()">
+                <i class="fa-solid fa-plus"></i> Novo Grupo
+            </button>
+        </div>
 
         <ul>
             {% for g in grupos %}
@@ -148,13 +153,12 @@
         </div>
     </div>
     {% endif %}
-
 </div>
 
 <script>
     const users = [
-    {% for u in all_users %}
-        { id: "{{ u.id }}", text: "{{ u.username }} - {{ u.get_full_name }}" },
+        {% for u in all_users %}
+    { id: "{{ u.id }}", text: "{{ u.username }} - {{ u.get_full_name }}" },
     {% endfor %}
     ];
 
