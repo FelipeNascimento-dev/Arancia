@@ -149,16 +149,18 @@
         </div>
 
         <!-- Gerenciamento -->
-        <!-- <div class="dropdown">
+        {% if perms.logistica.gestao_total %}
+        <div class="dropdown">
             <button type="button" class="dropbtn itens-sidebar">
                 <i class="fa-solid fa-users"></i>
                 <span class="texto-item">&nbsp; Gerenciamento</span>
             </button>
             <div class="dropdown-content">
-                <a href="#">Gestão de Setores/PAs</a>
-                <a href="#">Criação de Usuários</a>
+                <a href="{% url 'logistica:user_ger' %}">Gestão de Usuários</a>
+                <a href="#">Criação de Skills</a>
             </div>
-        </div> -->
+        </div>
+        {% endif %}
     </div>
 </div>
 
