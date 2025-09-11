@@ -23,9 +23,9 @@
                 <hr>
                 <li><a href="{% url 'logistica:settings' %}"><i class="fa fa-cog"></i> Configurações</a></li>
                 <li><a href="#"><i class="fa fa-question-circle"></i> Ajuda</a></li>
-                {% if perms.auth.add_user %}
+                <!-- {% if perms.auth.add_user %}
                     <li><a href="{% url 'logistica:register' %}"><i class="fa-solid fa-user-plus"></i>Cadastrar Usuário</a></li>
-                {% endif %}
+                {% endif %} -->
                 <li><a href="{% url 'logistica:logout_confirm' %}"><i class="fa fa-sign-out-alt"></i> Sair</a></li>
             </ul>
         </div>

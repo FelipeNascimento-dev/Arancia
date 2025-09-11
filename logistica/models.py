@@ -115,7 +115,8 @@ class PermissaoUsuarioDummy(models.Model):
         permissions = [
             ("lastmile_b2c", "LastMile (B2C)"),
             ("entrada_flfm", "Entrada (Fulfillment)"),
-            ("pode_gerenciar_filiais", "Pode Gerenciar Filiais")
+            ("pode_gerenciar_filiais", "Pode Gerenciar Filiais"),
+            ("gestao_total", "Gestão Total"),
         ]
 
     def __str__(self):
