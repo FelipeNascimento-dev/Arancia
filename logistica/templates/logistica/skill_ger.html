@@ -23,71 +23,95 @@
     </div>
 
     <div class="box">
-        <h3>Criar Novo Grupo</h3>
+        <h3>Editar grupo - {{ selected_group.nome }}</h3>
+
+        <!-- Nav das abas -->
+        <div class="tab-header">
+            <button class="tab-btn active" data-tab="tab1">Informações Principais</button>
+            <button class="tab-btn" data-tab="tab2">Informações de Endereço</button>
+            <button class="tab-btn" data-tab="tab3">Informações de Contato</button>
+        </div>
+
         <form method="post">
             {% csrf_token %}
-            <input type="hidden" name="create_group" value="1">
-            <div class="form-group">
-                <label for="nome">Nome:</label>
-                <input type="text" name="nome" required>
+            <input type="hidden" name="edit_group" value="1">
+            <input type="hidden" name="group_id" value="{{ selected_group.id }}">
+
+            <!-- Tab 1 -->
+            <div class="tab-content active" id="tab1">
+                <div class="form-group">
+                    <label for="nome">Nome:</label>
+                    <input type="text" name="nome" value="{{ selected_group.nome|default:'' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="cod_iata">Código IATA:</label>
+                    <input type="text" name="cod_iata" value="{{ selected_group.cod_iata|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="sales_channel">Canal:</label>
+                    <input type="text" name="sales_channel" value="{{ selected_group.sales_channel|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="deposito">Depósito:</label>
+                    <input type="text" name="deposito" value="{{ selected_group.deposito|default:'' }}">
+                </div>
             </div>
-            <div class="form-group">
-                <label for="cod_iata">Código IATA:</label>
-                <input type="text" name="cod_iata">
+
+            <!-- Tab 2 -->
+            <div class="tab-content" id="tab2">
+                <div class="form-group">
+                    <label for="logradouro">Logradouro:</label>
+                    <input type="text" name="logradouro" value="{{ selected_group.logradouro|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="numero">Número:</label>
+                    <input type="text" name="numero" value="{{ selected_group.numero|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="complemento">Complemento:</label>
+                    <input type="text" name="complemento" value="{{ selected_group.complemento|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="bairro">Bairro:</label>
+                    <input type="text" name="bairro" value="{{ selected_group.bairro|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="cidade">Cidade:</label>
+                    <input type="text" name="cidade" value="{{ selected_group.cidade|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="estado">Estado:</label>
+                    <input type="text" name="estado" value="{{ selected_group.estado|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="CEP">CEP:</label>
+                    <input type="text" name="CEP" value="{{ selected_group.CEP|default:'' }}">
+                </div>
             </div>
-            <div class="form-group">
-                <label for="sales_channel">Canal:</label>
-                <input type="text" name="sales_channel">
+
+            <!-- Tab 3 -->
+            <div class="tab-content" id="tab3">
+                <div class="form-group">
+                    <label for="telefone1">Telefone 1:</label>
+                    <input type="text" name="telefone1" value="{{ selected_group.telefone1|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="telefone2">Telefone 2:</label>
+                    <input type="text" name="telefone2" value="{{ selected_group.telefone2|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="email">E-mail:</label>
+                    <input type="email" name="email" value="{{ selected_group.email|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="responsavel">Responsável:</label>
+                    <input type="text" name="responsavel" value="{{ selected_group.responsavel|default:'' }}">
+                </div>
             </div>
-            <div class="form-group">
-                <label for="deposito">Depósito:</label>
-                <input type="text" name="deposito">
+
+            <div style="margin-top: 20px;">
+                <button type="submit" class="btn btn-primary">Salvar</button>
             </div>
-            <div class="form-group">
-                <label for="logradouro">Logradouro:</label>
-                <input type="text" name="logradouro">
-            </div>
-            <div class="form-group">
-                <label for="numero">Número:</label>
-                <input type="text" name="numero">
-            </div>
-            <div class="form-group">
-                <label for="complemento">Complemento:</label>
-                <input type="text" name="complemento">
-            </div>
-            <div class="form-group">
-                <label for="bairro">Bairro:</label>
-                <input type="text" name="bairro">
-            </div>
-            <div class="form-group">
-                <label for="cidade">Cidade:</label>
-                <input type="text" name="cidade">
-            </div>
-            <div class="form-group">
-                <label for="estado">Estado:</label>
-                <input type="text" name="estado">
-            </div>
-            <div class="form-group">
-                <label for="cep">CEP:</label>
-                <input type="text" name="cep">
-            </div>
-            <div class="form-group">
-                <label for="telefone1">Telefone1:</label>
-                <input type="text" name="telefone1">
-            </div>
-            <div class="form-group">
-                <label for="telefone2">Telefone2:</label>
-                <input type="text" name="telefone2">
-            </div>
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" name="email">
-            </div>
-            <div class="form-group">
-                <label for="responsavel">Responsável:</label>
-                <input type="text" name="responsavel">
-            </div>      
-            <button type="submit" class="btn btn-primary">Salvar</button>
         </form>
     </div>
 
@@ -119,5 +143,20 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+    const tabs = document.querySelectorAll(".tab-btn");
+    const contents = document.querySelectorAll(".tab-content");
+
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            tabs.forEach(t => t.classList.remove("active"));
+            contents.forEach(c => c.classList.remove("active"));
+
+            tab.classList.add("active");
+            document.getElementById(tab.dataset.tab).classList.add("active");
+        });
+    });
+</script>
 
 {% endblock %}

@@ -1,4 +1,4 @@
-.title-skill-ger{
+.title-skill-ger {
     font-size: 1.8rem;
     font-weight: 600;
     color: #2c3e50;
@@ -19,6 +19,8 @@
     background: #fff;
     padding: 20px;
     border-radius: 12px;
+    max-height: 600px;
+    overflow-y: auto;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     border: 1px solid #eaeaea;
 }
@@ -151,4 +153,39 @@
 
 .btn-danger:hover {
     background: #c0392b;
+}
+
+
+.tab-header {
+    display: flex;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 15px;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #555;
+    transition: 0.2s;
+    border-bottom: 2px solid transparent;
+}
+
+.tab-btn:hover {
+    color: #0077b6;
+}
+
+.tab-btn.active {
+    color: #0077b6;
+    border-bottom: 2px solid #0077b6;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
 }
