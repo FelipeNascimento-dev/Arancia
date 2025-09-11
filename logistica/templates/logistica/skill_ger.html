@@ -8,6 +8,12 @@
             <i class="fa-solid fa-magnifying-glass search-icon-inside"></i>
             <input type="text" name="user_q" id="user_q" placeholder="Pesquisar..." value="{{ user_q }}">
         </form>
+        <div class="user-create">
+            <a href="{% url 'logistica:register' %}" class="btn btn-primary" 
+            title="Adicionar Novo Usuário" style="text-decoration: none;">
+                <i class="fa-solid fa-user-plus"></i> Novo Usuário
+            </a>
+        </div>
     </div>
 
     <div class="table-wrapper">
@@ -16,7 +22,7 @@
                 <tr>
                     <th>Usuário</th>
                     <th>Nome Completo</th>
-                    <th>Email</th>
+                    <th>E-mail</th>
                     <th>CPF</th>
                     <th>Grupos</th>
                     <th>Informação Adicional</th>
@@ -48,7 +54,7 @@
                     </td>
                     <td>
                         <a href="#" class="action-btn edit-btn" title="Editar Usuário"
-                            onclick="openEditUserModal('{{ user.id }}'); return false;">
+                            onclick="openEditUserModal(usuariosData.find(u => u.id == {{ user.id }})); return false;">
                             <i class="fa-solid fa-pencil"></i>
                         </a>
                     </td>
@@ -91,4 +97,120 @@
     </div>
     {% endif %}
 </div>
+
+<!-- Modal Edit User -->
+
+<div id="editUserModal" class="edit-user-modal">
+    <div class="edit-modal-content">
+        <span class="close-edit-modal" onclick="closeEditUserModal()">&times;</span>
+        <h2>Editar Usuário</h2>
+        <form id="editUserForm" method="post" action="{% url 'logistica:skill_ger' %}">
+            {% csrf_token %}
+            <input type="hidden" name="user_id" id="edit_user_id">
+            <!-- <div class="edit-form-group">
+                <label for="edit_username">Usuário:</label>
+                <input type="text" name="username" id="edit_username" required>
+            </div> -->
+            <div class="edit-form-group">
+                <label for="edit_full_name">Nome Completo:</label>
+                <input type="text" name="full_name" id="edit_full_name">
+            </div>
+            <div class="edit-form-group">
+                <label for="edit_email">E-mail:</label>
+                <input type="email" name="email" id="edit_email">
+            </div>
+            <div class="edit-form-group">
+                <label for="edit_cpf">CPF:</label>
+                <input type="text" name="cpf" id="edit_cpf">
+            </div>
+            <div class="edit-form-group">
+                <label for="edit_groups">Grupos:</label>
+                <select name="groups" id="edit_groups" multiple>
+                    {% for group in all_groups %}
+                    {% if "CTB" in group.name or "arancia" in group.name %}
+                    <option value="{{ group.id }}">{{ group.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="edit-form-group">
+                <label for="edit_additional_info">Informação Adicional:</label>
+                <select name="additional_info" id="edit_additional_info">
+                    <option value="">- Selecione -</option>
+                    {% for info in additional_infos %}
+                    <option value="{{ info.id }}">{{ info.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="edit-form-actions">
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <button type="button" class="btn btn-secondary" onclick="closeEditUserModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const usuariosData = {{ usuarios_json | safe }};
+</script>
+
+<script>
+    document.getElementById("edit_cpf").addEventListener("input", function (e) {
+        let v = e.target.value.replace(/\D/g, "");
+        if (v.length > 11) v = v.slice(0, 11);
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+        e.target.value = v;
+    });
+</script>
+
+<script>
+    const editUserModal = document.getElementById("editUserModal");
+    const closeBtn = document.querySelector(".close-edit-modal");
+    const editForm = document.getElementById("editUserForm");
+
+    function openEditUserModal(userData) {
+        if (userData) {
+            document.getElementById("edit_user_id").value = userData.id || "";
+            // document.getElementById("edit_username").value = userData.username || "";
+            document.getElementById("edit_full_name").value = userData.full_name || "";
+            document.getElementById("edit_email").value = userData.email || "";
+            document.getElementById("edit_cpf").value = userData.cpf || "";
+
+            if (userData.groups) {
+                const groupSelect = document.getElementById("edit_groups");
+                [...groupSelect.options].forEach(opt => {
+                    opt.selected = userData.groups.includes(parseInt(opt.value));
+                });
+            }
+
+            if (userData.additional_info) {
+                document.getElementById("edit_additional_info").value = userData.additional_info;
+            }
+        }
+
+        editUserModal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeEditUserModal() {
+        editUserModal.style.display = "none";
+        document.body.style.overflow = "auto";
+    }
+
+    closeBtn.addEventListener("click", closeEditUserModal);
+
+    window.addEventListener("click", (e) => {
+        if (e.target === editUserModal) {
+            closeEditUserModal();
+        }
+    });
+
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && editUserModal.style.display === "flex") {
+            closeEditUserModal();
+        }
+    });
+</script>
 {% endblock %}
