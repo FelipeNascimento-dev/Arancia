@@ -16,7 +16,9 @@
 @import url(trackingIP.css);
 @import url(configuracao_user.css);
 @import url(user_ger.css);
+@import url(skill_ger.css);
 @import url(responsividade.css);
+
 
 :root {
   --background-formularios: #fff;

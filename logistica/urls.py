@@ -9,7 +9,7 @@ from .views import index, consulta_id_form, pre_recebimento, \
     consulta_pedidos, recebimento_remessa, order_consult, button_desn, \
     btn_voltar, reserva_equip, saida_campo, order_detail, order_return_check, \
     consulta_ma84, btn_ma_voltar, consulta_ec01, btn_ec_voltar, \
-    logout_confirm_view, logout_view, registrar_usuario, trackingIP, user_ger, \
+    logout_confirm_view, logout_view, registrar_usuario, trackingIP, user_ger, skill_ger, \
     extracao_pedidos, consulta_etiquetas, settings_view, UserPasswordChangeView
 
 app_name = 'logistica'
@@ -58,4 +58,5 @@ urlpatterns = [
          order_detail, name='detalhe_pedido'),
     path('conferir-retirada', order_return_check, name='order_return_check'),
     path('user-ger/', user_ger, name='user_ger'),
+    path("skill-ger/", skill_ger, name="skill_ger"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,247 @@
+.title-skill-ger {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-left: 65px;
+    margin-top: 65px;
+    margin-bottom: 25px;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    width: 1300px;
+    margin-left: 65px;
+}
+
+.box {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    max-height: 600px;
+    
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #eaeaea;
+}
+
+#box-group{
+    overflow-y: auto;
+}
+
+#box-group2{
+    overflow-y: auto;
+}
+.box.wide {
+    grid-column: span 2;
+    margin-bottom: 50px;
+    min-height: 280px;
+    max-height: 280px;
+}
+
+.user-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.user-list h4,
+.user-form h4 {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 6px;
+}
+
+.user-list{
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.user-list ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.user-list ul li {
+    padding: 6px 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 0.95rem;
+}
+
+.user-list ul li:last-child {
+    border-bottom: none;
+}
+
+.user-form select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.box h3 {
+    margin-top: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 8px;
+}
+
+.box ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.box ul li {
+    margin: 6px 0;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.box ul li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+
+.box ul li:hover {
+    background: #e6f4ff;
+}
+
+.box ul li .active,
+.box ul li a.active {
+    font-weight: bold;
+    color: #0077b6;
+}
+
+.box .form-group {
+    margin-bottom: 14px;
+}
+
+.box .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #444;
+}
+
+.box .form-group input,
+.box .form-group select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border 0.2s, box-shadow 0.2s;
+    background: #fff;
+}
+
+.box .form-group input:focus,
+.box .form-group select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 4px rgba(52, 152, 219, 0.25);
+    outline: none;
+}
+
+.box h4 {
+    margin-top: 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.box ul li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.box ul li:last-child {
+    border-bottom: none;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+}
+
+.btn-secondary {
+    background: #ecf0f1;
+    color: #2c3e50;
+}
+
+.btn-secondary:hover {
+    background: #dcdcdc;
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+
+.tab-header {
+    display: flex;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 15px;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #555;
+    transition: 0.2s;
+    border-bottom: 2px solid transparent;
+}
+
+.tab-btn:hover {
+    color: #0077b6;
+}
+
+.tab-btn.active {
+    color: #0077b6;
+    border-bottom: 2px solid #0077b6;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}

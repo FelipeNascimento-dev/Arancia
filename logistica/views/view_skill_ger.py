@@ -1,0 +1,66 @@
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.models import User
+from django.contrib import messages
+from ..models import GroupAditionalInformation, UserDesignation
+from django.contrib.auth.decorators import login_required, permission_required
+
+
+@login_required
+@permission_required("logistica.gestao_total", raise_exception=True)
+def skill_ger(request):
+    grupos = GroupAditionalInformation.objects.all().order_by("nome")
+    selected_group = None
+    usuarios_vinculados = []
+    all_users = User.objects.all().order_by("username")
+
+    if request.method == "POST" and "create_group" in request.POST:
+        nome = request.POST.get("nome")
+        cod_iata = request.POST.get("cod_iata")
+        sales_channel = request.POST.get("sales_channel")
+        grupo = GroupAditionalInformation.objects.create(
+            nome=nome,
+            cod_iata=cod_iata,
+            sales_channel=sales_channel,
+        )
+        messages.success(request, f"Grupo {grupo.nome} criado com sucesso!")
+        return redirect("logistica:skill_ger")
+
+    group_id = request.GET.get("group_id")
+    if group_id:
+        selected_group = get_object_or_404(
+            GroupAditionalInformation, id=group_id)
+        usuarios_vinculados = User.objects.filter(
+            designacao__informacao_adicional=selected_group)
+
+    if request.method == "POST" and "edit_group" in request.POST:
+        group_id = request.POST.get("group_id")
+        grupo = get_object_or_404(GroupAditionalInformation, id=group_id)
+
+        grupo.nome = request.POST.get("nome")
+        grupo.cod_iata = request.POST.get("cod_iata")
+        grupo.sales_channel = request.POST.get("sales_channel")
+        grupo.deposito = request.POST.get("deposito")
+        grupo.logradouro = request.POST.get("logradouro")
+        grupo.numero = request.POST.get("numero")
+        grupo.complemento = request.POST.get("complemento")
+        grupo.bairro = request.POST.get("bairro")
+        grupo.cidade = request.POST.get("cidade")
+        grupo.estado = request.POST.get("estado")
+        grupo.CEP = request.POST.get("cep")
+        grupo.telefone1 = request.POST.get("telefone1")
+        grupo.telefone2 = request.POST.get("telefone2")
+        grupo.email = request.POST.get("email")
+        grupo.responsavel = request.POST.get("responsavel")
+
+        grupo.save()
+        messages.success(
+            request, f"Grupo {grupo.nome} atualizado com sucesso!")
+        return redirect(f"{request.path}?group_id={grupo.id}")
+
+    context = {
+        "grupos": grupos,
+        "selected_group": selected_group,
+        "usuarios_vinculados": usuarios_vinculados,
+        "all_users": all_users,
+    }
+    return render(request, "logistica/skill_ger.html", context)
