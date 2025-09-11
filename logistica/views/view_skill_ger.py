@@ -11,7 +11,8 @@ def skill_ger(request):
     grupos = GroupAditionalInformation.objects.all().order_by("nome")
     selected_group = None
     usuarios_vinculados = []
-    all_users = User.objects.all().order_by("username")
+    all_users = User.objects.filter(
+        username__startswith='ARC').order_by("username")
 
     if request.method == "POST" and "create_group" in request.POST:
         nome = request.POST.get("nome")

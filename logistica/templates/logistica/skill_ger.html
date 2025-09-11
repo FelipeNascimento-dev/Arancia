@@ -136,7 +136,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="add_user" value="1">
                     <select name="user_id" required>
-                        <option value="">-- selecione --</option>
+                        <option value="">Selecione o Usuário</option>
                         {% for u in all_users %}
                         <option value="{{ u.id }}">{{ u.username }} - {{ u.get_full_name }}</option>
                         {% endfor %}
