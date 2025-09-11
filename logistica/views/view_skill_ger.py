@@ -58,10 +58,23 @@ def skill_ger(request):
             request, f"Grupo {grupo.nome} atualizado com sucesso!")
         return redirect(f"{request.path}?group_id={grupo.id}")
 
+    if request.method == "POST" and "add_user" in request.POST and selected_group:
+        user_id = request.POST.get("user_id")
+        user = get_object_or_404(User, id=user_id)
+
+        designation, _ = UserDesignation.objects.get_or_create(user=user)
+        designation.informacao_adicional = selected_group
+        designation.save()
+
+        messages.success(
+            request, f"Usuário {user.username} vinculado a {selected_group.nome}")
+        return redirect(f"{request.path}?group_id={selected_group.id}")
+
     context = {
         "grupos": grupos,
         "selected_group": selected_group,
         "usuarios_vinculados": usuarios_vinculados,
         "all_users": all_users,
+        "site_title": 'Gerenciamento de Informações Adicionais'
     }
     return render(request, "logistica/skill_ger.html", context)
