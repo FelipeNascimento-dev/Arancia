@@ -151,6 +151,121 @@
     {% endif %}
 </div>
 
+<!-- MODAL PARA CRIAÇÃO DE G.A.I -->
+<div id="modalCreateGroup" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5>Novo Grupo</h5>
+            <button class="modal-close" onclick="closeCreateGroupModal()">&times;</button>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="create_group" value="1">
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="nome">Nome</label>
+                    <input type="text" name="nome" id="nome" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="cod_iata">Código IATA</label>
+                    <input type="text" name="cod_iata" id="cod_iata">
+                </div>
+
+                <div class="form-group">
+                    <label for="sales_channel">Canal</label>
+                    <input type="text" name="sales_channel" id="sales_channel">
+                </div>
+
+                <div class="form-group">
+                    <label for="deposito">Depósito</label>
+                    <input type="text" name="deposito" id="deposito">
+                </div>
+
+                <div class="form-group">
+                    <label for="logradouro">Logradouro</label>
+                    <input type="text" name="logradouro" id="logradouro">
+                </div>
+
+                <div class="form-group">
+                    <label for="numero">Número</label>
+                    <input type="text" name="numero" id="numero">
+                </div>
+
+                <div class="form-group">
+                    <label for="complemento">Complemento</label>
+                    <input type="text" name="complemento" id="complemento">
+                </div>
+
+                <div class="form-group">
+                    <label for="bairro">Bairro</label>
+                    <input type="text" name="bairro" id="bairro">
+                </div>
+
+                <div class="form-group">
+                    <label for="cidade">Cidade</label>
+                    <input type="text" name="cidade" id="cidade">
+                </div>
+
+                <div class="form-group">
+                    <label for="estado">Estado</label>
+                    <input type="text" name="estado" id="estado">
+                </div>
+
+                <div class="form-group">
+                    <label for="CEP">CEP</label>
+                    <input type="text" name="CEP" id="CEP">
+                </div>
+
+                <div class="form-group">
+                    <label for="telefone1">Telefone 1</label>
+                    <input type="text" name="telefone1" id="telefone1">
+                </div>
+
+                <div class="form-group">
+                    <label for="telefone2">Telefone 2</label>
+                    <input type="text" name="telefone2" id="telefone2">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" name="email" id="email">
+                </div>
+
+                <div class="form-group">
+                    <label for="responsavel">Responsável</label>
+                    <input type="text" name="responsavel" id="responsavel">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCreateGroupModal()">Fechar</button>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+    function openCreateGroupModal() {
+        document.getElementById("modalCreateGroup").style.display = "block";
+    }
+
+    function closeCreateGroupModal() {
+        document.getElementById("modalCreateGroup").style.display = "none";
+    }
+
+    window.onclick = function (event) {
+        const modal = document.getElementById("modalCreateGroup");
+        if (event.target === modal) {
+            closeCreateGroupModal();
+        }
+    }
+</script>
+
 <script>
     const users = [
         {% for u in all_users %}

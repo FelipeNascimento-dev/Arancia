@@ -14,12 +14,34 @@ def skill_ger(request):
     all_users = User.objects.filter(
         username__startswith='ARC').order_by("username")
 
+    if request.method == "POST" and "create_group" in request.POST:
+        grupo = GroupAditionalInformation.objects.create(
+            nome=request.POST.get("nome"),
+            cod_iata=request.POST.get("cod_iata"),
+            sales_channel=request.POST.get("sales_channel"),
+            deposito=request.POST.get("deposito"),
+            logradouro=request.POST.get("logradouro"),
+            numero=request.POST.get("numero"),
+            complemento=request.POST.get("complemento"),
+            bairro=request.POST.get("bairro"),
+            cidade=request.POST.get("cidade"),
+            estado=request.POST.get("estado"),
+            CEP=request.POST.get("CEP"),
+            telefone1=request.POST.get("telefone1"),
+            telefone2=request.POST.get("telefone2"),
+            email=request.POST.get("email"),
+            responsavel=request.POST.get("responsavel"),
+        )
+        messages.success(request, f"Grupo {grupo.nome} criado com sucesso!")
+        return redirect("logistica:skill_ger")
+
     group_id = request.GET.get("group_id")
     if group_id:
         selected_group = get_object_or_404(
             GroupAditionalInformation, id=group_id)
         usuarios_vinculados = User.objects.filter(
-            designacao__informacao_adicional=selected_group)
+            designacao__informacao_adicional=selected_group
+        )
 
     if request.method == "POST" and "edit_group" in request.POST:
         group_id = request.POST.get("group_id")
@@ -35,13 +57,13 @@ def skill_ger(request):
         grupo.bairro = request.POST.get("bairro")
         grupo.cidade = request.POST.get("cidade")
         grupo.estado = request.POST.get("estado")
-        grupo.CEP = request.POST.get("cep")
+        grupo.CEP = request.POST.get("CEP")
         grupo.telefone1 = request.POST.get("telefone1")
         grupo.telefone2 = request.POST.get("telefone2")
         grupo.email = request.POST.get("email")
         grupo.responsavel = request.POST.get("responsavel")
-
         grupo.save()
+
         messages.success(
             request, f"Grupo {grupo.nome} atualizado com sucesso!")
         return redirect(f"{request.path}?group_id={grupo.id}")
