@@ -9,10 +9,8 @@
             <input type="text" name="user_q" id="user_q" placeholder="Pesquisar..." value="{{ user_q }}">
         </form>
         <div class="user-create">
-            <a href="{% url 'logistica:register' %}" class="btn btn-primary" 
-            title="Adicionar Novo Usuário" style="text-decoration: none;">
-                <i class="fa-solid fa-user-plus"></i> Novo Usuário
-            </a>
+            <button class="btn btn-primary" onclick="openModal('registerModal')">
+                <i class="fa-solid fa-user-plus"></i> Novo Usuário</button>
         </div>
     </div>
 
@@ -98,7 +96,7 @@
     {% endif %}
 </div>
 
-<!-- Modal Edit User -->
+<!-- MODAL EDIT USER -->
 
 <div id="editUserModal" class="edit-user-modal">
     <div class="edit-modal-content">
@@ -149,22 +147,6 @@
         </form>
     </div>
 </div>
-
-<script>
-    const usuariosData = {{ usuarios_json | safe }};
-</script>
-
-<script>
-    document.getElementById("edit_cpf").addEventListener("input", function (e) {
-        let v = e.target.value.replace(/\D/g, "");
-        if (v.length > 11) v = v.slice(0, 11);
-        v = v.replace(/(\d{3})(\d)/, "$1.$2");
-        v = v.replace(/(\d{3})(\d)/, "$1.$2");
-        v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-        e.target.value = v;
-    });
-</script>
-
 <script>
     const editUserModal = document.getElementById("editUserModal");
     const closeBtn = document.querySelector(".close-edit-modal");
@@ -211,6 +193,41 @@
         if (e.key === "Escape" && editUserModal.style.display === "flex") {
             closeEditUserModal();
         }
+    });
+</script>
+
+<!-- MODAL CREATE USER -->
+{% include "global/partials/_modal_2col.html" with modal_id="registerModal" modal_title="Cadastro de Usuário" form=form%}
+<script>
+    function openModal(id) {
+        document.getElementById(id).style.display = "flex";
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = "none";
+    }
+
+    window.onclick = function (event) {
+        const modals = document.querySelectorAll(".modal");
+        modals.forEach(m => {
+            if (event.target === m) {
+                m.style.display = "none";
+            }
+        });
+    }
+</script>
+<script>
+    const usuariosData = {{ usuarios_json | safe }};
+</script>
+
+<script>
+    document.getElementById("edit_cpf").addEventListener("input", function (e) {
+        let v = e.target.value.replace(/\D/g, "");
+        if (v.length > 11) v = v.slice(0, 11);
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+        e.target.value = v;
     });
 </script>
 {% endblock %}

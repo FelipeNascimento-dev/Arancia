@@ -1,0 +1,32 @@
+<div id="{{ modal_id }}" class="modal">
+  <div class="modal-content">
+
+    <div class="modal-header">
+      <h5>{{ modal_title }}</h5>
+      <button type="button" class="modal-close" onclick="closeModal('{{ modal_id }}')">&times;</button>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="register" value="1">
+
+      <div class="modal-body fields-grid">
+        {% for field in form %}
+        <div class="form-group">
+          {{ field.label_tag }}
+          {{ field }}
+          {% if field.errors %}
+          <div class="text-danger small">{{ field.errors }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('{{ modal_id }}')">Fechar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+
+  </div>
+</div>

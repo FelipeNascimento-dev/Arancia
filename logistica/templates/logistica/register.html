@@ -31,24 +31,6 @@
         <img class="logo-register" src="{% static 'global/images/logo_flow.png' %}" alt="logo arancia">
         <h2>Cadastro</h2>
 
-        {% if messages %}
-        <script>
-          document.addEventListener("DOMContentLoaded", function () {
-            {% for message in messages %}
-            Toastify({
-              text: "{{ message|escapejs }}",
-              duration: 5000,
-              gravity: "top",
-              position: "right",
-              backgroundColor: "{% if message.tags == 'error' %}#e74c3c{% else %}#2ecc71{% endif %}",
-              stopOnFocus: true,
-              close: true,
-            }).showToast();
-            {% endfor %}
-          });
-        </script>
-        {% endif %}
-
         {% if form.non_field_errors %}
         <div class="register-error">{{ form.non_field_errors }}</div>
         {% endif %}
