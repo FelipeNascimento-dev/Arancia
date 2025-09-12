@@ -30,7 +30,6 @@
     <div class="box" id="box-group2">
         <h3>Editar grupo - {{ selected_group.nome }}</h3>
 
-        <!-- Nav das abas -->
         <div class="tab-header">
             <button class="tab-btn active" data-tab="tab1">Informações Principais</button>
             <button class="tab-btn" data-tab="tab2">Informações de Endereço</button>
@@ -42,7 +41,6 @@
             <input type="hidden" name="edit_group" value="1">
             <input type="hidden" name="group_id" value="{{ selected_group.id }}">
 
-            <!-- Tab 1 -->
             <div class="tab-content active" id="tab1">
                 <div class="form-group">
                     <label for="nome">Nome:</label>
@@ -62,7 +60,6 @@
                 </div>
             </div>
 
-            <!-- Tab 2 -->
             <div class="tab-content" id="tab2">
                 <div class="form-group">
                     <label for="logradouro">Logradouro:</label>
@@ -94,7 +91,6 @@
                 </div>
             </div>
 
-            <!-- Tab 3 -->
             <div class="tab-content" id="tab3">
                 <div class="form-group">
                     <label for="telefone1">Telefone 1:</label>
@@ -154,6 +150,27 @@
     </div>
     {% endif %}
 </div>
+
+<!-- MODAL PARA CRIAÇÃO DE G.A.I -->
+{% include 'global/partials/_modal_create_gai.html' %}
+
+
+<script>
+    function openCreateGroupModal() {
+        document.getElementById("modalCreateGroup").style.display = "block";
+    }
+
+    function closeCreateGroupModal() {
+        document.getElementById("modalCreateGroup").style.display = "none";
+    }
+
+    window.onclick = function (event) {
+        const modal = document.getElementById("modalCreateGroup");
+        if (event.target === modal) {
+            closeCreateGroupModal();
+        }
+    }
+</script>
 
 <script>
     const users = [
