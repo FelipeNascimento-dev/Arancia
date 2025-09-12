@@ -32,7 +32,7 @@ def user_ger(request):
         user.save()
 
         if hasattr(user, "perfil"):
-            user.perfil.cpf = cpf
+            user.perfil.cpf = cpf if cpf else None
             user.perfil.save()
 
         if groups_ids:
