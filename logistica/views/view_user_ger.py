@@ -3,7 +3,8 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from logistica.models import GroupAditionalInformation
+from logistica.models import GroupAditionalInformation, UserDesignation
+from ..forms import CustomUserCreationForm
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.decorators import login_required, permission_required
@@ -13,6 +14,35 @@ from django.contrib.auth.decorators import login_required, permission_required
 @permission_required("logistica.gestao_total", raise_exception=True)
 def user_ger(request):
     user_q = request.GET.get("user_q", "")
+
+    if request.method == "POST" and "register" in request.POST:
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.save()
+
+            cpf = form.cleaned_data.get("cpf")
+            grupo = form.cleaned_data.get("grupo")
+            adicional = form.cleaned_data.get("aditionalinformation")
+
+            if hasattr(user, "perfil"):
+                user.perfil.cpf = cpf
+                user.perfil.save()
+
+            if grupo:
+                user.groups.add(grupo)
+
+            if adicional:
+                designation, _ = UserDesignation.objects.get_or_create(
+                    user=user)
+                designation.informacao_adicional = adicional
+                designation.save()
+
+            messages.success(request, "Usuário criado com sucesso!")
+            return redirect("logistica:user_ger")
+        else:
+            messages.error(
+                request, "Erro ao criar usuário, verifique os campos.")
 
     if request.method == "POST":
         user_id = request.POST.get("user_id")
@@ -86,7 +116,7 @@ def user_ger(request):
             "username": u.username,
             "full_name": f"{u.first_name} {u.last_name}".strip(),
             "email": u.email,
-            "cpf": getattr(u.perfil, "cpf", ""),
+            "cpf": u.perfil.cpf if hasattr(u, "perfil") else "",
             "groups": list(u.groups.values_list("id", flat=True)),
             "additional_info": getattr(u.designacao.informacao_adicional, "id", None)
             if hasattr(u, "designacao") and u.designacao.informacao_adicional else None,
@@ -102,5 +132,6 @@ def user_ger(request):
             "site_title": "Gerenciamento de Usuários",
             "additional_infos": additional_infos,
             "usuarios_json": json.dumps(usuarios_data, cls=DjangoJSONEncoder),
+            "form": CustomUserCreationForm(),
         },
     )
