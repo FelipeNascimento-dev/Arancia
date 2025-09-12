@@ -1,0 +1,147 @@
+<div class="container filter-group mt-2">
+  <div class="row">
+    <!-- Total -->
+    <div class="col-md informacoes_basicas" >
+      <a href="?status_janela=total" class="card-box border-black filter-card">
+        <i class="fa-regular fa-clipboard icon black"></i>
+        <div class="card-text">
+          <span >Total</span>
+          <strong>{{ geral.total }}</strong>
+        </div>
+      </a>
+    </div>
+
+    <!-- Concluído -->
+    <div class="col-md informacoes_basicas">
+      <a href="?status_janela=concluido" class="card-box border-blue1 filter-card">
+        <i class="fa-regular fa-circle-check icon blue1"></i>
+        <div class="card-text">
+          <span>Concluído</span>
+          <strong>{{ status.concluido }}</strong>
+        </div>
+      </a>
+    </div>
+
+    <!-- No Tempo -->
+    <div class="col-md informacoes_basicas">
+      <a href="?status_janela=no_tempo" class="card-box border-green1 filter-card">
+        <i class="fa-regular fa-thumbs-up icon green1"></i>
+        <div class="card-text">
+          <span>No Tempo</span>
+          <strong>{{ status.no_tempo }}</strong>
+        </div>
+      </a>
+    </div>
+
+    <!-- No Limite -->
+    <div class="col-md informacoes_basicas">
+      <a href="?status_janela=no_limite" class="card-box border-orange filter-card">
+        <i class="fa-regular fa-hourglass-half icon orange"></i>
+        <div class="card-text">
+          <span>No Limite</span>
+          <strong>{{ status.no_limite }}</strong>
+        </div>
+      </a>
+    </div>
+
+    <!-- Atrasado -->
+    <div class="col-md informacoes_basicas">
+      <a href="?status_janela=atrasado" class="card-box border-redore filter-card">
+        <i class="fa-solid fa-hourglass-end icon redore"></i>
+        <div class="card-text">
+          <span>Atrasado</span>
+          <strong>{{ status.atrasado }}</strong>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Segunda linha de cards -->
+<div class="container filter-group mt-4">
+  <div class="row">
+    <!-- Casos Azuis -->
+    <div class="col-md informacoes_basicas">
+      <a href="?flag=AZUL" class="card-box border-blue filter-card">
+        <i class="fa-solid fa-bookmark icon blue"></i>
+        <div class="card-text">
+          <strong>Casos Azuis</strong>
+          <strong>{{ status.flag_azul }}</strong>
+        </div>
+      </a>
+    </div>
+
+    <!-- Casos Vermelhos -->
+    <div class="col-md informacoes_basicas">
+      <a href="?flag=VERMELHO" class="card-box border-red filter-card">
+        <i class="fa-solid fa-bookmark icon red"></i>
+        <div class="card-text">
+          <strong>Casos Vermelhos</strong>
+          <strong>{{ status.flag_vermelho }}</strong>
+        </div>
+      </a>
+    </div>
+
+    <!-- Casos Críticos -->
+    <div class="col-md informacoes_basicas">
+      <a href="?mensagem=CRITICO" class="card-box border-green filter-card">
+        <i class="fa-solid fa-bookmark icon green"></i>
+        <div class="card-text">
+          <strong>Casos Críticos</strong>
+          <strong>{{ status.mensagem_critico }}</strong>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const cards = document.querySelectorAll(".filter-card");
+
+  cards.forEach(card => {
+    card.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      const href = new URL(card.href, window.location.origin);
+      let grupo = null;
+
+      if (href.searchParams.has("status_janela")) grupo = "status_janela";
+      if (href.searchParams.has("flag")) grupo = "flag";
+      if (href.searchParams.has("mensagem")) grupo = "mensagem";
+
+      if (!grupo) return;
+
+      const params = new URLSearchParams(window.location.search);
+      const valor = href.searchParams.get(grupo);
+
+      // 🔹 Se já está ativo → desativa e remove do querystring
+      if (card.classList.contains("active")) {
+        card.classList.remove("active");
+        params.delete(grupo);
+      } else {
+        // 🔹 Desativa outros do mesmo grupo
+        document.querySelectorAll(`.filter-card[href*="${grupo}="]`)
+          .forEach(c => c.classList.remove("active"));
+
+        // 🔹 Ativa o clicado
+        card.classList.add("active");
+        if (valor) params.set(grupo, valor);
+      }
+
+      // Redireciona (com ou sem o filtro removido)
+      const query = params.toString();
+      window.location.href = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+    });
+  });
+
+  // 🔹 Restaura os ativos quando recarregar
+  const params = new URLSearchParams(window.location.search);
+  ["status_janela", "flag", "mensagem"].forEach(grupo => {
+    const valor = params.get(grupo);
+    if (valor) {
+      const activeCard = document.querySelector(`.filter-card[href*="${grupo}=${valor}"]`);
+      if (activeCard) activeCard.classList.add("active");
+    }
+  });
+});
+</script>

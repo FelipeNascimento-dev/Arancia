@@ -24,6 +24,7 @@
 
 .informacoes_basicas {
   display: flex; /* força colunas a terem a mesma altura */
+  
 }
 .card-box {
   position: relative;
@@ -45,6 +46,7 @@
   overflow: hidden; /* necessário pro efeito de preenchimento */
   min-height: 30px;
   flex: 1;
+  
 }
 
 .card-box:hover {
@@ -61,12 +63,14 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  
 }
 
 .card-text strong {
   font-size: 20px;
   text-align: end;
   color: #111;
+  
 }
 
 .card-text small {
@@ -81,6 +85,7 @@
 .card-box.border-redore1 {
   border-color:rgb(250, 180, 150);
   color:rgb(250, 180, 150);
+    text-decoration: none;
 }
 
 .card-box.border-redore1 .icon {
@@ -110,6 +115,7 @@
   position: relative;
   z-index: 1;
   transition: color 0.3s ease-in-out;
+  text-decoration: none;
 }
 
 /* hover → texto e ícones ficam brancos */
@@ -484,6 +490,20 @@
   color: #444;
    
 
+}
+.filter-card span,
+.filter-card strong,
+.filter-card i {
+  text-decoration: none;
+}
+.filter-card:hover {
+  text-decoration: none;    /* garante que no hover não volte a linha */
+  color: inherit;           /* evita azul no hover */
+}
+
+.filter-card:visited {
+  text-decoration: none;    /* sem linha também no visitado */
+  color: inherit;           /* evita roxo */
 }
 
 #modalTecnico .linha .valor {
