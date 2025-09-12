@@ -5,7 +5,7 @@ from ..models import GroupAditionalInformation, UserDesignation
 from django.contrib.auth.decorators import login_required, permission_required
 
 
-@login_required
+@login_required(login_url='logistica:login')
 @permission_required("logistica.gestao_total", raise_exception=True)
 def skill_ger(request):
     grupos = GroupAditionalInformation.objects.all().order_by("nome")

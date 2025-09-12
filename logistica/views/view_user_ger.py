@@ -6,8 +6,11 @@ from django.contrib import messages
 from logistica.models import GroupAditionalInformation
 import json
 from django.core.serializers.json import DjangoJSONEncoder
+from django.contrib.auth.decorators import login_required, permission_required
 
 
+@login_required(login_url='logistica:login')
+@permission_required("logistica.gestao_total", raise_exception=True)
 def user_ger(request):
     user_q = request.GET.get("user_q", "")
 
