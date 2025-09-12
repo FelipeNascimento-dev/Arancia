@@ -1,19 +1,18 @@
-.register-container {
+.register-left {
+    flex: 1;
+    padding: 60px 40px;
     display: flex;
-    min-height: 100vh;
-    width: 100%;
-    /* background: url('../images/background.jpeg') center/cover no-repeat; */
+    flex-direction: column;
+    justify-content: center;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: white;
+    position: relative;
 }
 
-@media (max-width: 900px) {
-    .register-container {
-        flex-direction: column;
-    }
-
-    .register-left,
-    .register-right {
-        width: 100%;
-    }
+.logo-register {
+    width: 300px;
 }
 
 .register-box img.logo-register {
@@ -40,8 +39,6 @@
     grid-template-columns: 1fr 1fr;
     gap: 20px 28px;
     padding: 10px 0;
-    margin-top: 350px;
-    margin-right: 100px;
 }
 
 .register-service {
@@ -74,11 +71,9 @@
 
 .register-box {
     width: 100%;
-    max-width: 280px;
-    margin-left: 150px;
+    max-width: 360px;
+    padding: 40px;
     border-radius: 12px;
-    justify-content: center;
-    align-items: center;
 }
 
 .register-box h2 {

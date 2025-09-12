@@ -1,70 +1,133 @@
-{% extends 'global/base.html' %}
 {% load static %}
-{% block content %}
-<div class="register-container">
-  <div class="register-right">
-    <form method="post" class="register-box">
-      {% csrf_token %}
-      <h2>Cadastro</h2>
 
-      {% if form.non_field_errors %}
-      <div class="register-error">{{ form.non_field_errors }}</div>
-      {% endif %}
+<!DOCTYPE html>
+<html lang="pt-br">
 
-      <div class="register-field">
-        <i class="fa-regular fa-user"></i>
-        <input type="text" name="{{ form.first_name.name }}" id="{{ form.first_name.id_for_label }}"
+<head>
+  {% include 'global/partials/_head.html' %}
+  <meta charset="UTF-8">
+  <title>Cadastro | C-Trends BPO</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="register-left" style="background-image: url('{% static "global/images/background.jpeg" %}');">
+      <!-- <img class="logo-register" src="{% static 'global/images/logo_flow.png' %}" alt="logo arancia"> -->
+      <div class="register-services">
+        <div class="register-service"><img src="{% static 'global/images/call-center.png' %}" alt=""> Call Center</div>
+        <div class="register-service"><img src="{% static 'global/images/central-retencao.png' %}" alt=""> Central
+          Retenção</div>
+        <div class="register-service"><img src="{% static 'global/images/cobranca.png' %}" alt=""> Cobrança</div>
+        <div class="register-service"><img src="{% static 'global/images/operador-logistico.png' %}" alt=""> Operador
+          Logístico</div>
+        <div class="register-service"><img src="{% static 'global/images/caca-pos.png' %}" alt=""> Caça Pos</div>
+        <div class="register-service"><img src="{% static 'global/images/sac.png' %}" alt=""> SAC</div>
+      </div>
+    </div>
+
+    <div class="register-right">
+      <form method="post" class="register-box">
+        {% csrf_token %}
+        <img class="logo-register" src="{% static 'global/images/logo_flow.png' %}" alt="logo arancia">
+        <h2>Cadastro</h2>
+
+        {% if form.non_field_errors %}
+        <div class="register-error">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="register-field">
+          <i class="fa-regular fa-user"></i>
+          <input type="text" name="{{ form.first_name.name }}" id="{{ form.first_name.id_for_label }}"
           value="{{ form.first_name.value|default_if_none:'' }}" placeholder=" " required>
-        <label for="{{ form.first_name.id_for_label }}">Primeiro Nome</label>
-      </div>
-
-      <div class="register-field">
-        <i class="fa-regular fa-user"></i>
-        <input type="text" name="{{ form.last_name.name }}" id="{{ form.last_name.id_for_label }}"
+          <label for="{{ form.first_name.id_for_label }}">Primeiro Nome</label>
+          {% if form.first_name.errors %}
+          <div class="register-error">{{ form.first_name.errors }}</div>
+          {% endif %}
+        </div>
+        
+        <div class="register-field">
+          <i class="fa-regular fa-user"></i>
+          <input type="text" name="{{ form.last_name.name }}" id="{{ form.last_name.id_for_label }}"
           value="{{ form.last_name.value|default_if_none:'' }}" placeholder=" " required>
-        <label for="{{ form.last_name.id_for_label }}">Último Nome</label>
-      </div>
-
-      <div class="register-field">
-        <i class="fa-solid fa-envelope"></i>
-        <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}"
+          <label for="{{ form.last_name.id_for_label }}">Último Nome</label>
+          {% if form.last_name.errors %}
+          <div class="register-error">{{ form.last_name.errors }}</div>
+          {% endif %}
+        </div>
+        
+        <div class="register-field">
+          <i class="fa-solid fa-envelope"></i>
+          <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}"
           value="{{ form.email.value|default_if_none:'' }}" placeholder=" " required>
-        <label for="{{ form.email.id_for_label }}">E-mail</label>
-      </div>
+          <label for="{{ form.email.id_for_label }}">E-mail</label>
+          {% if form.email.errors %}
+          <div class="register-error">{{ form.email.errors }}</div>
+          {% endif %}
+        </div>
+        
+        <div class="register-field">
+          <i class="fa-solid fa-id-card"></i>
+          <input type="text" name="{{ form.cpf.name }}" id="{{ form.cpf.id_for_label }}"
+            value="{{ form.cpf.value|default_if_none:'' }}" placeholder=" ">
+            <label for="{{ form.cpf.id_for_label }}">CPF</label>
+          {% if form.cpf.errors %}
+          <div class="register-error">{{ form.cpf.errors }}</div>
+          {% endif %}
+        </div>
+        
+        <div class="register-field">
+          <i class="fa-solid fa-building"></i>
+          {{ form.grupo }}
+          {% if form.grupo.errors %}
+          <div class="register-error">{{ form.grupo.errors }}</div>
+          {% endif %}
+        </div>
 
-      <div class="register-field">
-        <i class="fa-solid fa-id-card"></i>
-        <input type="text" name="{{ form.cpf.name }}" id="{{ form.cpf.id_for_label }}"
-          value="{{ form.cpf.value|default_if_none:'' }}" placeholder=" ">
-        <label for="{{ form.cpf.id_for_label }}">CPF</label>
-      </div>
+        <div class="register-field">
+          <i class="fa-solid fa-building"></i>
+          {{ form.aditionalinformation }}
+          {% if form.aditionalinformation.errors %}
+          <div class="register-error">{{ form.aditionalinformation.errors }}</div>
+          {% endif %}
+        </div>
+        
+        <div class="register-field">
+          <i class="fa-solid fa-lock"></i>
+          <input type="password" name="{{ form.password1.name }}" id="{{ form.password1.id_for_label }}" placeholder=" "
+            required>
+          <label for="{{ form.password1.id_for_label }}">Senha</label>
+          {% if form.password1.errors %}
+          <div class="register-error">{{ form.password1.errors }}</div>
+          {% endif %}
+        </div>
 
-      <div class="register-field">
-        <i class="fa-solid fa-building"></i>
-        {{ form.grupo }}
-      </div>
+        <div class="register-field">
+          <i class="fa-solid fa-lock"></i>
+          <input type="password" name="{{ form.password2.name }}" id="{{ form.password2.id_for_label }}" placeholder=" "
+            required>
+          <label for="{{ form.password2.id_for_label }}">Confirme a Senha</label>
+          {% if form.password2.errors %}
+          <div class="register-error">{{ form.password2.errors }}</div>
+          {% endif %}
+        </div>
 
-      <div class="register-field">
-        <i class="fa-solid fa-building"></i>
-        {{ form.aditionalinformation }}
-      </div>
-
-      <div class="register-field">
-        <i class="fa-solid fa-lock"></i>
-        <input type="password" name="{{ form.password1.name }}" id="{{ form.password1.id_for_label }}" placeholder=" "
-          required>
-        <label for="{{ form.password1.id_for_label }}">Senha</label>
-      </div>
-
-      <div class="register-field">
-        <i class="fa-solid fa-lock"></i>
-        <input type="password" name="{{ form.password2.name }}" id="{{ form.password2.id_for_label }}" placeholder=" "
-          required>
-        <label for="{{ form.password2.id_for_label }}">Confirme a Senha</label>
-      </div>
-
-      <button type="submit" class="register-button">Cadastrar</button>
-    </form>
+        <button type="submit" class="register-button">Cadastrar</button>
+        <div class="register-login-container">
+          <span>Já tem uma conta?</span>
+          <a href="{% url 'logistica:login' %}" class="btn-login-link">
+            Entrar
+          </a>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
-{% endblock content %}
+
+  <script>
+    $(document).ready(function () {
+      $("#{{ form.cpf.id_for_label }}").mask("000.000.000-00");
+    });
+  </script>
+
+</body>
+
+</html>
