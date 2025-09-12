@@ -14,18 +14,6 @@ def skill_ger(request):
     all_users = User.objects.filter(
         username__startswith='ARC').order_by("username")
 
-    if request.method == "POST" and "create_group" in request.POST:
-        nome = request.POST.get("nome")
-        cod_iata = request.POST.get("cod_iata")
-        sales_channel = request.POST.get("sales_channel")
-        grupo = GroupAditionalInformation.objects.create(
-            nome=nome,
-            cod_iata=cod_iata,
-            sales_channel=sales_channel,
-        )
-        messages.success(request, f"Grupo {grupo.nome} criado com sucesso!")
-        return redirect("logistica:skill_ger")
-
     group_id = request.GET.get("group_id")
     if group_id:
         selected_group = get_object_or_404(
