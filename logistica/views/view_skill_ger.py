@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
 from ..models import GroupAditionalInformation, UserDesignation
+from ..forms import CreateGAIForm
 from django.contrib.auth.decorators import login_required, permission_required
 
 
@@ -14,26 +15,16 @@ def skill_ger(request):
     all_users = User.objects.filter(
         username__startswith='ARC').order_by("username")
 
+    form = CreateGAIForm()
+
     if request.method == "POST" and "create_group" in request.POST:
-        grupo = GroupAditionalInformation.objects.create(
-            nome=request.POST.get("nome"),
-            cod_iata=request.POST.get("cod_iata"),
-            sales_channel=request.POST.get("sales_channel"),
-            deposito=request.POST.get("deposito"),
-            logradouro=request.POST.get("logradouro"),
-            numero=request.POST.get("numero"),
-            complemento=request.POST.get("complemento"),
-            bairro=request.POST.get("bairro"),
-            cidade=request.POST.get("cidade"),
-            estado=request.POST.get("estado"),
-            CEP=request.POST.get("CEP"),
-            telefone1=request.POST.get("telefone1"),
-            telefone2=request.POST.get("telefone2"),
-            email=request.POST.get("email"),
-            responsavel=request.POST.get("responsavel"),
-        )
-        messages.success(request, f"Grupo {grupo.nome} criado com sucesso!")
-        return redirect("logistica:skill_ger")
+        form = CreateGAIForm(request.POST)
+        if form.is_valid():
+            grupo = GroupAditionalInformation.objects.create(
+                **form.cleaned_data)
+            messages.success(
+                request, f"Grupo {grupo.nome} criado com sucesso!")
+            return redirect("logistica:skill_ger")
 
     group_id = request.GET.get("group_id")
     if group_id:
@@ -85,6 +76,7 @@ def skill_ger(request):
         "selected_group": selected_group,
         "usuarios_vinculados": usuarios_vinculados,
         "all_users": all_users,
+        "form": form,
         "site_title": 'Gerenciamento de Informações Adicionais'
     }
     return render(request, "logistica/skill_ger.html", context)
