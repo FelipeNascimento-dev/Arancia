@@ -265,80 +265,6 @@
 
 
 
-/* deixa o conteúdo do modal com cantos arredondados e sombra */
-#modalOcioso .modal-content {
-  border-radius: 12px;
-  border: none;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-}
-.modal-title{
-  color: black;
-  text-align: flex-end;
-  justify-content:  flex-end;
-  display: flex;
-}
-/* cabeçalho já está vermelho, mas podemos forçar */
-#modalOcioso .modal-header {
-  color: #000000;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-}
-/* título separado */
-#modalOcioso .modal-body .tec-nome {
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #eee;
-  font-size: 20px;
-  color: #222;
-}
-
-/* grid das infos */
-#modalOcioso .modal-body .tec-infos {
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* 2 colunas */
-  gap: 10px 20px;
-}
-
-/* estilização dos parágrafos */
-#modalOcioso .modal-body .tec-infos p {
-  margin: 0;
-  padding: 8px 10px;
-  background: #f8f9fa;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* rodapé */
-#modalOcioso .modal-footer {
-  border-top: 1px solid #eee;
-  background: #fafafa;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-}
-#modalOcioso .modal-footer .btn-primary {
-  background-color: #fc9b63; /* verde Bootstrap */
-  border-color:  #fc9b63;
-  font-weight: 600;
-}
-
-#modalOcioso .modal-footer .btn-primary:hover {
-  background-color:  #ff833c;
-  border-color:   #ff833c;
-}
-.whatsapp-link {
-  color: #44a166; /* verde WhatsApp */
-  font-weight: bold;
-  text-decoration: none;
-}
-
-.whatsapp-link:hover {
-  text-decoration: underline;
-  color: #577732;
-}
-
-
-
 
 
 
@@ -442,7 +368,9 @@
 }
 
 
-
+.filter-card{
+  text-decoration: none;  
+}
 
 
 .abrir-modal{
@@ -461,6 +389,9 @@
 }
 
 
+.modal-title{
+    color: #222;
+}
 
 #modalTecnico .tec-nome {
   margin-bottom: 15px;
@@ -469,18 +400,23 @@
   font-size: 20px;
   color: #222;
 }
-
+.fa-eye{
+  color:var(--form-label-color)
+}
+.fa-eye:hover{
+  color: rgb(250, 208, 190);
+}
 #modalTecnico .tec-ficha {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 3 colunas iguais */
+  gap: 25px;
 }
 
 #modalTecnico .linha {
   display: flex;
   justify-content: space-between;
   padding: 8px 12px;
-  background: #f8f9fa;
+  background: #faf9f8;
   border-radius: 6px;
   font-size: 14px;
 }
@@ -488,8 +424,7 @@
 #modalTecnico .linha .titulo {
   font-weight: 600;
   color: #444;
-   
-
+  
 }
 .filter-card span,
 .filter-card strong,
@@ -531,7 +466,7 @@
 }
 
 #modalTecnico .whatsapp-link {
-  color: #44a166;
+  color: #101b14;
   font-weight: bold;
   text-decoration: none;
 }

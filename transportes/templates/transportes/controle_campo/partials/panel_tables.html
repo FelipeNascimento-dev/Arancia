@@ -17,6 +17,7 @@
           <th>Atrasado</th>
           <th>Último Login</th>
           <th>Última Abertura</th>
+        <th>Tempo Ocioso</th>
         </tr>
       </thead>
       <tbody>
@@ -51,6 +52,7 @@
             <td>{{ t.atrasado }}</td>
             <td>{{ t.lastlogin }}</td>
             <td>{{ t.lastopening }}</td>
+             <td>{{ t.atraso_fmt }}</td>
           </tr>
         {% empty %}
           <tr><td colspan="11">Nenhum técnico encontrado</td></tr>
