@@ -132,6 +132,20 @@
             </div>
         </div>
 
+        <!-- Gerenciamento -->
+        {% if perms.logistica.gestao_total %}
+        <div class="dropdown">
+            <button type="button" class="dropbtn itens-sidebar">
+                <i class="fa-solid fa-users"></i>
+                <span class="texto-item">&nbsp; Gerenciamento</span>
+            </button>
+            <div class="dropdown-content">
+                <a href="{% url 'logistica:user_ger' %}">Gestão de Usuários</a>
+                <a href="{% url 'logistica:skill_ger' %}">Gestão de Skills</a>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Sistemas -->
         <div class="dropdown">
             <button type="button" class="dropbtn itens-sidebar">
@@ -147,20 +161,6 @@
                 <a href="http://192.168.0.214/site/Index.aspx" target="_blank">Gerencial</a>
             </div>
         </div>
-
-        <!-- Gerenciamento -->
-        {% if perms.logistica.gestao_total %}
-        <div class="dropdown">
-            <button type="button" class="dropbtn itens-sidebar">
-                <i class="fa-solid fa-users"></i>
-                <span class="texto-item">&nbsp; Gerenciamento</span>
-            </button>
-            <div class="dropdown-content">
-                <a href="{% url 'logistica:user_ger' %}">Gestão de Usuários</a>
-                <a href="{% url 'logistica:skill_ger' %}">Gestão de Skills</a>
-            </div>
-        </div>
-        {% endif %}
     </div>
 </div>
 
