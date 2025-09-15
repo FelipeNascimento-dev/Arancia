@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib import messages
 from ..models import GroupAditionalInformation, UserDesignation
 from ..forms import CreateGAIForm
@@ -20,8 +20,12 @@ def skill_ger(request):
     if request.method == "POST" and "create_group" in request.POST:
         form = CreateGAIForm(request.POST)
         if form.is_valid():
+            _group = Group.objects.get(name='arancia_PA')
             grupo = GroupAditionalInformation.objects.create(
-                **form.cleaned_data)
+                group=_group,
+                **form.cleaned_data
+            )
+
             messages.success(
                 request, f"Grupo {grupo.nome} criado com sucesso!")
             return redirect("logistica:skill_ger")

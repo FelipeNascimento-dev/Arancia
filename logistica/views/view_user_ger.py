@@ -107,7 +107,7 @@ def user_ger(request):
     usuarios = paginator.get_page(page_number)
 
     all_groups = Group.objects.all().order_by("name")
-    additional_infos = GroupAditionalInformation.objects.all().order_by("nome")
+    additional_infos = GroupAditionalInformation.objects.all().order_by("cod_iata")
 
     usuarios_data = []
     for u in usuarios:
@@ -118,7 +118,7 @@ def user_ger(request):
             "email": u.email,
             "cpf": u.perfil.cpf if hasattr(u, "perfil") else "",
             "groups": list(u.groups.values_list("id", flat=True)),
-            "additional_info": getattr(u.designacao.informacao_adicional, "id", None)
+            "additional_info": getattr(u.designacao.informacao_adicional, "cod_iata", None)
             if hasattr(u, "designacao") and u.designacao.informacao_adicional else None,
         })
 

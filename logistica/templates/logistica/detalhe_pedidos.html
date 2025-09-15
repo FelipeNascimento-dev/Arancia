@@ -303,13 +303,14 @@
 
             <div class="tabs" id="agenda-tabs" style="margin-top:16px;">
                 <div class="tab-list" role="tablist" aria-label="Navegação">
-                    <button class="tab" role="tab" id="tab-produto" 
-                        aria-controls="panel-produto"
+                    <button class="tab" role="tab" id="tab-produto" aria-controls="panel-produto"
                         aria-selected="true">Produto
                     </button>
-                    <button class="tab" role="tab" id="tab-adicionais" 
-                        aria-controls="panel-adicionais"
+                    <button class="tab" role="tab" id="tab-adicionais" aria-controls="panel-adicionais"
                         aria-selected="false">Adicionais
+                    </button>
+                    <button class="tab" role="tab" id="tab-tracking" aria-controls="panel-tracking"
+                        aria-selected="false">Histórico de Tracking
                     </button>
                 </div>
 
@@ -339,6 +340,12 @@
                         </div>
                         {% endif %}
                         {% endfor %}
+                    </div>
+                </section>
+
+                <section class="tab-panel" role="tabpanel" id="panel-tracking" aria-labelledby="tab-tracking" hidden>
+                    <div class="table-responsive">
+                        {% include "global/partials/_dinamic_table.html" with dados=historico_tracking %}
                     </div>
                 </section>
 
