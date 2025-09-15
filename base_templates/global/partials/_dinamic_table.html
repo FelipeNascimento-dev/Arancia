@@ -1,0 +1,42 @@
+{% if dados %}
+  {% if dados.0 %}
+  <div class="tabela-dinamica-container">
+      <table class="tabela-dinamica">
+          <thead>
+              <tr>
+                  {% for key in dados.0.keys %}
+                  <th>{{ key|capfirst }}</th>
+                  {% endfor %}
+              </tr>
+          </thead>
+          <tbody>
+              {% for row in dados %}
+              <tr>
+                  {% for key, value in row.items %}
+                  <td
+                    class="{% if key == 'status_code' %}{% if value == 200 %}status-ok{% else %}status-error{% endif %}{% endif %}">
+                      {{ value }}
+                  </td>
+                  {% endfor %}
+              </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+  </div>
+  {% else %}
+  <div class="tabela-dinamica-container">
+      <table class="tabela-dinamica">
+          <tbody>
+              {% for key, value in dados.items %}
+              <tr>
+                  <th>{{ key|capfirst }}</th>
+                  <td>{{ value }}</td>
+              </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+  </div>
+  {% endif %}
+{% else %}
+  <p class="text-muted">Nenhum dado disponível.</p>
+{% endif %}

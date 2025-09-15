@@ -14,6 +14,30 @@ JSON_CT = "application/json"
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 def order_detail(request, order: str):
 
+    historico_tracking = [
+        {
+            "id": 1416,
+            "order_number": "10391331042730",
+            "tracking_number": "209",
+            "tracking_name": "VOLUME RECEBIDO PARA CONFERENCIA",
+            "status_code": 200
+        },
+        {
+            "id": 737,
+            "order_number": "10391331042730",
+            "tracking_number": "200",
+            "tracking_name": "Recebido para picking",
+            "status_code": 200
+        },
+        {
+            "id": 1490,
+            "order_number": "10391331042730",
+            "tracking_number": "209",
+            "tracking_name": "VOLUME RECEBIDO PARA CONFERENCIA",
+            "status_code": 200
+        }
+    ]
+
     url = f"{API_URL}/api/order-sumary/{order}"
     client = RequestClient(
         url=url,
@@ -70,6 +94,7 @@ def order_detail(request, order: str):
         "form": form,
         "produto_campos": produto_campos,
         "adicionais_campos": adicionais_campos,
+        "historico_tracking": historico_tracking,
         "botao_texto": botao_texto,
         "site_title": "Detalhe do Pedido",
         "nome_formulario": form.form_title
