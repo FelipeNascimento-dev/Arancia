@@ -1,5 +1,5 @@
 
-<div class="setcontainer"></div>
+<div class="setcontainer">
 
 <div class="container filter-group mt-2">
   <div class="row">
@@ -87,7 +87,7 @@
 
     <!-- Casos Críticos -->
     <div class="col-md informacoes_basicas">
-      <a href="?mensagem=CRITICO" class="card-box border-green filter-card">
+      <a href="?mensagem=CRÍTICO" class="card-box border-green filter-card">
         <i class="fa-solid fa-bookmark icon green"></i>
         <div class="card-text">
           <strong>Casos Críticos</strong>
@@ -95,8 +95,56 @@
         </div>
       </a>
     </div>
+    
   </div>
-</div>
+</div> <div class="filter-group mt-3">
+  <div class="row">
+    <div class="col-md informacoes_basicas">
+      <div class="card-box border-black">
+        <i class="fa-regular fa-clock icon black"></i>
+        <div class="card-text">
+          <span>Média de Atraso</span>
+          <strong>{{ media_atraso }}</strong>
+        </div>
+      </div>
+    </div>
+    <div class="col-md informacoes_basicas">
+      {% if top %}
+      <a
+        href="#"
+        class="card-box border-redore1"
+        data-bs-toggle="modal"
+        data-bs-target="#modalTecnico"
+        data-nome="{{ top.nome }}"
+        data-uid="{{ top.uid }}"
+        data-area="{{ top.area }}"
+        data-total="{{ top.total }}"
+        data-concluido="{{ top.concluido }}"
+        data-no-tempo="{{ top.no_tempo }}"
+        data-no-limite="{{ top.no_limite }}"
+        data-atrasado="{{ top.atrasado }}"
+        data-lastlogin="{{ top.lastlogin }}"
+        data-lastopening="{{ top.lastopening }}"
+        data-ocioso="{{ top.atraso_fmt }}"
+        data-phone="{{ top.phone }}"
+      >
+        <i class="fa-regular fa-user icon redore1"></i>
+        <div class="card-text">
+          Técnico Mais Ocioso
+          <strong>{{ top.nome }} ({{ top.uid }})</strong>
+          <strong>{{ top.atraso_fmt }}</strong>
+        </div>
+      </a>
+      {% else %}
+      <div class="card-box border-redore1">
+        <i class="fa-regular fa-user icon redore1"></i>
+        <div class="card-text">
+          Técnico Mais Ocioso
+          <strong>—</strong>
+        </div>
+      </div>
+      {% endif %}
+    </div> </div></div></div>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const cards = document.querySelectorAll(".filter-card");

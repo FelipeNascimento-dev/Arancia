@@ -1,126 +1,130 @@
 <!-- Tabela Técnicos -->
-<div class="container mt-4">
-  <h4>Resumo por Técnico</h4>
-  <div class="table-responsive">
-    {% if tecnicos %}
-    <table class="styled-table dark">
-      <thead>
-        <tr>
-          <th>Ação</th>
-          <th>Nome</th>
-          <th>UID</th>
-          <th>Unidade</th>
-          <th>Total OS</th>
-          <th>Concluído</th>
-          <th>No Tempo</th>
-          <th>No Limite</th>
-          <th>Atrasado</th>
-          <th>Último Login</th>
-          <th>Última Abertura</th>
-        <th>Tempo Ocioso</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for t in tecnicos %}
-          <tr {% if t.atraso_min > 29 %}class="alert-row"{% endif %}>
-            <td>
-              <a href="#"
-                 data-bs-toggle="modal"
-                 data-bs-target="#modalTecnico"
-                 data-nome="{{ t.nome }}"
-                 data-uid="{{ t.uid }}"
-                 data-area="{{ t.area }}"
-                 data-total="{{ t.total }}"
-                 data-concluido="{{ t.concluido }}"
-                 data-no-tempo="{{ t.no_tempo }}"
-                 data-no-limite="{{ t.no_limite }}"
-                 data-atrasado="{{ t.atrasado }}"
-                 data-lastlogin="{{ t.lastlogin }}"
-                 data-lastopening="{{ t.lastopening }}"
-                 data-ocioso="{{ t.atraso_fmt }}"
-                 data-phone="{{ t.phone }}">
-                 <i class="fa-regular fa-eye"></i>
-              </a>
-            </td>
-            <td>{{ t.nome }}</td>
-            <td>{{ t.uid }}</td>
-            <td>{{ t.area }}</td>
-            <td>{{ t.total }}</td>
-            <td>{{ t.concluido }}</td>
-            <td>{{ t.no_tempo }}</td>
-            <td>{{ t.no_limite }}</td>
-            <td>{{ t.atrasado }}</td>
-            <td>{{ t.lastlogin }}</td>
-            <td>{{ t.lastopening }}</td>
-             <td>{{ t.atraso_fmt }}</td>
-          </tr>
-        {% empty %}
-          <tr><td colspan="11">Nenhum técnico encontrado</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% endif %}
-  </div>
-</div>
-
-<!-- Tabela Ordens Gerais -->
-<div class="container mt-4">
-  <h4>Ordens Atendidas</h4>
-  <div class="table-responsive">
-    <table class="styled-table dark">
-      <thead>
-        <tr>
-          <th>OS</th><th>Técnico</th><th>UID</th><th>CEP</th>
-          <th>Endereço</th><th>Status</th><th>Tag</th><th>Flag</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for o in ordens %}
+<div class="setcontainer">
+  <div class="container mt-4" id="tabela-tecnicos"
+       {% if filtro_ativo %}style="display:none"{% endif %}>
+    <h4>Resumo por Técnico</h4>
+    <div class="table-responsive">
+      {% if tecnicos %}
+      <table class="styled-table dark">
+        <thead>
           <tr>
-            <td>{{ o.os }}</td>
-            <td>{{ o.nome_tecnico }}</td>
-            <td>{{ o.uid }}</td>
-            <td>{{ o.cep }}</td>
-            <td>{{ o.endereco }}</td>
-            <td>{{ o.status_janela }}</td>
-            <td>{{ o.tag }}</td>
-            <td>{{ o.flag }}</td>
+            <th>Ação</th>
+            <th>Nome</th>
+            <th>UID</th>
+            <th>Unidade</th>
+            <th>Total OS</th>
+            <th>Concluído</th>
+            <th>No Tempo</th>
+            <th>No Limite</th>
+            <th>Atrasado</th>
+            <th>Último Login</th>
+            <th>Última Abertura</th>
+            <th>Tempo Ocioso</th>
           </tr>
-        {% empty %}
-          <tr><td colspan="8">Nenhuma ordem encontrada</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {% for t in tecnicos %}
+            <tr {% if t.atraso_min > 29 %}class="alert-row"{% endif %}>
+              <td>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#modalTecnico"
+                   data-nome="{{ t.nome }}"
+                   data-uid="{{ t.uid }}"
+                   data-area="{{ t.area }}"
+                   data-total="{{ t.total }}"
+                   data-concluido="{{ t.concluido }}"
+                   data-no-tempo="{{ t.no_tempo }}"
+                   data-no-limite="{{ t.no_limite }}"
+                   data-atrasado="{{ t.atrasado }}"
+                   data-lastlogin="{{ t.lastlogin }}"
+                   data-lastopening="{{ t.lastopening }}"
+                   data-ocioso="{{ t.atraso_fmt }}"
+                   data-phone="{{ t.phone }}">
+                   <i class="fa-regular fa-eye {% if t.atraso_min > 29 %}icon-alert{% endif %}"></i>
+                </a>
+              </td>
+              <td>{{ t.nome }}</td>
+              <td>{{ t.uid }}</td>
+              <td>{{ t.area }}</td>
+              <td>{{ t.total }}</td>
+              <td>{{ t.concluido }}</td>
+              <td>{{ t.no_tempo }}</td>
+              <td>{{ t.no_limite }}</td>
+              <td>{{ t.atrasado }}</td>
+              <td>{{ t.lastlogin }}</td>
+              <td>{{ t.lastopening }}</td>
+              <td>{{ t.atraso_fmt }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="12">Nenhum técnico encontrado</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    </div>
   </div>
-</div>
 
-<!-- Tabela Ordens Detalhadas -->
-<div class="container mt-4">
-  <h4>Ordens Detalhadas por Técnico</h4>
-  <div class="table-responsive">
-    <table class="styled-table dark">
-      <thead>
-        <tr>
-          <th>OS</th><th>Técnico</th><th>CEP</th><th>Endereço</th>
-          <th>Bairro</th><th>Cidade</th><th>Status</th><th>Tag</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for o in ordens_os %}
+  <!-- Tabela Ordens Gerais -->
+  <div class="container mt-4" id="tabela-ordens"
+       {% if not filtro_ativo %}style="display:none"{% endif %}>
+    <h4>Ordens Atendidas</h4>
+    <div class="table-responsive">
+      <table class="styled-table dark">
+        <thead>
           <tr>
-            <td>{{ o.os }}</td>
-            <td>{{ o.nome_tecnico }}</td>
-            <td>{{ o.cep }}</td>
-            <td>{{ o.endereco }} {{ o.numero }}</td>
-            <td>{{ o.bairro }}</td>
-            <td>{{ o.cidade }}/{{ o.uf }}</td>
-            <td>{{ o.status_janela }}</td>
-            <td>{{ o.tag }}</td>
+            <th>OS</th><th>Técnico</th><th>UID</th><th>Horario</th><th>Tempo</th>
+            <th>Endereço</th><th>Status</th><th>Tag</th><th>Flag</th><th>OBS</th>
           </tr>
-        {% empty %}
-          <tr><td colspan="8">Nenhuma ordem detalhada encontrada</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {% for o in ordens %}
+            <tr class="status-{{ o.status_janela|default:'' }} flag-{{ o.flag|default:'' }}">
+              <td>{{ o.os }}</td>
+              <td>{{ o.nome_tecnico }}</td>
+              <td>{{ o.uid }}</td>
+              <td>{{ o.alteracao_hf }}</td>
+              <td>{{ o.tempo_restante }}</td>
+              <td>{{ o.endereco }}</td>
+              <td class="status {{ o.status_janela }}">{{ o.status_janela }}</td>
+              <td>{{ o.tag }}</td>
+              <td class="flag {{ o.flag }}">{{ o.flag }}</td>
+              <td class="mensagem {{ o.mensagem }}">{{ o.mensagem }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="8">Nenhuma ordem encontrada</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tabela Ordens Detalhadas (ativa apenas em botão especial depois) -->
+  <div class="container mt-4" id="tabela-detalhadas" style="display:none">
+    <h4>Ordens Detalhadas por Técnico</h4>
+    <div class="table-responsive">
+      <table class="styled-table dark">
+        <thead>
+          <tr>
+            <th>OS</th><th>Técnico</th><th>CEP</th><th>Endereço</th>
+            <th>Bairro</th><th>Cidade</th><th>Status</th><th>Tag</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for o in ordens_os %}
+            <tr class="status-{{ o.status_janela|default:'' }}">
+              <td>{{ o.os }}</td>
+              <td>{{ o.nome_tecnico }}</td>
+              <td>{{ o.cep }}</td>
+              <td>{{ o.endereco }} {{ o.numero }}</td>
+              <td>{{ o.bairro }}</td>
+              <td>{{ o.cidade }}/{{ o.uf }}</td>
+              <td>{{ o.status_janela }}</td>
+              <td>{{ o.tag }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="8">Nenhuma ordem detalhada encontrada</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

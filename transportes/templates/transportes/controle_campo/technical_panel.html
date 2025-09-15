@@ -4,106 +4,61 @@
   rel="stylesheet"
 />
 
+<!-- Cards -->
+{% include 'transportes/controle_campo/partials/panel_cards.html' %}
+    {%include "transportes/controle_campo/partials/panel_modal_tecnico.html" %}
+<!-- Métricas -->
 
-  <!-- Cards -->
-  {% include 'transportes/controle_campo/partials/panel_cards.html' %}
 
-  <!-- Métricas -->
-  <div class="container mt-4">
-    <div class="row">
-      <div class="col-md informacoes_basicas">
-        <div class="card-box border-black">
-          <i class="fa-regular fa-clock icon black"></i>
-          <div class="card-text">
-            <span>Média de Atraso</span>
-            <strong>{{ media_atraso }}</strong>
-          </div>
-        </div>
-      </div>
-      <div class="col-md informacoes_basicas">
-  {% if top %}
-    <a href="#"
-       class="card-box border-redore1"
-       data-bs-toggle="modal"
-       data-bs-target="#modalTecnico"
-       data-nome="{{ top.nome }}"
-       data-uid="{{ top.uid }}"
-       data-area="{{ top.area }}"
-       data-total="{{ top.total }}"
-       data-concluido="{{ top.concluido }}"
-       data-no-tempo="{{ top.no_tempo }}"
-       data-no-limite="{{ top.no_limite }}"
-       data-atrasado="{{ top.atrasado }}"
-       data-lastlogin="{{ top.lastlogin }}"
-       data-lastopening="{{ top.lastopening }}"
-       data-ocioso="{{ top.atraso_fmt }}"
-       data-phone="{{ top.phone }}">
-       
-       <i class="fa-regular fa-user icon redore1"></i>
-       <div class="card-text">
-         Técnico Mais Ocioso
-         <strong>{{ top.nome }} ({{ top.uid }})</strong>
-         <strong>{{ top.atraso_fmt }}</strong>
-       </div>
-    </a>
-  {% else %}
-    <div class="card-box border-redore1">
-      <i class="fa-regular fa-user icon redore1"></i>
-      <div class="card-text">
-        Técnico Mais Ocioso
-        <strong>—</strong>
-      </div>
-    </div>
-  {% endif %}
+ 
+    <!-- Tabelas -->
+    {% include 'transportes/controle_campo/partials/panel_tables.html' %}
+
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.addEventListener("show.bs.modal", function (event) {
+        const button = event.relatedTarget;
+        if (!button) return;
+
+        document.getElementById("modalTecNome").innerText =
+          button.dataset.nome || "—";
+        document.getElementById("modalTecUid").innerText =
+          button.dataset.uid || "—";
+        document.getElementById("modalTecArea").innerText =
+          button.dataset.area || "—";
+        document.getElementById("modalTecTotal").innerText =
+          button.dataset.total || "0";
+        document.getElementById("modalTecConcluido").innerText =
+          button.dataset.concluido || "0";
+        document.getElementById("modalTecNoTempo").innerText =
+          button.dataset.noTempo || "0";
+        document.getElementById("modalTecNoLimite").innerText =
+          button.dataset.noLimite || "0";
+        document.getElementById("modalTecAtrasado").innerText =
+          button.dataset.atrasado || "0";
+        document.getElementById("modalTecLastlogin").innerText =
+          button.dataset.lastlogin || "—";
+        document.getElementById("modalTecLastopening").innerText =
+          button.dataset.lastopening || "—";
+        document.getElementById("modalTecOcioso").innerText =
+          button.dataset.ocioso || "—";
+
+        const phoneLink = document.getElementById("modalTecPhone");
+        if (button.dataset.phone && button.dataset.phone !== "-") {
+          phoneLink.innerText = button.dataset.phone;
+          phoneLink.href = `https://wa.me/${button.dataset.phone}`;
+        } else {
+          phoneLink.innerText = "—";
+          phoneLink.removeAttribute("href");
+        }
+      });
+    </script>
+
+    {% endblock %}
+  </div>
 </div>
-
-  <!-- Tabelas -->
-  {% include 'transportes/controle_campo/partials/panel_tables.html' %}
-
-{% include "transportes/controle_campo/partials/panel_modal_tecnico.html" %}
-
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-/>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  document.addEventListener("show.bs.modal", function (event) {
-    const button = event.relatedTarget;
-    if (!button) return;
-
-    document.getElementById("modalTecNome").innerText =
-      button.dataset.nome || "—";
-    document.getElementById("modalTecUid").innerText =
-      button.dataset.uid || "—";
-    document.getElementById("modalTecArea").innerText =
-      button.dataset.area || "—";
-    document.getElementById("modalTecTotal").innerText =
-      button.dataset.total || "0";
-    document.getElementById("modalTecConcluido").innerText =
-      button.dataset.concluido || "0";
-    document.getElementById("modalTecNoTempo").innerText =
-      button.dataset.noTempo || "0";
-    document.getElementById("modalTecNoLimite").innerText =
-      button.dataset.noLimite || "0";
-    document.getElementById("modalTecAtrasado").innerText =
-      button.dataset.atrasado || "0";
-    document.getElementById("modalTecLastlogin").innerText =
-      button.dataset.lastlogin || "—";
-    document.getElementById("modalTecLastopening").innerText =
-      button.dataset.lastopening || "—";
-    document.getElementById("modalTecOcioso").innerText =
-      button.dataset.ocioso || "—";
-
-    const phoneLink = document.getElementById("modalTecPhone");
-    if (button.dataset.phone && button.dataset.phone !== "-") {
-      phoneLink.innerText = button.dataset.phone;
-      phoneLink.href = `https://wa.me/${button.dataset.phone}`;
-    } else {
-      phoneLink.innerText = "—";
-      phoneLink.removeAttribute("href");
-    }
-  });
-</script>
-
-{% endblock %}

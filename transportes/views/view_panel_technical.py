@@ -1,8 +1,10 @@
+import re
 import requests
 from django.shortcuts import render
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now, make_aware, is_naive, localtime
 from django.core.cache import cache
+
 
 def format_datetime(value):
     if not value:
@@ -13,6 +15,7 @@ def format_datetime(value):
     except Exception:
         return "—"
 
+
 def get_api_data(cache_key, url, params, headers, ttl=300):
     """Busca dados de API com cache"""
     data = cache.get(cache_key)
@@ -22,12 +25,28 @@ def get_api_data(cache_key, url, params, headers, ttl=300):
         cache.set(cache_key, data, ttl)
     return data
 
+
+def normalizar_celular(numero: str) -> str:
+    """Remove () + - e espaços, mantém apenas DDD + número"""
+    if not numero:
+        return ""
+    numero = re.sub(r"\D", "", numero)  # mantém só dígitos
+    if numero.startswith("55") and len(numero) > 11:
+        numero = numero[2:]  # remove código do país
+    return numero
+
+
 def dashboard_view(request):
     headers = {"accept": "application/json", "access_token": "123"}
     hoje_str = now().strftime("%Y-%m-%d")
     hoje = localtime(now()).date()
 
-    # Resumo geral + técnicos
+    # --- filtros recebidos da URL ---
+    filtro_status = request.GET.get("status_janela")
+    filtro_flag = request.GET.get("flag")
+    filtro_msg = request.GET.get("mensagem")
+
+    # --- Resumo geral + técnicos ---
     url_status = "http://192.168.0.214/RetencaoAPI/api/v3/Filtro_status/resumo-status-detalhado/claro"
     dados_status = get_api_data(f"status_{hoje_str}", url_status, {"date": hoje_str}, headers)
 
@@ -67,7 +86,7 @@ def dashboard_view(request):
             "nome": t.get("name"),
             "uid": t.get("uid"),
             "area": t.get("nome_unidade"),
-            "phone": t.get("phone"),
+            "phone": normalizar_celular(t.get("phone")),
             "lastlogin": format_datetime(lastlogin_raw),
             "lastopening": format_datetime(t.get("lastopening")),
             "atraso_min": atraso_min,
@@ -77,36 +96,52 @@ def dashboard_view(request):
             "abriu_hoje": abriu_hoje,
         })
 
-    # ordenação
+    # --- ordenação técnicos ---
     if any(t["atraso_min"] > 29 for t in tecnicos):
         tecnicos.sort(key=lambda x: (-x["atraso_min"], not x["abriu_hoje"]))
     else:
         tecnicos.sort(key=lambda x: (not x["abriu_hoje"], -x["atraso_min"]))
 
-    # métricas
+    # --- métricas ---
     atrasos_validos = [a for a in atrasos if a > 29]
     media_atraso = int(sum(atrasos_validos) / len(atrasos_validos)) if atrasos_validos else 0
     h, m = divmod(media_atraso, 60)
     media_fmt = f"{h}h {m}min" if h else f"{m}min"
     top = max((t for t in tecnicos if t["atraso_min"] > 29), key=lambda t: t["atraso_min"], default=None)
 
-    # Ordens gerais
+    # --- Ordens gerais ---
     url_ordens = "http://192.168.0.214/RetencaoAPI/api/v3/consultasM/ordens-atendidas-data/claro"
     dados_ordens = get_api_data(f"ordens_{hoje_str}", url_ordens, {"date": hoje_str}, headers)
 
     mapa_tecnicos = {t["uid"]: t["nome"] for t in tecnicos}
-    ordens = [{
-        "os": o.get("os"),
-        "uid": o.get("uid"),
-        "nome_tecnico": mapa_tecnicos.get(o.get("uid"), "-"),
-        "cep": o.get("cep"),
-        "endereco": o.get("logradouro"),
-        "status_janela": o.get("status_janela"),
-        "tag": o.get("tag"),
-        "flag": o.get("flag"),
-    } for o in dados_ordens if isinstance(dados_ordens, list)]
+    ordens = []
+    if isinstance(dados_ordens, list):
+        for o in dados_ordens:
+            item = {
+                "os": o.get("os"),
+                "uid": o.get("uid"),
+                "nome_tecnico": mapa_tecnicos.get(o.get("uid"), "-"),
+                "cep": o.get("cep"),
+                "endereco": o.get("logradouro"),
+                "status_janela": o.get("status_janela"),
+                "tag": o.get("tag"),
+                "flag": o.get("flag"),
+                "mensagem": o.get("mensagem"),  # 🔹 adicionado
+                "mensagem_critico": o.get("mensagem_critico", 0),
+            }
+            ordens.append(item)
 
-    # Ordens detalhadas por técnico
+    # --- aplicar filtros nas ordens ---
+    if filtro_status and filtro_status != "total":
+        ordens = [o for o in ordens if o["status_janela"] == filtro_status or o["tag"] == filtro_status]
+
+    if filtro_flag:
+        ordens = [o for o in ordens if o["flag"] == filtro_flag]
+
+    if filtro_msg and filtro_msg.upper() in ["CRITICO", "CRÍTICO"]:
+        ordens = [o for o in ordens if (o.get("mensagem") or "").upper() in ["CRITICO", "CRÍTICO"]]
+
+    # --- Ordens detalhadas por técnico ---
     ordens_os = []
     for t in tecnicos:
         uid = t["uid"]
@@ -117,7 +152,6 @@ def dashboard_view(request):
             {"date": hoje_str},
             headers
         )
-
         if not isinstance(dados_os_tecnico, list):
             continue
 
@@ -137,14 +171,18 @@ def dashboard_view(request):
                 "mensagem": o.get("mensagem"),
             })
 
-    
+    # --- decide se há filtro ativo ---
+    filtro_ativo = bool(filtro_status or filtro_flag or filtro_msg)
+
     context = {
         "geral": resumo_geral,
         "status": resumo_geral.get("status", {}),
         "tecnicos": tecnicos,
-        "ordens":None,
-        "ordens_os": None,
+        "ordens": ordens,
+        "ordens_os": ordens_os,
         "media_atraso": media_fmt,
         "top": top,
+        "filtro_ativo": filtro_ativo,
     }
+
     return render(request, "transportes/controle_campo/technical_panel.html", context)

@@ -1,3 +1,9 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
 :root {
   --background-formularios: #fff;
   --box-shadow-formularios: 0 0 17px rgba(0, 0, 0, 0.05);
@@ -80,16 +86,16 @@
 }
 
 /* ===================== */
-/* 🔹 cores (exemplo redore1) */
+/*  cores (exemplo redore1) */
 /* ===================== */
 .card-box.border-redore1 {
-  border-color:rgb(250, 180, 150);
-  color:rgb(250, 180, 150);
-    text-decoration: none;
+  border-color: #fc8e5b;
+  color: #fc8e5b;
+  text-decoration: none;
 }
 
 .card-box.border-redore1 .icon {
-  color:rgb(250, 180, 150);
+  color: #fc8e5b;
 }
 
 /* camada de preenchimento que cresce no hover */
@@ -100,7 +106,7 @@
   left: 0;
   width: 0;
   height: 100%;
-  background-color:rgb(250, 180, 150);
+  background-color : #fc8e5b;
   transition: width 0.4s ease-in-out;
   z-index: 0;
 }
@@ -125,7 +131,8 @@
 .card-box.border-redore1:hover strong,
 .card-box.border-redore1:hover small {
   color: #fff !important;
-  -webkit-text-fill-color: rgb(255, 255, 255)
+  -webkit-text-fill-color: rgb(255, 255, 255);
+  -text-decoration: none   !important;
 }
 /* Cores */
 .border-redore, .redore { 
@@ -136,14 +143,14 @@
 
 
 .border-redore1, .redore1 { 
-  border-color:rgb(250, 180, 150);
-  color:rgb(250, 188, 162);
-  -webkit-text-fill-color:rgb(250, 180, 150);
+  border-color: #fc8e5b;
+  color: #fc8e5b;
+  -webkit-text-fill-color: #fc8e5b;
 }
 .border-redore1, .redore1 { 
-  border-color:rgb(250, 188, 162);
-  color:rgb(250, 188, 162);
-  -webkit-text-fill-color:rgb(250, 180, 150);
+  border-color: #fc8e5b;
+  color: #fc8e5b;
+  -webkit-text-fill-color: #fc8e5b;
   
 }
 .card-box.border-redore1:hover::before {
@@ -214,20 +221,18 @@
 /* tabela */
 .styled-table {
   width: 100%;
-  border-collapse: collapse;
+/* permite arredondar */
+  border-spacing: 0;           /* remove espaço entre células */
   font-size: 15px;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-
-  /* borda externa */
-  border: 2px solid #000000;
   border-radius: 15px;
- 
-
+  overflow: hidden;            /* força o arredondamento funcionar */
 }
 
+
 .styled-table.dark thead tr {
-  background: rgb(253, 229, 219);
-  color: #000000;
+ background: #0077b6;
+  color: #ffffff;
 }
 
 .styled-table th,
@@ -235,8 +240,7 @@
   padding: 10px 14px;
   text-align: center;
 
-  /* linhas internas */
-  border: 1px solid #ffffff;
+  
 }
 
 .styled-table tbody tr:nth-of-type(even) {
@@ -244,30 +248,97 @@
 }
 
 .styled-table tbody tr:hover {
-  background-color: #f0f0f0;
+  background-color: #d8ddf0d5;
+}
+.icon-alert {
+  color: rgb(255, 14, 14) !important; /* laranja de alerta */
+}
+.alert-row td {
+  border-bottom: 3px solid  rgb(255, 14, 14) !important; /* borda visível */
+  
+  color: rgb(255, 14, 14) !important;   /* texto em vermelho */
+  font-weight: bold;
 }
 
-.alert-row {
-  background:  #fc8e5b !important;
-  color: #fff;
+
+.fa-eye{
+  color: #222;
+  
+}
+.fa-eye:hover{
+  color:#0077b6 !important;
 }
 
-.badge {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #fff;
+/* Status da janela */
+/* Status apenas no texto */
+/* td.status.concluido {
+  color: rgb(82, 105, 238);
+  font-weight: bold;
+  border-bottom: 3px solid  rgb(114, 104, 255) !important; /* borda visível 
+  
+} */
+.status.concluido{
+color:  rgb(82, 105, 238) !important;
+
+  
 }
-.badge.red { background: #ef4444; }
-.badge.green { background: #22c55e; }
+.status.no_tempo {
+  color: rgb(87, 153, 96);
+  font-weight: bold;
+}
 
+.status.no_limite {
+  color: #fc8e5b;
+  font-weight: bold;
+}
 
+.status.atrasado {
+  color: rgb(165, 81, 51);
+  font-weight: bold;
+}
 
+.status.sem_horario_definido {
+  color: rgb(114, 114, 114);
+  font-weight: bold;
+}
 
+/* Flags seguem a mesma lógica */
+td.flag.AZUL {
+  color:#5797ff !important;
+  
+ 
+}
+.mensagem_critico{
+  color:#03fd4e !important;
+}
+td.flag.AZUL {
+  color:#5797ff !important;
+  
+ 
+}
+.flag-AZUL {
+  color: rgb(0, 0, 0);
 
+  border-bottom: 3px solid rgb(82, 105, 238) !important; /* borda visível */
+}
 
+.flag-VERMELHO {
+ color: rgb(0, 0, 0);
+   border-bottom: 3px solid  rgb(243, 45, 10) !important; /* borda visível */
+}
+td.flag.VERMELHO {
+ color: rgb(243, 45, 10)!important;
+  
+}
+.flag-VERDE {
+ color: rgb(0, 0, 0);
+  border-bottom: 3px solid  rgb(87, 153, 96)!important; /* borda visível */
+}
 
+td.flag.VERDE {
+ color: rgb(87, 153, 96)!important;
+ 
+}
 
 
 .card-box {
@@ -294,7 +365,7 @@
 .card-box.active .icon,
 .card-box.active i {
   color: #fff !important;
-    -webkit-text-fill-color: rgb(255, 255, 255)
+    -webkit-text-fill-color: rgb(255, 255, 255);
 }
 /* cada card ativo com sua cor */
 .card-box .icon,
@@ -348,6 +419,7 @@
 .card-box.active .icon,
 .card-box.active i {
   color: #fff !important;
+  text-decoration: none   !important;
 }
 
 /* cores específicas */
@@ -369,7 +441,7 @@
 
 
 .filter-card{
-  text-decoration: none;  
+  text-decoration: none   !important;
 }
 
 
@@ -400,16 +472,12 @@
   font-size: 20px;
   color: #222;
 }
-.fa-eye{
-  color:var(--form-label-color)
-}
-.fa-eye:hover{
-  color: rgb(250, 208, 190);
-}
+
+
 #modalTecnico .tec-ficha {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 3 colunas iguais */
-  gap: 25px;
+  grid-template-columns: repeat(2, 1fr); 
+  gap: 8px;
 }
 
 #modalTecnico .linha {
