@@ -10,33 +10,27 @@ CARRY_PEDIDO_KEY = "carry_pedido_next"
 JSON_CT = "application/json"
 
 
+def view_order(order: str):
+
+    url = f"{API_URL}/api/v2/tracking-history/{order}"
+    client = RequestClient(
+        url=url,
+        method="GET",
+        headers={"Accept": JSON_CT},
+    )
+    try:
+        result = client.send_api_request()
+        if isinstance(result, list):
+            return result
+        return []
+    except Exception as e:
+        print(f"Erro ao buscar histórico da tracking: {e}")
+        return []
+
+
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 def order_detail(request, order: str):
-
-    historico_tracking = [
-        {
-            "id": 1416,
-            "order_number": "10391331042730",
-            "tracking_number": "209",
-            "tracking_name": "VOLUME RECEBIDO PARA CONFERENCIA",
-            "status_code": 200
-        },
-        {
-            "id": 737,
-            "order_number": "10391331042730",
-            "tracking_number": "200",
-            "tracking_name": "Recebido para picking",
-            "status_code": 200
-        },
-        {
-            "id": 1490,
-            "order_number": "10391331042730",
-            "tracking_number": "209",
-            "tracking_name": "VOLUME RECEBIDO PARA CONFERENCIA",
-            "status_code": 200
-        }
-    ]
 
     url = f"{API_URL}/api/order-sumary/{order}"
     client = RequestClient(
@@ -69,6 +63,8 @@ def order_detail(request, order: str):
             return form[name]
         except Exception:
             return None
+
+    historico_tracking = view_order(order)
 
     tipo = (form.fields['shipment_order_type'].initial or '').strip().upper()
 
