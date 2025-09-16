@@ -91,5 +91,7 @@ def order_detail(request, order: str):
         "historico_tracking": historico_tracking,
         "botao_texto": botao_texto,
         "site_title": "Detalhe do Pedido",
-        "nome_formulario": form.form_title
+        "nome_formulario": form.form_title,
+        "export_payload": result.get("payload"),
+        "import_response": result.get("response"),
     })
