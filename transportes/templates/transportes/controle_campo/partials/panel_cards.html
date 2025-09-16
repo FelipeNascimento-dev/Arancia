@@ -1,103 +1,120 @@
-
+{% load query_filters %}
 <div class="setcontainer">
-
-<div class="container filter-group mt-2">
-  <div class="row">
-    <!-- Total -->
-    <div class="col-md informacoes_basicas" >
-      <a href="?status_janela=total" class="card-box border-black filter-card">
-        <i class="fa-regular fa-clipboard icon black"></i>
-        <div class="card-text">
-          <span >Total</span>
-          <strong>{{ geral.total }}</strong>
-        </div>
-      </a>
-    </div>
-
-    <!-- Concluído -->
-    <div class="col-md informacoes_basicas">
-      <a href="?status_janela=concluido" class="card-box border-blue1 filter-card">
-        <i class="fa-regular fa-circle-check icon blue1"></i>
-        <div class="card-text">
-          <span>Concluído</span>
-          <strong>{{ status.concluido }}</strong>
-        </div>
-      </a>
-    </div>
-
-    <!-- No Tempo -->
-    <div class="col-md informacoes_basicas">
-      <a href="?status_janela=no_tempo" class="card-box border-green1 filter-card">
-        <i class="fa-regular fa-thumbs-up icon green1"></i>
-        <div class="card-text">
-          <span>No Tempo</span>
-          <strong>{{ status.no_tempo }}</strong>
-        </div>
-      </a>
-    </div>
-
-    <!-- No Limite -->
-    <div class="col-md informacoes_basicas">
-      <a href="?status_janela=no_limite" class="card-box border-orange filter-card">
-        <i class="fa-regular fa-hourglass-half icon orange"></i>
-        <div class="card-text">
-          <span>No Limite</span>
-          <strong>{{ status.no_limite }}</strong>
-        </div>
-      </a>
-    </div>
-
-    <!-- Atrasado -->
-    <div class="col-md informacoes_basicas">
-      <a href="?status_janela=atrasado" class="card-box border-redore filter-card">
-        <i class="fa-solid fa-hourglass-end icon redore"></i>
-        <div class="card-text">
-          <span>Atrasado</span>
-          <strong>{{ status.atrasado }}</strong>
-        </div>
-      </a>
-    </div>
-  </div>
+{% if filtro_ativo %}
+<div class="container mt-2">
+  <a href="{{ request.path }}" class="btn btn-outline-secondary btn-xs">
+    Limpar Filtros
+  </a>
 </div>
+{% endif %}
+<br>
+  <div class="container filter-group mt-2">
+    <div class="row">
+      <!-- Total -->
+      <div class="col-md informacoes_basicas">
+        <a href="{% query_update status_janela='total' %}"
+           class="card-box border-black filter-card {% if request.GET.status_janela == 'total' %}active{% endif %}">
+          <i class="fa-regular fa-clipboard icon black"></i>
+          <div class="card-text">
+            <span>Total</span>
+            <strong>{{ geral.total }}</strong>
+          </div>
+        </a>
+      </div>
 
-<!-- Segunda linha de cards -->
-<div class="container filter-group mt-4">
-  <div class="row">
-    <!-- Casos Azuis -->
-    <div class="col-md informacoes_basicas">
-      <a href="?flag=AZUL" class="card-box border-blue filter-card">
-        <i class="fa-solid fa-bookmark icon blue"></i>
-        <div class="card-text">
-          <strong>Casos Azuis</strong>
-          <strong>{{ status.flag_azul }}</strong>
-        </div>
-      </a>
-    </div>
+      <!-- Concluído -->
+      <div class="col-md informacoes_basicas">
+        <a href="{% query_update status_janela='concluido' %}"
+           class="card-box border-blue1 filter-card {% if request.GET.status_janela == 'concluido' %}active{% endif %}">
+          <i class="fa-regular fa-circle-check icon blue1"></i>
+          <div class="card-text">
+            <span>Concluído</span>
+            <strong>{{ status.concluido }}</strong>
+          </div>
+        </a>
+      </div>
 
-    <!-- Casos Vermelhos -->
-    <div class="col-md informacoes_basicas">
-      <a href="?flag=VERMELHO" class="card-box border-red filter-card">
-        <i class="fa-solid fa-bookmark icon red"></i>
-        <div class="card-text">
-          <strong>Casos Vermelhos</strong>
-          <strong>{{ status.flag_vermelho }}</strong>
-        </div>
-      </a>
-    </div>
+      <!-- No Tempo -->
+      <div class="col-md informacoes_basicas">
+        <a href="{% query_update status_janela='no_tempo' %}"
+           class="card-box border-green1 filter-card {% if request.GET.status_janela == 'no_tempo' %}active{% endif %}">
+          <i class="fa-regular fa-thumbs-up icon green1"></i>
+          <div class="card-text">
+            <span>No Tempo</span>
+            <strong>{{ status.no_tempo }}</strong>
+          </div>
+        </a>
+      </div>
 
-    <!-- Casos Críticos -->
-    <div class="col-md informacoes_basicas">
-      <a href="?mensagem=CRÍTICO" class="card-box border-green filter-card">
-        <i class="fa-solid fa-bookmark icon green"></i>
-        <div class="card-text">
-          <strong>Casos Críticos</strong>
-          <strong>{{ status.mensagem_critico }}</strong>
-        </div>
-      </a>
+      <!-- No Limite -->
+      <div class="col-md informacoes_basicas">
+        <a href="{% query_update status_janela='no_limite' %}"
+           class="card-box border-orange filter-card {% if request.GET.status_janela == 'no_limite' %}active{% endif %}">
+          <i class="fa-regular fa-hourglass-half icon orange"></i>
+          <div class="card-text">
+            <span>No Limite</span>
+            <strong>{{ status.no_limite }}</strong>
+          </div>
+        </a>
+      </div>
+
+      <!-- Atrasado -->
+      <div class="col-md informacoes_basicas">
+        <a href="{% query_update status_janela='atrasado' %}"
+           class="card-box border-redore filter-card {% if request.GET.status_janela == 'atrasado' %}active{% endif %}">
+          <i class="fa-solid fa-hourglass-end icon redore"></i>
+          <div class="card-text">
+            <span>Atrasado</span>
+            <strong>{{ status.atrasado }}</strong>
+          </div>
+        </a>
+      </div>
     </div>
-    
   </div>
-</div> <div class="filter-group mt-3">
+
+  <!-- Segunda linha de cards -->
+  <div class="container filter-group mt-4">
+    <div class="row">
+      <!-- Casos Azuis -->
+      <div class="col-md informacoes_basicas">
+        <a href="{% query_update flag='AZUL' %}"
+           class="card-box border-blue filter-card {% if request.GET.flag == 'AZUL' %}active{% endif %}">
+          <i class="fa-solid fa-bookmark icon blue"></i>
+          <div class="card-text">
+            <strong>Casos Azuis</strong>
+            <strong>{{ status.flag_azul }}</strong>
+          </div>
+        </a>
+      </div>
+
+      <!-- Casos Vermelhos -->
+      <div class="col-md informacoes_basicas">
+        <a href="{% query_update flag='VERMELHO' %}"
+           class="card-box border-red filter-card {% if request.GET.flag == 'VERMELHO' %}active{% endif %}">
+          <i class="fa-solid fa-bookmark icon red"></i>
+          <div class="card-text">
+            <strong>Casos Vermelhos</strong>
+            <strong>{{ status.flag_vermelho }}</strong>
+          </div>
+        </a>
+      </div>
+
+      <!-- Casos Críticos -->
+      <div class="col-md informacoes_basicas">
+        <a href="{% query_update mensagem='CRÍTICO' %}"
+           class="card-box border-green filter-card {% if request.GET.mensagem == 'CRÍTICO' %}active{% endif %}">
+          <i class="fa-solid fa-bookmark icon green"></i>
+          <div class="card-text">
+            <strong>Casos Críticos</strong>
+            <strong>{{ status.mensagem_critico }}</strong>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+
+<div class="filter-group mt-3">
   <div class="row">
     <div class="col-md informacoes_basicas">
       <div class="card-box border-black">
@@ -144,4 +161,8 @@
         </div>
       </div>
       {% endif %}
-    </div> </div></div></div>
+    </div> 
+  </div>
+</div>
+
+</div>

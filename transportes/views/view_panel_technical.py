@@ -45,6 +45,7 @@ def dashboard_view(request):
     filtro_status = request.GET.get("status_janela")
     filtro_flag = request.GET.get("flag")
     filtro_msg = request.GET.get("mensagem")
+    filtro_unidade = request.GET.get("unidade")
 
     # --- Resumo geral + técnicos ---
     url_status = "http://192.168.0.214/RetencaoAPI/api/v3/Filtro_status/resumo-status-detalhado/claro"
@@ -96,6 +97,13 @@ def dashboard_view(request):
             "abriu_hoje": abriu_hoje,
         })
 
+    # --- cópia antes do filtro de unidade ---
+    todos_tecnicos = tecnicos.copy()
+
+        # --- aplicar filtro de unidade (só técnicos) ---
+    if filtro_unidade:
+        tecnicos = [t for t in tecnicos if t["area"] == filtro_unidade]
+
     # --- ordenação técnicos ---
     if any(t["atraso_min"] > 29 for t in tecnicos):
         tecnicos.sort(key=lambda x: (-x["atraso_min"], not x["abriu_hoje"]))
@@ -115,18 +123,21 @@ def dashboard_view(request):
 
     mapa_tecnicos = {t["uid"]: t["nome"] for t in tecnicos}
     ordens = []
+  
     if isinstance(dados_ordens, list):
         for o in dados_ordens:
             item = {
                 "os": o.get("os"),
                 "uid": o.get("uid"),
                 "nome_tecnico": mapa_tecnicos.get(o.get("uid"), "-"),
+                "alteracao_hf": o.get("alteracao_hf"),
+                "tempo_restante": o.get ("tempo_restante") or "-",
                 "cep": o.get("cep"),
-                "endereco": o.get("logradouro"),
+                "endereco": o.get("logradouro") or "",
                 "status_janela": o.get("status_janela"),
                 "tag": o.get("tag"),
                 "flag": o.get("flag"),
-                "mensagem": o.get("mensagem"),  # 🔹 adicionado
+                "mensagem": o.get("mensagem") or "",
                 "mensagem_critico": o.get("mensagem_critico", 0),
             }
             ordens.append(item)
@@ -140,39 +151,89 @@ def dashboard_view(request):
 
     if filtro_msg and filtro_msg.upper() in ["CRITICO", "CRÍTICO"]:
         ordens = [o for o in ordens if (o.get("mensagem") or "").upper() in ["CRITICO", "CRÍTICO"]]
-
-    # --- Ordens detalhadas por técnico ---
+        
+       # --- Ordens detalhadas por técnico ---
     ordens_os = []
-    for t in tecnicos:
-        uid = t["uid"]
-        url_os_tecnico = f"http://127.0.0.1:8000/RetencaoAPI/api/v3/consultas/CTBSEQ/ordens-atendidas-data/{uid}"
-        dados_os_tecnico = get_api_data(
-            f"ordens_tecnico_{uid}_{hoje_str}",
-            url_os_tecnico,
-            {"date": hoje_str},
-            headers
-        )
-        if not isinstance(dados_os_tecnico, list):
-            continue
+    ver_rota_uid = request.GET.get("ver_rota")
+    exibir_detalhadas = ver_rota_uid is not None
 
-        for o in dados_os_tecnico:
-            ordens_os.append({
-                "uid": uid,
-                "nome_tecnico": t["nome"],
-                "os": o.get("os"),
-                "cep": o.get("cep"),
-                "endereco": o.get("logradouro"),
-                "numero": o.get("numero"),
-                "bairro": o.get("bairro"),
-                "cidade": o.get("cidade"),
-                "uf": o.get("uf"),
-                "status_janela": o.get("status_janela"),
-                "tag": o.get("tag"),
-                "mensagem": o.get("mensagem"),
-            })
+    if ver_rota_uid:
+        for t in tecnicos:
+            uid = str(t["uid"])
+            if uid != ver_rota_uid:
+                continue
+
+            url_os_tecnico = f"http://192.168.0.214/RetencaoAPI/api/v3/consultas/CTBSEQ/ordens-atendidas-data/{uid}"
+            dados_os_tecnico = get_api_data(
+                f"ordens_tecnico_{uid}_{hoje_str}",
+                url_os_tecnico,
+                {"date": hoje_str},
+                headers
+            )
+
+            print("Consultando ordens detalhadas:", uid, hoje_str, url_os_tecnico)
+            print("Qtd ordens retornadas:", len(dados_os_tecnico) if isinstance(dados_os_tecnico, list) else "não é lista")
+
+            # força lista mesmo se vier dict único
+            if isinstance(dados_os_tecnico, dict):
+                dados_os_tecnico = [dados_os_tecnico]
+            elif not isinstance(dados_os_tecnico, list):
+                dados_os_tecnico = []
+
+            for o in dados_os_tecnico:
+                ordens_os.append({
+                    "uid": uid,
+                    "nome_tecnico": t["nome"],
+                    "os": o.get("os"),
+                    "cep": o.get("cep"),
+                    "endereco": o.get("logradouro"),
+                    "numero": o.get("numero") or "",
+                    "bairro": o.get("bairro"),
+                    "cidade": o.get("cidade"),
+                    "uf": o.get("uf"),
+                    "status_janela": o.get("status_janela"),
+                    "tag": o.get("tag"),
+                    "mensagem": o.get("mensagem") or "",
+                    "alteracao_hf": o.get("alteracao_hf"),
+                    "tempo_restante": o.get("tempo_restante"),
+                    "flag": o.get("flag"),
+                })
 
     # --- decide se há filtro ativo ---
-    filtro_ativo = bool(filtro_status or filtro_flag or filtro_msg)
+    filtro_ativo = bool(filtro_status or filtro_flag or filtro_msg )
+    filtro_unidade = request.GET.get("unidade") or None
+    if filtro_status and filtro_status != "total":
+        ordens_os = [
+            o for o in ordens_os
+            if o["status_janela"] == filtro_status or o["tag"] == filtro_status
+        ]
+
+    if filtro_flag:
+        ordens_os = [o for o in ordens_os if o.get("flag") == filtro_flag]
+
+    if filtro_msg and filtro_msg.upper() in ["CRITICO", "CRÍTICO"]:
+        ordens_os = [
+            o for o in ordens_os
+            if (o.get("mensagem") or "").upper() in ["CRITICO", "CRÍTICO"]
+        ]
+    # --- cards de status ---
+    status_cards = [
+        {"key": "total", "label": "Total", "icon": "fa-clipboard", "border": "border-black", "color": "black", "value": resumo_geral.get("total", 0)},
+        {"key": "concluido", "label": "Concluído", "icon": "fa-circle-check", "border": "border-blue1", "color": "blue1", "value": resumo_geral.get("status", {}).get("concluido", 0)},
+        {"key": "no_tempo", "label": "No Tempo", "icon": "fa-thumbs-up", "border": "border-green1", "color": "green1", "value": resumo_geral.get("status", {}).get("no_tempo", 0)},
+        {"key": "no_limite", "label": "No Limite", "icon": "fa-hourglass-half", "border": "border-orange", "color": "orange", "value": resumo_geral.get("status", {}).get("no_limite", 0)},
+        {"key": "atrasado", "label": "Atrasado", "icon": "fa-hourglass-end", "border": "border-redore", "color": "redore", "value": resumo_geral.get("status", {}).get("atrasado", 0)},
+    ]
+
+    # --- cards de flag/mensagem ---
+    flag_cards = [
+        {"param": "AZUL", "query": "flag", "label": "Casos Azuis", "color": "blue", "value": resumo_geral.get("status", {}).get("flag_azul", 0)},
+        {"param": "VERMELHO", "query": "flag", "label": "Casos Vermelhos", "color": "red", "value": resumo_geral.get("status", {}).get("flag_vermelho", 0)},
+        {"param": "CRÍTICO", "query": "mensagem", "label": "Casos Críticos", "color": "green", "value": resumo_geral.get("status", {}).get("mensagem_critico", 0)},
+    ]
+
+    # --- unidades para os filtros ---
+    unidades = sorted({t.get("area") for t in todos_tecnicos if t.get("area")})
 
     context = {
         "geral": resumo_geral,
@@ -183,6 +244,12 @@ def dashboard_view(request):
         "media_atraso": media_fmt,
         "top": top,
         "filtro_ativo": filtro_ativo,
+        "status_cards": status_cards,
+        "flag_cards": flag_cards,
+        "ver_rota_uid": ver_rota_uid,
+        "exibir_detalhadas": exibir_detalhadas,
+        "unidades": unidades,
+        "filtro_unidade": filtro_unidade,
     }
 
     return render(request, "transportes/controle_campo/technical_panel.html", context)

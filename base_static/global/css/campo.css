@@ -248,7 +248,7 @@ body {
 }
 
 .styled-table tbody tr:hover {
-  background-color: #d8ddf0d5;
+  background-color:#c7e9ffcc;
 }
 .icon-alert {
   color: rgb(255, 14, 14) !important; /* laranja de alerta */
@@ -445,6 +445,7 @@ td.flag.VERDE {
 }
 
 
+
 .abrir-modal{
   cursor: pointer;
   color: #000000ff;
@@ -454,7 +455,8 @@ td.flag.VERDE {
   color: rgb(255, 255, 255);
 }
 
-#modalTecnico .modal-content {
+.modal-content {
+  
   border-radius: 12px;
   border: none;
   box-shadow: 0 6px 20px rgba(0,0,0,0.2);
@@ -465,7 +467,7 @@ td.flag.VERDE {
     color: #222;
 }
 
-#modalTecnico .tec-nome {
+.tec-nome {
   margin-bottom: 15px;
   padding-bottom: 10px;
   border-bottom: 2px solid #eee;
@@ -474,13 +476,13 @@ td.flag.VERDE {
 }
 
 
-#modalTecnico .tec-ficha {
+.tec-ficha,.ordem-ficha {
   display: grid;
   grid-template-columns: repeat(2, 1fr); 
   gap: 8px;
 }
 
-#modalTecnico .linha {
+.linha {
   display: flex;
   justify-content: space-between;
   padding: 8px 12px;
@@ -489,8 +491,8 @@ td.flag.VERDE {
   font-size: 14px;
 }
 
-#modalTecnico .linha .titulo {
-  font-weight: 600;
+ .linha .titulo {
+  font-weight: 900;
   color: #444;
   
 }
@@ -509,13 +511,13 @@ td.flag.VERDE {
   color: inherit;           /* evita roxo */
 }
 
-#modalTecnico .linha .valor {
+.linha .valor {
   font-weight: 500;
   color: #222;
   text-align: right;
 }
 
-#modalTecnico .modal-footer {
+.modal-footer {
   border-top: 1px solid #eee;
   background: #fafafa;
   border-bottom-left-radius: 12px;
@@ -533,13 +535,59 @@ td.flag.VERDE {
   border-color: #ff833c;
 }
 
-#modalTecnico .whatsapp-link {
+.whatsapp-link {
   color: #101b14;
   font-weight: bold;
   text-decoration: none;
 }
 
-#modalTecnico .whatsapp-link:hover {
+.whatsapp-link:hover {
   text-decoration: underline;
   color: #577732;
+}
+
+
+.unidade-filter {
+  margin-top: 10px;
+}
+
+/* cada card de unidade */
+.unidade-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;           /* ocupa toda a largura da coluna */
+  min-height: 55px;
+  border: 2px solid #3f3f3f;
+  border-radius: 8px;
+  background-color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  color: #3f3f3f;
+  text-decoration: none;  /* remove sublinhado azul */
+  transition: all 0.2s ease-in-out;
+}
+
+/* ícone */
+.unidade-icon {
+  font-size: 16px;
+  margin-right: 6px;
+  color: #3f3f3f;
+}
+
+/* hover */
+.unidade-card:hover {
+  background-color: #c7e9ffcc;
+  transform: translateY(-2px);
+}
+
+/* ativo */
+.unidade-card.active {
+  border-color: #168dd8;
+  background: #168dd8;
+  color: #fff;
+}
+
+.unidade-card.active .unidade-icon {
+  color: #fff;
 }

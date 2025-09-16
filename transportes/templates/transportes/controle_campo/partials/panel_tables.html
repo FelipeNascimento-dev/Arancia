@@ -1,294 +1,135 @@
-<!-- Tabela Técnicos -->
+
+
 <div class="setcontainer">
-  <div class="container mt-4" id="tabela-tecnicos"
-       {% if filtro_ativo %}style="display:none"{% endif %}>
-    <h4>Resumo por Técnico</h4>
-    <div class="table-responsive">
-      {% if tecnicos %}
-      <table class="styled-table dark">
-        <thead>
-          <tr>
-            <th>Ação</th>
-            <th>Nome</th>
-            <th>UID</th>
-            <th>Unidade</th>
-            <th>Total OS</th>
-            <th>Concluído</th>
-            <th>No Tempo</th>
-            <th>No Limite</th>
-            <th>Atrasado</th>
-            <th>Último Login</th>
-            <th>Última Abertura</th>
-            <th>Tempo Ocioso</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for t in tecnicos %}
-            <tr {% if t.atraso_min > 29 %}class="alert-row"{% endif %}>
-              <td>
-                <a href="#" data-bs-toggle="modal" data-bs-target="#modalTecnico"
-                   data-nome="{{ t.nome }}"
-                   data-uid="{{ t.uid }}"
-                   data-area="{{ t.area }}"
-                   data-total="{{ t.total }}"
-                   data-concluido="{{ t.concluido }}"
-                   data-no-tempo="{{ t.no_tempo }}"
-                   data-no-limite="{{ t.no_limite }}"
-                   data-atrasado="{{ t.atrasado }}"
-                   data-lastlogin="{{ t.lastlogin }}"
-                   data-lastopening="{{ t.lastopening }}"
-                   data-ocioso="{{ t.atraso_fmt }}"
-                   data-phone="{{ t.phone }}">
-                   <i class="fa-regular fa-eye {% if t.atraso_min > 29 %}icon-alert{% endif %}"></i>
-                </a>
-              </td>
-              <td>{{ t.nome }}</td>
-              <td>{{ t.uid }}</td>
-              <td>{{ t.area }}</td>
-              <td>{{ t.total }}</td>
-              <td>{{ t.concluido }}</td>
-              <td>{{ t.no_tempo }}</td>
-              <td>{{ t.no_limite }}</td>
-              <td>{{ t.atrasado }}</td>
-              <td>{{ t.lastlogin }}</td>
-              <td>{{ t.lastopening }}</td>
-              <td>{{ t.atraso_fmt }}</td>
-            </tr>
-          {% empty %}
-            <tr><td colspan="12">Nenhum técnico encontrado</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% endif %}
-    </div>
-  </div>
 
-  <!-- Tabela Ordens Gerais -->
-  <div class="container mt-4" id="tabela-ordens"
-       {% if not filtro_ativo %}style="display:none"{% endif %}>
-    <h4>Ordens Atendidas</h4>
-    <div class="table-responsive">
-      <table class="styled-table dark">
-        <thead>
-          <tr>
-            <th>Ação</th><th>OS</th><th>Técnico</th><th>UID</th><th>Horario</th><th>Tempo</th>
-            <th>Endereço</th><th>Status</th><th>Tag</th><th>Flag</th><th>OBS</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for o in ordens %}
-            <tr class="status-{{ o.status_janela|default:'' }} flag-{{ o.flag|default:'' }}">
-              <td><i class="fa-regular fa-eye "></i></td>
-              <td>{{ o.os }}</td>
-              <td>{{ o.nome_tecnico }}</td>
-              <td>{{ o.uid }}</td>
-              <td>{{ o.alteracao_hf }}</td>
-              <td>{{ o.tempo_restante }}</td>
-              <td>{{ o.endereco }}</td>
-              <td class="status {{ o.status_janela }}">{{ o.status_janela }}</td>
-              <td>{{ o.tag }}</td>
-              <td class="flag {{ o.flag }}">{{ o.flag }}</td>
-              <td class="mensagem {{ o.mensagem }}">{{ o.mensagem }}</td>
-              
-            </tr>
-          {% empty %}
-            <tr><td colspan="8">Nenhuma ordem encontrada</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
 
-  <!-- Tabela Ordens Detalhadas (ativa apenas em botão especial depois) -->
- <!-- Tabela Ordens Detalhadas -->
-<div class="container mt-4" id="tabela-detalhadas" style="display:none">
-  <div class="d-flex justify-content-between align-items-center mb-2">
-    <h4>Ordens Detalhadas por Técnico</h4>
-    <button id="btnVoltarTecnicos" class="btn btn-secondary btn-sm">
-      ← Voltar para Técnicos
-    </button>
+<!-- TABELA DE TÉCNICOS -->
+<div id="tabela-tecnicos" {% if filtro_ativo or ver_rota_uid %}style="display:none"{% endif %}>
+
+  <h4>Resumo por Técnico</h4>
+  <div class="table-responsive">
+    {% if tecnicos %}
+    <table class="styled-table dark">
+      <thead>
+        <tr>
+          <th>Ação</th><th>Nome</th><th>UID</th><th>Unidade</th>
+          <th>Total OS</th><th>Concluído</th><th>No Tempo</th><th>No Limite</th>
+          <th>Atrasado</th><th>Último Login</th><th>Última Abertura</th><th>Tempo Ocioso</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tecnicos %}
+        <tr {% if t.atraso_min > 29 %}class="alert-row"{% endif %}>
+          <td>
+            <a href="#" data-bs-toggle="modal" data-bs-target="#modalTecnico"
+               data-nome="{{ t.nome }}" data-uid="{{ t.uid }}" data-area="{{ t.area }}"
+               data-total="{{ t.total }}" data-concluido="{{ t.concluido }}"
+               data-no-tempo="{{ t.no_tempo }}" data-no-limite="{{ t.no_limite }}"
+               data-atrasado="{{ t.atrasado }}" data-lastlogin="{{ t.lastlogin }}"
+               data-lastopening="{{ t.lastopening }}" data-ocioso="{{ t.atraso_fmt }}"
+               data-phone="{{ t.phone }}">
+              <i class="fa-regular fa-eye {% if t.atraso_min > 29 %}icon-alert{% endif %}"></i>
+            </a>
+          </td>
+          <td>{{ t.nome }}</td><td>{{ t.uid }}</td><td>{{ t.area }}</td>
+          <td>{{ t.total }}</td><td>{{ t.concluido }}</td><td>{{ t.no_tempo }}</td>
+          <td>{{ t.no_limite }}</td><td>{{ t.atrasado }}</td>
+          <td>{{ t.lastlogin }}</td><td>{{ t.lastopening }}</td><td>{{ t.atraso_fmt }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="12">Nenhum técnico encontrado</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
   </div>
+</div>
+
+<!-- TABELA DE ORDENS FILTRADAS -->
+<div id="tabela-ordens" {% if not filtro_ativo or ver_rota_uid %}style="display:none"{% endif %} > <h4>Ordens Atendidas</h4>
   <div class="table-responsive">
     <table class="styled-table dark">
       <thead>
         <tr>
-          <th>Ação</th> <th>OS</th><th>Técnico</th><th>CEP</th><th>Endereço</th>
-          <th>Bairro</th><th>Cidade</th><th>Status</th><th>Tag</th>
+          <th>Ação</th><th>OS</th><th>Técnico</th><th>UID</th>
+          <th>Horário</th><th>Tempo Restante</th><th>Endereço</th><th>Status</th>
+          <th>Tag</th><th>Flag</th><th>OBS</th>
         </tr>
       </thead>
       <tbody>
-        {% for o in ordens_os %}
-          <tr class="ordem-linha" data-uid="{{ o.uid }}">
-            <td><i class="fa-regular fa-eye "></i></td>
-            <td>{{ o.os }}</td>
-            <td>{{ o.nome_tecnico }}</td>
-            <td>{{ o.cep }}</td>
-            <td>{{ o.endereco }} {{ o.numero }}</td>
-            <td>{{ o.bairro }}</td>
-            <td>{{ o.cidade }}/{{ o.uf }}</td>
-            <td>{{ o.status_janela }}</td>
-            <td>{{ o.tag }}</td>
-          </tr>
+        {% for o in ordens %}
+        <tr class="status-{{ o.status_janela|default:'' }} flag-{{ o.flag|default:'' }}">
+          <td>
+          <a href="#" data-bs-toggle="modal" data-bs-target="#modalOrdem"
+            data-os="{{ o.os |default:"-"  }}" data-nome="{{ o.nome_tecnico |default:"-" }}" data-uid="{{ o.uid |default:"-" }}"
+            data-horario="{{ o.alteracao_hf |default:"-" }}" data-tempo="{{ o.tempo_restante|default:"-"  }}"
+            data-endereco="{{ o.endereco |default:"-" }}" data-status="{{ o.status_janela |default:"-" }}"
+            data-tag="{{ o.tag |default:"-" }}" data-flag="{{ o.flag|default:"-"  }}" data-mensagem="{{ o.mensagem|default:"-"  }}">
+            <i class="fa-regular fa-eye"></i>
+          </a>
+        </td>
+
+          <td>{{ o.os|default:"-"  }}</td><td>{{ o.nome_tecnico |default:"-" }}</td><td>{{ o.uid|default:"-"  }}</td>
+          <td>{{ o.alteracao_hf|default:"-" }}</td><td>{{ o.tempo_restante |default:"-" }}</td>
+          <td>{{ o.endereco |default:"-" }}</td><td class="status {{ o.status_janela }}">{{ o.status_janela |default:"-" }}</td>
+          <td>{{ o.tag |default:"-" }}</td><td class="flag {{ o.flag }}">{{ o.flag }}</td>
+          <td class="mensagem {{ o.mensagem }}">{{ o.mensagem|default:"-"  }}</td>
+        </tr>
         {% empty %}
-          <tr><td colspan="8">Nenhuma ordem detalhada encontrada</td></tr>
+        <tr><td colspan="11">Nenhuma ordem encontrada</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
-<script>
-// --- botão Voltar para técnicos ---
-const btnVoltar = document.getElementById("btnVoltarTecnicos");
-if (btnVoltar) {
-  btnVoltar.addEventListener("click", function () {
-    // mostra tabela de técnicos
-    document.getElementById("tabela-detalhadas").style.display = "none";
-    document.getElementById("tabela-ordens").style.display = "none";
-    document.getElementById("tabela-tecnicos").style.display = "block";
 
-    // limpa filtro de linhas
-    document.querySelectorAll("#tabela-detalhadas tbody tr.ordem-linha")
-      .forEach(row => row.style.display = "");
+<!-- TABELA DETALHADA POR TÉCNICO (MODAL) -->
+<div id="tabela-filtrada"{%if not ver_rota_uid %}style="display:none"{% endif %} >
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    {% if ordens_os %}
+    <h4 style='color:#168dd8;'>
+      Ordens Detalhadas - Técnico: {{ ordens_os.0.nome_tecnico |default:"-" }} (UID: {{ ordens_os.0.uid }})
+    </h4>
+  {% else %}
+    <h4>Ordens Detalhadas</h4>
+  {% endif %}
+       <a href="{{ request.path }}" class="btn btn-secondary btn-sm">
+      ← Voltar para Técnicos
+    </a>
     
-    // rola para cima até técnicos
-    document.getElementById("tabela-tecnicos").scrollIntoView({ behavior: "smooth" });
-  });
-}
-</script>
-<script>
-      document.addEventListener("show.bs.modal", function (event) {
-        const button = event.relatedTarget;
-        if (!button) return;
+  </div>
+  <div>
 
-        document.getElementById("modalTecNome").innerText =
-          button.dataset.nome || "—";
-        document.getElementById("modalTecUid").innerText =
-          button.dataset.uid || "—";
-        document.getElementById("modalTecArea").innerText =
-          button.dataset.area || "—";
-        document.getElementById("modalTecTotal").innerText =
-          button.dataset.total || "0";
-        document.getElementById("modalTecConcluido").innerText =
-          button.dataset.concluido || "0";
-        document.getElementById("modalTecNoTempo").innerText =
-          button.dataset.noTempo || "0";
-        document.getElementById("modalTecNoLimite").innerText =
-          button.dataset.noLimite || "0";
-        document.getElementById("modalTecAtrasado").innerText =
-          button.dataset.atrasado || "0";
-        document.getElementById("modalTecLastlogin").innerText =
-          button.dataset.lastlogin || "—";
-        document.getElementById("modalTecLastopening").innerText =
-          button.dataset.lastopening || "—";
-        document.getElementById("modalTecOcioso").innerText =
-          button.dataset.ocioso || "—";
-
-        const phoneLink = document.getElementById("modalTecPhone");
-        if (button.dataset.phone && button.dataset.phone !== "-") {
-          phoneLink.innerText = button.dataset.phone;
-          phoneLink.href = `https://wa.me/${button.dataset.phone}`;
-        } else {
-          phoneLink.innerText = "—";
-          phoneLink.removeAttribute("href");
-        }
-      });
-    </script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  const cards = document.querySelectorAll(".filter-card");
-
-  // controla exibição das tabelas
-  function mostrarTabela(tipo) {
-    document.getElementById("tabela-tecnicos").style.display = "none";
-    document.getElementById("tabela-ordens").style.display = "none";
-    document.getElementById("tabela-detalhadas").style.display = "none";
-
-    if (tipo === "tecnicos") {
-      document.getElementById("tabela-tecnicos").style.display = "block";
-    }
-    if (tipo === "ordens") {
-      document.getElementById("tabela-ordens").style.display = "block";
-    }
-    if (tipo === "detalhadas") {
-      document.getElementById("tabela-detalhadas").style.display = "block";
-    }
-  }
-
-  // --- clique nos filtros ---
-  cards.forEach(card => {
-    card.addEventListener("click", function (e) {
-      e.preventDefault();
-
-      const href = new URL(card.href, window.location.origin);
-      let grupo = null;
-
-      if (href.searchParams.has("status_janela")) grupo = "status_janela";
-      if (href.searchParams.has("flag")) grupo = "flag";
-      if (href.searchParams.has("mensagem")) grupo = "mensagem";
-
-      if (!grupo) return;
-
-      const params = new URLSearchParams(window.location.search);
-      const valor = href.searchParams.get(grupo);
-
-      // Se já está ativo → desativa e remove
-      if (card.classList.contains("active")) {
-        card.classList.remove("active");
-        params.delete(grupo);
-      } else {
-        // desativa outros do mesmo grupo
-        document.querySelectorAll(`.filter-card[href*="${grupo}="]`)
-          .forEach(c => c.classList.remove("active"));
-
-        // ativa o clicado
-        card.classList.add("active");
-        if (valor) params.set(grupo, valor);
-      }
-
-      // redireciona
-      const query = params.toString();
-      window.location.href = query ? `${window.location.pathname}?${query}` : window.location.pathname;
-    });
-  });
-
-  // --- restaura ativos ---
-  const params = new URLSearchParams(window.location.search);
-  ["status_janela", "flag", "mensagem"].forEach(grupo => {
-    const valor = params.get(grupo);
-    if (valor) {
-      const activeCard = document.querySelector(`.filter-card[href*="${grupo}=${valor}"]`);
-      if (activeCard) activeCard.classList.add("active");
-    }
-  });
-
-  // --- clique no botão "Ver Rota" do modal ---
-  const btnVerRota = document.querySelector("#modalTecnico .btn.btn-primary");
-  if (btnVerRota) {
-    btnVerRota.addEventListener("click", function () {
-      const uid = document.getElementById("modalTecUid").textContent.trim();
-
-      // mostra só tabela detalhadas
-      mostrarTabela("detalhadas");
-
-      // filtra por técnico
-      document.querySelectorAll("#tabela-detalhadas tbody tr.ordem-linha").forEach(row => {
-        row.style.display = (row.dataset.uid === uid) ? "" : "none";
-      });
-
-      // fecha o modal
-      const modal = bootstrap.Modal.getInstance(document.getElementById("modalTecnico"));
-      modal.hide();
-
-      // rola até a tabela
-      document.getElementById("tabela-detalhadas").scrollIntoView({ behavior: "smooth" });
-    });
-  }
-
-  // inicia em técnicos se não tiver filtro
-  if (params.toString()) {
-    mostrarTabela("ordens");
-  } else {
-    mostrarTabela("tecnicos");
-  }
-});
-</script>
+  <div class="table-responsive">
+   
+    <table class="styled-table dark">
+      <thead>
+        <tr>
+          <th>Ação</th><th>OS</th><th>Horario</th><th>Tempo Restante</th><th>Endereço</th>
+          <th>Status</th><th>Tag</th><th>Flag</th><th>OBS</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in ordens_os %}
+        <tr class="ordem-linha" data-uid="{{ o.uid }}">
+          <td> <a href="#" data-bs-toggle="modal" data-bs-target="#modalOrdem"
+           data-nome="{{ o.nome_tecnico |default:"-" }}"  data-os="{{ o.os|default:"-"  }}" data-uid="{{ o.uid|default:"-"  }}"
+            data-horario="{{ o.alteracao_hf |default:"-"  }}" data-tempo="{{ o.tempo_restante |default:"-"  }}"
+            data-endereco="{{ o.endereco |default:"-" }}" data-status="{{ o.status_janela |default:"-" }}"
+            data-tag="{{ o.tag|default:"-"  }}" data-flag="{{ o.flag|default:"-"  }}" data-mensagem="{{ o.mensagem|default:"-"  }}">
+            <i class="fa-regular fa-eye"></i>
+          </a></td>
+          <td>{{ o.os }}</td><td>{{o.alteracao_hf |default:"-"  }}</td>
+           <td>{{ o.tempo_restante |default:"-" }}</td><td>{{ o.endereco |default:"-" }}</td><td class="status {{ o.status_janela }}">{{ o.status_janela |default:"-" }}</td><td>{{ o.tag |default:"-" }}</td>
+           <td class="flag {{ o.flag }}">{{ o.flag }}</td>
+           <td class="mensagem {{ o.mensagem }}">{{ o.mensagem |default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9">Nenhuma ordem detalhada encontrada</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+</div>
