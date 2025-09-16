@@ -336,6 +336,106 @@
         color: #888;
         font-style: italic;
     }
+
+    .icon-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        color: #0077b6;
+        transition: color 0.2s;
+    }
+
+    .icon-btn:hover {
+        color: #005f86;
+    }
+
+    /* MODAL PARA EXTRAIR PAYLOAD OU RESPONSE */
+
+    /* Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background: #fff;
+        width: 90%;
+        max-width: 500px;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+        animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content h3 {
+        margin-top: 0;
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .close {
+        cursor: pointer;
+        font-size: 20px;
+        color: #888;
+        float: right;
+        transition: 0.2s;
+    }
+
+    .close:hover {
+        color: #e74c3c;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: #0077b6;
+        color: #fff;
+    }
+
+    .btn-primary:hover {
+        background: #005f86;
+    }
+
+    .btn-secondary {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    .btn-secondary:hover {
+        background: #ddd;
+    }
+
+    .json-view {
+        background: #f9f9f9;
+        padding: 12px;
+        border-radius: 8px;
+        max-height: 400px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 14px;
+        white-space: pre-wrap;
+        text-align: left;
+        color: #2c3e50;
+    }
 </style>
 
 <div class="form-container">
@@ -427,6 +527,42 @@
         </form>
     </div>
 </div>
+
+<!-- MODAL PARA EXTRAIR PAYLOAD OU RESPONSE -->
+
+<div id="modalExportPayload" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Extrair Payload</h3>
+        <pre id="exportPayloadContent" class="json-view">Carregando...</pre>
+        <div class="modal-actions">
+            <button class="btn btn-primary" data-action="copy" data-target="exportPayloadContent">
+                <i class="fa-solid fa-copy"></i>&nbsp; Copiar
+            </button>
+            <button class="btn btn-secondary" data-action="download" data-target="exportPayloadContent">
+                <i class="fa-solid fa-download"></i>&nbsp; Download
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="modalImportResponse" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Extrair Response</h3>
+        <pre id="importResponseContent" class="json-view">Carregando...</pre>
+        <div class="modal-actions">
+            <button class="btn btn-primary" data-action="copy" data-target="importResponseContent">
+                <i class="fa-solid fa-copy"></i>&nbsp; Copiar
+            </button>
+            <button class="btn btn-secondary" data-action="download" data-target="importResponseContent">
+                <i class="fa-solid fa-download"></i>&nbsp; Download
+            </button>
+        </div>
+    </div>
+</div>
+
+
 
 <script>
     (function () {
@@ -607,5 +743,80 @@
     })();
 </script>
 
+<!-- MODAL PARA EXTRAIR PAYLOAD OU RESPONSE -->
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const buttons = document.querySelectorAll("[data-modal]");
+        const modals = document.querySelectorAll(".modal");
+        const closes = document.querySelectorAll(".close");
+        buttons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const modalId = btn.getAttribute("data-modal");
+                document.getElementById(modalId).style.display = "flex";
+            });
+        });
+
+        closes.forEach(c => {
+            c.addEventListener("click", () => {
+                c.closest(".modal").style.display = "none";
+            });
+        });
+
+        window.addEventListener("click", (e) => {
+            modals.forEach(modal => {
+                if (e.target === modal) {
+                    modal.style.display = "none";
+                }
+            });
+        });
+    });
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll("[data-action]").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const action = btn.dataset.action;
+                const targetId = btn.dataset.target;
+                const contentEl = document.getElementById(targetId);
+                const content = contentEl.textContent;
+
+                if (action === "copy") {
+                    navigator.clipboard.writeText(content).then(() => {
+                        alert("Copiado para a área de transferência!");
+                    });
+                }
+
+                if (action === "download") {
+                    const blob = new Blob([content], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = targetId + ".json";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
+            });
+        });
+        const exportData = {
+            id: 1,
+            name: "Payload teste",
+            status: "OK",
+            items: [{ sku: "123", qty: 10 }, { sku: "456", qty: 5 }]
+        };
+
+        const importData = {
+            id: 2,
+            result: "Response teste",
+            success: true,
+            meta: { processedAt: "2025-09-15T12:00:00" }
+        };
+
+        document.getElementById("exportPayloadContent").textContent = JSON.stringify(exportData, null, 2);
+        document.getElementById("importResponseContent").textContent = JSON.stringify(importData, null, 2);
+    });
+</script>
 
 {% endblock %}
