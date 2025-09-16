@@ -20,44 +20,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      document.addEventListener("show.bs.modal", function (event) {
-        const button = event.relatedTarget;
-        if (!button) return;
-
-        document.getElementById("modalTecNome").innerText =
-          button.dataset.nome || "—";
-        document.getElementById("modalTecUid").innerText =
-          button.dataset.uid || "—";
-        document.getElementById("modalTecArea").innerText =
-          button.dataset.area || "—";
-        document.getElementById("modalTecTotal").innerText =
-          button.dataset.total || "0";
-        document.getElementById("modalTecConcluido").innerText =
-          button.dataset.concluido || "0";
-        document.getElementById("modalTecNoTempo").innerText =
-          button.dataset.noTempo || "0";
-        document.getElementById("modalTecNoLimite").innerText =
-          button.dataset.noLimite || "0";
-        document.getElementById("modalTecAtrasado").innerText =
-          button.dataset.atrasado || "0";
-        document.getElementById("modalTecLastlogin").innerText =
-          button.dataset.lastlogin || "—";
-        document.getElementById("modalTecLastopening").innerText =
-          button.dataset.lastopening || "—";
-        document.getElementById("modalTecOcioso").innerText =
-          button.dataset.ocioso || "—";
-
-        const phoneLink = document.getElementById("modalTecPhone");
-        if (button.dataset.phone && button.dataset.phone !== "-") {
-          phoneLink.innerText = button.dataset.phone;
-          phoneLink.href = `https://wa.me/${button.dataset.phone}`;
-        } else {
-          phoneLink.innerText = "—";
-          phoneLink.removeAttribute("href");
-        }
-      });
-    </script>
+    
 
     {% endblock %}
   </div>
