@@ -10,9 +10,15 @@ CARRY_PEDIDO_KEY = "carry_pedido_next"
 JSON_CT = "application/json"
 
 
-def view_order(order: str):
+def view_order(request, order: str, ep_name: str):
 
-    url = f"{API_URL}/api/v2/tracking-history/{order}"
+    if ep_name == 'history':
+        url = f"{API_URL}/api/v2/tracking-history/{order}"
+    elif ep_name == 'detail':
+        url = f"{API_URL}/api/order-sumary/{order}"
+    else:
+        return []
+
     client = RequestClient(
         url=url,
         method="GET",
@@ -20,37 +26,29 @@ def view_order(order: str):
     )
     try:
         result = client.send_api_request()
-        if isinstance(result, list):
-            return result
-        return []
     except Exception as e:
-        print(f"Erro ao buscar histórico da tracking: {e}")
-        return []
+        if ep_name == 'detail':
+            messages.error(request, f"Erro ao consultar pedido: {e}")
+        if ep_name == 'history':
+            print(f"Erro ao buscar histórico da tracking: {e}")
+            return []
+
+        return None
+
+    if 'detail' in result and isinstance(result['detail'], str):
+        messages.error(request, f"{result['detail']}")
+        return None
+
+    return result
 
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 def order_detail(request, order: str):
-
-    url = f"{API_URL}/api/order-sumary/{order}"
-    client = RequestClient(
-        url=url,
-        method="GET",
-        headers={"Accept": JSON_CT},
-    )
-
     request_success = request.session.pop('request_success', None)
-    if request_success:
-        print("Request success true")
 
-    try:
-        result = client.send_api_request()
-    except Exception as e:
-        messages.error(request, f"Erro ao consultar pedido: {e}")
-        return redirect('logistica:consultar_pedido')
-
-    if 'detail' in result and isinstance(result['detail'], str):
-        messages.error(request, f"{result['detail']}")
+    result = view_order(request, order, 'detail')
+    if not result:
         return redirect('logistica:consultar_pedido')
 
     form = OrderDetailForm(
@@ -64,7 +62,7 @@ def order_detail(request, order: str):
         except Exception:
             return None
 
-    historico_tracking = view_order(order)
+    historico_tracking = view_order(request, order, 'history')
 
     tipo = (form.fields['shipment_order_type'].initial or '').strip().upper()
 

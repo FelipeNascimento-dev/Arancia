@@ -1,42 +1,55 @@
 {% if dados %}
-  {% if dados.0 %}
-  <div class="tabela-dinamica-container">
-      <table class="tabela-dinamica">
-          <thead>
-              <tr>
-                  {% for key in dados.0.keys %}
-                  <th>{{ key|capfirst }}</th>
-                  {% endfor %}
-              </tr>
-          </thead>
-          <tbody>
-              {% for row in dados %}
-              <tr>
-                  {% for key, value in row.items %}
-                  <td
+{% if dados.0 %}
+<div class="tabela-dinamica-container">
+    <table class="tabela-dinamica">
+        <thead>
+            <tr>
+                {% for key in dados.0.keys %}
+                <th>{{ key|capfirst }}</th>
+                {% endfor %}
+                {% if request.resolver_match.url_name == 'detalhe_pedido' %}
+                <th>Payload</th>
+                <th>Response</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in dados %}
+            <tr>
+                {% for key, value in row.items %}
+                <td
                     class="{% if key == 'status_code' %}{% if value == 200 %}status-ok{% else %}status-error{% endif %}{% endif %}">
-                      {{ value }}
-                  </td>
-                  {% endfor %}
-              </tr>
-              {% endfor %}
-          </tbody>
-      </table>
-  </div>
-  {% else %}
-  <div class="tabela-dinamica-container">
-      <table class="tabela-dinamica">
-          <tbody>
-              {% for key, value in dados.items %}
-              <tr>
-                  <th>{{ key|capfirst }}</th>
-                  <td>{{ value }}</td>
-              </tr>
-              {% endfor %}
-          </tbody>
-      </table>
-  </div>
-  {% endif %}
+                    {{ value }}
+                </td>
+                {% endfor %}
+                {% if request.resolver_match.url_name == 'detalhe_pedido' %}
+                <td><i class="fa-solid fa-file-export"></i></td>
+                <td><i class="fa-solid fa-file-import"></i></td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% else %}
-  <p class="text-muted">Nenhum dado disponível.</p>
+<div class="tabela-dinamica-container">
+    <table class="tabela-dinamica">
+        <tbody>
+            {% for key, value in dados.items %}
+            <tr>
+                <th>{{ key|capfirst }}</th>
+                <td>{{ value }}</td>
+            </tr>
+            {% endfor %}
+            {% if request.resolver_match.url_name == 'detalhe_pedido' %}
+
+
+
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% else %}
+<p class="text-muted">Nenhum dado disponível.</p>
 {% endif %}
