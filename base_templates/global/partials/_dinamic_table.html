@@ -1,91 +1,34 @@
 {% if dados %}
-  {% if dados.0 %}
-  <div class="tabela-dinamica-container">
+{% if dados.0 %}
+<div class="tabela-dinamica-container">
     <table class="tabela-dinamica">
-      <thead>
-        <tr>
-          {% for key in dados.0.keys %}
-            {% if key != "payload" and key != "response" %}
-              <th>{{ key|capfirst }}</th>
-            {% endif %}
-          {% endfor %}
-          {% if request.resolver_match.url_name == 'detalhe_pedido' %}
-            <th>Payload</th>
-            <th>Response</th>
-          {% endif %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in dados %}
-        <tr>
-          {% for key, value in row.items %}
-            {% if key != "payload" and key != "response" %}
-              <td class="{% if key == 'status_code' %}{% if value == 200 %}status-ok{% else %}status-error{% endif %}{% endif %}">
-                {{ value }}
-              </td>
-            {% endif %}
-          {% endfor %}
-
-          {% if request.resolver_match.url_name == 'detalhe_pedido' %}
-          <td>
-            <button class="icon-btn"
-                    data-modal="modalExportPayload"
-                    data-json="{{ row.payload|escapejs }}">
-              <i class="fa-solid fa-file-export"></i>
-            </button>
-          </td>
-          <td>
-            <button class="icon-btn"
-                    data-modal="modalImportResponse"
-                    data-json="{{ row.response|escapejs }}">
-              <i class="fa-solid fa-file-import"></i>
-            </button>
-          </td>
-          {% endif %}
-        </tr>
-        {% endfor %}
-      </tbody>
+        <thead>
+            <tr>
+                {% for key in dados.0.keys %}
+                <th>{{ key|capfirst }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in dados %}
+            <tr>
+                {% for key, value in row.items %}
+                <td
+                    class="{% if key == 'status_code' %}{% if value == 200 %}status-ok{% else %}status-error{% endif %}{% endif %}">
+                    {% if key == "payload" or key == "response" %}
+                    <button class="btn-json" data-json='{{ value|safe }}' data-key="{{ key|capfirst }}"
+                        onclick="showJsonModal(this)">
+                        <i class="fa-solid fa-file-import"></i>
+                    </button>
+                    {% else %}
+                    {{ value }}
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
-  </div>
-  {% else %}
-  <div class="tabela-dinamica-container">
-    <table class="tabela-dinamica">
-      <tbody>
-        {% for key, value in dados.items %}
-          {% if key != "payload" and key != "response" %}
-          <tr>
-            <th>{{ key|capfirst }}</th>
-            <td>{{ value }}</td>
-          </tr>
-          {% endif %}
-        {% endfor %}
-
-        {% if request.resolver_match.url_name == 'detalhe_pedido' %}
-        <tr>
-          <th>Payload</th>
-          <td>
-            <button class="icon-btn"
-                    data-modal="modalExportPayload"
-                    data-json="{{ dados.payload|escapejs }}">
-              <i class="fa-solid fa-file-export"></i>
-            </button>
-          </td>
-        </tr>
-        <tr>
-          <th>Response</th>
-          <td>
-            <button class="icon-btn"
-                    data-modal="modalImportResponse"
-                    data-json="{{ dados.response|escapejs }}">
-              <i class="fa-solid fa-file-import"></i>
-            </button>
-          </td>
-        </tr>
-        {% endif %}
-      </tbody>
-    </table>
-  </div>
-  {% endif %}
-{% else %}
-  <p class="text-muted">Nenhum dado disponível.</p>
+</div>
+{% endif %}
 {% endif %}

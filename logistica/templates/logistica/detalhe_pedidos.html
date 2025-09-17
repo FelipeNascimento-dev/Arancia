@@ -353,88 +353,123 @@
     /* MODAL PARA EXTRAIR PAYLOAD OU RESPONSE */
 
     /* Modal */
-    .modal {
+    .modal-json {
         display: none;
         position: fixed;
-        inset: 0;
-        z-index: 1000;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
         background: rgba(0, 0, 0, 0.6);
-        justify-content: center;
-        align-items: center;
     }
 
-    .modal-content {
+    .json-modal-content {
         background: #fff;
-        width: 90%;
-        max-width: 500px;
-        border-radius: 10px;
+        margin: 4% auto;
         padding: 20px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
-        animation: fadeIn 0.3s ease;
-    }
-
-    .modal-content h3 {
-        margin-top: 0;
-        font-size: 1.3rem;
-        font-weight: 600;
-    }
-
-    .modal-actions {
+        border-radius: 10px;
+        width: 85%;
+        max-width: 900px;
+        max-height: 85%;
         display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 20px;
+        flex-direction: column;
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
     }
 
-    .close {
-        cursor: pointer;
-        font-size: 20px;
-        color: #888;
-        float: right;
-        transition: 0.2s;
+    .json-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
     }
 
-    .close:hover {
-        color: #e74c3c;
-    }
-
-    .btn {
-        padding: 8px 16px;
-        border-radius: 6px;
-        border: none;
-        font-weight: 500;
-        cursor: pointer;
-    }
-
-    .btn-primary {
-        background: #0077b6;
-        color: #fff;
-    }
-
-    .btn-primary:hover {
-        background: #005f86;
-    }
-
-    .btn-secondary {
-        background: #f0f0f0;
+    .json-modal-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
         color: #333;
     }
 
-    .btn-secondary:hover {
-        background: #ddd;
+    .json-modal-content pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 15px;
+        border-radius: 6px;
+        overflow-x: auto;
+        white-space: pre;
+        text-align: left;
+        font-family: "Courier New", monospace;
+        font-size: 0.9rem;
+        flex-grow: 1;
     }
 
-    .json-view {
-        background: #f9f9f9;
-        padding: 12px;
-        border-radius: 8px;
-        max-height: 400px;
-        overflow-y: auto;
-        font-family: monospace;
-        font-size: 14px;
-        white-space: pre-wrap;
-        text-align: left;
-        color: #2c3e50;
+    .json-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 10px;
+        gap: 10px;
+    }
+
+    .close {
+        font-size: 26px;
+        cursor: pointer;
+        color: #666;
+    }
+
+    .close:hover {
+        color: #000;
+    }
+
+    .btn-json {
+        padding: 6px 10px;
+        font-size: 18px;
+        border: none;
+        border-radius: 5px;
+        background: transparent;
+        color: #095ab1;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .btn-json:hover {
+        background: #dbdbdb;
+    }
+
+    .btn-copy,
+    .btn-close,
+    .btn-download {
+        padding: 6px 14px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .btn-copy {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-copy:hover {
+        background: #1e7e34;
+    }
+
+    .btn-download {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .btn-download:hover {
+        background: #117a8b;
+    }
+
+    .btn-close {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-close:hover {
+        background: #5a6268;
     }
 </style>
 
@@ -530,131 +565,162 @@
 
 <!-- MODAL PARA EXTRAIR PAYLOAD OU RESPONSE -->
 
-<div id="modalExportPayload" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h3>Extrair Payload</h3>
-        <pre id="exportPayloadContent" class="json-view">Carregando...</pre>
-        <div class="modal-actions">
-            <button class="btn btn-primary" data-action="copy" data-target="exportPayloadContent">
-                <i class="fa-solid fa-copy"></i>&nbsp; Copiar
-            </button>
-            <button class="btn btn-secondary" data-action="download" data-target="exportPayloadContent">
-                <i class="fa-solid fa-download"></i>&nbsp; Download
-            </button>
+<div id="jsonModal" class="modal-json">
+    <div class="json-modal-content">
+        <div class="json-modal-header">
+            <h3 id="jsonModalTitle">JSON</h3>
+            <span class="close" onclick="closeJsonModal()">&times;</span>
+        </div>
+        <pre id="jsonContent"></pre>
+        <div class="json-modal-footer">
+            <button class="btn-copy" onclick="copyJson()">Copiar</button>
+            <button class="btn-download" onclick="downloadJson()">Download</button>
+            <button class="btn-close" onclick="closeJsonModal()">Fechar</button>
         </div>
     </div>
 </div>
-
-<div id="modalImportResponse" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h3>Extrair Response</h3>
-        <pre id="importResponseContent" class="json-view">Carregando...</pre>
-        <div class="modal-actions">
-            <button class="btn btn-primary" data-action="copy" data-target="importResponseContent">
-                <i class="fa-solid fa-copy"></i>&nbsp; Copiar
-            </button>
-            <button class="btn btn-secondary" data-action="download" data-target="importResponseContent">
-                <i class="fa-solid fa-download"></i>&nbsp; Download
-            </button>
-        </div>
-    </div>
-</div>
-
-
 
 <script>
-    (function () {
-        const modal = document.getElementById('modalRedirect');
-        if (!modal) return;
+    let lastJsonText = "";
+    let lastJsonTitle = "JSON";
 
-        const btn1 = document.getElementById('option1');
-        const btn2 = document.getElementById('option2');
-
-        modal.setAttribute('role', 'dialog');
-        modal.setAttribute('aria-modal', 'true');
-        modal.setAttribute('aria-hidden', 'true');
-        modal.setAttribute('tabindex', '-1');
-
-        function openModal() {
-            modal.classList.add('open');
-            modal.setAttribute('aria-hidden', 'false');
-            document.body.style.overflow = 'hidden';
-            (btn1 || btn2 || modal).focus();
+    function showJsonModal(btn) {
+        const raw = btn.getAttribute("data-json");
+        let pretty;
+        try {
+            pretty = JSON.stringify(JSON.parse(raw), null, 2);
+        } catch (e) {
+            pretty = raw;
         }
+        lastJsonTitle = btn.getAttribute("data-key") || "JSON";
+        lastJsonText = pretty;
 
-        function _closeInterno() {
-            modal.classList.remove('open');
+        document.getElementById("jsonModalTitle").innerText = lastJsonTitle;
+        document.getElementById("jsonContent").innerText = pretty;
+        document.getElementById("jsonModal").style.display = "block";
+    }
+
+    function closeJsonModal() {
+        document.getElementById("jsonModal").style.display = "none";
+    }
+
+    function copyJson() {
+        navigator.clipboard.writeText(lastJsonText).then(() => {
+            alert("JSON copiado!");
+        });
+    }
+
+    function downloadJson() {
+        const blob = new Blob([lastJsonText], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${lastJsonTitle.replace(/\s+/g, "_").toLowerCase()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    window.onclick = function (event) {
+        const modal = document.getElementById("jsonModal");
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
+
+<script>
+        (function () {
+            const modal = document.getElementById('modalRedirect');
+            if (!modal) return;
+
+            const btn1 = document.getElementById('option1');
+            const btn2 = document.getElementById('option2');
+
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
             modal.setAttribute('aria-hidden', 'true');
-            document.body.style.overflow = '';
-        }
+            modal.setAttribute('tabindex', '-1');
 
-        openModal();
-
-        modal.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-
-        btn1?.addEventListener('click', () => {
-            const url = btn1.dataset.url;
-            if (url) {
-                _closeInterno();
-                window.location.href = url;
-            }
-        });
-
-        btn2?.addEventListener('click', () => {
-            const url = btn2.dataset.url;
-            if (url) {
-                _closeInterno();
-                window.location.href = url;
-            }
-        });
-
-        function getFocusable() {
-            return Array.from(
-                modal.querySelectorAll(
-                    'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
-                )
-            ).filter(el => !el.disabled && el.offsetParent !== null);
-        }
-
-        modal.addEventListener('keydown', (e) => {
-            if (modal.getAttribute('aria-hidden') === 'true') return;
-
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                return;
+            function openModal() {
+                modal.classList.add('open');
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+                (btn1 || btn2 || modal).focus();
             }
 
-            if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.altKey) {
-                const ae = document.activeElement;
-                if (ae && ae.tagName === 'BUTTON') {
-                    e.preventDefault();
-                    ae.click();
+            function _closeInterno() {
+                modal.classList.remove('open');
+                modal.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+            }
+
+            openModal();
+
+            modal.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+
+            btn1?.addEventListener('click', () => {
+                const url = btn1.dataset.url;
+                if (url) {
+                    _closeInterno();
+                    window.location.href = url;
                 }
-                return;
-            }
+            });
 
-            if (e.key === 'Tab') {
-                const nodes = getFocusable();
-                if (!nodes.length) return;
-                const first = nodes[0];
-                const last = nodes[nodes.length - 1];
-
-                if (e.shiftKey && document.activeElement === first) {
-                    e.preventDefault();
-                    last.focus();
-                } else if (!e.shiftKey && document.activeElement === last) {
-                    e.preventDefault();
-                    first.focus();
+            btn2?.addEventListener('click', () => {
+                const url = btn2.dataset.url;
+                if (url) {
+                    _closeInterno();
+                    window.location.href = url;
                 }
-            }
-        });
+            });
 
-        window._modalAPI = { modal };
-    })();
+            function getFocusable() {
+                return Array.from(
+                    modal.querySelectorAll(
+                        'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
+                    )
+                ).filter(el => !el.disabled && el.offsetParent !== null);
+            }
+
+            modal.addEventListener('keydown', (e) => {
+                if (modal.getAttribute('aria-hidden') === 'true') return;
+
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    return;
+                }
+
+                if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.altKey) {
+                    const ae = document.activeElement;
+                    if (ae && ae.tagName === 'BUTTON') {
+                        e.preventDefault();
+                        ae.click();
+                    }
+                    return;
+                }
+
+                if (e.key === 'Tab') {
+                    const nodes = getFocusable();
+                    if (!nodes.length) return;
+                    const first = nodes[0];
+                    const last = nodes[nodes.length - 1];
+
+                    if (e.shiftKey && document.activeElement === first) {
+                        e.preventDefault();
+                        last.focus();
+                    } else if (!e.shiftKey && document.activeElement === last) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                }
+            });
+
+            window._modalAPI = { modal };
+        })();
 
     (function () {
         const root = document.getElementById('agenda-tabs');
@@ -741,82 +807,6 @@
             }
         });
     })();
-</script>
-
-<!-- MODAL PARA EXTRAIR PAYLOAD OU RESPONSE -->
-
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const buttons = document.querySelectorAll("[data-modal]");
-        const modals = document.querySelectorAll(".modal");
-        const closes = document.querySelectorAll(".close");
-        buttons.forEach(btn => {
-            btn.addEventListener("click", () => {
-                const modalId = btn.getAttribute("data-modal");
-                document.getElementById(modalId).style.display = "flex";
-            });
-        });
-
-        closes.forEach(c => {
-            c.addEventListener("click", () => {
-                c.closest(".modal").style.display = "none";
-            });
-        });
-
-        window.addEventListener("click", (e) => {
-            modals.forEach(modal => {
-                if (e.target === modal) {
-                    modal.style.display = "none";
-                }
-            });
-        });
-    });
-</script>
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        document.querySelectorAll("[data-action]").forEach(btn => {
-            btn.addEventListener("click", () => {
-                const action = btn.dataset.action;
-                const targetId = btn.dataset.target;
-                const contentEl = document.getElementById(targetId);
-                const content = contentEl.textContent;
-
-                if (action === "copy") {
-                    navigator.clipboard.writeText(content).then(() => {
-                        alert("Copiado para a área de transferência!");
-                    });
-                }
-
-                if (action === "download") {
-                    const blob = new Blob([content], { type: "application/json" });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = targetId + ".json";
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }
-            });
-        });
-        const exportData = {
-            id: 1,
-            name: "Payload teste",
-            status: "OK",
-            items: [{ sku: "123", qty: 10 }, { sku: "456", qty: 5 }]
-        };
-
-        const importData = {
-            id: 2,
-            result: "Response teste",
-            success: true,
-            meta: { processedAt: "2025-09-15T12:00:00" }
-        };
-
-        document.getElementById("exportPayloadContent").textContent = JSON.stringify(exportData, null, 2);
-        document.getElementById("importResponseContent").textContent = JSON.stringify(importData, null, 2);
-    });
 </script>
 
 {% endblock %}
