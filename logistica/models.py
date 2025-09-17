@@ -93,6 +93,8 @@ class GroupAditionalInformation(models.Model):
     email = models.EmailField(verbose_name="E-mail", blank=True, null=True)
     responsavel = models.CharField(
         max_length=100, verbose_name="Responsável", blank=True, null=True)
+    cod_center = models.CharField(
+        verbose_name="Centro de Custos", blank=True, null=True)
 
     def __str__(self):
         return f"{self.cod_iata}-{self.nome}" if self.group else "Sem grupo"
@@ -113,6 +115,7 @@ class PermissaoUsuarioDummy(models.Model):
         verbose_name = "--Personalizada--"
         verbose_name_plural = "--Personalizadas--"
         permissions = [
+            ("logistica_perm", "Permissão Logistica"),
             ("lastmile_b2c", "LastMile (B2C)"),
             ("entrada_flfm", "Entrada (Fulfillment)"),
             ("pode_gerenciar_filiais", "Pode Gerenciar Filiais"),
