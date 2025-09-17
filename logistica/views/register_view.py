@@ -21,13 +21,9 @@ def registrar_usuario(request):
             })
 
         else:
-<<<<<<< HEAD
-            messages.error(request, form.errors)
-=======
             if form.errors:
                 for erro in form.errors:
                     messages.error(request, form.errors[erro][0])
->>>>>>> release4-transp
 
     else:
         form = CustomUserCreationForm()
