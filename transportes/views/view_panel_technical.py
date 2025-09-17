@@ -4,6 +4,8 @@ from django.shortcuts import render
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now, make_aware, is_naive, localtime
 from django.core.cache import cache
+from django.contrib.auth.decorators import login_required, permission_required
+from django.views.decorators.csrf import csrf_protect
 
 
 def format_datetime(value):
@@ -36,6 +38,9 @@ def normalizar_celular(numero: str) -> str:
     return numero
 
 
+@csrf_protect
+@login_required(login_url='logistica:login')
+@permission_required('transportes.controle_campo', raise_exception=True)
 def dashboard_view(request):
     headers = {"accept": "application/json", "access_token": "123"}
     hoje_str = now().strftime("%Y-%m-%d")
@@ -46,14 +51,14 @@ def dashboard_view(request):
     filtro_flag = request.GET.get("flag")
     filtro_msg = request.GET.get("mensagem")
     filtro_unidade = request.GET.get("unidade")
-
+    filtro_uid = request.GET.get("uid")
     # --- Resumo geral + técnicos ---
     url_status = "http://192.168.0.214/RetencaoAPI/api/v3/Filtro_status/resumo-status-detalhado/claro"
     dados_status = get_api_data(f"status_{hoje_str}", url_status, {"date": hoje_str}, headers)
 
     resumo_geral = dados_status.get("geral", {})
     resumo_por_uid = dados_status.get("por_uid", {})
-
+    
     tecnicos, atrasos = [], []
     for uid, info in resumo_por_uid.items():
         t = info.get("tecnico", {})
@@ -103,6 +108,7 @@ def dashboard_view(request):
         # --- aplicar filtro de unidade (só técnicos) ---
     if filtro_unidade:
         tecnicos = [t for t in tecnicos if t["area"] == filtro_unidade]
+   
 
     # --- ordenação técnicos ---
     if any(t["atraso_min"] > 29 for t in tecnicos):
@@ -151,7 +157,13 @@ def dashboard_view(request):
 
     if filtro_msg and filtro_msg.upper() in ["CRITICO", "CRÍTICO"]:
         ordens = [o for o in ordens if (o.get("mensagem") or "").upper() in ["CRITICO", "CRÍTICO"]]
-        
+ 
+    sem_tecnico_count = len([o for o in ordens if o.get("uid") in (0, None)])
+
+    if filtro_uid == "sem":
+        # pega ordens sem técnico: uid == 0 ou uid é None
+        ordens = [o for o in ordens if not o.get("uid")]  # 0, None ou vazio
+   
        # --- Ordens detalhadas por técnico ---
     ordens_os = []
     ver_rota_uid = request.GET.get("ver_rota")
@@ -198,9 +210,9 @@ def dashboard_view(request):
                     "tempo_restante": o.get("tempo_restante"),
                     "flag": o.get("flag"),
                 })
-
+    
     # --- decide se há filtro ativo ---
-    filtro_ativo = bool(filtro_status or filtro_flag or filtro_msg )
+    filtro_ativo = bool(filtro_status or filtro_flag or filtro_msg or filtro_uid)
     filtro_unidade = request.GET.get("unidade") or None
     if filtro_status and filtro_status != "total":
         ordens_os = [
@@ -217,39 +229,94 @@ def dashboard_view(request):
             if (o.get("mensagem") or "").upper() in ["CRITICO", "CRÍTICO"]
         ]
     # --- cards de status ---
+        # decide se pega geral ou técnico
+   
+    # --- decide de onde vem os números para os cards ---
+    # --- decide de onde vem os números para os cards ---
+    if ordens_os:  # ordens detalhadas de técnico
+        resumo_cards = {
+            "total": len(ordens_os),
+            "status": {
+                "concluido": sum(1 for o in ordens_os if o["status_janela"] == "concluido"),
+                "no_tempo": sum(1 for o in ordens_os if o["status_janela"] == "no_tempo"),
+                "no_limite": sum(1 for o in ordens_os if o["status_janela"] == "no_limite"),
+                "atrasado": sum(1 for o in ordens_os if o["status_janela"] == "atrasado"),
+                "flag_azul": sum(1 for o in ordens_os if o.get("flag") == "AZUL"),
+                "flag_vermelho": sum(1 for o in ordens_os if o.get("flag") == "VERMELHO"),
+                "mensagem_critico": sum(1 for o in ordens_os if (o.get("mensagem") or "").upper() in ["CRITICO", "CRÍTICO"]),
+            },
+        }
+    elif filtro_uid == "sem":  # quando for "Sem Técnico"
+        resumo_cards = {
+            "total": len(ordens),
+            "status": {
+                "concluido": sum(1 for o in ordens if o["status_janela"] == "concluido"),
+                "no_tempo": sum(1 for o in ordens if o["status_janela"] == "no_tempo"),
+                "no_limite": sum(1 for o in ordens if o["status_janela"] == "no_limite"),
+                "atrasado": sum(1 for o in ordens if o["status_janela"] == "atrasado"),
+                "flag_azul": sum(1 for o in ordens if o.get("flag") == "AZUL"),
+                "flag_vermelho": sum(1 for o in ordens if o.get("flag") == "VERMELHO"),
+                "mensagem_critico": sum(1 for o in ordens if (o.get("mensagem") or "").upper() in ["CRITICO", "CRÍTICO"]),
+            },
+        }
+    else:
+        resumo_cards = resumo_geral
+
+    base_ordens = ordens_os if ordens_os else ordens
+
+    if base_ordens:  # sempre recalcula com base no que sobrou após filtros
+        resumo_cards = {
+            "total": len(base_ordens),
+            "status": {
+                "concluido": sum(1 for o in base_ordens if o["status_janela"] == "concluido"),
+                "no_tempo": sum(1 for o in base_ordens if o["status_janela"] == "no_tempo"),
+                "no_limite": sum(1 for o in base_ordens if o["status_janela"] == "no_limite"),
+                "atrasado": sum(1 for o in base_ordens if o["status_janela"] == "atrasado"),
+                "flag_azul": sum(1 for o in base_ordens if o.get("flag") == "AZUL"),
+                "flag_vermelho": sum(1 for o in base_ordens if o.get("flag") == "VERMELHO"),
+                "mensagem_critico": sum(
+                    1 for o in base_ordens if (o.get("mensagem") or "").upper() in ["CRITICO", "CRÍTICO"]
+                ),
+            },
+        }
+    else:
+        resumo_cards = resumo_geral
+        # --- cards de status ---
     status_cards = [
-        {"key": "total", "label": "Total", "icon": "fa-clipboard", "border": "border-black", "color": "black", "value": resumo_geral.get("total", 0)},
-        {"key": "concluido", "label": "Concluído", "icon": "fa-circle-check", "border": "border-blue1", "color": "blue1", "value": resumo_geral.get("status", {}).get("concluido", 0)},
-        {"key": "no_tempo", "label": "No Tempo", "icon": "fa-thumbs-up", "border": "border-green1", "color": "green1", "value": resumo_geral.get("status", {}).get("no_tempo", 0)},
-        {"key": "no_limite", "label": "No Limite", "icon": "fa-hourglass-half", "border": "border-orange", "color": "orange", "value": resumo_geral.get("status", {}).get("no_limite", 0)},
-        {"key": "atrasado", "label": "Atrasado", "icon": "fa-hourglass-end", "border": "border-redore", "color": "redore", "value": resumo_geral.get("status", {}).get("atrasado", 0)},
+        {"key": "total", "label": "Total", "icon": "fa-clipboard", "border": "border-black", "color": "black", "value": resumo_cards.get("total", 0)},
+        {"key": "concluido", "label": "Concluído", "icon": "fa-circle-check", "border": "border-blue1", "color": "blue1", "value": resumo_cards.get("status", {}).get("concluido", 0)},
+        {"key": "no_tempo", "label": "No Tempo", "icon": "fa-thumbs-up", "border": "border-green1", "color": "green1", "value": resumo_cards.get("status", {}).get("no_tempo", 0)},
+        {"key": "no_limite", "label": "No Limite", "icon": "fa-hourglass-half", "border": "border-orange", "color": "orange", "value": resumo_cards.get("status", {}).get("no_limite", 0)},
+        {"key": "atrasado", "label": "Atrasado", "icon": "fa-hourglass-end", "border": "border-redore", "color": "redore", "value": resumo_cards.get("status", {}).get("atrasado", 0)},
     ]
 
-    # --- cards de flag/mensagem ---
     flag_cards = [
-        {"param": "AZUL", "query": "flag", "label": "Casos Azuis", "color": "blue", "value": resumo_geral.get("status", {}).get("flag_azul", 0)},
-        {"param": "VERMELHO", "query": "flag", "label": "Casos Vermelhos", "color": "red", "value": resumo_geral.get("status", {}).get("flag_vermelho", 0)},
-        {"param": "CRÍTICO", "query": "mensagem", "label": "Casos Críticos", "color": "green", "value": resumo_geral.get("status", {}).get("mensagem_critico", 0)},
+        {"param": "AZUL", "query": "flag", "label": "Casos Azuis", "color": "blue", "value": resumo_cards.get("status", {}).get("flag_azul", 0)},
+        {"param": "VERMELHO", "query": "flag", "label": "Casos Vermelhos", "color": "red", "value": resumo_cards.get("status", {}).get("flag_vermelho", 0)},
+        {"param": "CRÍTICO", "query": "mensagem", "label": "Casos Críticos", "color": "green", "value": resumo_cards.get("status", {}).get("mensagem_critico", 0)},
     ]
+
 
     # --- unidades para os filtros ---
     unidades = sorted({t.get("area") for t in todos_tecnicos if t.get("area")})
 
     context = {
-        "geral": resumo_geral,
-        "status": resumo_geral.get("status", {}),
-        "tecnicos": tecnicos,
-        "ordens": ordens,
-        "ordens_os": ordens_os,
-        "media_atraso": media_fmt,
-        "top": top,
-        "filtro_ativo": filtro_ativo,
-        "status_cards": status_cards,
-        "flag_cards": flag_cards,
-        "ver_rota_uid": ver_rota_uid,
-        "exibir_detalhadas": exibir_detalhadas,
-        "unidades": unidades,
-        "filtro_unidade": filtro_unidade,
-    }
+    "geral": resumo_cards,  # agora usa o mesmo base
+    "status": resumo_cards.get("status", {}),
+    "tecnicos": tecnicos,
+    "ordens": ordens,
+    "ordens_os": ordens_os,
+    "media_atraso": media_fmt,
+    "top": top,
+    "filtro_ativo": filtro_ativo,
+    "status_cards": status_cards,
+    "flag_cards": flag_cards,
+    "ver_rota_uid": ver_rota_uid,
+    "exibir_detalhadas": exibir_detalhadas,
+    "unidades": unidades,
+    "filtro_unidade": filtro_unidade,
+    "filtro_uid": filtro_uid,
+    "sem_tecnico_count": sem_tecnico_count,
+}
 
     return render(request, "transportes/controle_campo/technical_panel.html", context)

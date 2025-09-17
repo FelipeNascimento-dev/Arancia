@@ -120,6 +120,7 @@
                 {% endif %}
             </div>
         </div>
+        {% if perms.transportes.transp_menu %}
         <!-- Transportes -->
         <div class="dropdown">
             <button type="button" class="dropbtn itens-sidebar">
@@ -127,24 +128,23 @@
                 <span class="texto-item">&nbsp;Transportes</span>
             </button>
             <div class="dropdown-content">
+                {% if perms.transportes.gerar_etiquetas %}
                 <a href="{% url 'transportes:gerar_etiquetas' %}">Gerar Etiquetas</a>
+                {% endif %}
+                {% if perms.transportes.controle_campo %}
                 <h5 class="submenu-toggle" data-target="controle-campo">Controle de Campo</h5>
                 <div class="sub-submenu" id="controle-campo">
-                   
                     <a href="{% url 'transportes:extrair_enderecos' %}">Extrair Endereços</a>
-                
-                 <h5 class="submenu-toggle" data-target="controle-campo1">Painel</h5>
-                <div class="sub-submenu" id="controle-campo1">
-                    
-                    <a href="{% url 'transportes:tecnicos' %}">Técnicos</a>
-                    <a href="{% url 'transportes:controle' %}">Controle</a>
-
-
+                    <h5 class="submenu-toggle" data-target="controle-campo1">Painel</h5>
+                    <div class="sub-submenu" id="controle-campo1">
+                        <a href="{% url 'transportes:tecnicos' %}">Técnicos</a>
+                        <a href="{% url 'transportes:controle' %}">Controle</a>
+                    </div>
                 </div>
-
-                </div>
+                {% endif %}
             </div>
         </div>
+        {% endif %}
         <!-- Sistemas -->
         <div class="dropdown">
             <button type="button" class="dropbtn itens-sidebar">

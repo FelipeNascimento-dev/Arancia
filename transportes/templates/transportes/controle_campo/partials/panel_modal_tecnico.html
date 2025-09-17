@@ -53,7 +53,7 @@
 
 <!-- Modal: Ordem de Serviço -->
 <div class="modal fade" id="modalOrdem" tabindex="-1" aria-labelledby="modalOrdemLabel" aria-hidden="true" >
-  <div class="modal-dialog modal-dialog-centered" >
+  <div class="modal-dialog modal-dialog-centered modal-xl" >
     <div class="modal-content" >
 
       <!-- Cabeçalho -->
@@ -67,7 +67,8 @@
       <!-- Corpo -->
       <div class="modal-body" >
         <div class="ordem-ficha" >
-         <div class="linha">Nome:  <span class="titulo" id="modalTecNome"></span></div>
+        <div class="linha">Nome:  <span class="titulo" id="nome_tecnico"></span></div>
+
          <div class="linha">UID: <span class="titulo" id="modalUid"></span></div>
           <div class="linha" >OS: <span class="titulo" id="modalOs"></span></div>
           <div class="linha">Horário: <span class="titulo" id="modalHorario"></span></div>
@@ -123,17 +124,17 @@
 
     // Modal Ordem de Serviço
     if (event.target.id === "modalOrdem") {
-     
-      document.getElementById("modalTecnico").textContent = button.dataset.nome || "—";
-       document.getElementById("modalOs").textContent = button.dataset.os || "—";
-      document.getElementById("modalUid").textContent = button.dataset.uid || "—";
-      document.getElementById("modalHorario").textContent = button.dataset.horario || "—";
-      document.getElementById("modalTempo").textContent = button.dataset.tempo || "—";
-      document.getElementById("modalEndereco").textContent = button.dataset.endereco || "—";
-      document.getElementById("modalStatus").textContent = button.dataset.status || "—";
-      document.getElementById("modalTag").textContent = button.dataset.tag || "—";
-      document.getElementById("modalFlag").textContent = button.dataset.flag || "—";
-      document.getElementById("modalMensagem").textContent = button.dataset.mensagem || "—";
-    }
+    document.getElementById("nome_tecnico").textContent = button.dataset.nome;
+    document.getElementById("modalOs").textContent = button.dataset.os || "—";
+    document.getElementById("modalUid").textContent = button.dataset.uid || "—";
+    document.getElementById("modalHorario").textContent = button.dataset.horario || "—";
+    document.getElementById("modalTempo").textContent = button.dataset.tempo || "—";
+    document.getElementById("modalEndereco").textContent = button.dataset.endereco || "—";
+    document.getElementById("modalStatus").textContent = button.dataset.status || "—";
+    document.getElementById("modalTag").textContent = button.dataset.tag || "—";
+    document.getElementById("modalFlag").textContent = button.dataset.flag || "—";
+    document.getElementById("modalMensagem").textContent = button.dataset.mensagem || "—";
+}
+
   });
 </script>

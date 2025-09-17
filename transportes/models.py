@@ -1,6 +1,7 @@
 import httpx
 from datetime import datetime
 from setup.local_settings import status_labels,TOKEN 
+from django.db import models
 
 def auth_headers():
     return {"accept": "application/json", "access_token": TOKEN}
@@ -32,3 +33,18 @@ def initials(nome: str) -> str:
 
 def now_str():
     return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+
+
+class PersonalPermissions(models.Model):
+    class Meta:
+        verbose_name = "--Transp-Permission--"
+        verbose_name_plural = "--Transp-Permissions--"
+        permissions = [
+            ("controle_campo", "Controle de Campo"),
+            ("gerar_etiquetas", "Gerar Etiquetas"),
+            ("transp_menu", "Mostrar menu transporte"),
+        ]
+
+    def __str__(self):
+        return "Personal Permissions"

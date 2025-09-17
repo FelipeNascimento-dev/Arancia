@@ -61,7 +61,7 @@
         <tr class="status-{{ o.status_janela|default:'' }} flag-{{ o.flag|default:'' }}">
           <td>
           <a href="#" data-bs-toggle="modal" data-bs-target="#modalOrdem"
-            data-os="{{ o.os |default:"-"  }}" data-nome="{{ o.nome_tecnico |default:"-" }}" data-uid="{{ o.uid |default:"-" }}"
+           data-nome="{{ o.nome_tecnico |default:"-" }}" data-os="{{ o.os |default:"-"  }}"   data-uid="{{ o.uid |default:"-" }}"
             data-horario="{{ o.alteracao_hf |default:"-" }}" data-tempo="{{ o.tempo_restante|default:"-"  }}"
             data-endereco="{{ o.endereco |default:"-" }}" data-status="{{ o.status_janela |default:"-" }}"
             data-tag="{{ o.tag |default:"-" }}" data-flag="{{ o.flag|default:"-"  }}" data-mensagem="{{ o.mensagem|default:"-"  }}">
@@ -72,7 +72,7 @@
           <td>{{ o.os|default:"-"  }}</td><td>{{ o.nome_tecnico |default:"-" }}</td><td>{{ o.uid|default:"-"  }}</td>
           <td>{{ o.alteracao_hf|default:"-" }}</td><td>{{ o.tempo_restante |default:"-" }}</td>
           <td>{{ o.endereco |default:"-" }}</td><td class="status {{ o.status_janela }}">{{ o.status_janela |default:"-" }}</td>
-          <td>{{ o.tag |default:"-" }}</td><td class="flag {{ o.flag }}">{{ o.flag }}</td>
+          <td>{{ o.tag |default:"-" }}</td><td class="flag {{ o.flag }}">{{ o.flag |default:"-" }}</td>
           <td class="mensagem {{ o.mensagem }}">{{ o.mensagem|default:"-"  }}</td>
         </tr>
         {% empty %}
@@ -121,7 +121,7 @@
           </a></td>
           <td>{{ o.os }}</td><td>{{o.alteracao_hf |default:"-"  }}</td>
            <td>{{ o.tempo_restante |default:"-" }}</td><td>{{ o.endereco |default:"-" }}</td><td class="status {{ o.status_janela }}">{{ o.status_janela |default:"-" }}</td><td>{{ o.tag |default:"-" }}</td>
-           <td class="flag {{ o.flag }}">{{ o.flag }}</td>
+           <td class="flag {{ o.flag }}">{{ o.flag |default:"-"  }}</td>
            <td class="mensagem {{ o.mensagem }}">{{ o.mensagem |default:"-" }}</td>
         </tr>
         {% empty %}

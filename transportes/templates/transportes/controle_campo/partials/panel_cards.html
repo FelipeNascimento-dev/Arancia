@@ -1,5 +1,6 @@
 {% load query_filters %}
 <div class="setcontainer">
+  
 {% if filtro_ativo %}
 <div class="container mt-2">
   <a href="{{ request.path }}" class="btn btn-outline-secondary btn-xs">
@@ -17,7 +18,7 @@
           <i class="fa-regular fa-clipboard icon black"></i>
           <div class="card-text">
             <span>Total</span>
-            <strong>{{ geral.total }}</strong>
+            <strong>{{ geral.total }}  </strong>
           </div>
         </a>
       </div>
@@ -115,7 +116,31 @@
 
 
 <div class="filter-group mt-3">
+  
   <div class="row">
+
+
+<div class="col-md informacoes_basicas">
+  <a href="{% query_update uid='sem' %}"
+     class="card-box border-red filter-card {% if request.GET.uid == 'sem' %}active{% endif %}">
+    <i class="fa-solid fa-user-xmark fa-2x"></i>
+    <div class="card-text">
+      <span>Sem Técnico</span>
+      <strong>{{ sem_tecnico_count }}</strong>
+    </div>
+  </a>
+</div>
+
+
+
+
+
+
+
+
+
+
+
     <div class="col-md informacoes_basicas">
       <div class="card-box border-black">
         <i class="fa-regular fa-clock icon black"></i>
@@ -164,5 +189,13 @@
     </div> 
   </div>
 </div>
+
+
+
+
+
+
+
+
 
 </div>
