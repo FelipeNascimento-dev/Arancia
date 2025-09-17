@@ -85,6 +85,14 @@
                     </div>
                 </div>
                 {% endif %} -->
+
+                {% if perms.logistica.reverse %}
+                <h5 class="submenu-toggle" data-target="reverse-sub">Reversa</h5>
+                <div class="sub-submenu" id="reverse-sub">
+                    <a href="{% url 'logistica:consulta_id_form' %}">Reversa de Equipamentos</a>
+                </div>
+                {% endif %}
+
                 {% if perms.logistica.lastmile_b2c %}
                 <h5 class="submenu-toggle" data-target="lastmile-sub">Lastmile (B2C)</h5>
                 <div class="sub-submenu" id="lastmile-sub">
