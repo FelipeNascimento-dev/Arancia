@@ -1,10 +1,26 @@
 from django.db import models
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User, Group
+
+
+def user_avatar_path(instance, filename):
+    return f"avatars/user_{instance.user_id}/{filename}"
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    cpf = models.CharField(max_length=14, unique=True)
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="perfil")
+    cpf = models.CharField(max_length=14, unique=True,
+                           blank=True, null=True)
+    avatar = models.ImageField(
+        upload_to=user_avatar_path, blank=True, null=True)
+
+    def avatar_url(self):
+        if self.avatar:
+            try:
+                return self.avatar.url
+            except Exception:
+                pass
+        return "/static/global/images/default-avatar.jpg"
 
 
 class Romaneio(models.Model):
@@ -99,6 +115,7 @@ class PermissaoUsuarioDummy(models.Model):
         permissions = [
             ("lastmile_b2c", "LastMile (B2C)"),
             ("entrada_flfm", "Entrada (Fulfillment)"),
+            ("pode_gerenciar_filiais", "Pode Gerenciar Filiais")
         ]
 
     def __str__(self):

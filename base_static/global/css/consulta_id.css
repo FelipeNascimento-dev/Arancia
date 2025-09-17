@@ -1,47 +1,168 @@
-.tabela-container {
-    margin-top: 50px;
-    display: block;
-    max-width: 1150px;
-    margin-bottom: 100px;
-    border: 1px solid #ccc;
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+    margin-top: 40px;
+    align-items: start;
     margin-left: 65px;
-    padding: 24px;
+    overflow:visible;
 }
 
-.tabela-consulta {
-    min-width: 800px;
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+.card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    align-self: start;
+    max-width: 320px;
+    overflow:visible;
+}
+
+
+.card.open {
+    z-index: 30;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 12px 14px;
+    background: #fff;
     border-radius: 8px;
 }
 
-.tabela-consulta thead {
-    background-color: #4a90e2;
+.badge-num {
+    background: #4CAF50;
     color: #fff;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: .9rem;
+    flex: 0 0 28px;
 }
 
-.tabela-consulta th,
-.tabela-consulta td {
-    padding: 12px 16px;
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
+.card-title {
+    margin: 0;
+    font-size: 1rem;
+    color: #333;
+    flex: 1 1 auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.tabela-consulta tbody tr:hover {
-    background-color: #f1f1f1;
+.toggle-btn {
+    background: #4a90e2;
+    border: none;
+    color: #fff;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 28px;
+    text-align: center;
+    transition: background .2s ease;
+}
+
+.toggle-btn:hover {
+    background: #357abd;
+}
+
+.card-flyout {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    top: 100%;
+    margin-top: 8px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, .22);
+    border: 1px solid #eaeaea;
+    padding: 12px 14px;
+    display: none;
+    transform-origin: top center;
+    animation: flyin .18s ease;
+}
+
+.card.open .card-flyout {
+    display: block;
+}
+
+.card-flyout::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    left: 24px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: transparent transparent #fff transparent;
+    filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, .06));
+}
+
+@keyframes flyin {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .buttons-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  background-color: #f5f5f5;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0 24px;
+    flex-wrap: wrap;
 }
 
-.btn-voltar{
+.buttons_id {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-voltar,
+.btn-p-rec,
+.btn-rec {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #d0d0d0;
+    background: #fff;
+    cursor: pointer;
+}
+
+.btn-p-rec {
+    border-color: #f39c12;
+}
+
+.btn-rec {
+    border-color: #27ae60;
+}
+
+
+.buttons-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f5f5f5;
+}
+
+.btn-voltar {
     background-color: tomato;
     color: #fff;
     border: none;
@@ -49,11 +170,11 @@
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin-left: 5px;
-    margin-top: 5px;
+    margin-left: 85px;
+    margin-top: 20px;
 }
 
-.btn-p-rec{
+.btn-p-rec {
     background-color: #fc9b63;
     color: #fff;
     border: none;
@@ -63,7 +184,7 @@
     transition: background-color 0.3s ease;
 }
 
-.btn-rec{
+.btn-rec {
     margin: 10px;
     background-color: #fc9b63;
     color: #fff;
@@ -74,7 +195,7 @@
     transition: background-color 0.3s ease;
 }
 
-.buttons_id{
+.buttons_id {
     display: flex;
     justify-content: right;
     align-items: center;

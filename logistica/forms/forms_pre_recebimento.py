@@ -24,7 +24,7 @@ class PreRecebimentoForm(forms.Form):
         centro_choices=None,
         deposito_choices_origem=None,
         deposito_choices_destino=None,
-        depositos_by_centro=None,  # para validar
+        depositos_by_centro=None,
         **kwargs
     ):
         super().__init__(*args, **kwargs)

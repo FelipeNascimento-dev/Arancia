@@ -43,3 +43,35 @@ DATABASES = {
         'PORT': '5432',       # padrão do PostgreSQL
     }
 }
+
+
+
+
+
+#CONTROLE DE CAMPO
+from datetime import date
+API_BASE = "http://127.0.0.1:8000/RetencaoAPI"
+COD_BASE = "CTBSEQ"
+COD_EMPRESA = "CLARO"
+TOKEN = "123"
+
+API_TECNICOS = f"{API_BASE}/api/v3/tecnicos/buscar_tec"
+API_RESUMO = f"{API_BASE}/api/v3/Filtro_status/resumo-status-detalhado/{COD_EMPRESA}?date={date.today()}"
+API_HORARIO = f"{API_BASE}/api/v3/dashboard/ocorrencias-por-horario/{COD_EMPRESA}?date={date.today()}"
+
+# Mapas
+status_labels = {
+    "concluido": "Concluído",
+    "no_tempo": "No Tempo",
+    "no_limite": "No Limite",
+    "atrasado": "Atrasado",
+    "sem_horario_definido": "Sem Horário",
+}
+status_colors = {
+    "concluido": "bg-blue-600",
+    "no_tempo": "bg-green-600",
+    "no_limite": "bg-yellow-500",
+    "atrasado": "bg-red-600",
+    "sem_horario_definido": "bg-gray-500"
+}
+

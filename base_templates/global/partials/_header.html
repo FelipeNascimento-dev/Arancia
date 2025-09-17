@@ -31,7 +31,7 @@
         </div>
 
         <!-- Relatórios -->
-        <div class="dropdown">
+        <!-- <div class="dropdown">
             <button type="button" class="dropbtn itens-sidebar" id="real-button">
                 <i class="fa-solid fa-file" style="margin-left: 3px; margin-right: 2px;"></i>
                 <span class="texto-item">&nbsp; Relatórios</span>
@@ -40,7 +40,7 @@
                 <a href="#">PDFs Pendentes</a>
                 <a href="#">PDFs Selecionados</a>
             </div>
-        </div>
+        </div> -->
 
         <!-- Transporte
         <div class="dropdown">
@@ -90,6 +90,7 @@
                 <div class="sub-submenu" id="lastmile-sub">
                     <a href="{% url 'logistica:extracao_pedidos' %}">IP - Extração de Pedidos</a>
                     <a href="{% url 'logistica:consulta_etiquetas' %}">IP - Consulta de Etiquetas</a>
+                    <a href="{% url 'logistica:consulta_pedidos' %}">IP - Consulta de Pedidos</a>
                     <a href="{% url 'logistica:pcp' 201 %}">IP - PCP</a>
                     <h5 class="submenu-toggle" data-target="reserva-sub">SAP - Reserva de equipamento</h5>
                     <div class="sub-submenu" id="reserva-sub">
@@ -111,10 +112,39 @@
                         <a href="{% url 'logistica:cancelamento_saida_campo' 2 %}">SAP - Estorno Saida para Campo</a>
                     </div>
                 </div>
+                <!-- <h5 class="submenu-toggle" data-target="recebimentos-sub">Recebimento via Remessa</h5>
+                <div class="sub-submenu" id="recebimentos-sub">
+                    <a href="{% url 'logistica:recebimento_remessa' %}">Recebimento</a>
+                    <a href="#">Check-In</a>
+                </div> -->
                 {% endif %}
             </div>
         </div>
-
+        {% if perms.transportes.transp_menu %}
+        <!-- Transportes -->
+        <div class="dropdown">
+            <button type="button" class="dropbtn itens-sidebar">
+                <i class="fa-solid fa-motorcycle"></i>
+                <span class="texto-item">&nbsp;Transportes</span>
+            </button>
+            <div class="dropdown-content">
+                {% if perms.transportes.gerar_etiquetas %}
+                <a href="{% url 'transportes:gerar_etiquetas' %}">Gerar Etiquetas</a>
+                {% endif %}
+                {% if perms.transportes.controle_campo %}
+                <h5 class="submenu-toggle" data-target="controle-campo">Controle de Campo</h5>
+                <div class="sub-submenu" id="controle-campo">
+                    <a href="{% url 'transportes:extrair_enderecos' %}">Extrair Endereços</a>
+                    <h5 class="submenu-toggle" data-target="controle-campo1">Painel</h5>
+                    <div class="sub-submenu" id="controle-campo1">
+                        <a href="{% url 'transportes:tecnicos' %}">Técnicos</a>
+                        <a href="{% url 'transportes:controle' %}">Controle</a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
         <!-- Sistemas -->
         <div class="dropdown">
             <button type="button" class="dropbtn itens-sidebar">
@@ -130,6 +160,18 @@
                 <a href="http://192.168.0.214/site/Index.aspx" target="_blank">Gerencial</a>
             </div>
         </div>
+
+        <!-- Gerenciamento -->
+        <!-- <div class="dropdown">
+            <button type="button" class="dropbtn itens-sidebar">
+                <i class="fa-solid fa-users"></i>
+                <span class="texto-item">&nbsp; Gerenciamento</span>
+            </button>
+            <div class="dropdown-content">
+                <a href="#">Gestão de Setores/PAs</a>
+                <a href="#">Criação de Usuários</a>
+            </div>
+        </div> -->
     </div>
 </div>
 
