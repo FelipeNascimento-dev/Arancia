@@ -5,6 +5,7 @@ from django.urls import reverse
 from setup.local_settings import API_URL
 from utils.request import RequestClient
 from ..forms import OrderDetailForm
+import json
 
 CARRY_PEDIDO_KEY = "carry_pedido_next"
 JSON_CT = "application/json"
@@ -39,6 +40,23 @@ def view_order(request, order: str, ep_name: str):
         messages.error(request, f"{result['detail']}")
         return None
 
+    if isinstance(result, list):
+        for row in result:
+            if isinstance(row, dict):
+                if "payload" in row and not isinstance(row["payload"], str):
+                    row["payload"] = json.dumps(
+                        row["payload"], ensure_ascii=False)
+                if "response" in row and not isinstance(row["response"], str):
+                    row["response"] = json.dumps(
+                        row["response"], ensure_ascii=False)
+    elif isinstance(result, dict):
+        if "payload" in result and not isinstance(result["payload"], str):
+            result["payload"] = json.dumps(
+                result["payload"], ensure_ascii=False)
+        if "response" in result and not isinstance(result["response"], str):
+            result["response"] = json.dumps(
+                result["response"], ensure_ascii=False)
+
     return result
 
 
@@ -63,9 +81,7 @@ def order_detail(request, order: str):
             return None
 
     historico_tracking = view_order(request, order, 'history')
-
     tipo = (form.fields['shipment_order_type'].initial or '').strip().upper()
-
     botao_texto = "RECEBER DESINSTALAÇÃO" if tipo == "RETURN" else "RECEBER REVERSA"
 
     if request.method == "POST":
@@ -92,6 +108,4 @@ def order_detail(request, order: str):
         "botao_texto": botao_texto,
         "site_title": "Detalhe do Pedido",
         "nome_formulario": form.form_title,
-        "export_payload": result.get("payload"),
-        "import_response": result.get("response"),
     })
