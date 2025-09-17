@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_protect
 def gerar_etiquetas_view(request):
     return render(request, "transportes/controle_campo/frame2.html", {
         "titulo": "Gerar Etiquetas",
-        "url": "https://86203ab90fdc.ngrok-free.app"
+        "url": "https://d269f27d8120.ngrok-free.app"
     })
 
 @csrf_protect
