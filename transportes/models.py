@@ -1,6 +1,6 @@
 import httpx
 from datetime import datetime
-from setup.local_settings import status_labels,TOKEN 
+from setup.local_settings import status_labels,TOKEN ,API_BASE
 from django.db import models
 
 def auth_headers():

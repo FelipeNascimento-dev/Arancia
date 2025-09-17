@@ -6,6 +6,7 @@ from django.utils.timezone import now, make_aware, is_naive, localtime
 from django.core.cache import cache
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.csrf import csrf_protect
+from setup.local_settings import API_BASE
 
 
 def format_datetime(value):
@@ -53,7 +54,7 @@ def dashboard_view(request):
     filtro_unidade = request.GET.get("unidade")
     filtro_uid = request.GET.get("uid")
     # --- Resumo geral + técnicos ---
-    url_status = "http://192.168.0.216/RetencaoAPI/api/v3/Filtro_status/resumo-status-detalhado/claro"
+    url_status = f"{API_BASE}Filtro_status/resumo-status-detalhado/claro"
     dados_status = get_api_data(f"status_{hoje_str}", url_status, {"date": hoje_str}, headers)
 
     resumo_geral = dados_status.get("geral", {})
@@ -124,7 +125,7 @@ def dashboard_view(request):
     top = max((t for t in tecnicos if t["atraso_min"] > 29), key=lambda t: t["atraso_min"], default=None)
 
     # --- Ordens gerais ---
-    url_ordens = "http://192.168.0.216/RetencaoAPI/api/v3/consultasM/ordens-atendidas-data/claro"
+    url_ordens = f"{API_BASE}consultasM/ordens-atendidas-data/claro"
     dados_ordens = get_api_data(f"ordens_{hoje_str}", url_ordens, {"date": hoje_str}, headers)
 
     mapa_tecnicos = {t["uid"]: t["nome"] for t in tecnicos}
@@ -175,7 +176,7 @@ def dashboard_view(request):
             if uid != ver_rota_uid:
                 continue
 
-            url_os_tecnico = f"http://192.168.0.216/RetencaoAPI/api/v3/consultas/CTBSEQ/ordens-atendidas-data/{uid}"
+            url_os_tecnico = f"{API_BASE}consultas/CTBSEQ/ordens-atendidas-data/{uid}"
             dados_os_tecnico = get_api_data(
                 f"ordens_tecnico_{uid}_{hoje_str}",
                 url_os_tecnico,

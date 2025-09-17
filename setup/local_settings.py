@@ -49,15 +49,11 @@ DATABASES = {
 
 
 #CONTROLE DE CAMPO
-from datetime import date
-API_BASE = "http://127.0.0.1:8000/RetencaoAPI"
+
+API_BASE = "http://192.168.0.216/RetencaoAPI/api/v3/"
 COD_BASE = "CTBSEQ"
 COD_EMPRESA = "CLARO"
 TOKEN = "123"
-
-API_TECNICOS = f"{API_BASE}/api/v3/tecnicos/buscar_tec"
-API_RESUMO = f"{API_BASE}/api/v3/Filtro_status/resumo-status-detalhado/{COD_EMPRESA}?date={date.today()}"
-API_HORARIO = f"{API_BASE}/api/v3/dashboard/ocorrencias-por-horario/{COD_EMPRESA}?date={date.today()}"
 
 # Mapas
 status_labels = {
