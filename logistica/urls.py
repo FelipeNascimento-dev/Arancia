@@ -59,5 +59,5 @@ urlpatterns = [
     path('conferir-retirada', order_return_check, name='order_return_check'),
     path('user-ger/', user_ger, name='user_ger'),
     path('skill-ger/', skill_ger, name='skill_ger'),
-    path('reverse', reverse_create, name='reverse_create')
+    path('reverse/', reverse_create, name='reverse_create')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
