@@ -24,19 +24,13 @@
         overflow: hidden;
         background: #fff;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .card-block:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
     }
 
     .reverse-card-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background-color: #ccc;
+        background: #ccc;
         padding: 12px 14px;
         cursor: pointer;
         border-radius: 12px 12px 0 0;
@@ -46,7 +40,6 @@
     .reverse-card-header h3 {
         margin: 0;
         font-size: 1.1rem;
-        font-weight: 600;
     }
 
     .reverse-card-header i {
@@ -55,19 +48,6 @@
 
     .reverse-card-header.active i {
         transform: rotate(180deg);
-    }
-
-    .number-tag {
-        background: #f79b46;
-        color: #fff;
-        border-radius: 50%;
-        width: 28px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: .9rem;
     }
 
     .reverse-card-content {
@@ -82,12 +62,25 @@
         border-collapse: collapse;
     }
 
+    .reverse-card-content th,
     .reverse-card-content td {
         padding: 6px 10px;
         border: 1px solid #e0e0e0;
         font-family: monospace;
-        font-size: 0.95rem;
-        text-align: center;
+        text-align: left;
+    }
+
+    .number-tag {
+        background: #f79b46;
+        color: #fff;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: .9rem;
     }
 </style>
 
@@ -99,26 +92,30 @@
     </div>
 </div>
 
-{% if table_reverse %}
+{% if volumes %}
 <div class="cardsparent">
-    {% for card in table_reverse %}
-    <div class="card-block">
-        <div class="reverse-card-header {% if forloop.first %}active{% endif %}" onclick="toggleCard(this)">
-            <span class="number-tag">#{{ forloop.revcounter }}</span>
-            <h3 class="card-title">&nbsp;Volume {{ forloop.revcounter }}</h3>
+    {% for volume in volumes reversed %}
+    <div class="card-block" id="card-volume-{{ volume.number }}">
+        <div class="reverse-card-header {% if forloop.first %}active{% endif %}"
+            onclick="toggleCard('card-volume-{{ volume.number }}')">
+            <span class="number-tag">#{{ volume.number }}</span>
+            <h3 class="card-title">Volume {{ volume.number }}</h3>
             <i class="fa-solid fa-chevron-down"></i>
         </div>
-        <div class="reverse-card-content">
+        <div class="reverse-card-content" {% if forloop.first %}style="display:block" {% endif %}>
             <table>
-                <tbody>
-                    {% for s in card %}
-                    {% if forloop.first or forloop.counter0|divisibleby:2 %}
+                <thead>
                     <tr>
-                        {% endif %}
-                        <td>{{ s }}</td>
-                        {% if forloop.counter|divisibleby:2 or forloop.last %}
+                        <th>Nº Kit</th>
+                        <th>Serial</th>
                     </tr>
-                    {% endif %}
+                </thead>
+                <tbody>
+                    {% for kit in volume.kits %}
+                    <tr>
+                        <td>{{ kit.number }}</td>
+                        <td>{{ kit.serial }}</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -129,51 +126,33 @@
 {% endif %}
 
 
+
 <script>
-    function toggleCard(headerEl) {
-        const contentEl = headerEl.nextElementSibling;
-        const isVisible = contentEl.style.display == "block";
-
-        document.querySelectorAll(".reverse-card-content").forEach(el => {
-            el.style.display = "none";
-        });
-        document.querySelectorAll(".reverse-card-header").forEach(h => {
-            h.classList.remove("active");
-        });
-
-        if (!isVisible) {
-            contentEl.style.display = "block";
-            headerEl.classList.add("active");
-        }
-    }
-
-    function toggleCard(headerEl) {
-        const contentEl = headerEl.nextElementSibling;
-        const isVisible = contentEl.style.display === "block";
-
-        document.querySelectorAll(".reverse-card-content").forEach(el => el.style.display = "none");
-        document.querySelectorAll(".reverse-card-header").forEach(h => h.classList.remove("active"));
-
-        if (!isVisible) {
-            contentEl.style.display = "block";
-            headerEl.classList.add("active");
-        }
-    }
-
     document.addEventListener("DOMContentLoaded", () => {
-        const serialInput = document.querySelector("#id_serial") || document.querySelector("#serialInput");
+        const serialInput = document.querySelector("#id_serial");
         if (serialInput) {
             serialInput.focus();
         }
-
-        document.querySelectorAll(".reverse-card-content").forEach(el => {
-            el.style.display = "none";
-        });
-        document.querySelectorAll(".reverse-card-header").forEach(h => {
-            h.classList.remove("active");
-        });
     });
 
+
+    function toggleCard(cardId) {
+        const card = document.getElementById(cardId);
+        if (!card) return;
+
+        const headerEl = card.querySelector(".reverse-card-header");
+        const contentEl = card.querySelector(".reverse-card-content");
+
+        const isVisible = contentEl.style.display === "block";
+
+        if (isVisible) {
+            contentEl.style.display = "none";
+            headerEl.classList.remove("active");
+        } else {
+            contentEl.style.display = "block";
+            headerEl.classList.add("active");
+        }
+    }
 </script>
 
 {% endblock content %}
