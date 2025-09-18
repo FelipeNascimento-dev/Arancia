@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from ..forms import ReverseCreateForm
 
 
@@ -13,28 +14,37 @@ def reverse_create(request):
 
     if request.method == "POST" and form.is_valid():
         serial = form.cleaned_data.get("serial")
+
         if serial:
-            if not volumes:
+            if len(volumes) == 0:
                 volumes.append({"number": 1, "kits": []})
 
             ultimo_volume = volumes[-1]
 
             if len(ultimo_volume["kits"]) >= 10:
-                volumes.append({
-                    "number": len(volumes) + 1,
-                    "kits": []
-                })
-                ultimo_volume = volumes[-1]
+                if len(volumes) >= 25:
+                    messages.error(
+                        request, "Limite máximo de 25 volumes atingido!")
+                    return redirect("logistica:reverse_create")
+                else:
+                    novo_numero = ultimo_volume["number"] + 1
+                    volumes.append({"number": novo_numero, "kits": []})
+                    ultimo_volume = volumes[-1]
 
+            kit_number = len(ultimo_volume["kits"]) + 1
             ultimo_volume["kits"].append({
-                "number": len(ultimo_volume["kits"]) + 1,
-                "serial": serial
+                "number": kit_number,
+                "serial": serial,
             })
 
             request.session["volumes"] = volumes
             request.session.modified = True
 
-        return redirect("logistica:reverse_create")
+            if ultimo_volume["number"] == 25 and len(ultimo_volume["kits"]) == 10:
+                messages.warning(
+                    request, "Você atingiu o limite de 25 volumes com 10 kits cada!")
+
+            return redirect("logistica:reverse_create")
 
     context = {
         "form": form,
