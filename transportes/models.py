@@ -44,6 +44,7 @@ class PersonalPermissions(models.Model):
             ("controle_campo", "Controle de Campo"),
             ("gerar_etiquetas", "Gerar Etiquetas"),
             ("transp_menu", "Mostrar menu transporte"),
+            ("CC_admin", "Mostrar menu administrativo"),
         ]
 
     def __str__(self):

@@ -1,0 +1,29 @@
+{% extends 'global/base.html' %}
+{% block content %}
+<div class="form-card-2col" style="margin-top: 65px">
+  <h2>Mover Rotas</h2>
+
+
+  <form method="POST" class="form-grid-2col">
+    {% csrf_token %}
+
+    {% for f in fields %}
+      <div {% if f.colspan == 2 %} style="grid-column: 1 / -1"{% endif %}>
+        <label>{{ f.label }}</label>
+        {% if f.type == "textarea" %}
+          <textarea name="{{ f.name }}" rows="6" class="form-control" placeholder="{{ f.placeholder }}"></textarea>
+        {% else %}
+          <input type="{{ f.type }}" name="{{ f.name }}" class="form-control" placeholder="{{ f.placeholder }}">
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <div class="form-actions" style="grid-column: 1 / -1">
+      <button type="submit" class="submit-button-right">
+        <i class="fa fa-exchange-alt"></i> Mover
+      </button>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

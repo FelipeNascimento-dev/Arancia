@@ -1,5 +1,6 @@
 import re
 import requests
+import concurrent.futures
 from django.shortcuts import render
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now, make_aware, is_naive, localtime
@@ -7,6 +8,8 @@ from django.core.cache import cache
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.csrf import csrf_protect
 from setup.local_settings import API_BASE
+
+session = requests.Session()  # mantém conexão aberta (mais rápido)
 
 
 def format_datetime(value):
@@ -20,22 +23,39 @@ def format_datetime(value):
 
 
 def get_api_data(cache_key, url, params, headers, ttl=300):
-    """Busca dados de API com cache"""
+    """Busca dados da API com cache"""
     data = cache.get(cache_key)
     if not data:
-        resp = requests.get(url, params=params, headers=headers)
+        resp = session.get(url, params=params, headers=headers, timeout=10)
         data = resp.json() if resp.status_code == 200 else {}
         cache.set(cache_key, data, ttl)
     return data
+
+
+def get_multiple_api_data(requests_list, headers, ttl=300):
+    """Executa múltiplas requisições em paralelo"""
+    results = {}
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future_to_key = {
+            executor.submit(get_api_data, key, url, params, headers, ttl): key
+            for key, url, params in requests_list
+        }
+        for future in concurrent.futures.as_completed(future_to_key):
+            key = future_to_key[future]
+            try:
+                results[key] = future.result()
+            except Exception:
+                results[key] = {}
+    return results
 
 
 def normalizar_celular(numero: str) -> str:
     """Remove () + - e espaços, mantém apenas DDD + número"""
     if not numero:
         return ""
-    numero = re.sub(r"\D", "", numero)  # mantém só dígitos
+    numero = re.sub(r"\D", "", numero)
     if numero.startswith("55") and len(numero) > 11:
-        numero = numero[2:]  # remove código do país
+        numero = numero[2:]
     return numero
 
 
@@ -47,16 +67,22 @@ def dashboard_view(request):
     hoje_str = now().strftime("%Y-%m-%d")
     hoje = localtime(now()).date()
 
-    # --- filtros recebidos da URL ---
+    # --- filtros da URL ---
     filtro_status = request.GET.get("status_janela")
     filtro_flag = request.GET.get("flag")
     filtro_msg = request.GET.get("mensagem")
     filtro_unidade = request.GET.get("unidade")
     filtro_uid = request.GET.get("uid")
-    # --- Resumo geral + técnicos ---
-    url_status = f"{API_BASE}Filtro_status/resumo-status-detalhado/claro"
-    dados_status = get_api_data(f"status_{hoje_str}", url_status, {"date": hoje_str}, headers)
 
+    # --- buscar APIs em paralelo ---
+    urls = [
+        (f"status_{hoje_str}", f"{API_BASE}Filtro_status/resumo-status-detalhado/claro", {"date": hoje_str}),
+        (f"ordens_{hoje_str}", f"{API_BASE}consultasM/ordens-atendidas-data/claro", {"date": hoje_str}),
+    ]
+    dados = get_multiple_api_data(urls, headers, ttl=300)
+
+    dados_status = dados.get(f"status_{hoje_str}", {})
+    dados_ordens = dados.get(f"ordens_{hoje_str}", {})
     resumo_geral = dados_status.get("geral", {})
     resumo_por_uid = dados_status.get("por_uid", {})
     
@@ -297,7 +323,7 @@ def dashboard_view(request):
         {"param": "CRÍTICO", "query": "mensagem", "label": "Casos Críticos", "color": "green", "value": resumo_cards.get("status", {}).get("mensagem_critico", 0)},
     ]
 
-
+    
     # --- unidades para os filtros ---
     unidades = sorted({t.get("area") for t in todos_tecnicos if t.get("area")})
 
