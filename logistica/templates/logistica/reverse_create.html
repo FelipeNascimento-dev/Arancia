@@ -68,7 +68,19 @@
         border: 1px solid #e0e0e0;
         font-family: monospace;
         text-align: left;
-    } 
+    }
+
+    @media screen and (max-width: 1280px) {
+        .cardsparent {
+            margin-top: 40px;
+            max-width: 1150px;
+            margin-left: 65px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 50px;
+        }
+    }
 </style>
 
 <div class="form-container">
@@ -79,13 +91,13 @@
     </div>
 </div>
 
-{% if volumes %}
+{% if payload %}
 <div class="cardsparent">
-    {% for volume in volumes reversed %}
-    <div class="card-block" id="card-volume-{{ volume.number }}">
+    {% for volume in payload.volums %}
+    <div class="card-block" id="card-volume-{{ volume.volum_number }}">
         <div class="reverse-card-header {% if forloop.first %}active{% endif %}"
-            onclick="toggleCard('card-volume-{{ volume.number }}')">
-            <h3 class="card-title">&nbsp;Volume {{ volume.number }}</h3>
+            onclick="toggleCard('card-volume-{{ volume.volum_number }}')">
+            <h3 class="card-title">Volume {{ volume.volum_number }}</h3>
             <i class="fa-solid fa-chevron-down"></i>
         </div>
         <div class="reverse-card-content" {% if forloop.first %}style="display:block" {% endif %}>
@@ -102,14 +114,11 @@
                 <tbody>
                     {% for kit in volume.kits %}
                     <tr>
-                        <td>{{ kit.number }}</td>
+                        <td>{{ kit.kit_number }}</td>
                         <td>{{ kit.serial }}</td>
-                        <td>0123456789</td>
-                        <td>ARC0007</td>
-                        <td>19.09.2025</td>
-                        <!-- <td>{{ kit.order_number }}</td>
+                        <td>{{ kit.order_number }}</td>
                         <td>{{ kit.created_by }}</td>
-                        <td>{{ kit.created_at }}</td> -->
+                        <td>{{ kit.created_at }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -121,7 +130,6 @@
 {% endif %}
 
 
-
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const serialInput = document.querySelector("#id_serial");
@@ -129,7 +137,6 @@
             serialInput.focus();
         }
     });
-
 
     function toggleCard(cardId) {
         const card = document.getElementById(cardId);
