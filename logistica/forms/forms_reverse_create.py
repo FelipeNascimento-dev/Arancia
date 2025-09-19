@@ -29,6 +29,7 @@ class ReverseCreateForm(forms.Form):
             GroupAditionalInformation.objects
             .exclude(sales_channel__isnull=True)
             .exclude(sales_channel__exact="")
+            .order_by("sales_channel")
             .values_list("sales_channel", "sales_channel")
             .distinct()
         )
@@ -37,6 +38,7 @@ class ReverseCreateForm(forms.Form):
 
         group_choices = (
             GroupAditionalInformation.objects
+            .order_by("nome")
             .values_list("id", "nome")
         )
         self.fields['group_aditional_information'].choices = [
