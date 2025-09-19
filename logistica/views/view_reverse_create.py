@@ -71,7 +71,6 @@ def reverse_create(request):
         ]
     }
 
-    # pega o sales_channel do usuário
     user_sales_channel = None
     try:
         if (
@@ -91,7 +90,6 @@ def reverse_create(request):
         user_sales_channel=user_sales_channel,
     )
 
-    # inicializa payload no formato novo
     if "volums" not in request.session:
         request.session["volums"] = []
 
@@ -106,7 +104,6 @@ def reverse_create(request):
 
             ultimo_volume = volums[-1]
 
-            # máximo de 10 kits por volume
             if len(ultimo_volume["kits"]) >= 10:
                 if len(volums) >= 25:
                     messages.error(
