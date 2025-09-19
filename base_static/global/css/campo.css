@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -17,56 +18,66 @@ html, body {
 }
 
 .setcontainer {
-  background: #fff;
-  margin: 20px auto;
-  box-shadow: 0 0 17px rgba(0, 0, 0, 0.11);
-  border-radius: 8px;
-  padding: 17px;
-  width: 100%;
-  max-width: 1300px;  /* limite em desktops grandes */
-  margin-top: 65px;
+  background: var(--background-formularios);
+  padding: 24px;
+  border-radius: 10px;
+  box-shadow: var(--box-shadow-formularios);
+  width: 1300px;
+  max-width: 1300px;
+  border: 1px solid var(--borda-formularios);
+  height: auto;
+  margin-left: 35px;
+  margin-top: 65PX;
 }
 
 
 .informacoes_basicas {
   display: flex;
-  flex-wrap: wrap;   /* quebra em linhas */
+  flex-wrap: wrap;
+  /* quebra em linhas */
   gap: 15px;
 }
 
 .card-box {
-  flex: 1 1 calc(25% - 15px); /* até 4 por linha em desktop */
-  min-width: 200px;           /* não encolhe demais */
+  flex: 1 1 calc(25% - 15px);
+  /* até 4 por linha em desktop */
+  min-width: 200px;
+  /* não encolhe demais */
 }
+
 .card-box {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 15px;
+
+
+  gap: 19px;
   background: #ffffff;
   border: 3px solid;
   border-radius: 12px;
-  padding: 20px;
+  padding: 10px;
+  width: auto;
   font-size: 18px;
   font-weight: 600;
   color: #1a1d24;
   text-align: left;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease-in-out;
   cursor: pointer;
-  overflow: hidden; /* necessário pro efeito de preenchimento */
-  min-height: 30px;
+  overflow: hidden;
+  /* necessário pro efeito de preenchimento */
+
   flex: 1;
-  
+
 }
+
 .table-responsive {
   overflow-x: auto;
 }
 
 .card-box:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
 }
 
 .icon {
@@ -78,14 +89,14 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  
+
 }
 
 .card-text strong {
   font-size: 20px;
   text-align: end;
   color: #111;
-  
+
 }
 
 .card-text small {
@@ -115,7 +126,7 @@ html, body {
   left: 0;
   width: 0;
   height: 100%;
-  background-color : #fc8e5b;
+  background-color: #fc8e5b;
   transition: width 0.4s ease-in-out;
   z-index: 0;
 }
@@ -141,85 +152,100 @@ html, body {
 .card-box.border-redore1:hover small {
   color: #fff !important;
   -webkit-text-fill-color: rgb(255, 255, 255);
-  -text-decoration: none   !important;
+  -text-decoration: none !important;
 }
+
 /* Cores */
-.border-redore, .redore { 
-  border-color:#000000ff; 
-  color:  rgb(172, 98, 70); 
-  -webkit-text-fill-color: rgb(172, 98, 70); 
+.border-redore,
+.redore {
+  border-color: #000000ff;
+  color: rgb(172, 98, 70);
+  -webkit-text-fill-color: rgb(172, 98, 70);
 }
 
 
-.border-redore1, .redore1 { 
+.border-redore1,
+.redore1 {
   border-color: #fc8e5b;
   color: #fc8e5b;
   -webkit-text-fill-color: #fc8e5b;
 }
-.border-redore1, .redore1 { 
+
+.border-redore1,
+.redore1 {
   border-color: #fc8e5b;
   color: #fc8e5b;
   -webkit-text-fill-color: #fc8e5b;
-  
+
 }
+
 .card-box.border-redore1:hover::before {
   width: 100%;
 }
 
 
-.border-purple, .purple { 
-  border-color: #a855f7; 
-  color: #a855f7; 
-  -webkit-text-fill-color: #a855f7; 
+.border-purple,
+.purple {
+  border-color: #a855f7;
+  color: #a855f7;
+  -webkit-text-fill-color: #a855f7;
 }
 
-.border-green, .green { 
+.border-green,
+.green {
   border-color: #65c07a;
   color: #65c07a;
   -webkit-text-fill-color: #65c07a;
 }
 
-.border-green1, .green1 { 
-  border-color: #000000ff; 
-  color:rgb(87, 153, 96); 
-  -webkit-text-fill-color:rgb(87, 153, 96); 
+.border-green1,
+.green1 {
+  border-color: #000000ff;
+  color: rgb(87, 153, 96);
+  -webkit-text-fill-color: rgb(87, 153, 96);
 }
 
-.border-blue, .blue { 
+.border-blue,
+.blue {
   border-color: #5797ff;
   color: #5797ff;
   -webkit-text-fill-color: #5797ff;
 }
 
-.border-blue1, .blue1 { 
-  border-color: #000000ff; 
-  color:rgb(82, 105, 238); 
+.border-blue1,
+.blue1 {
+  border-color: #000000ff;
+  color: rgb(82, 105, 238);
   -webkit-text-fill-color: rgb(82, 105, 238);
 }
 
-.border-yellow, .yellow { 
-  border-color: #bda33d; 
-  color: #bda33d; 
-  -webkit-text-fill-color: #bda33d; 
+.border-yellow,
+.yellow {
+  border-color: #bda33d;
+  color: #bda33d;
+  -webkit-text-fill-color: #bda33d;
 }
 
-.border-red, .red { 
-  border-color: #e66c6c; 
-  color:  #e66c6c; 
-  -webkit-text-fill-color:  #e66c6c; 
- 
+.border-red,
+.red {
+  border-color: #e66c6c;
+  color: #e66c6c;
+  -webkit-text-fill-color: #e66c6c;
+
 }
 
-.border-orange, .orange { 
-  border-color: #000000ff; 
-  color:  #fc9b63;
-  -webkit-text-fill-color:  #fc9b63;
+.border-orange,
+.orange {
+  border-color: #000000ff;
+  color: #fc9b63;
+  -webkit-text-fill-color: #fc9b63;
 }
 
-.border-black, .black { 
+.border-black,
+.black {
   border-color: #333;
   color: #333;
-  -webkit-text-fill-color:  #333;
+  -webkit-text-fill-color: #333;
 }
 
 .table-responsive {
@@ -230,17 +256,19 @@ html, body {
 /* tabela */
 .styled-table {
   width: 100%;
-/* permite arredondar */
-  border-spacing: 0;           /* remove espaço entre células */
+  /* permite arredondar */
+  border-spacing: 0;
+  /* remove espaço entre células */
   font-size: 15px;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   border-radius: 15px;
-  overflow: hidden;            /* força o arredondamento funcionar */
+  overflow: hidden;
+  /* força o arredondamento funcionar */
 }
 
 
 .styled-table.dark thead tr {
- background: #0077b6;
+  background: #0077b6;
   color: #ffffff;
 }
 
@@ -249,7 +277,7 @@ html, body {
   padding: 10px 14px;
   text-align: center;
 
-  
+
 }
 
 .styled-table tbody tr:nth-of-type(even) {
@@ -257,25 +285,31 @@ html, body {
 }
 
 .styled-table tbody tr:hover {
-  background-color:#c7e9ffcc;
+  background-color: #c7e9ffcc;
 }
+
 .icon-alert {
-  color: rgb(255, 14, 14) !important; /* laranja de alerta */
+  color: rgb(255, 14, 14) !important;
+  /* laranja de alerta */
 }
+
 .alert-row td {
-  border-bottom: 3px solid  rgb(255, 14, 14) !important; /* borda visível */
-  
-  color: rgb(255, 14, 14) !important;   /* texto em vermelho */
+  border-bottom: 3px solid rgb(255, 14, 14) !important;
+  /* borda visível */
+
+  color: rgb(255, 14, 14) !important;
+  /* texto em vermelho */
   font-weight: bold;
 }
 
 
-.fa-eye{
+.fa-eye {
   color: #222;
-  
+
 }
-.fa-eye:hover{
-  color:#0077b6 !important;
+
+.fa-eye:hover {
+  color: #0077b6 !important;
 }
 
 /* Status da janela */
@@ -286,11 +320,12 @@ html, body {
   border-bottom: 3px solid  rgb(114, 104, 255) !important; /* borda visível 
   
 } */
-.status.concluido{
-color:  rgb(82, 105, 238) !important;
+.status.concluido {
+  color: rgb(82, 105, 238) !important;
 
-  
+
 }
+
 .status.no_tempo {
   color: rgb(87, 153, 96);
   font-weight: bold;
@@ -313,40 +348,48 @@ color:  rgb(82, 105, 238) !important;
 
 /* Flags seguem a mesma lógica */
 td.flag.AZUL {
-  color:#5797ff !important;
-  
- 
+  color: #5797ff !important;
+
+
 }
-.mensagem_critico{
-  color:#03fd4e !important;
+
+.mensagem_critico {
+  color: #03fd4e !important;
 }
+
 td.flag.AZUL {
-  color:#5797ff !important;
-  
- 
+  color: #5797ff !important;
+
+
 }
+
 .flag-AZUL {
   color: rgb(0, 0, 0);
 
-  border-bottom: 3px solid rgb(82, 105, 238) !important; /* borda visível */
+  border-bottom: 3px solid rgb(82, 105, 238) !important;
+  /* borda visível */
 }
 
 .flag-VERMELHO {
- color: rgb(0, 0, 0);
-   border-bottom: 3px solid  rgb(243, 45, 10) !important; /* borda visível */
+  color: rgb(0, 0, 0);
+  border-bottom: 3px solid rgb(243, 45, 10) !important;
+  /* borda visível */
 }
+
 td.flag.VERMELHO {
- color: rgb(243, 45, 10)!important;
-  
+  color: rgb(243, 45, 10) !important;
+
 }
+
 .flag-VERDE {
- color: rgb(0, 0, 0);
-  border-bottom: 3px solid  rgb(87, 153, 96)!important; /* borda visível */
+  color: rgb(0, 0, 0);
+  border-bottom: 3px solid rgb(87, 153, 96) !important;
+  /* borda visível */
 }
 
 td.flag.VERDE {
- color: rgb(87, 153, 96)!important;
- 
+  color: rgb(87, 153, 96) !important;
+
 }
 
 
@@ -356,17 +399,17 @@ td.flag.VERDE {
 }
 
 /* efeito hover */
-.card-box:hover{
+.card-box:hover {
   color: #fff;
   transform: scale(1.05);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 /* estilo comum ao ativo */
 .card-box.active {
   color: #fff;
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);  
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   -webkit-text-fill-color: rgb(255, 255, 255)
 }
 
@@ -374,35 +417,42 @@ td.flag.VERDE {
 .card-box.active .icon,
 .card-box.active i {
   color: #fff !important;
-    -webkit-text-fill-color: rgb(255, 255, 255);
+  -webkit-text-fill-color: rgb(255, 255, 255);
 }
+
 /* cada card ativo com sua cor */
 .card-box .icon,
 .card-box i {
   transition: color 0.2s ease-in-out;
 }
-.card-box.border-black.icon ,.card-box.border-black.active{
-  background: #333; /* preto */
+
+.card-box.border-black.icon,
+.card-box.border-black.active {
+  background: #333;
+  /* preto */
   border-color: #333;
 }
 
 .card-box.border-blue1.active {
-  background: rgb(82, 105, 238); /* azul */
-  border-color:rgb(82, 105, 238);
+  background: rgb(82, 105, 238);
+  /* azul */
+  border-color: rgb(82, 105, 238);
 }
+
 .card-box.border-green1.active {
-  background: rgb(87, 153, 96); 
-  border-color: rgb(87, 153, 96); 
+  background: rgb(87, 153, 96);
+  border-color: rgb(87, 153, 96);
 }
 
 .card-box.border-orange.active {
   background: #fc9b63;
-  border-color:  #fc9b63;
+  border-color: #fc9b63;
 }
 
 .card-box.border-redore.active {
-  background: rgb(172, 98, 70); /* vermelho */
- border-color: rgb(172, 98, 70); 
+  background: rgb(172, 98, 70);
+  /* vermelho */
+  border-color: rgb(172, 98, 70);
 }
 
 
@@ -414,21 +464,21 @@ td.flag.VERDE {
 /* efeito hover */
 .card-box:hover {
   transform: scale(1.0);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 /* estilo ativo comum */
 .card-box.active {
   color: #fff;
   transform: scale(0.9);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* ícones também ficam brancos */
 .card-box.active .icon,
 .card-box.active i {
   color: #fff !important;
-  text-decoration: none   !important;
+  text-decoration: none !important;
 }
 
 /* cores específicas */
@@ -445,35 +495,36 @@ td.flag.VERDE {
 }
 
 .card-box.border-red.active {
-  background:  #e66c6c; 
+  background: #e66c6c;
 }
 
 
-.filter-card{
-  text-decoration: none   !important;
+.filter-card {
+  text-decoration: none !important;
 }
 
 
 
-.abrir-modal{
+.abrir-modal {
   cursor: pointer;
   color: #000000ff;
 }
-.abrir-modal:hover{
-  
+
+.abrir-modal:hover {
+
   color: rgb(255, 255, 255);
 }
 
 .modal-content {
-  
+
   border-radius: 12px;
   border: none;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 
-.modal-title{
-    color: #222;
+.modal-title {
+  color: #222;
 }
 
 .tec-nome {
@@ -485,9 +536,10 @@ td.flag.VERDE {
 }
 
 
-.tec-ficha,.ordem-ficha {
+.tec-ficha,
+.ordem-ficha {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); 
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
 }
 
@@ -500,24 +552,30 @@ td.flag.VERDE {
   font-size: 14px;
 }
 
- .linha .titulo {
+.linha .titulo {
   font-weight: 900;
   color: #444;
-  
+
 }
+
 .filter-card span,
 .filter-card strong,
 .filter-card i {
   text-decoration: none;
 }
+
 .filter-card:hover {
-  text-decoration: none;    /* garante que no hover não volte a linha */
-  color: inherit;           /* evita azul no hover */
+  text-decoration: none;
+  /* garante que no hover não volte a linha */
+  color: inherit;
+  /* evita azul no hover */
 }
 
 .filter-card:visited {
-  text-decoration: none;    /* sem linha também no visitado */
-  color: inherit;           /* evita roxo */
+  text-decoration: none;
+  /* sem linha também no visitado */
+  color: inherit;
+  /* evita roxo */
 }
 
 .linha .valor {
@@ -565,7 +623,8 @@ td.flag.VERDE {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;           /* ocupa toda a largura da coluna */
+  width: 100%;
+  /* ocupa toda a largura da coluna */
   min-height: 55px;
   border: 2px solid #3f3f3f;
   border-radius: 8px;
@@ -573,7 +632,8 @@ td.flag.VERDE {
   font-size: 14px;
   font-weight: 500;
   color: #3f3f3f;
-  text-decoration: none;  /* remove sublinhado azul */
+  text-decoration: none;
+  /* remove sublinhado azul */
   transition: all 0.2s ease-in-out;
 }
 
@@ -604,33 +664,43 @@ td.flag.VERDE {
 .iframe-container {
   margin-top: 40px;
   height: calc(100vh - 40px);
-  width: calc(160vh - 40px); /* padrão que você já usa */
+  width: calc(160vh - 40px);
+  /* padrão que você já usa */
 }
-.iframe-container1{
+
+.iframe-container1 {
   margin-top: 40px;
   height: calc(100vh - 40px);
-  width: calc(180vh - 40px); /* padrão que você já usa */
+  width: calc(180vh - 40px);
+  /* padrão que você já usa */
 }
+
 @media (max-width: 1400px) {
   .iframe-container {
     width: calc(100vh - 40px);
     height: calc(120vh - 40px);
   }
-.iframe-container1{
-  margin-top: 40px;
-  height: calc(90vh - 40px);
-  width: calc(120vh - 40px); /* padrão que você já usa */
+
+  .iframe-container1 {
+    margin-top: 40px;
+    height: calc(90vh - 40px);
+    width: calc(120vh - 40px);
+    /* padrão que você já usa */
+  }
 }
-}
+
 .iframe-container iframe {
   width: 100%;
   height: 100%;
   border: none;
-  display: block;             /* remove espaçamento fantasma */
+  display: block;
+  /* remove espaçamento fantasma */
 }
+
 .iframe-container1 iframe {
   width: 100%;
   height: 100%;
   border: none;
-  display: block;             /* remove espaçamento fantasma */
+  display: block;
+  /* remove espaçamento fantasma */
 }
