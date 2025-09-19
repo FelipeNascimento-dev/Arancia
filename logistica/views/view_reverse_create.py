@@ -5,8 +5,24 @@ from ..forms import ReverseCreateForm
 
 def reverse_create(request):
     titulo = 'Reversa de Equipamento'
-    form = ReverseCreateForm(request.POST or None, nome_form=titulo)
 
+    # tenta pegar o sales_channel do usuário logado (via UserDesignation -> GroupAditionalInformation)
+    user_sales_channel = None
+    try:
+        if request.user.is_authenticated and hasattr(request.user, "designacao") and request.user.designacao.informacao_adicional:
+            user_sales_channel = (
+                request.user.designacao.informacao_adicional.sales_channel or "").strip()
+    except Exception:
+        user_sales_channel = None
+
+    # passe o user_sales_channel na construção do form
+    form = ReverseCreateForm(
+        request.POST or None,
+        nome_form=titulo,
+        user_sales_channel=user_sales_channel,
+    )
+
+    # ---------------- sua lógica dos volumes (inalterada) ----------------
     if "volumes" not in request.session:
         request.session["volumes"] = []
 
