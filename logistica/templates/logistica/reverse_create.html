@@ -144,7 +144,7 @@
                         <td>{{ kit.serial }}</td>
                         <td>{{ kit.order_number }}</td>
                         <td>{{ kit.created_by }}</td>
-                        <td>{{ kit.created_at }}</td>
+                        <td class="date-br">{{ kit.created_at }}</td>
                         {% if payload.status == 'ABERTO' %}
                         <td>
                             <button type="button" class="btn-action">
@@ -188,6 +188,14 @@
             headerEl.classList.add("active");
         }
     }
+</script>
+
+<script>
+  document.querySelectorAll('.date-br').forEach(el => {
+    const d = new Date(el.textContent);
+    const br = d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' });
+    el.textContent = br;
+  });
 </script>
 
 {% endblock content %}
