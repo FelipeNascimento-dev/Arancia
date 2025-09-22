@@ -1,12 +1,22 @@
+import re
 from django import forms
 
 
 class RomaneioConsultaForm(forms.Form):
-    numero = forms.IntegerField(
+    numero = forms.CharField(
         label="Número do Romaneio",
         required=True,
-        widget=forms.NumberInput(attrs={"class": "form-control"})
+        widget=forms.TextInput(attrs={"class": "form-control"})
     )
+
+    def clean_numero(self):
+        numero = self.cleaned_data["numero"]
+
+        if not re.fullmatch(r"\d{10}", numero):
+            raise forms.ValidationError(
+                "O número do romaneio deve ter exatamente 10 dígitos (ex: 0000000007).")
+
+        return numero
 
     def __init__(self, *args, nome_form=None, user_sales_channel: str | None = None, romaneio_num=None, **kwargs):
         self.nome_formulario = nome_form or "Definir nome do formulário"
