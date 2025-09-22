@@ -59,6 +59,14 @@ class PontoAtendimentoInfo(models.Model):
         return f"{self.group.name} - {self.endereco}"
 
 
+class RomaneioReverse(models.Model):
+    numero = models.PositiveIntegerField(unique=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Romaneio {self.numero}"
+
+
 class GroupAditionalInformation(models.Model):
     group = models.ForeignKey(Group, related_name='informacoes_adicionais',
                               blank=True, null=True, on_delete=models.CASCADE)
