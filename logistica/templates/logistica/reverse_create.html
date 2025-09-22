@@ -81,6 +81,29 @@
             margin-bottom: 50px;
         }
     }
+
+    .btn-action {
+        background: #ff4d4f;
+        border: none;
+        color: #fff;
+        padding: 6px 10px;
+        font-size: 0.9rem;
+        border-radius: 6px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn-action:hover {
+        background: #d9363e;
+        transform: scale(1.05);
+    }
+
+    .btn-action i {
+        font-size: 0.85rem;
+    }
 </style>
 
 <div class="form-container">
@@ -109,6 +132,7 @@
                         <th>Pedido</th>
                         <th>Criado por</th>
                         <th>Criado em</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -119,6 +143,11 @@
                         <td>{{ kit.order_number }}</td>
                         <td>{{ kit.created_by }}</td>
                         <td>{{ kit.created_at }}</td>
+                        <td>
+                            <button type="button" class="btn-action">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

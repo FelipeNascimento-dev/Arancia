@@ -17,4 +17,17 @@
     </div>
 </div>
 
+<div class="form-actions">
+    {% if pode_editar %}
+    <button type="submit" class="btn btn-primary">Inserir</button>
+    <a href="{% url 'fechar_romaneio' romaneio.id %}" class="btn btn-warning">
+        Fechar Romaneio
+    </a>
+    {% else %}
+    <div class="alert alert-warning">
+        Este romaneio está fechado. Apenas visualização.
+    </div>
+    {% endif %}
+</div>
+
 {% endblock content %}
