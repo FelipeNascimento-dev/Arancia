@@ -146,19 +146,3 @@ def reverse_create(request):
         "payload": payload,
     }
     return render(request, "logistica/reverse_create.html", context)
-
-
-def fechar_romaneio(request, pk):
-    romaneio = get_object_or_404(RomaneioReverse, pk=pk)
-    romaneio.status = "FECHADO"
-    romaneio.save()
-    messages.success(request, f"Romaneio {romaneio.numero} foi fechado.")
-    return redirect("logistica:consultar_romaneio")
-
-
-def cancelar_romaneio(request, pk):
-    romaneio = get_object_or_404(RomaneioReverse, pk=pk)
-    romaneio.status = "CANCELADO"
-    romaneio.save()
-    messages.error(request, f"Romaneio {romaneio.numero} foi cancelado.")
-    return redirect("logistica:consultar_romaneio")

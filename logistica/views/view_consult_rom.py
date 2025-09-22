@@ -41,4 +41,5 @@ def consult_rom(request):
         "form": form,
         "botao_texto": 'Consultar',
         "proximo_disponivel": proximo_disponivel,
+        "site_title": 'Consulta de Romaneio',
     })
