@@ -11,12 +11,12 @@ class RomaneioConsultaForm(forms.Form):
 
     def clean_numero(self):
         numero = self.cleaned_data["numero"]
+        try:
+            numero_int = int(numero)
+        except ValueError:
+            raise forms.ValidationError("Informe apenas números.")
 
-        if not re.fullmatch(r"\d{10}", numero):
-            raise forms.ValidationError(
-                "O número do romaneio deve ter exatamente 10 dígitos (ex: 0000000007).")
-
-        return numero
+        return str(numero_int).zfill(10)
 
     def __init__(self, *args, nome_form=None, user_sales_channel: str | None = None, romaneio_num=None, **kwargs):
         self.nome_formulario = nome_form or "Definir nome do formulário"
