@@ -60,21 +60,11 @@ class PontoAtendimentoInfo(models.Model):
 
 
 class RomaneioReverse(models.Model):
-    STATUS_CHOICES = [
-        ("ABERTO", "Aberto"),
-        ("FECHADO", "Fechado"),
-    ]
-
     numero = models.CharField(max_length=10, unique=True)
-    status = models.CharField(
-        max_length=10,
-        choices=STATUS_CHOICES,
-        default="ABERTO",
-    )
     criado_em = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Romaneio {self.numero} - {self.status}"
+        return f"Romaneio {self.numero}"
 
 
 class GroupAditionalInformation(models.Model):

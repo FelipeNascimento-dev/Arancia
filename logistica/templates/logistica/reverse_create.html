@@ -132,7 +132,9 @@
                         <th>Pedido</th>
                         <th>Criado por</th>
                         <th>Criado em</th>
+                        {% if payload.status == 'ABERTO' %}
                         <th>Ações</th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -143,11 +145,13 @@
                         <td>{{ kit.order_number }}</td>
                         <td>{{ kit.created_by }}</td>
                         <td>{{ kit.created_at }}</td>
+                        {% if payload.status == 'ABERTO' %}
                         <td>
                             <button type="button" class="btn-action">
-                                <i class="fa-solid fa-minus"></i>
+                                <i class="fa-solid fa-trash"></i>
                             </button>
                         </td>
+                        {% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>
