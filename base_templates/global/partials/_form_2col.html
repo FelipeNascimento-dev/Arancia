@@ -56,6 +56,14 @@
       Inserir serial
     </button> -->
     {% endif %}
+
+    {% if proximo_disponivel %}
+      <button type="submit" class="submit-button-right btn-success" 
+              name="criar_romaneio" value="{{ proximo_disponivel }}">
+        Criar romaneio {{ proximo_disponivel }}
+      </button>
+    {% endif %}
+
     <button type="submit" class="submit-button-right" name="enviar_evento" value="1">
       {{ botao_texto }}
     </button>
