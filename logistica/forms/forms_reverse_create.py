@@ -28,9 +28,14 @@ class ReverseCreateForm(forms.Form):
         choices=()
     )
 
-    def __init__(self, *args, nome_form=None, user_sales_channel: str | None = None, **kwargs):
+    def __init__(self, *args, nome_form=None, user_sales_channel: str | None = None, romaneio_num=None, **kwargs):
         self.nome_formulario = nome_form or "Definir nome do formulário"
         super().__init__(*args, **kwargs)
+
+        if romaneio_num:
+            romaneio_formatado = str(romaneio_num).zfill(10)
+            self.fields["romaneio"].initial = romaneio_formatado
+            self.fields["romaneio"].disabled = True
 
         sc_qs = (
             GroupAditionalInformation.objects
@@ -41,6 +46,7 @@ class ReverseCreateForm(forms.Form):
             .values_list("sales_channel", flat=True)
             .distinct()
         )
+
         sc_values = list(sc_qs)
         if user_sales_channel and user_sales_channel not in sc_values:
             sc_values.insert(0, user_sales_channel)

@@ -5,6 +5,8 @@ from ..forms import RomaneioConsultaForm
 
 
 def consult_rom(request):
+    titulo = 'Consultar Romaneio'
+
     if request.method == "POST":
         form = RomaneioConsultaForm(request.POST)
         if form.is_valid():
@@ -13,15 +15,11 @@ def consult_rom(request):
             romaneio, criado = RomaneioReverse.objects.get_or_create(
                 numero=numero)
 
-            if criado:
-                messages.success(
-                    request, f"Romaneio {numero} criado com sucesso!")
-            else:
-                messages.info(request, f"Romaneio {numero} já existe.")
+            request.session["romaneio_num"] = romaneio.numero
 
-            return redirect("reverse_create", pk=romaneio.pk)
+            return redirect("logistica:reverse_create")
     else:
-        form = RomaneioConsultaForm()
+        form = RomaneioConsultaForm(nome_form=titulo,)
 
     return render(request, "logistica/consult_rom.html", {
         "form": form,

@@ -84,10 +84,13 @@ def reverse_create(request):
     except Exception:
         user_sales_channel = None
 
+    romaneio_num = request.session.get("romaneio_num", None)
+
     form = ReverseCreateForm(
         request.POST or None,
         nome_form=titulo,
         user_sales_channel=user_sales_channel,
+        romaneio_num=romaneio_num,
     )
 
     if "volums" not in request.session:
