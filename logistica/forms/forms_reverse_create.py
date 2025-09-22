@@ -4,6 +4,12 @@ from ..models import GroupAditionalInformation, Group
 
 
 class ReverseCreateForm(forms.Form):
+    romaneio = forms.CharField(
+        label='Romaneio',
+        max_length=50,
+        required=False
+    )
+
     serial = forms.CharField(
         label='Serial',
         max_length=50,

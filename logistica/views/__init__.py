@@ -24,3 +24,4 @@ from .view_order_return_check import order_return_check
 from .view_user_ger import user_ger
 from .view_skill_ger import skill_ger
 from .view_reverse_create import reverse_create
+from .view_consult_rom import consult_rom
