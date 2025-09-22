@@ -1,29 +1,44 @@
-{% extends 'global/base.html' %}
+{% extends 'global/base.html' %} 
 {% block content %}
+
 <div class="form-card-2col" style="margin-top: 65px">
   <h2>Ordenar Rotas</h2>
 
-  <!-- Mensagens -->
- 
   <form method="POST" class="form-grid-2col">
     {% csrf_token %}
 
-    {% for f in fields %}
-      <div {% if f.colspan == 2 %} style="grid-column: 1 / -1"{% endif %}>
-        <label>{{ f.label }}</label>
-        {% if f.type == "textarea" %}
-          <textarea name="{{ f.name }}" rows="6" class="form-control" placeholder="{{ f.placeholder }}"></textarea>
-        {% else %}
-          <input type="{{ f.type }}" name="{{ f.name }}" class="form-control" placeholder="{{ f.placeholder }}">
-        {% endif %}
-      </div>
-    {% endfor %}
+    <!-- Coluna 1 -->
+    <div>
+      <label for="nome_tecnico">Técnico</label>
+      <select name="nome_tecnico" class="form-control">
+        <option value="">Selecione um técnico</option>
+        {% for tec in tecnicos %}
+        <option value="{{ tec.uid }}" 
+          {% if request.POST.nome_tecnico == tec.uid|stringformat:"s" %}selected{% endif %}>
+          {{ tec.name }} (UID: {{ tec.uid }})
+        </option>
+        {% endfor %}
+      </select>
+    </div>
 
+    <!-- Coluna 2 -->
+    <div>
+      <label for="os_list">Ordem de Serviço(s)</label>
+      <textarea
+        name="os_list"
+        rows="6"
+        class="form-control"
+        placeholder="Digite as OSs na sequência desejada, uma por linha"
+      >{{ request.POST.os_list }}</textarea>
+    </div>
+
+    <!-- Botão ocupa as 2 colunas -->
     <div class="form-actions" style="grid-column: 1 / -1">
       <button type="submit" class="submit-button-right">
-        <i class="fa fa-random"></i> Confirmar
+        <i class="fa fa-sort"></i> Ordenar
       </button>
     </div>
   </form>
 </div>
+
 {% endblock %}

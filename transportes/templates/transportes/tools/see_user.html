@@ -1,5 +1,4 @@
 {% extends 'global/base.html' %} {% block content %}
-
 <link
   href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
   rel="stylesheet"
@@ -9,159 +8,408 @@
   href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 />
 
-<div class="container mt-4">
-  <h2 class="mb-3">Técnicos</h2>
-  <div class="row">
-    {% for tec in tecnicos %}
-    <div class="col-md-4 mb-3">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">{{ tec.name }}</h5>
-          <p class="card-text">
-            <strong>UID:</strong> {{ tec.uid }}<br />
-            <strong>Email:</strong> {{ tec.email }}
-          </p>
-          <button
-            class="btn btn-primary btn-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#editModal"
-            data-uid="{{ tec.uid }}"
-          >
-            Editar
-          </button>
-        </div>
-      </div>
-    </div>
-    {% endfor %}
+<div class="setcontainer">
+  <h3><i class="fa-solid fa-magnifying-glass"></i> Pesquisar Técnico</h3>
+  <div class="mb-3">
+    <input
+      type="text"
+      id="searchInput"
+      class="form-control"
+      placeholder="Buscar técnico por nome ou unidade..."
+    />
   </div>
 </div>
 
-<!-- Modal para editar técnico -->
-<div class="modal fade" id="editModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <form id="editForm">
-        <div class="modal-header">
-          <h5 class="modal-title">Editar Técnico</h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-          ></button>
-        </div>
-        <div class="modal-body">
-          <input type="hidden" id="uid" name="uid" />
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label">Nome</label>
-              <input type="text" class="form-control" id="name" name="name" />
+<div class="setcontainer" style="margin-top: 10px">
+  <div id="tabela-tecnicos">
+    <div class="table-responsive">
+      <table class="styled-table dark" id="tecnicosTable">
+        <thead>
+          <tr>
+            <th>Ação</th>
+            <th>Nome</th>
+            <th>UID</th>
+            <th>Email</th>
+            <th>Telefone</th>
+            <th>Unidade</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tec in tecnicos %}
+          <tr>
+            <td>
+              <a
+                href="#"
+                data-bs-toggle="modal"
+                data-bs-target="#editModal"
+                data-uid="{{ tec.uid }}"
+                data-username="{{ tec.username }}"
+                data-name="{{ tec.name }}"
+                data-phone="{{ tec.phone }}"
+                data-email="{{ tec.email }}"
+                data-unidade="{{ tec.nome_unidade }}"
+                data-documento="{{ tec.documento }}"
+                data-profile="{{ tec.profile }}"
+                data-status="{{ tec.status }}"
+              >
+                <i class="fa fa-edit"></i>
+              </a>
+            </td>
+            <td>{{ tec.name }}</td>
+            <td>{{ tec.uid }}</td>
+            <td>{{ tec.email }}</td>
+            <td>{{ tec.phone }}</td>
+            <td>{{ tec.nome_unidade }}</td>
+            <td>{{ tec.status }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7">Nenhum técnico encontrado</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginação -->
+    <nav>
+      <ul class="pagination justify-content-center" id="pagination"></ul>
+    </nav>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form id="editForm">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar Técnico</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="uid" name="uid" />
+
+            <!-- Somente leitura -->
+            <div id="viewMode" class="row g-3">
+              <div class="col-md-6">
+                <label>Username</label>
+                <p id="v-username"></p>
+              </div>
+              <div class="col-md-6">
+                <label>Nome</label>
+                <p id="v-name"></p>
+              </div>
+              <div class="col-md-6">
+                <label>Telefone</label>
+                <p id="v-phone"></p>
+              </div>
+              <div class="col-md-6">
+                <label>Email</label>
+                <p id="v-email"></p>
+              </div>
+              <div class="col-md-6">
+                <label>Unidade</label>
+                <p id="v-nome_unidade"></p>
+              </div>
+              <div class="col-md-6">
+                <label>Documento</label>
+                <p id="v-documento"></p>
+              </div>
+              <div class="col-md-6">
+                <label>Profile</label>
+                <p id="v-profile"></p>
+              </div>
+              <div class="col-md-6">
+                <label>Status</label>
+                <p id="v-status"></p>
+              </div>
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Telefone</label>
-              <input type="text" class="form-control" id="phone" name="phone" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Email</label>
-              <input type="text" class="form-control" id="email" name="email" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Unidade</label>
-              <input
-                type="text"
-                class="form-control"
-                id="nome_unidade"
-                name="nome_unidade"
-              />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Status</label>
-              <select class="form-select" id="status" name="status">
-                <option>Ativo</option>
-                <option>Folga</option>
-                <option>Suspenso</option>
-                <option>Falta</option>
-                <option>Se Acidentou</option>
-              </select>
+
+            <!-- Edição -->
+            <div id="editMode" class="row g-3" style="display: none">
+              <div class="col-md-6">
+                <label>Username</label
+                ><input
+                  type="text"
+                  class="form-control"
+                  id="e-username"
+                  name="username"
+                />
+              </div>
+              <div class="col-md-6">
+                <label>Nome</label
+                ><input
+                  type="text"
+                  class="form-control"
+                  id="e-name"
+                  name="name"
+                />
+              </div>
+              <div class="col-md-6">
+                <label>Telefone</label
+                ><input
+                  type="text"
+                  class="form-control"
+                  id="e-phone"
+                  name="phone"
+                />
+              </div>
+              <div class="col-md-6">
+                <label>Email</label
+                ><input
+                  type="text"
+                  class="form-control"
+                  id="e-email"
+                  name="email"
+                />
+              </div>
+              <div class="col-md-6">
+                <label>Unidade</label
+                ><input
+                  type="text"
+                  class="form-control"
+                  id="e-nome_unidade"
+                  name="nome_unidade"
+                />
+              </div>
+              <div class="col-md-6">
+                <label>Documento</label
+                ><input
+                  type="text"
+                  class="form-control"
+                  id="e-documento"
+                  name="documento"
+                />
+              </div>
+              <div class="col-md-6">
+                <label>Profile</label
+                ><input
+                  type="text"
+                  class="form-control"
+                  id="e-profile"
+                  name="profile"
+                />
+              </div>
+              <div class="col-md-6">
+                <label>Status</label>
+                <select class="form-select" id="e-status" name="status">
+                  <option>Ativo</option>
+                  <option>Folga</option>
+                  <option>Suspenso</option>
+                  <option>Falta</option>
+                  <option>Se Acidentou</option>
+                </select>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-success">Salvar</button>
-        </div>
-      </form>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-warning" id="toggleEdit">
+              Editar
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              id="cancelEdit"
+              style="display: none"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn btn-success"
+              id="saveBtn"
+              style="display: none"
+            >
+              <span class="btn-text">Salvar</span>
+              <span
+                class="spinner-border spinner-border-sm ms-2"
+                role="status"
+                aria-hidden="true"
+                style="display: none"
+              ></span>
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const editModal = document.getElementById("editModal");
+      const toggleBtn = document.getElementById("toggleEdit");
+      const saveBtn = document.getElementById("saveBtn");
+      const cancelEditBtn = document.getElementById("cancelEdit");
+
+      // helper
+      const safe = (v) =>
+        v && v !== "None" && v !== "null" ? v : "Não informado";
+
+      // filtro
+      const searchInput = document.getElementById("searchInput");
+      searchInput.addEventListener("keyup", () => {
+        const filter = searchInput.value.toLowerCase();
+        document.querySelectorAll("#tecnicosTable tbody tr").forEach((row) => {
+          const name = row.cells[1].textContent.toLowerCase();
+          const unidade = row.cells[5].textContent.toLowerCase();
+          row.style.display =
+            name.includes(filter) || unidade.includes(filter) ? "" : "none";
+        });
+      });
+
+      // Abre modal
+      editModal.addEventListener("show.bs.modal", (event) => {
+        const btn = event.relatedTarget;
+        document.getElementById("uid").value = btn.getAttribute("data-uid");
+
+        // view
+        document.getElementById("v-username").textContent = safe(
+          btn.getAttribute("data-username")
+        );
+        document.getElementById("v-name").textContent = safe(
+          btn.getAttribute("data-name")
+        );
+        document.getElementById("v-phone").textContent = safe(
+          btn.getAttribute("data-phone")
+        );
+        document.getElementById("v-email").textContent = safe(
+          btn.getAttribute("data-email")
+        );
+        document.getElementById("v-nome_unidade").textContent = safe(
+          btn.getAttribute("data-unidade")
+        );
+        document.getElementById("v-documento").textContent = safe(
+          btn.getAttribute("data-documento")
+        );
+        document.getElementById("v-profile").textContent = safe(
+          btn.getAttribute("data-profile")
+        );
+        document.getElementById("v-status").textContent = safe(
+          btn.getAttribute("data-status")
+        );
+
+        // edit
+        document.getElementById("e-username").value =
+          btn.getAttribute("data-username") || "";
+        document.getElementById("e-name").value =
+          btn.getAttribute("data-name") || "";
+        document.getElementById("e-phone").value =
+          btn.getAttribute("data-phone") || "";
+        document.getElementById("e-email").value =
+          btn.getAttribute("data-email") || "";
+        document.getElementById("e-nome_unidade").value =
+          btn.getAttribute("data-unidade") || "";
+        document.getElementById("e-documento").value =
+          btn.getAttribute("data-documento") || "";
+        document.getElementById("e-profile").value =
+          btn.getAttribute("data-profile") || "";
+        document.getElementById("e-status").value =
+          btn.getAttribute("data-status") || "Ativo";
+
+        // reset
+        document.getElementById("viewMode").style.display = "flex";
+        document.getElementById("editMode").style.display = "none";
+        toggleBtn.style.display = "inline-block";
+        saveBtn.style.display = "none";
+        cancelEditBtn.style.display = "none";
+      });
+
+      // Toggle edição
+      toggleBtn.addEventListener("click", () => {
+        document.getElementById("viewMode").style.display = "none";
+        document.getElementById("editMode").style.display = "flex";
+        toggleBtn.style.display = "none";
+        saveBtn.style.display = "inline-block";
+        cancelEditBtn.style.display = "inline-block";
+      });
+
+      // Cancelar edição
+      cancelEditBtn.addEventListener("click", () => {
+        document.getElementById("viewMode").style.display = "flex";
+        document.getElementById("editMode").style.display = "none";
+        toggleBtn.style.display = "inline-block";
+        saveBtn.style.display = "none";
+        cancelEditBtn.style.display = "none";
+      });
+
+      // Paginação (máx 5 páginas visíveis)
+      const rowsPerPage = 15;
+      const rows = document.querySelectorAll("#tecnicosTable tbody tr");
+      const pagination = document.getElementById("pagination");
+      let currentPage = 1;
+
+      function showPage(page) {
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        rows.forEach(
+          (row, i) => (row.style.display = i >= start && i < end ? "" : "none")
+        );
+      }
+
+      function renderPagination() {
+        pagination.innerHTML = "";
+        const pageCount = Math.ceil(rows.length / rowsPerPage);
+        const maxPagesToShow = 5;
+
+        if (currentPage > 1) {
+          const prev = document.createElement("li");
+          prev.className = "page-item";
+          prev.innerHTML = `<a class="page-link" href="#">&laquo;</a>`;
+          prev.addEventListener("click", (e) => {
+            e.preventDefault();
+            currentPage--;
+            showPage(currentPage);
+            renderPagination();
+          });
+          pagination.appendChild(prev);
+        }
+
+        let startPage = Math.max(
+          1,
+          currentPage - Math.floor(maxPagesToShow / 2)
+        );
+        let endPage = startPage + maxPagesToShow - 1;
+        if (endPage > pageCount) {
+          endPage = pageCount;
+          startPage = Math.max(1, endPage - maxPagesToShow + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          const li = document.createElement("li");
+          li.className = "page-item" + (i === currentPage ? " active" : "");
+          li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+          li.addEventListener("click", (e) => {
+            e.preventDefault();
+            currentPage = i;
+            showPage(currentPage);
+            renderPagination();
+          });
+          pagination.appendChild(li);
+        }
+
+        if (currentPage < pageCount) {
+          const next = document.createElement("li");
+          next.className = "page-item";
+          next.innerHTML = `<a class="page-link" href="#">&raquo;</a>`;
+          next.addEventListener("click", (e) => {
+            e.preventDefault();
+            currentPage++;
+            showPage(currentPage);
+            renderPagination();
+          });
+          pagination.appendChild(next);
+        }
+      }
+
+      showPage(currentPage);
+      renderPagination();
+    });
+  </script>
+  {% endblock %}
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  const API_BASE = "http://192.168.0.214/RetencaoAPI/api/v3";
-  const API_TOKEN = "123";
-
-  document.addEventListener("DOMContentLoaded", () => {
-    const editModal = document.getElementById("editModal");
-    const form = document.getElementById("editForm");
-
-    // Quando abrir o modal
-    editModal.addEventListener("show.bs.modal", async (event) => {
-      const button = event.relatedTarget;
-      const uid = button.getAttribute("data-uid");
-      document.getElementById("uid").value = uid;
-
-      console.log("🔍 Buscando técnico UID:", uid);
-
-      const resp = await fetch(`${API_BASE}/update/${uid}`, {
-        headers: {
-          "Content-Type": "application/json",
-          access_token: API_TOKEN,
-        },
-      });
-
-      if (!resp.ok) {
-        alert("Erro ao carregar dados do técnico");
-        return;
-      }
-
-      const data = await resp.json();
-      console.log("✅ Dados recebidos:", data);
-
-      // Preencher os campos
-      document.getElementById("username").value = data.username || "";
-      document.getElementById("name").value = data.name || "";
-      document.getElementById("phone").value = data.phone || "";
-      document.getElementById("email").value = data.email || "";
-      document.getElementById("nome_unidade").value = data.nome_unidade || "";
-      document.getElementById("documento").value = data.documento || "";
-      document.getElementById("profile").value = data.profile || "";
-      document.getElementById("status").value = data.status || "Ativo";
-    });
-
-    // PUT atualização
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const uid = document.getElementById("uid").value;
-      const payload = Object.fromEntries(new FormData(form));
-
-      console.log("✏️ Atualizando técnico:", uid, payload);
-
-      const resp = await fetch(`${API_BASE}/update/${uid}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          access_token: API_TOKEN,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (resp.ok) {
-        alert("✅ Técnico atualizado com sucesso!");
-        location.reload();
-      } else {
-        const error = await resp.text();
-        alert("❌ Erro ao atualizar técnico: " + error);
-      }
-    });
-  });
-</script>
-
-{% endblock %}
