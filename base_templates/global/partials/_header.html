@@ -129,7 +129,7 @@
             </button>
             <div class="dropdown-content">
                 {% if perms.transportes.gerar_etiquetas %}
-                <a href="{% url 'transportes:gerar_etiquetas' %}">Gerar Etiquetas</a>
+                <!-- <a href="{% url 'transportes:gerar_etiquetas' %}">Gerar Etiquetas</a> -->
                 {% endif %}
                 {% if perms.transportes.controle_campo %}
                 <h5 class="submenu-toggle" data-target="controle-campo">Controle de Campo</h5>
@@ -140,30 +140,33 @@
                         <a href="{% url 'transportes:tecnicos' %}">Técnicos</a>
                         <a href="{% url 'transportes:controle' %}">Controle</a>
                     </div>
+
+
+
+
+                    <h5 class="submenu-toggle" data-target="Ferramentas">Ferramentas</h5>
+                    <div class="sub-submenu" id="Ferramentas">
+                        {% if perms.transportes.CC_admin %}
+                        <h5 class="submenu-toggle" data-target="Ferramentas1">Usuarios</h5>
+                        <div class="sub-submenu" id="Ferramentas1">
+                            <a href="{% url 'transportes:criar_usuario' %}">Criar Usuario</a>
+                            <a href="{% url 'transportes:ver_usuario' %}">Ver Usuario</a>
+                        </div>
+                        {% endif %}
+                        {% if perms.transportes.controle_campo %}
+                        <h5 class="submenu-toggle" data-target="Ferramentas2">Rotas</h5>
+                        <div class="sub-submenu" id="Ferramentas2">
+                            <a href="{% url 'transportes:ordenar_rota' %}">Ordenar Rotas</a>
+                            <a href="{% url 'transportes:mover_rota' %}">Mover Rotas</a>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
                 {% endif %}
 
 
-                    
-                <h5 class="submenu-toggle" data-target="Ferramentas">Ferramentas</h5>
-                <div class="sub-submenu" id="Ferramentas">
-                        {% if perms.transportes.CC_admin %}
-                    <a href="{% url 'transportes:criar_usuario' %}">Criar Usuario</a>
-                    <a href="{% url 'transportes:ver_usuario' %}">Ver Usuario</a>
-                      {% endif %}
-                    {% if perms.transportes.controle_campo %}
-                    <h5 class="submenu-toggle" data-target="Ferramentas1">Rotas</h5>
-                    <div class="sub-submenu" id="Ferramentas1">
-                        <a href="{% url 'transportes:ordenar_rota' %}">Ordenar Rotas</a>
-                        <a href="{% url 'transportes:mover_rota' %}">Mover Rotas</a>
-                    </div>
-                    {% endif %}
-                </div>
-           
-
 
             </div>
-
 
 
 

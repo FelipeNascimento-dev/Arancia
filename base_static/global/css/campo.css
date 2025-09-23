@@ -22,12 +22,14 @@ body {
   padding: 24px;
   border-radius: 10px;
   box-shadow: var(--box-shadow-formularios);
-  width: 1300px;
-  max-width: 1300px;
+  width: 100%;
+  max-width: 1100px;
+  /* limite no desktop */
   border: 1px solid var(--borda-formularios);
+  margin-right: auto;
   height: auto;
-  margin-left: 35px;
-  margin-top: 65PX;
+  margin: 65px auto;
+  /* centraliza horizontal e dá espaçamento em cima/baixo */
 }
 
 
@@ -35,13 +37,13 @@ body {
   display: flex;
   flex-wrap: wrap;
   /* quebra em linhas */
-  gap: 15px;
+
 }
 
 .card-box {
-  flex: 1 1 calc(25% - 15px);
+  flex: 1 1 calc(20% - 15px);
   /* até 4 por linha em desktop */
-  min-width: 200px;
+
   /* não encolhe demais */
 }
 
@@ -51,7 +53,7 @@ body {
   align-items: center;
 
 
-  gap: 19px;
+  gap: 10px;
   background: #ffffff;
   border: 3px solid;
   border-radius: 12px;

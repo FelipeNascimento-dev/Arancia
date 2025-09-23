@@ -1,39 +1,98 @@
 import requests
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
-
 from setup.local_settings import API_BASE
 
-# Endpoints
-API_LIST_TEC = f"{API_BASE}/tecnicos/buscar_tec"  # lista todos
-API_GET_TEC = f"{API_BASE}/update"                # busca individual
-API_PUT_TEC = f"{API_BASE}/update/tec"            # atualiza
-API_TOKEN = "123"  # ideal mover para settings.py
+API_LIST_TEC = f"{API_BASE}tecnico/buscar"
+API_PUT_TEC = f"{API_BASE}tecnico/update/"
+API_TOKEN = "123"
+
 
 @login_required
 def ver_usuario_view(request):
-    # carrega lista de técnicos
-    resp = requests.get(
-        API_LIST_TEC,
-        headers={"access_token": API_TOKEN},
-    )
-    tecnicos = resp.json() if resp.status_code == 200 else []
+    search = request.GET.get("search", "").lower()
+    page_number = request.GET.get("page", 1)
 
-    # garante que todos os campos existam
+    # Atualização via POST
+    if request.method == "POST":
+        uid = request.POST.get("uid")
+
+        payload = {
+            "username": request.POST.get("username"),
+            "name": request.POST.get("name"),
+            "phone": request.POST.get("phone"),
+            "email": request.POST.get("email"),
+            "nome_unidade": request.POST.get("nome_unidade"),
+            "documento": request.POST.get("documento"),
+            "profile": request.POST.get("profile"),
+            "status": request.POST.get("status"),
+        }
+
+        try:
+            resp = requests.put(
+                f"{API_PUT_TEC}{uid}",
+                headers={
+                    "access_token": API_TOKEN,
+                    "accept": "application/json",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+                timeout=5,
+            )
+            if resp.status_code in (200, 201):
+                messages.success(request, "Técnico atualizado com sucesso!")
+            else:
+                messages.error(
+                    request,
+                    f"Erro ao atualizar técnico ({resp.status_code}) → {resp.text}",
+                )
+        except Exception as e:
+            messages.error(request, f"Falha ao comunicar API: {e}")
+        return redirect("transportes:ver_usuario")
+
+
+    # GET → lista técnicos
+    try:
+        resp = requests.get(
+            API_LIST_TEC,
+            headers={"Authorization": f"Bearer {API_TOKEN}"},
+            timeout=5,
+        )
+        tecnicos = resp.json() if resp.status_code == 200 else []
+    except Exception:
+        tecnicos = []
+
+    # normalizar campos
     for tec in tecnicos:
-        tec.setdefault("username", "")
-        tec.setdefault("phone", "")
-        tec.setdefault("email", "")
-        tec.setdefault("nome_unidade", "")
-        tec.setdefault("documento", "")
-        tec.setdefault("profile", "")
-        tec.setdefault("status", "")
+        for field in [
+            "uid",
+            "username",
+            "name",
+            "phone",
+            "email",
+            "nome_unidade",
+            "documento",
+            "profile",
+            "status",
+        ]:
+            tec[field] = tec.get(field) or ""
 
-    context = {
-        "tecnicos": tecnicos,
-        "api_list_tec": API_LIST_TEC,  # lista
-        "api_get_tec": API_GET_TEC,    # GET individual
-        "api_put_tec": API_PUT_TEC,    # PUT update
-        "api_token": API_TOKEN,
-    }
-    return render(request, "transportes/tools/see_user.html", context)
+    # filtro
+    if search:
+        tecnicos = [
+            t
+            for t in tecnicos
+            if search in t.get("name", "").lower()
+            or search in t.get("nome_unidade", "").lower()
+        ]
+
+    paginator = Paginator(tecnicos, 15)
+    page_obj = paginator.get_page(page_number)
+
+    return render(
+        request,
+        "transportes/tools/see_user.html",
+        {"page_obj": page_obj, "search": search},
+    )
