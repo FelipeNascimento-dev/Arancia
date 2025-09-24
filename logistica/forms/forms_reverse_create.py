@@ -33,8 +33,7 @@ class ReverseCreateForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         if romaneio_num:
-            romaneio_formatado = str(romaneio_num).zfill(10)
-            self.fields["romaneio"].initial = romaneio_formatado
+            self.fields["romaneio"].initial = romaneio_num
             self.fields["romaneio"].disabled = True
 
         sc_qs = (
