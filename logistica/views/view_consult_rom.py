@@ -21,6 +21,8 @@ def consult_rom(request):
     titulo = "Consultar Romaneio"
     proximo_disponivel = None
     botao_texto = "Consultar"
+    result = None
+
     user = request.user
     sales_channel = user.designacao.informacao_adicional.sales_channel
     if sales_channel == 'all':
@@ -76,18 +78,6 @@ def consult_rom(request):
                     "proximo_disponivel": proximo_disponivel,
                 })
 
-            # numero = form.cleaned_data["numero"]
-            # numero = (numero)
-            # if not numero:
-            #     messages.error(
-            #         request, "Formato inválido. Use AR00001 (AR + 5 dígitos).")
-            #     return render(request, "logistica/consult_rom.html", {
-            #         "form": form,
-            #         "botao_texto": botao_texto,
-            #         "site_title": titulo,
-            #         "proximo_disponivel": proximo_disponivel,
-            #         "result": result
-            #     })
             else:
                 numero = form.cleaned_data["numero"]
                 url_get = f"{STOCK_API_URL}/api/v1/romaneios/{numero}?location_id={location_id}"
