@@ -198,4 +198,13 @@
   });
 </script>
 
+<script>
+  document.getElementById("romaneioForm").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      return false;
+    }
+  });
+</script>
+
 {% endblock content %}
