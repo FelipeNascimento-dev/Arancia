@@ -9,6 +9,8 @@ class CreateGAIForm(forms.Form):
         label="Código IATA", max_length=10, required=False)
     sales_channel = forms.CharField(
         label="Canal de Vendas", max_length=100, required=False)
+    cod_center = forms.CharField(
+        label="Código Centro", max_length=100, required=False)
     deposito = forms.CharField(
         label="Depósito SAP", max_length=100, required=False)
     CEP = forms.CharField(label="CEP", max_length=20, required=False)

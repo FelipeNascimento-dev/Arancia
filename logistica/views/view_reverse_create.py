@@ -10,7 +10,7 @@ JSON_CT = "application/json"
 
 def reverse_create(request):
     titulo = 'Reversa de Equipamento'
-
+    result = request.session.pop('result', None)
     romaneio_in = request.session.get("romaneio_num", None)
 
     user_sales_channel = None
@@ -38,7 +38,7 @@ def reverse_create(request):
 
     volums = request.session["volums"]
 
-    result = None
+    # result = None
 
     if request.method == "POST" and form.is_valid():
         serial = form.cleaned_data.get("serial")
@@ -111,7 +111,7 @@ def reverse_create(request):
         "form": form,
         "botao_texto": "Inserir",
         "site_title": "Reversa",
-        "volums": volums,
+        "volums": result,
         "result": result,
     }
     return render(request, "logistica/reverse_create.html", context)
