@@ -111,7 +111,6 @@ def reverse_create(request):
         "form": form,
         "botao_texto": "Inserir",
         "site_title": "Reversa",
-        "volums": result,
         "result": result,
     }
     return render(request, "logistica/reverse_create.html", context)
