@@ -45,6 +45,7 @@ def skill_ger(request):
         grupo.nome = request.POST.get("nome")
         grupo.cod_iata = request.POST.get("cod_iata")
         grupo.sales_channel = request.POST.get("sales_channel")
+        grupo.cod_center = request.POST.get("cod_center")
         grupo.deposito = request.POST.get("deposito")
         grupo.logradouro = request.POST.get("logradouro")
         grupo.numero = request.POST.get("numero")
