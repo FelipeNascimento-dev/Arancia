@@ -37,8 +37,8 @@
         color: #6c757d;
         margin-bottom: 10px;
     }
-    
-    .submit-button-right{
+
+    .submit-button-right {
         text-decoration: none;
     }
 </style>
@@ -50,5 +50,14 @@
         </form>
     </div>
 </div>
+
+<script>
+    document.getElementById("romaneioForm").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            return false;
+        }
+    });
+</script>
 
 {% endblock content %}
