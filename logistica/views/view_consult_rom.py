@@ -22,6 +22,11 @@ def consult_rom(request):
     proximo_disponivel = None
     botao_texto = "Consultar"
     user = request.user
+    sales_channel = user.designacao.informacao_adicional.sales_channel
+    if sales_channel == 'all':
+        location_id = 0
+    else:
+        location_id = user.designacao.informacao_adicional_id
 
     if request.method == "POST":
         form = RomaneioConsultaForm(request.POST, nome_form=titulo)
@@ -44,7 +49,7 @@ def consult_rom(request):
                 url_post = f"{STOCK_API_URL}/api/v1/romaneios/"
                 payload = {
                     "created_by": user.username,
-                    "location_id": 11
+                    "location_id": location_id,
                 }
                 client_post = RequestClient(
                     url=url_post,
@@ -83,7 +88,7 @@ def consult_rom(request):
                     "proximo_disponivel": proximo_disponivel,
                 })
 
-            url_get = f"{STOCK_API_URL}/api/v1/romaneios/{numero}"
+            url_get = f"{STOCK_API_URL}/api/v1/romaneios/{numero}?location_id={location_id}"
             client_get = RequestClient(
                 url=url_get,
                 method="GET",

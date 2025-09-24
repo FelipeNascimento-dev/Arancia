@@ -114,9 +114,9 @@
     </div>
 </div>
 
-{% if payload %}
+{% if result %}
 <div class="cardsparent">
-    {% for volume in payload.volums %}
+    {% for volume in result.volums %}
     <div class="card-block" id="card-volume-{{ volume.volum_number }}">
         <div class="reverse-card-header {% if forloop.first %}active{% endif %}"
             onclick="toggleCard('card-volume-{{ volume.volum_number }}')">
@@ -132,7 +132,7 @@
                         <th>Pedido</th>
                         <th>Criado por</th>
                         <th>Criado em</th>
-                        {% if payload.status == 'ABERTO' %}
+                        {% if result.status == 'ABERTO' %}
                         <th>Ações</th>
                         {% endif %}
                     </tr>
