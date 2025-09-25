@@ -10,8 +10,10 @@ JSON_CT = "application/json"
 
 def reverse_create(request):
     titulo = 'Reversa de Equipamento'
-    result = request.session.pop('result', None)
+    result = request.session.get('result', None)
     romaneio_in = request.session.get("romaneio_num", None)
+
+    result = request.session.get("result", None)
 
     user = request.user
     sales_channel = user.designacao.informacao_adicional.sales_channel
@@ -44,8 +46,6 @@ def reverse_create(request):
         request.session["volums"] = []
 
     volums = request.session["volums"]
-
-    # result = None
 
     if request.method == "POST" and form.is_valid():
         serial = form.cleaned_data.get("serial")
@@ -84,7 +84,7 @@ def reverse_create(request):
                 "volume_number": str(ultimo_volume["volum_number"]),
                 "kit_number": str(kit_number),
                 "client": "cielo",
-                "location_id": location_id,  # verifica se aqui vai passar o ID
+                "location_id": location_id,
                 "create_by": request.user.username if request.user.is_authenticated else "SYSTEM"
             }
 
@@ -104,6 +104,8 @@ def reverse_create(request):
             if isinstance(result, dict) and "detail" in result:
                 messages.error(request, f"Erro API: {result}")
             else:
+                request.session["result"] = result
+                request.session.modified = True
                 messages.success(
                     request, f"Serial {serial} inserido no romaneio!")
 
@@ -131,7 +133,7 @@ def delete_btn(request, serial):
         messages.error(request, "Romaneio não encontrado na sessão.")
         return redirect("logistica:reverse_create")
 
-    url = f"{STOCK_API_URL}/v1/romaneios/delete-item/{romaneio_in}/{serial}"
+    url = f"{STOCK_API_URL}/v1/romaneios/{romaneio_in}/?serial={serial}"
 
     client = RequestClient(
         url=url,
@@ -147,4 +149,4 @@ def delete_btn(request, serial):
         messages.success(request, f"Serial {serial} removido com sucesso!")
 
     return redirect("logistica:reverse_create")
-# J9A503097285
+# 6C671351 TESTEDAVI
