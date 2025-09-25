@@ -134,19 +134,31 @@ def delete_btn(request, serial):
         return redirect("logistica:reverse_create")
 
     url = f"{STOCK_API_URL}/v1/romaneios/{romaneio_in}/?serial={serial}"
-
     client = RequestClient(
         url=url,
         method="DELETE",
-        headers={"Accept": JSON_CT, "Content-Type": "application/json"},
+        headers={"Accept": JSON_CT},
     )
+    delete_result = client.send_api_request()
 
-    result = client.send_api_request()
-
-    if isinstance(result, dict) and "detail" in result:
-        messages.error(request, f"Erro ao deletar: {result['detail']}")
+    if isinstance(delete_result, dict) and "detail" in delete_result:
+        messages.error(request, f"Erro ao deletar: {delete_result['detail']}")
     else:
         messages.success(request, f"Serial {serial} removido com sucesso!")
 
-    return redirect("logistica:reverse_create")
-# 6C671351 TESTEDAVI
+    request.session["delete_result"] = delete_result
+    request.session.modified = True
+
+    form = ReverseCreateForm(
+        nome_form="Reversa de Equipamento",
+        user_sales_channel=None,
+        romaneio_num=romaneio_in,
+    )
+
+    return render(request, "logistica/reverse_create.html", {
+        "form": form,
+        "botao_texto": "Inserir",
+        "site_title": "Reversa",
+        "result": delete_result,
+    })
+# TESTEDAVI
