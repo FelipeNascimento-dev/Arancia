@@ -10,7 +10,7 @@ from .views import index, consulta_id_form, pre_recebimento, \
     btn_voltar, reserva_equip, saida_campo, order_detail, order_return_check, \
     consulta_ma84, btn_ma_voltar, consulta_ec01, btn_ec_voltar, consult_rom, \
     logout_confirm_view, logout_view, registrar_usuario, trackingIP, user_ger, skill_ger, \
-    extracao_pedidos, consulta_etiquetas, settings_view, reverse_create, UserPasswordChangeView
+    extracao_pedidos, consulta_etiquetas, settings_view, reverse_create, delete_btn, UserPasswordChangeView
 
 app_name = 'logistica'
 
@@ -60,5 +60,6 @@ urlpatterns = [
     path('user-ger/', user_ger, name='user_ger'),
     path('skill-ger/', skill_ger, name='skill_ger'),
     path('consulta/romaneio/', consult_rom, name='consultar_romaneio'),
-    path('reverse/', reverse_create, name='reverse_create')
+    path('reverse/', reverse_create, name='reverse_create'),
+    path('reverse/<str:serial>/', delete_btn, name='delete_btn'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

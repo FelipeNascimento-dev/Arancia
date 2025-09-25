@@ -147,9 +147,13 @@
                         <td class="date-br">{{ kit.created_at }}</td>
                         {% if result.status == 'ABERTO' %}
                         <td>
-                            <button type="button" class="btn-action">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
+                            <form method="post" action="{% url 'logistica:delete_btn' kit.serial %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-action"
+                                    onclick="return confirm('Deseja realmente excluir esse serial?')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
                         </td>
                         {% endif %}
                     </tr>
@@ -191,20 +195,20 @@
 </script>
 
 <script>
-  document.querySelectorAll('.date-br').forEach(el => {
-    const d = new Date(el.textContent);
-    const br = d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' });
-    el.textContent = br;
-  });
+    document.querySelectorAll('.date-br').forEach(el => {
+        const d = new Date(el.textContent);
+        const br = d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' });
+        el.textContent = br;
+    });
 </script>
 
 <script>
-  document.getElementById("romaneioForm").addEventListener("keydown", function (e) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      return false;
-    }
-  });
+    document.getElementById("romaneioForm").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            return false;
+        }
+    });
 </script>
 
 {% endblock content %}

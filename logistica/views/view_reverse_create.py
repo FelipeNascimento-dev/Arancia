@@ -13,6 +13,13 @@ def reverse_create(request):
     result = request.session.pop('result', None)
     romaneio_in = request.session.get("romaneio_num", None)
 
+    user = request.user
+    sales_channel = user.designacao.informacao_adicional.sales_channel
+    if sales_channel == 'all':
+        location_id = 0
+    else:
+        location_id = user.designacao.informacao_adicional_id
+
     user_sales_channel = None
     try:
         if (
@@ -77,7 +84,7 @@ def reverse_create(request):
                 "volume_number": str(ultimo_volume["volum_number"]),
                 "kit_number": str(kit_number),
                 "client": "cielo",
-                "location_id": user_sales_channel,  # verifica se aqui vai passar o ID
+                "location_id": location_id,  # verifica se aqui vai passar o ID
                 "create_by": request.user.username if request.user.is_authenticated else "SYSTEM"
             }
 
@@ -90,6 +97,7 @@ def reverse_create(request):
                          "Content-Type": "application/json"},
                 request_data=payload,
             )
+            print(payload)
 
             result = client.send_api_request()
 
@@ -114,3 +122,29 @@ def reverse_create(request):
         "result": result,
     }
     return render(request, "logistica/reverse_create.html", context)
+
+
+def delete_btn(request, serial):
+    romaneio_in = request.session.get("romaneio_num", None)
+
+    if not romaneio_in:
+        messages.error(request, "Romaneio não encontrado na sessão.")
+        return redirect("logistica:reverse_create")
+
+    url = f"{STOCK_API_URL}/v1/romaneios/delete-item/{romaneio_in}/{serial}"
+
+    client = RequestClient(
+        url=url,
+        method="DELETE",
+        headers={"Accept": JSON_CT, "Content-Type": "application/json"},
+    )
+
+    result = client.send_api_request()
+
+    if isinstance(result, dict) and "detail" in result:
+        messages.error(request, f"Erro ao deletar: {result['detail']}")
+    else:
+        messages.success(request, f"Serial {serial} removido com sucesso!")
+
+    return redirect("logistica:reverse_create")
+# J9A503097285
