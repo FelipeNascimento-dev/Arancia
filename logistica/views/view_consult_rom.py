@@ -48,7 +48,7 @@ def consult_rom(request):
                         "proximo_disponivel": proximo_disponivel,
                     })
 
-                url_post = f"{STOCK_API_URL}/api/v1/romaneios/"
+                url_post = f"{STOCK_API_URL}/v1/romaneios/"
                 payload = {
                     "created_by": user.username,
                     "location_id": location_id,
@@ -80,7 +80,7 @@ def consult_rom(request):
 
             else:
                 numero = form.cleaned_data["numero"]
-                url_get = f"{STOCK_API_URL}/api/v1/romaneios/{numero}?location_id={location_id}"
+                url_get = f"{STOCK_API_URL}/v1/romaneios/{numero}?location_id={location_id}"
                 client_get = RequestClient(
                     url=url_get,
                     method="GET",
