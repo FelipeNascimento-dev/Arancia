@@ -43,7 +43,7 @@
   {% endif %}
 
   <div class="form-actions">
-    {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' or request.resolver_match.url_name == 'recebimento_remessa' or request.resolver_match.url_name == 'order_return_check' %}
+    {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' or request.resolver_match.url_name == 'recebimento_remessa' or request.resolver_match.url_name == 'order_return_check'%}
     <button type="submit" class="submit-button-right push-left" name="clear_serials" value="1" formnovalidate>
       Limpar
     </button>
@@ -51,17 +51,19 @@
     <div class="serial-counter" role="status" aria-live="polite" title="{{ serials|length }} seriais bipados">
       {{ serials|length }}
     </div>
-
-    <!-- <button type="submit" class="submit-button-right" name="add_serial" value="1" formnovalidate>
-      Inserir serial
-    </button> -->
     {% endif %}
 
     {% if proximo_disponivel %}
-      <button type="submit" class="submit-button-right btn-success" 
-              name="criar_romaneio" value="{{ proximo_disponivel }}">
-        Criar romaneio
-      </button>
+    <button type="submit" class="submit-button-right btn-success" name="criar_romaneio"
+      value="{{ proximo_disponivel }}">
+      Criar romaneio
+    </button>
+    {% endif %}
+
+    {% if result.status == 'ABERTO' %}
+    <button type="button" class="submit-button-right btn-success">
+      Cancelar Romaneio
+    </button>
     {% endif %}
 
     <button type="submit" class="submit-button-right" name="enviar_evento" value="1">
