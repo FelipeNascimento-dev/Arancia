@@ -15,6 +15,8 @@ class CreateGAIForm(forms.Form):
         label="Depósito SAP", max_length=100, required=False)
     cnpj = forms.CharField(
         label="CNPJ", max_length=30, required=False)
+    inscricao_estadual = forms.CharField(
+        label="Inscrição Estadual", max_length=20, required=False)
     CEP = forms.CharField(label="CEP", max_length=20, required=False)
     logradouro = forms.CharField(
         label="Logradouro", max_length=150, required=False)

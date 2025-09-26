@@ -82,6 +82,8 @@ class GroupAditionalInformation(models.Model):
         max_length=100, verbose_name="Depósito", blank=True, null=True)
     cnpj = models.CharField(
         max_length=100, verbose_name="CNPJ", blank=True, null=True)
+    inscricao_estadual = models.CharField(
+        max_length=50, verbose_name="Inscrição Estadual", blank=True, null=True)
     logradouro = models.CharField(
         max_length=255, verbose_name="Logradouro", blank=True, null=True)
     numero = models.CharField(

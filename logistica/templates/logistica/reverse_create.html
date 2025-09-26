@@ -111,6 +111,14 @@
         <form method="POST">
             {% include 'global/partials/_form_2col.html' %}
         </form>
+        {% if result.status == 'ABERTO' %}
+        <form method="post" action="{% url 'logistica:cancel_btn' request.session.romaneio_num %}">
+            {% csrf_token %}
+            <button type="submit" class="submit-button-right btn btn-danger">
+                Cancelar Romaneio
+            </button>
+        </form>
+        {% endif %}
     </div>
 </div>
 
