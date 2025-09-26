@@ -80,6 +80,8 @@ class GroupAditionalInformation(models.Model):
         verbose_name="Centro de Custos", blank=True, null=True)
     deposito = models.CharField(
         max_length=100, verbose_name="Depósito", blank=True, null=True)
+    cnpj = models.CharField(
+        max_length=100, verbose_name="CNPJ", blank=True, null=True)
     logradouro = models.CharField(
         max_length=255, verbose_name="Logradouro", blank=True, null=True)
     numero = models.CharField(

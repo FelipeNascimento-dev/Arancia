@@ -161,4 +161,7 @@ def delete_btn(request, serial):
         "site_title": "Reversa",
         "result": delete_result,
     })
-# TESTEDAVI
+
+
+def cancel_btn(request):
+    pass

@@ -13,6 +13,8 @@ class CreateGAIForm(forms.Form):
         label="Código Centro", max_length=100, required=False)
     deposito = forms.CharField(
         label="Depósito SAP", max_length=100, required=False)
+    cnpj = forms.CharField(
+        label="CNPJ", max_length=30, required=False)
     CEP = forms.CharField(label="CEP", max_length=20, required=False)
     logradouro = forms.CharField(
         label="Logradouro", max_length=150, required=False)
