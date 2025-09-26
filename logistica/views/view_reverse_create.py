@@ -1,3 +1,4 @@
+import re
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from datetime import datetime
@@ -163,5 +164,49 @@ def delete_btn(request, serial):
     })
 
 
-def cancel_btn(request):
-    pass
+def cancel_btn(request, id):
+    romaneio_in = request.session.get("romaneio_num", None)
+
+    if request.method != "POST":
+        return redirect("logistica:reverse_create")
+
+    payload = {
+        "status_rom": "CANCELADO",
+        "update_by": request.user.username if request.user.is_authenticated else "SYSTEM"
+    }
+
+    url = f"{STOCK_API_URL}/v1/romaneios/{romaneio_in}"
+
+    client = RequestClient(
+        url=url,
+        method="PUT",
+        headers={
+            "Accept": JSON_CT,
+            "Content-Type": JSON_CT
+        },
+        request_data=payload,
+    )
+
+    result = client.send_api_request()
+
+    if isinstance(result, dict) and "detail" in result:
+        messages.error(
+            request, f"Erro ao cancelar romaneio: {result['detail']}")
+    else:
+        messages.success(
+            request, f"Romaneio {romaneio_in} cancelado com sucesso!")
+        request.session["result"] = result
+        request.session.modified = True
+
+    form = ReverseCreateForm(
+        nome_form="Reversa de Equipamento",
+        user_sales_channel=None,
+        romaneio_num=romaneio_in,
+    )
+
+    return render(request, "logistica/reverse_create.html", {
+        "form": form,
+        "botao_texto": "Inserir",
+        "site_title": "Reversa",
+        "result": request.session.get("result", None),
+    })
