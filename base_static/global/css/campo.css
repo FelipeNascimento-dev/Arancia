@@ -19,7 +19,7 @@ body {
 
 .setcontainer {
   background: var(--background-formularios);
-  padding: 24px;
+  padding: 22px;
   border-radius: 10px;
   box-shadow: var(--box-shadow-formularios);
   width: 100%;
@@ -28,10 +28,38 @@ body {
   border: 1px solid var(--borda-formularios);
   margin-right: auto;
   height: auto;
-  margin: 65px auto;
+  margin-top: 65px ;
+  margin: 90px auto;
   /* centraliza horizontal e dá espaçamento em cima/baixo */
 }
+/* Container para alinhar */
+.config-btn-wrapper {
+  margin-top: 65px;
+  display: flex;
+   background-color: #007bff;
+  color: #fff;
+  margin-left: 65px;
+  padding:  auto;
+  border-radius: 6px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px; /* espaço entre ícone e texto */
+  transition: background 0.3s ease;
+ margin-right: auto;
+}
 
+
+.btn-config:hover {
+  background-color: #0366d1;
+  text-decoration: none;
+  color: #fff;
+}
+
+/* Nova classe para garantir alinhamento à esquerda */
+.btn-left {
+  margin-left: 0;
+}
 
 .informacoes_basicas {
   display: flex;
@@ -51,8 +79,6 @@ body {
   position: relative;
   display: flex;
   align-items: center;
-
-
   gap: 10px;
   background: #ffffff;
   border: 3px solid;
@@ -60,7 +86,7 @@ body {
   padding: 10px;
   width: auto;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 600px;
   color: #1a1d24;
   text-align: left;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
@@ -95,7 +121,7 @@ body {
 }
 
 .card-text strong {
-  font-size: 20px;
+  font-size: 14px;
   text-align: end;
   color: #111;
 
@@ -103,7 +129,7 @@ body {
 
 .card-text small {
   text-align: end;
-  font-size: 14px;
+  font-size: 10px;
   color: #666;
 }
 

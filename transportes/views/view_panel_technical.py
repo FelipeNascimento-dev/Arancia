@@ -1,16 +1,17 @@
 import re
+from django.urls import reverse
 import requests
 import concurrent.futures
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now, make_aware, is_naive, localtime
 from django.core.cache import cache
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.csrf import csrf_protect
 from setup.local_settings import API_BASE
-
 session = requests.Session()  # mantém conexão aberta (mais rápido)
 
+API_TOKEN = "123"
 
 def format_datetime(value):
     if not value:
@@ -22,17 +23,17 @@ def format_datetime(value):
         return "—"
 
 
-def get_api_data(cache_key, url, params, headers, ttl=300):
+def get_api_data(cache_key, url, params, headers, ttl=0):
     """Busca dados da API com cache"""
     data = cache.get(cache_key)
     if not data:
-        resp = session.get(url, params=params, headers=headers, timeout=10)
+        resp = session.get(url, params=params, headers=headers, timeout=2)
         data = resp.json() if resp.status_code == 200 else {}
         cache.set(cache_key, data, ttl)
     return data
 
 
-def get_multiple_api_data(requests_list, headers, ttl=300):
+def get_multiple_api_data(requests_list, headers, ttl=0):
     """Executa múltiplas requisições em paralelo"""
     results = {}
     with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -67,6 +68,16 @@ def dashboard_view(request):
     hoje_str = now().strftime("%Y-%m-%d")
     hoje = localtime(now()).date()
 
+    # --- pegar contexto salvo no filtro ---
+    cod_base = request.session.get("COD_BASE")
+    projeto = request.session.get("PROJETO")
+    profile = request.session.get("PROFILE")
+
+    if not cod_base:
+        return redirect(f"{reverse('transportes:config_context')}?next={request.path}")
+
+
+
     # --- filtros da URL ---
     filtro_status = request.GET.get("status_janela")
     filtro_flag = request.GET.get("flag")
@@ -76,10 +87,10 @@ def dashboard_view(request):
 
     # --- buscar APIs em paralelo ---
     urls = [
-        (f"status_{hoje_str}", f"{API_BASE}Filtro_status/resumo-status-detalhado/claro", {"date": hoje_str}),
-        (f"ordens_{hoje_str}", f"{API_BASE}consultasM/ordens-atendidas-data/claro", {"date": hoje_str}),
+        (f"status_{hoje_str}", f"{API_BASE}Filtro_status/resumo-status-detalhado/{projeto}", {"date": hoje_str}),
+        (f"ordens_{hoje_str}", f"{API_BASE}consultasM/ordens-atendidas-data/{projeto}", {"date": hoje_str}),
     ]
-    dados = get_multiple_api_data(urls, headers, ttl=300)
+    dados = get_multiple_api_data(urls, headers, ttl=0)
 
     dados_status = dados.get(f"status_{hoje_str}", {})
     dados_ordens = dados.get(f"ordens_{hoje_str}", {})
@@ -151,7 +162,7 @@ def dashboard_view(request):
     top = max((t for t in tecnicos if t["atraso_min"] > 29), key=lambda t: t["atraso_min"], default=None)
 
     # --- Ordens gerais ---
-    url_ordens = f"{API_BASE}consultasM/ordens-atendidas-data/claro"
+    url_ordens = f"{API_BASE}consultasM/ordens-atendidas-data/{projeto}"
     dados_ordens = get_api_data(f"ordens_{hoje_str}", url_ordens, {"date": hoje_str}, headers)
 
     mapa_tecnicos = {t["uid"]: t["nome"] for t in tecnicos}
@@ -202,7 +213,7 @@ def dashboard_view(request):
             if uid != ver_rota_uid:
                 continue
 
-            url_os_tecnico = f"{API_BASE}consultas/CTBSEQ/ordens-atendidas-data/{uid}"
+            url_os_tecnico = f"{API_BASE}consultas/{cod_base}/ordens-atendidas-data/{uid}"
             dados_os_tecnico = get_api_data(
                 f"ordens_tecnico_{uid}_{hoje_str}",
                 url_os_tecnico,

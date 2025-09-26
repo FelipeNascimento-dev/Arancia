@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from django.contrib import messages
+from setup.local_settings import API_BASE
 from utils.request import RequestClient
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.csrf import csrf_protect
-API_BASE = "http://192.168.0.214/RetencaoAPI"
-API_CRIACAO = f"{API_BASE}/api/v1/auth/create/"
+
+API_CRIACAO = f"http://172.16.11.118:8000/RetencaoAPI/api/v1/auth/create/"
 TOKEN = "123"
 
 # Campos configuráveis
@@ -53,14 +54,16 @@ def criar_user_view(request):
             request_data=data,
         )
 
-        try:
-            resp = client.send_api_request()
-            if 'detail' not in resp:
-                uid = resp.get("uid", "Não retornado")
-                messages.success(request, f" Usuário criado com UID: {uid}")
-            else:
-                messages.error(request, " Erro inesperado ao criar usuário.")
-        except Exception as e:
-            messages.error(request, f" Erro na requisição: {e}")
+    try:
+        resp = client.send_api_request()
+        if resp and 'detail' not in resp:
+            uid = resp.get("uid", "Não retornado")
+            messages.success(request, f"Usuário criado com UID: {uid}")
+        else:
+            detail = resp.get("detail", "Erro desconhecido")
+            messages.error(request, f"Erro ao criar usuário: {detail}")
+    except Exception as e:
+        messages.error(request, f"Erro na requisição: {e}")
+
 
     return render(request, "transportes/tools/create_user.html", {"fields": USER_FIELDS})

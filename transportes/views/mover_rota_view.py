@@ -1,40 +1,63 @@
-from django.shortcuts import render
+# views/mover_rota_view.py
+from django.shortcuts import redirect, render
 from django.contrib import messages
+from django.urls import reverse
 from setup.local_settings import API_BASE
+from transportes.views.ver_usuario_view import API_TOKEN
 from utils.request import RequestClient
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.csrf import csrf_protect
 
 API_MOVER = f"{API_BASE}mover"
-API_TECNICOS = f"{API_BASE}tecnicos/buscar_tec"
-TOKEN = "123"
 
 MOVER_FIELDS = [
-    {"name": "nome_tecnico", "label": "Nome do Técnico", "type": "text", "placeholder": "Digite o nome do técnico", "colspan": 1},
+    {"name": "nome_tecnico", "label": "Técnico", "type": "select", "placeholder": "Selecione o técnico", "colspan": 1},
     {"name": "os_list", "label": "Ordem de Serviço(s)", "type": "textarea", "placeholder": "Digite uma OS por linha", "colspan": 2},
 ]
+
 
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('transportes.controle_campo', raise_exception=True)
 def mover_rota_view(request):
+    cod_base = request.session.get("COD_BASE")
+    profile = request.session.get("PROFILE")
+
+    # se não tiver contexto -> vai pra tela de config
+    if not cod_base:
+        return redirect(f"{reverse('transportes:config_context')}?next={request.path}")
+
+    API_TECNICOS = f"{API_BASE}tecnicos/buscar_tec/{cod_base}"
+
     tecnicos = []
     tecnico_nome = None
-    uid = None
 
-    # 🔎 Buscar lista de técnicos (GET /buscar_tec)
+    # Buscar lista de técnicos
     try:
-        headers = {"accept": "application/json", "access_token": TOKEN}
-        buscar = RequestClient(method="get", url=API_TECNICOS, headers=headers)
+        headers = {
+            "Accept": "application/json",
+            "access_token": API_TOKEN
+        }
+
+        url_tecnicos = API_TECNICOS
+        if profile:
+            url_tecnicos += f"?Profile={profile}"
+
+        buscar = RequestClient(
+            method="get",
+            url=url_tecnicos,
+            headers=headers
+        )
         resp_tec = buscar.send_api_request()
 
-        if isinstance(resp_tec, list):  # lista de técnicos
+        if isinstance(resp_tec, list):
             tecnicos = resp_tec
     except Exception as e:
-        messages.warning(request, f"Não foi possível carregar a lista de técnicos: {str(e)}")
+        messages.warning(request, f"Não foi possível carregar técnicos: {str(e)}")
 
+    # --- POST: mover rota ---
     if request.method == "POST":
-        uid = request.POST.get("nome_tecnico")   # agora vem direto do select
+        uid = request.POST.get("nome_tecnico")
         os_list = request.POST.get("os_list")
 
         if not uid:
@@ -49,14 +72,18 @@ def mover_rota_view(request):
 
                 # 🔄 Chamada da API de mover rota
                 url = f"{API_MOVER}/{uid}"
-                headers.update({"Content-Type": "application/json"})
+                headers_put = {
+                    "Accept": "application/json",
+                    "access_token": API_TOKEN,
+                    "Content-Type": "application/json",
+                }
 
                 os_data = [o.strip() for o in os_list.splitlines() if o.strip()]
 
                 client = RequestClient(
                     method="put",
                     url=url,
-                    headers=headers,
+                    headers=headers_put,
                     request_data=os_data,
                 )
                 resp = client.send_api_request()
@@ -67,15 +94,24 @@ def mover_rota_view(request):
                     moved_error = resp.get("moved_error", 0)
 
                     if moved_success > 0 and moved_error == 0:
-                        messages.success(request, f"{moved_success} OS(s) movida(s) para {tecnico_nome} (UID {uid}) com sucesso!")
+                        messages.success(
+                            request,
+                            f"{moved_success} OS(s) movida(s) para {tecnico_nome} (UID {uid}) com sucesso!"
+                        )
                     elif moved_success > 0 and moved_error > 0:
-                        messages.warning(request, f"{moved_success} OS(s) movida(s), mas {moved_error} falharam: {resp}")
+                        messages.warning(
+                            request,
+                            f"{moved_success} OS(s) movida(s), mas {moved_error} falharam: {resp}"
+                        )
                     else:
                         messages.error(request, f"Nenhuma OS movida: {resp}")
 
                 elif isinstance(resp, str):
                     if "sucesso" in resp.lower():
-                        messages.success(request, f"{resp} (Técnico: {tecnico_nome} - UID {uid})")
+                        messages.success(
+                            request,
+                            f"{resp} (Técnico: {tecnico_nome} - UID {uid})"
+                        )
                     else:
                         messages.error(request, resp)
                 else:
@@ -84,8 +120,8 @@ def mover_rota_view(request):
             except Exception as e:
                 messages.error(request, f"Erro inesperado: {str(e)}")
 
-    return render(request, "transportes/tools/move_route.html", {
-        "fields": MOVER_FIELDS,
-        "tecnicos": tecnicos,
-        "tecnico_nome": tecnico_nome,
-    })
+    return render(
+        request,
+        "transportes/tools/move_route.html",
+        {"fields": MOVER_FIELDS, "tecnicos": tecnicos, "tecnico_nome": tecnico_nome},
+    )

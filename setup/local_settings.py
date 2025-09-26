@@ -50,9 +50,7 @@ DATABASES = {
 
 #CONTROLE DE CAMPO
 
-API_BASE = "http://192.168.0.214/RetencaoAPI/api/v3/"
-COD_BASE = "CTBSEQ"
-COD_EMPRESA = "CLARO"
+API_BASE = "http://172.16.11.118:8000/RetencaoAPI/api/v3/"
 TOKEN = "123"
 
 # Mapas

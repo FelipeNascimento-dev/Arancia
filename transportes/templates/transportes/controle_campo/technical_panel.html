@@ -5,6 +5,10 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
 
+<a href="{% url 'transportes:config_context' %}?next={{ request.path }}"  style="margin-top:65px; margin-left:98px" class="btn btn-xl btn-primary">
+<i class="fa-solid fa-sliders"></i> Configurações
+</a>
+
   {% include 'transportes/controle_campo/partials/panel_cards.html' %}
   {% include 'transportes/controle_campo/partials/panel_modal_tecnico.html' %}
 

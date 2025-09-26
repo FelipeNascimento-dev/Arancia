@@ -1,32 +1,35 @@
 {% load query_filters %}
-<div class="setcontainer">
-  
-{% if filtro_ativo %}
-<div class="container mt-2">
-  <a href="{{ request.path }}" class="btn btn-outline-secondary btn-xs">
-    Limpar Filtros
-  </a>
-</div>
-{% endif %}
-<br>
+<div class="setcontainer" style="margin-top: 15px">
+  {% if filtro_ativo %}
+  <div class="container mt-2">
+    <a href="{{ request.path }}" class="btn btn-outline-secondary btn-xs">
+      Limpar Filtros
+    </a>
+  </div>
+  {% endif %}
+  <br />
   <div class="container filter-group mt-2">
     <div class="row">
       <!-- Total -->
       <div class="col-md informacoes_basicas">
-        <a href="{% query_update status_janela='total' %}"
-           class="card-box border-black filter-card {% if request.GET.status_janela == 'total' %}active{% endif %}">
+        <a
+          href="{% query_update status_janela='total' %}"
+          class="card-box border-black filter-card {% if request.GET.status_janela == 'total' %}active{% endif %}"
+        >
           <i class="fa-regular fa-clipboard icon black"></i>
           <div class="card-text">
             <span>Total</span>
-            <strong>{{ geral.total }}  </strong>
+            <strong>{{ geral.total }} </strong>
           </div>
         </a>
       </div>
 
       <!-- Concluído -->
       <div class="col-md informacoes_basicas">
-        <a href="{% query_update status_janela='concluido' %}"
-           class="card-box border-blue1 filter-card {% if request.GET.status_janela == 'concluido' %}active{% endif %}">
+        <a
+          href="{% query_update status_janela='concluido' %}"
+          class="card-box border-blue1 filter-card {% if request.GET.status_janela == 'concluido' %}active{% endif %}"
+        >
           <i class="fa-regular fa-circle-check icon blue1"></i>
           <div class="card-text">
             <span>Concluído</span>
@@ -37,8 +40,10 @@
 
       <!-- No Tempo -->
       <div class="col-md informacoes_basicas">
-        <a href="{% query_update status_janela='no_tempo' %}"
-           class="card-box border-green1 filter-card {% if request.GET.status_janela == 'no_tempo' %}active{% endif %}">
+        <a
+          href="{% query_update status_janela='no_tempo' %}"
+          class="card-box border-green1 filter-card {% if request.GET.status_janela == 'no_tempo' %}active{% endif %}"
+        >
           <i class="fa-regular fa-thumbs-up icon green1"></i>
           <div class="card-text">
             <span>No Tempo</span>
@@ -49,8 +54,10 @@
 
       <!-- No Limite -->
       <div class="col-md informacoes_basicas">
-        <a href="{% query_update status_janela='no_limite' %}"
-           class="card-box border-orange filter-card {% if request.GET.status_janela == 'no_limite' %}active{% endif %}">
+        <a
+          href="{% query_update status_janela='no_limite' %}"
+          class="card-box border-orange filter-card {% if request.GET.status_janela == 'no_limite' %}active{% endif %}"
+        >
           <i class="fa-regular fa-hourglass-half icon orange"></i>
           <div class="card-text">
             <span>No Limite</span>
@@ -61,8 +68,10 @@
 
       <!-- Atrasado -->
       <div class="col-md informacoes_basicas">
-        <a href="{% query_update status_janela='atrasado' %}"
-           class="card-box border-redore filter-card {% if request.GET.status_janela == 'atrasado' %}active{% endif %}">
+        <a
+          href="{% query_update status_janela='atrasado' %}"
+          class="card-box border-redore filter-card {% if request.GET.status_janela == 'atrasado' %}active{% endif %}"
+        >
           <i class="fa-solid fa-hourglass-end icon redore"></i>
           <div class="card-text">
             <span>Atrasado</span>
@@ -78,8 +87,10 @@
     <div class="row">
       <!-- Casos Azuis -->
       <div class="col-md informacoes_basicas">
-        <a href="{% query_update flag='AZUL' %}"
-           class="card-box border-blue filter-card {% if request.GET.flag == 'AZUL' %}active{% endif %}">
+        <a
+          href="{% query_update flag='AZUL' %}"
+          class="card-box border-blue filter-card {% if request.GET.flag == 'AZUL' %}active{% endif %}"
+        >
           <i class="fa-solid fa-bookmark icon blue"></i>
           <div class="card-text">
             <strong>Casos Azuis</strong>
@@ -90,8 +101,10 @@
 
       <!-- Casos Vermelhos -->
       <div class="col-md informacoes_basicas">
-        <a href="{% query_update flag='VERMELHO' %}"
-           class="card-box border-red filter-card {% if request.GET.flag == 'VERMELHO' %}active{% endif %}">
+        <a
+          href="{% query_update flag='VERMELHO' %}"
+          class="card-box border-red filter-card {% if request.GET.flag == 'VERMELHO' %}active{% endif %}"
+        >
           <i class="fa-solid fa-bookmark icon red"></i>
           <div class="card-text">
             <strong>Casos Vermelhos</strong>
@@ -102,8 +115,10 @@
 
       <!-- Casos Críticos -->
       <div class="col-md informacoes_basicas">
-        <a href="{% query_update mensagem='CRÍTICO' %}"
-           class="card-box border-green filter-card {% if request.GET.mensagem == 'CRÍTICO' %}active{% endif %}">
+        <a
+          href="{% query_update mensagem='CRÍTICO' %}"
+          class="card-box border-green filter-card {% if request.GET.mensagem == 'CRÍTICO' %}active{% endif %}"
+        >
           <i class="fa-solid fa-bookmark icon green"></i>
           <div class="card-text">
             <strong>Casos Críticos</strong>
@@ -114,88 +129,67 @@
     </div>
   </div>
 
+  <div class="filter-group mt-3">
+    <div class="row">
+      <div class="col-md informacoes_basicas">
+        <a
+          href="{% query_update uid='sem' %}"
+          class="card-box border-red filter-card {% if request.GET.uid == 'sem' %}active{% endif %}"
+        >
+          <i class="fa-solid fa-user-xmark fa-2x"></i>
+          <div class="card-text">
+            <span>Sem Técnico</span>
+            <strong>{{ sem_tecnico_count }}</strong>
+          </div>
+        </a>
+      </div>
 
-<div class="filter-group mt-3">
-  
-  <div class="row">
-
-
-<div class="col-md informacoes_basicas">
-  <a href="{% query_update uid='sem' %}"
-     class="card-box border-red filter-card {% if request.GET.uid == 'sem' %}active{% endif %}">
-    <i class="fa-solid fa-user-xmark fa-2x"></i>
-    <div class="card-text">
-      <span>Sem Técnico</span>
-      <strong>{{ sem_tecnico_count }}</strong>
-    </div>
-  </a>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <div class="col-md informacoes_basicas">
-      <div class="card-box border-black">
-        <i class="fa-regular fa-clock icon black"></i>
-        <div class="card-text">
-          <span>Média de Atraso</span>
-          <strong>{{ media_atraso }}</strong>
+      <div class="col-md informacoes_basicas">
+        <div class="card-box border-black">
+          <i class="fa-regular fa-clock icon black"></i>
+          <div class="card-text">
+            <span>Média de Atraso</span>
+            <strong>{{ media_atraso }}</strong>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="col-md informacoes_basicas">
-      {% if top %}
-      <a
-        href="#"
-        class="card-box border-redore1"
-        data-bs-toggle="modal"
-        data-bs-target="#modalTecnico"
-        data-nome="{{ top.nome }}"
-        data-uid="{{ top.uid }}"
-        data-area="{{ top.area }}"
-        data-total="{{ top.total }}"
-        data-concluido="{{ top.concluido }}"
-        data-no-tempo="{{ top.no_tempo }}"
-        data-no-limite="{{ top.no_limite }}"
-        data-atrasado="{{ top.atrasado }}"
-        data-lastlogin="{{ top.lastlogin }}"
-        data-lastopening="{{ top.lastopening }}"
-        data-ocioso="{{ top.atraso_fmt }}"
-        data-phone="{{ top.phone }}"
-      >
-        <i class="fa-regular fa-user icon redore1"></i>
-        <div class="card-text">
-          Técnico Mais Ocioso
-          <strong>{{ top.nome }} ({{ top.uid }})</strong>
-          <strong>{{ top.atraso_fmt }}</strong>
+      <div class="col-md informacoes_basicas">
+        {% if top %}
+        <a
+          href="#"
+          class="card-box border-redore1"
+          data-bs-toggle="modal"
+          data-bs-target="#modalTecnico"
+          data-nome="{{ top.nome }}"
+          data-uid="{{ top.uid }}"
+          data-area="{{ top.area }}"
+          data-total="{{ top.total }}"
+          data-concluido="{{ top.concluido }}"
+          data-no-tempo="{{ top.no_tempo }}"
+          data-no-limite="{{ top.no_limite }}"
+          data-atrasado="{{ top.atrasado }}"
+          data-lastlogin="{{ top.lastlogin }}"
+          data-lastopening="{{ top.lastopening }}"
+          data-ocioso="{{ top.atraso_fmt }}"
+          data-phone="{{ top.phone }}"
+        >
+          <i class="fa-regular fa-user icon redore1"></i>
+          <div class="card-text">
+            Técnico Mais Ocioso
+            <strong>{{ top.nome }} ({{ top.uid }})</strong>
+            <strong>{{ top.atraso_fmt }}</strong>
+          </div>
+        </a>
+        {% else %}
+        <div class="card-box border-redore1">
+          <i class="fa-regular fa-user icon redore1"></i>
+          <div class="card-text">
+            Técnico Mais Ocioso
+            <strong>—</strong>
+          </div>
         </div>
-      </a>
-      {% else %}
-      <div class="card-box border-redore1">
-        <i class="fa-regular fa-user icon redore1"></i>
-        <div class="card-text">
-          Técnico Mais Ocioso
-          <strong>—</strong>
-        </div>
+        {% endif %}
       </div>
-      {% endif %}
-    </div> 
+    </div>
   </div>
-</div>
-
-
-
-
-
-
-
-
-
 </div>
