@@ -42,6 +42,7 @@ def skill_ger(request):
         group_id = request.POST.get("group_id")
         grupo = get_object_or_404(GroupAditionalInformation, id=group_id)
 
+        grupo.razao_social = request.POST.get("razao_social")
         grupo.nome = request.POST.get("nome")
         grupo.cod_iata = request.POST.get("cod_iata")
         grupo.sales_channel = request.POST.get("sales_channel")

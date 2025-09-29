@@ -70,6 +70,8 @@ class RomaneioReverse(models.Model):
 class GroupAditionalInformation(models.Model):
     group = models.ForeignKey(Group, related_name='informacoes_adicionais',
                               blank=True, null=True, on_delete=models.CASCADE)
+    razao_social = models.CharField(
+        max_length=100, verbose_name="Razão Social", blank=True, null=True)
     nome = models.CharField(
         max_length=100, verbose_name="Nome", blank=True, null=True)
     cod_iata = models.CharField(
