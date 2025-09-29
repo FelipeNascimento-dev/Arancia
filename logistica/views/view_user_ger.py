@@ -106,7 +106,8 @@ def user_ger(request):
     page_number = request.GET.get("page")
     usuarios = paginator.get_page(page_number)
 
-    all_groups = Group.objects.all().order_by("name")
+    all_groups = Group.objects.filter(
+        name__startswith="arancia_").order_by("name")
     additional_infos = GroupAditionalInformation.objects.all().order_by("cod_iata")
 
     usuarios_data = []

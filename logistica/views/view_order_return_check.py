@@ -146,7 +146,8 @@ def order_return_check(request):
             "order_type": "RETURN",
             "tracking_code": "210",
             "bar_codes": serials,
-            "to_location_id": location_id
+            "to_location_id": location_id,
+            "created_by": user
         }
 
         client = RequestClient(
