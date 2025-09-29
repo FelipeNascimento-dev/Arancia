@@ -27,7 +27,7 @@ def get_api_data(cache_key, url, params, headers, ttl=0):
     """Busca dados da API com cache"""
     data = cache.get(cache_key)
     if not data:
-        resp = session.get(url, params=params, headers=headers, timeout=2)
+        resp = session.get(url, params=params, headers=headers)
         data = resp.json() if resp.status_code == 200 else {}
         cache.set(cache_key, data, ttl)
     return data

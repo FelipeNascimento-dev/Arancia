@@ -49,7 +49,7 @@ def ver_usuario_view(request):
                     "Content-Type": "application/json",
                 },
                 json=payload,
-                timeout=5,
+                
             )
             if resp.status_code in (200, 201):
                 messages.success(request, "Técnico atualizado com sucesso!")
@@ -69,7 +69,7 @@ def ver_usuario_view(request):
             API_LIST_TEC,
             params=params,
             headers={"Authorization": f"Bearer {API_TOKEN}"},
-            timeout=5,
+            
         )
         tecnicos = resp.json() if resp.status_code == 200 else []
     except Exception:

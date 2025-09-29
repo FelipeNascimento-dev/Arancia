@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
 PROJECTS_BY_BASE = {
-    "CTBSEQ": ["CTBPO", "CIELO", "Posto BR", "CTB TRANSPORTES", "CLARO", "CIELO_AUDIT"],
+    "CTBSEQ": ["CTBPO", "CIELO","CLARO"],
     "CTBFED": ["FIRST", "CTB", "C6-BANK", "PICPAY"],
 }
 
