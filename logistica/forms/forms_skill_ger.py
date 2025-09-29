@@ -2,6 +2,8 @@ from django import forms
 
 
 class CreateGAIForm(forms.Form):
+    razao_social = forms.CharField(
+        label="Razão Social", max_length=100, required=False)
     nome = forms.CharField(label="Nome", max_length=100, required=True)
     responsavel = forms.CharField(
         label="Responsável", max_length=100, required=False)
