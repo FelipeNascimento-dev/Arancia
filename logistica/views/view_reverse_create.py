@@ -189,6 +189,10 @@ def cancel_btn(request, id):
 
     result = client.send_api_request()
 
+    if not result:
+        messages.warning(request, f"API retornou vazio para romaneio {id}")
+        result = {"status": "CANCELADO"}
+
     if isinstance(result, dict) and "detail" in result:
         messages.error(
             request, f"Erro ao cancelar romaneio: {result['detail']}")

@@ -52,7 +52,6 @@
     }
 
     .reverse-card-content {
-        display: none;
         padding: 14px;
         border-top: 1px solid #eee;
         background: #fafafa;
@@ -120,7 +119,7 @@
         {% if result.status == 'ABERTO' %}
         <form method="post" action="{% url 'logistica:cancel_btn' request.session.romaneio_num %}">
             {% csrf_token %}
-            <button type="submit" class="submit-button-right btn btn-danger">
+            <button type="submit" class="submit-button-right btn btn-danger" name="cancelar_rom">
                 Cancelar Romaneio
             </button>
         </form>
@@ -132,12 +131,11 @@
 <div class="cardsparent">
     {% for volume in result.volums %}
     <div class="card-block" id="card-volume-{{ volume.volum_number }}">
-        <div class="reverse-card-header {% if forloop.first %}active{% endif %}"
+        <div class="reverse-card-header"
             onclick="toggleCard('card-volume-{{ volume.volum_number }}')">
             <h3 class="card-title">Volume {{ volume.volum_number }}</h3>
-            <i class="fa-solid fa-chevron-down"></i>
         </div>
-        <div class="reverse-card-content" {% if forloop.first %}style="display:block" {% endif %}>
+        <div class="reverse-card-content">
             <table>
                 <thead>
                     <tr>
@@ -163,7 +161,7 @@
                         <td>
                             <form method="post" action="{% url 'logistica:delete_btn' kit.serial %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn-action"
+                                <button type="submit" class="btn-action"  name="delete_item_rom"
                                     onclick="return confirm('Deseja realmente excluir esse serial?')">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
@@ -181,7 +179,7 @@
 {% endif %}
 
 
-<script>
+<!-- <script>
     document.addEventListener("DOMContentLoaded", () => {
         const serialInput = document.querySelector("#id_serial");
         if (serialInput) {
@@ -206,7 +204,7 @@
             headerEl.classList.add("active");
         }
     }
-</script>
+</script> -->
 
 <script>
     document.querySelectorAll('.date-br').forEach(el => {
