@@ -90,7 +90,8 @@
                 {% if perms.logistica.reverse %}
                 <h5 class="submenu-toggle" data-target="reverse-sub">Reversa</h5>
                 <div class="sub-submenu" id="reverse-sub">
-                    <a href="{% url 'logistica:consulta_id_form' %}">Reversa de Equipamentos</a>
+                    <a href="{% url 'logistica:consultar_romaneio' %}">Consultar Romaneio</a>
+                    <a href="{% url 'logistica:reverse_create' %}">Reversa de Equipamentos</a>
                 </div>
                 {% endif %}
 
