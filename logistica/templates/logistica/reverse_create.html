@@ -104,17 +104,40 @@
     .btn-action i {
         font-size: 0.85rem;
     }
-    .submit-button-right{
+
+    .submit-button-right {
         position: absolute;
         margin-top: 20px;
     }
 
+    .signature {
+        position: absolute;
+        top: 15px;
+        right: 30px;
+        font-weight: bold;
+        color: var(--form-titulo);
+        margin: 0;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 100;
+        background-color: #fff;
+    }
+
+    #status {
+        background-color: transparent !important;
+        border: none !important;
+    }
 </style>
 
 <div class="form-container">
     <div class="form-card-2col" action="{{ form_action }}" method="POST">
         <form method="POST">
             {% include 'global/partials/_form_2col.html' %}
+            <div class="signature">
+                {{ result.status }}
+            </div>
         </form>
         {% if result.status == 'ABERTO' %}
         <form method="post" action="{% url 'logistica:cancel_btn' request.session.romaneio_num %}">
@@ -131,8 +154,7 @@
 <div class="cardsparent">
     {% for volume in result.volums %}
     <div class="card-block" id="card-volume-{{ volume.volum_number }}">
-        <div class="reverse-card-header"
-            onclick="toggleCard('card-volume-{{ volume.volum_number }}')">
+        <div class="reverse-card-header" onclick="toggleCard('card-volume-{{ volume.volum_number }}')">
             <h3 class="card-title">Volume {{ volume.volum_number }}</h3>
         </div>
         <div class="reverse-card-content">
@@ -161,7 +183,7 @@
                         <td>
                             <form method="post" action="{% url 'logistica:delete_btn' kit.serial %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn-action"  name="delete_item_rom"
+                                <button type="submit" class="btn-action" name="delete_item_rom"
                                     onclick="return confirm('Deseja realmente excluir esse serial?')">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
