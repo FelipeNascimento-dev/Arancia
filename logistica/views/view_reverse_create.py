@@ -14,14 +14,14 @@ def reverse_create(request):
     result = request.session.get('result', None)
     romaneio_in = request.session.get("romaneio_num", None)
 
-    result = request.session.get("result", None)
+    last_rom = request.session.get("current_romaneio")
+    if romaneio_in and last_rom != romaneio_in:
+        request.session["volums"] = []
+        request.session["current_romaneio"] = romaneio_in
 
     user = request.user
     sales_channel = user.designacao.informacao_adicional.sales_channel
-    if sales_channel == 'all':
-        location_id = 0
-    else:
-        location_id = user.designacao.informacao_adicional_id
+    location_id = 0 if sales_channel == 'all' else user.designacao.informacao_adicional_id
 
     user_sales_channel = None
     try:
@@ -43,16 +43,19 @@ def reverse_create(request):
         romaneio_num=romaneio_in,
     )
 
-    if "volums" not in request.session:
-        request.session["volums"] = []
+    volums = result.get("volums", [])
 
-    volums = request.session["volums"]
+    for v in volums:
+        kits = v.get("kits", [])
+        for idx, k in enumerate(kits, start=1):
+            k["kit_number"] = idx
 
     if request.method == "POST" and form.is_valid():
         serial = form.cleaned_data.get("serial")
-
         if serial:
-            if len(volums) == 0:
+            serial_norm = serial.strip().upper()
+
+            if not volums:
                 volums.append({"volum_number": 1, "kits": []})
 
             ultimo_volume = volums[-1]
@@ -62,26 +65,14 @@ def reverse_create(request):
                     messages.error(
                         request, "Limite máximo de 25 volumes atingido!")
                     return redirect("logistica:reverse_create")
-                else:
-                    novo_numero = int(ultimo_volume["volum_number"]) + 1
-                    volums.append({"volum_number": novo_numero, "kits": []})
-                    ultimo_volume = volums[-1]
+                novo_numero = int(ultimo_volume["volum_number"]) + 1
+                volums.append({"volum_number": novo_numero, "kits": []})
+                ultimo_volume = volums[-1]
 
             kit_number = len(ultimo_volume["kits"]) + 1
 
-            ultimo_volume["kits"].append({
-                "kit_number": kit_number,
-                "serial": serial,
-                "order_number": f"ORD{datetime.now().strftime('%Y%m%d%H%M%S')}",
-                "created_by": request.user.username if request.user.is_authenticated else "SYSTEM",
-                "created_at": datetime.now().isoformat()
-            })
-
-            request.session["volums"] = volums
-            request.session.modified = True
-
             payload = {
-                "serial": serial,
+                "serial": serial_norm,
                 "volume_number": str(ultimo_volume["volum_number"]),
                 "kit_number": str(kit_number),
                 "client": "cielo",
@@ -90,7 +81,6 @@ def reverse_create(request):
             }
 
             url = f"{STOCK_API_URL}/v1/romaneios/insert-items/{romaneio_in}"
-
             client = RequestClient(
                 url=url,
                 method="POST",
@@ -98,31 +88,20 @@ def reverse_create(request):
                          "Content-Type": "application/json"},
                 request_data=payload,
             )
-            print(payload)
-
-            result = client.send_api_request()
-
-            if isinstance(result, dict) and "detail" in result:
-                messages.error(request, f"Erro API: {result}")
+            _result = client.send_api_request()
+            if "detail" in _result:
+                messages.error(request, _result.get("detail"))
             else:
+                result = _result
                 request.session["result"] = result
                 request.session.modified = True
-                messages.success(
-                    request, f"Serial {serial} inserido no romaneio!")
-
-            if int(ultimo_volume["volum_number"]) == 25 and len(ultimo_volume["kits"]) == 10:
-                messages.warning(
-                    request,
-                    "Você atingiu o limite de 25 volumes com 10 kits cada!"
-                )
-
-            return redirect("logistica:reverse_create")
 
     context = {
         "form": form,
         "botao_texto": "Inserir",
         "site_title": "Reversa",
         "result": result,
+        "volums": result.get("volums", []),
     }
     return render(request, "logistica/reverse_create.html", context)
 
@@ -143,25 +122,18 @@ def delete_btn(request, serial):
     delete_result = client.send_api_request()
 
     if isinstance(delete_result, dict) and "detail" in delete_result:
-        messages.error(request, f"Erro ao deletar: {delete_result['detail']}")
+        messages.error(
+            request, f"Erro ao deletar na API: {delete_result['detail']}")
     else:
-        messages.success(request, f"Serial {serial} removido com sucesso!")
+        messages.success(
+            request, f"Serial {serial} removido com sucesso na API!")
 
-    request.session["delete_result"] = delete_result
+    volums = delete_result.get("volums", [])
+    request.session["volums"] = volums
+    request.session["result"] = delete_result
     request.session.modified = True
 
-    form = ReverseCreateForm(
-        nome_form="Reversa de Equipamento",
-        user_sales_channel=None,
-        romaneio_num=romaneio_in,
-    )
-
-    return render(request, "logistica/reverse_create.html", {
-        "form": form,
-        "botao_texto": "Inserir",
-        "site_title": "Reversa",
-        "result": delete_result,
-    })
+    return redirect("logistica:reverse_create")
 
 
 def cancel_btn(request, id):
