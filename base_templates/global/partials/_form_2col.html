@@ -60,13 +60,6 @@
     </button>
     {% endif %}
 
-    {% if request.resolver_match.url_name == 'reverse_create' %}
-      <button type="submit" class="submit-button-right btn-success" name="enviar_cotacao"
-      value="2">
-        Enviar Cotação
-      </button>
-    {% endif %}
-
     <button type="submit" class="submit-button-right" name="enviar_evento" value="1">
       {{ botao_texto }}
     </button>
