@@ -18,7 +18,7 @@
 
             {% if field.name == "grupo" %}
               <select name="grupo" id="grupo_{{ modal_id }}" onchange="filtrarAditionalInfos('{{ modal_id }}')">
-                <option value="">Selecione um grupo</option>
+                <option value=""></option>
                 {% for group in all_groups %}
                   <option value="{{ group.id }}">{{ group.name }}</option>
                 {% endfor %}
@@ -26,7 +26,7 @@
 
             {% elif field.name == "aditionalinformation" %}
               <select name="aditionalinformation" id="aditionalinformation_{{ modal_id }}">
-                <option value="">Vincule uma Informação Adicional</option>
+                <option value=""></option>
                 {% for info in additional_infos %}
                   <option value="{{ info.id }}" data-group="{{ info.group.id }}">{{ info.nome }}</option>
                 {% endfor %}
