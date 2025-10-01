@@ -5,6 +5,7 @@ from datetime import datetime
 from ..forms import ReverseCreateForm
 from utils.request import RequestClient
 from setup.local_settings import STOCK_API_URL
+from .view_send_quotes import send_quotes
 
 JSON_CT = "application/json"
 
@@ -50,7 +51,7 @@ def reverse_create(request):
         for idx, k in enumerate(kits, start=1):
             k["kit_number"] = idx
 
-    if request.method == "POST" and form.is_valid():
+    if request.method == "POST" and form.is_valid() and "enviar_evento" in request.POST:
         serial = form.cleaned_data.get("serial")
         if serial:
             serial_norm = serial.strip().upper()
@@ -95,6 +96,36 @@ def reverse_create(request):
                 result = _result
                 request.session["result"] = result
                 request.session.modified = True
+
+    if request.method == "POST" and form.is_valid() and "enviar_cotacao" in request.POST:
+        _result = send_quotes(request)
+        if 'detail' not in _result:
+            result = _result
+
+    if request.method == "POST" and "cancelar_rom" in request.POST:
+        payload = {
+            "status_rom": "CANCELADO",
+            "update_by": request.user.username if request.user.is_authenticated else "SYSTEM"
+        }
+        url = f"{STOCK_API_URL}/v1/romaneios/{romaneio_in}"
+        client = RequestClient(url=url, method="PUT",
+                               headers={"Accept": JSON_CT,
+                                        "Content-Type": JSON_CT},
+                               request_data=payload)
+        result = client.send_api_request()
+
+        if not result:
+            messages.warning(
+                request, f"API retornou vazio para romaneio {romaneio_in}")
+            result = {"status": "CANCELADO"}
+        elif "detail" in result:
+            messages.error(
+                request, f"Erro ao cancelar romaneio: {result['detail']}")
+        else:
+            messages.success(
+                request, f"Romaneio {romaneio_in} cancelado com sucesso!")
+            request.session["result"] = result
+            request.session.modified = True
 
     context = {
         "form": form,
@@ -142,43 +173,44 @@ def cancel_btn(request, id):
     if request.method != "POST":
         return redirect("logistica:reverse_create")
 
-    payload = {
-        "status_rom": "CANCELADO",
-        "update_by": request.user.username if request.user.is_authenticated else "SYSTEM"
-    }
+    if "cancelar_rom" in request.POST:
+        payload = {
+            "status_rom": "CANCELADO",
+            "update_by": request.user.username if request.user.is_authenticated else "SYSTEM"
+        }
 
-    url = f"{STOCK_API_URL}/v1/romaneios/{romaneio_in}"
+        url = f"{STOCK_API_URL}/v1/romaneios/{romaneio_in}"
 
-    client = RequestClient(
-        url=url,
-        method="PUT",
-        headers={
-            "Accept": JSON_CT,
-            "Content-Type": JSON_CT
-        },
-        request_data=payload,
-    )
+        client = RequestClient(
+            url=url,
+            method="PUT",
+            headers={
+                "Accept": JSON_CT,
+                "Content-Type": JSON_CT
+            },
+            request_data=payload,
+        )
 
-    result = client.send_api_request()
+        result = client.send_api_request()
 
-    if not result:
-        messages.warning(request, f"API retornou vazio para romaneio {id}")
-        result = {"status": "CANCELADO"}
+        if not result:
+            messages.warning(request, f"API retornou vazio para romaneio {id}")
+            result = {"status": "CANCELADO"}
 
-    if isinstance(result, dict) and "detail" in result:
-        messages.error(
-            request, f"Erro ao cancelar romaneio: {result['detail']}")
-    else:
-        messages.success(
-            request, f"Romaneio {romaneio_in} cancelado com sucesso!")
-        request.session["result"] = result
-        request.session.modified = True
+        if isinstance(result, dict) and "detail" in result:
+            messages.error(
+                request, f"Erro ao cancelar romaneio: {result['detail']}")
+        else:
+            messages.success(
+                request, f"Romaneio {romaneio_in} cancelado com sucesso!")
+            request.session["result"] = result
+            request.session.modified = True
 
-    form = ReverseCreateForm(
-        nome_form="Reversa de Equipamento",
-        user_sales_channel=None,
-        romaneio_num=romaneio_in,
-    )
+        form = ReverseCreateForm(
+            nome_form="Reversa de Equipamento",
+            user_sales_channel=None,
+            romaneio_num=romaneio_in,
+        )
 
     return render(request, "logistica/reverse_create.html", {
         "form": form,

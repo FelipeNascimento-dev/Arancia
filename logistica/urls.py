@@ -64,5 +64,5 @@ urlpatterns = [
     path('reverse/', reverse_create, name='reverse_create'),
     path('reverse/delete/<str:serial>/', delete_btn, name='delete_btn'),
     path('reverse/cancel/<str:id>/', cancel_btn, name='cancel_btn'),
-    path('reverse/', send_quotes, name='send_quotes'),
+    path('reverse/envio', send_quotes, name='send_quotes'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

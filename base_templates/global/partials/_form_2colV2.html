@@ -1,6 +1,5 @@
 <h2>{{ form.nome_formulario }}</h2>
 
-<form method="POST" class="form-card-2col">
   {% csrf_token %}
   {{ form.non_field_errors }}
 
@@ -60,9 +59,10 @@
     </button>
     {% endif %}
     
+    {% if result.status == 'ABERTO' %}
     <button type="submit" class="submit-button-right" name="enviar_evento" value="1">
       {{ botao_texto }}
     </button>
+    {% endif %}
 
   </div>
-</form>

@@ -8,7 +8,7 @@ from ..forms import EtiquetasForm
 from utils.request import RequestClient
 from setup.local_settings import API_KEY_INTELIPOST
 
-LABEL_API_URL = "https://api.intelipost.com.br/api/v1/shipment_order/get_label"
+LABEL_API_URL = "http://192.168.0.216/homo-fulfillment/api/order-sumary/get-label"
 SESSION_KEY = "consulta_etiquetas_itens"
 
 
@@ -17,16 +17,19 @@ def _get_items(request: HttpRequest) -> List[Dict[str, Any]]:
     norm: List[Dict[str, Any]] = []
     for it in raw:
         if isinstance(it, dict):
-            norm.append({"pedido": it.get("pedido"), "volume": int(it.get("volume") or 1), "url": it.get("url")})
+            norm.append({"pedido": it.get("pedido"), "volume": int(
+                it.get("volume") or 1), "url": it.get("url")})
         elif isinstance(it, (list, tuple)) and it:
             ped = (it[0] or "").strip()
             vol = int(it[1] if len(it) > 1 else 1)
             norm.append({"pedido": ped, "volume": vol, "url": None})
     return norm
 
+
 def _save_items(request: HttpRequest, items: List[Dict[str, Any]]) -> None:
     request.session[SESSION_KEY] = items
     request.session.modified = True
+
 
 def _add_item(items: List[Dict[str, Any]], pedido: str, volume: int) -> List[Dict[str, Any]]:
     pedido = (pedido or "").strip()
@@ -36,6 +39,7 @@ def _add_item(items: List[Dict[str, Any]], pedido: str, volume: int) -> List[Dic
     if not any(i["pedido"] == pedido and int(i["volume"]) == volume for i in items):
         items.append({"pedido": pedido, "volume": volume, "url": None})
     return items
+
 
 def _get_label_url(pedido: str, volume: int) -> Optional[str]:
     client = RequestClient(
@@ -57,6 +61,7 @@ def _get_label_url(pedido: str, volume: int) -> Optional[str]:
     content = (data or {}).get("content") or {}
     return content.get("label_url")
 
+
 def _fill_urls_with_api(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     out: List[Dict[str, Any]] = []
     for it in items:
@@ -65,6 +70,7 @@ def _fill_urls_with_api(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         url = _get_label_url(ped, vol)
         out.append({"pedido": ped, "volume": vol, "url": url})
     return out
+
 
 @csrf_protect
 @login_required(login_url='logistica:login')
@@ -83,7 +89,8 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
 
     if "enviar_evento" in request.POST:
         if not items:
-            messages.info(request, "Nenhum pedido na lista. Digite um pedido e tecle Enter.")
+            messages.info(
+                request, "Nenhum pedido na lista. Digite um pedido e tecle Enter.")
             return render(request, "logistica/consulta_etiquetas.html", {
                 "form": EtiquetasForm(),
                 "botao_texto": "Consultar",

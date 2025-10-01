@@ -98,10 +98,9 @@
                 {% if perms.logistica.lastmile_b2c %}
                 <h5 class="submenu-toggle" data-target="lastmile-sub">Lastmile (B2C)</h5>
                 <div class="sub-submenu" id="lastmile-sub">
-                    <h5 class="submenu-toggle" data-target="lastmile-entrada-sub">Fluxo de Entrada</h5>
+                    <h5 class="submenu-toggle" data-target="lastmile-entrada-sub">Fluxo de Entrega</h5>
                     <div class="sub-submenu" id="lastmile-entrada-sub">
                         <a href="{% url 'logistica:extracao_pedidos' %}">IP - Extração de Pedidos</a>
-                        <a href="{% url 'logistica:consulta_etiquetas' %}">IP - Consulta de Etiquetas</a>
                         <a href="{% url 'logistica:consulta_pedidos' %}">IP - Consulta de Pedidos</a>
                         <a href="{% url 'logistica:pcp' 201 %}">IP - PCP</a>
                         <h5 class="submenu-toggle" data-target="reserva-sub">SAP - Reserva de equipamento</h5>
@@ -117,6 +116,7 @@
                             <a href="{% url 'logistica:consulta_result_ec' %}">SAP - Consulta</a>
                         </div>
                         <a href="{% url 'logistica:expedicao' 204 %}">IP - Expedição</a>
+                        <a href="{% url 'logistica:consulta_etiquetas' %}">IP - Consulta de Etiquetas</a>
                         <a href="{% url 'logistica:troca_custodia' 205 %}">IP - Troca de Custódia</a>
                         <h5 class="submenu-toggle" data-target="estornos-saida-reserva">SAP - Estornos</h5>
                         <div class="sub-submenu" id="estornos-saida-reserva">
