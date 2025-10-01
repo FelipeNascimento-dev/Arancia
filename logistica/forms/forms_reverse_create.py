@@ -17,14 +17,14 @@ class ReverseCreateForm(forms.Form):
     )
 
     sales_channel = forms.ChoiceField(
-        label='CD de Origem',
-        required=False,
+        label='PA de Origem',
+        required=True,
         choices=()
     )
 
     group_aditional_information = forms.ChoiceField(
         label='CD de Destino',
-        required=False,
+        required=True,
         choices=()
     )
 
@@ -35,22 +35,27 @@ class ReverseCreateForm(forms.Form):
         if romaneio_num:
             self.fields["romaneio"].initial = romaneio_num
             self.fields["romaneio"].disabled = True
-
+        grupo_pa = Group.objects.get(name="arancia_PA")
         sc_qs = (
             GroupAditionalInformation.objects
-            .exclude(sales_channel__isnull=True)
-            .exclude(sales_channel__exact="")
-            .annotate(sc_lower=Lower("sales_channel"))
-            .order_by("sc_lower")
-            .values_list("sales_channel", flat=True)
-            .distinct()
+            .filter(group=grupo_pa)
+            .annotate(nome_lower=Lower("nome"))
+            .order_by("nome_lower")
+            .values_list("id", "nome")
         )
+        sc_values = list(sc_qs.values_list("id", "nome")
+                         )  # vira [(25, "Caruaru")]
 
-        sc_values = list(sc_qs)
-        if user_sales_channel and user_sales_channel not in sc_values:
-            sc_values.insert(0, user_sales_channel)
+        sc_choices = [("", "")]
+        if user_sales_channel == 'all':
+            sc_values.insert(0, ("all", "all"))
 
-        sc_choices = [("", "")] + [(v, v) for v in sc_values]
+        for v in sc_values:
+            if isinstance(v, tuple):   # já é (id, nome)
+                sc_choices.append(v)
+            else:                      # é só string tipo 'all'
+                sc_choices.append((v, v))
+
         self.fields["sales_channel"].choices = sc_choices
 
         if user_sales_channel:

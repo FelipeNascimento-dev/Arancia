@@ -8,21 +8,24 @@ JSON_CT = "application/json"
 
 
 def send_quotes(request):
-    titulo = 'Reversa de Equipamento'
-    user_sales_channel = None
 
-    user = request.user
-    sales_channel = user.designacao.informacao_adicional.sales_channel
-    location_id = 0 if sales_channel == 'all' else user.designacao.informacao_adicional_id
-    romaneio_in = request.session.get("romaneio_num", None)
-    # to_location_id = request.session.get("group_aditional_information")
-
+    # location_id = 0 if sales_channel == 'all' else user.designacao.informacao_adicional_id
+    result = None
     if "enviar_cotacao" in request.POST:
         form = ReverseCreateForm(
             request.POST)
+        if form.errors:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
         if form.is_valid():
-            to_location_id = form.cleaned_data.get(
-                "group_aditional_information")
+            romaneio_in = request.session.get("romaneio_num", None)
+            to_location_id = int(form.cleaned_data.get(
+                "group_aditional_information"))
+            location_id = int(form.cleaned_data.get('sales_channel'))
+            if location_id == 0:
+                messages.info(request, "Selecione uma PA valida")
+                return {"detail": "Selecione uma PA valida"}
 
             payload = {
                 "romaneio_number": romaneio_in,

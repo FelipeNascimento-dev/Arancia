@@ -28,22 +28,36 @@ class RequestClient:
                 request = httpx.Request(
                     self.method.upper(),
                     url=self.url,
-                    **{f"{'params' if self.method == 'get' else 'json'}": self.request_data},
+                    **{f"{'params' if self.method.lower() == 'get' else 'json'}": self.request_data},
                     headers=self.headers
                 )
                 response = client.send(request)
                 response.raise_for_status()
+
             except httpx.HTTPStatusError as exc:
+                # Se a resposta não for JSON válido
+                try:
+                    data = response.json()
+                except Exception:
+                    data = {"detail": response.text or "Erro interno do servidor"}
+
+                if response.status_code == 500:
+                    return {"detail": "Erro interno do Servidor"}
+
                 log_request_result('request_error', self.url,
-                                   self.method, response.json(), response)
-                print('request_error', self.url,
-                      self.method, response.json(), response)
-                return response.json()
+                                   self.method, data, response)
+                return data
+
+            # --- Sucesso ---
+            try:
+                data = response.json()
+            except Exception:
+                data = {"detail": response.text or "Resposta não JSON"}
 
             log_request_result('request_success', self.url,
                                self.method, self.request_data, response)
-            return response.json()
-        
+        return data
+
     def send_api_request_no_json(self, *, stream: bool = True):
         """
         Envia a requisição e SEMPRE retorna httpx.Response (sem fazer .json()).
@@ -78,10 +92,12 @@ class RequestClient:
                     resp = exc.response  # httpx.Response
                     # LOG: não tente resp.json() aqui — pode ser binário
                     ct = resp.headers.get("content-type")
-                    logger.warning("HTTP error %s on %s (CT: %s)", resp.status_code, url, ct)
+                    logger.warning("HTTP error %s on %s (CT: %s)",
+                                   resp.status_code, url, ct)
                     # Seu logger custom
                     try:
-                        log_request_result("request_error", url, method, data, resp)
+                        log_request_result(
+                            "request_error", url, method, data, resp)
                     except Exception:
                         pass
                     return resp
@@ -98,4 +114,3 @@ class RequestClient:
             pass
 
         return response
-

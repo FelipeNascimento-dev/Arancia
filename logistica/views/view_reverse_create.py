@@ -99,7 +99,8 @@ def reverse_create(request):
 
     if request.method == "POST" and form.is_valid() and "enviar_cotacao" in request.POST:
         _result = send_quotes(request)
-        if 'detail' not in _result:
+
+        if _result and 'detail' not in _result:
             result = _result
 
     if request.method == "POST" and "cancelar_rom" in request.POST:
@@ -112,18 +113,19 @@ def reverse_create(request):
                                headers={"Accept": JSON_CT,
                                         "Content-Type": JSON_CT},
                                request_data=payload)
-        result = client.send_api_request()
+        _result = client.send_api_request()
 
-        if not result:
+        if not _result:
             messages.warning(
                 request, f"API retornou vazio para romaneio {romaneio_in}")
-            result = {"status": "CANCELADO"}
-        elif "detail" in result:
+        elif "detail" in _result:
             messages.error(
-                request, f"Erro ao cancelar romaneio: {result['detail']}")
+                request, f"Erro ao cancelar romaneio: {_result['detail']}")
         else:
+
             messages.success(
                 request, f"Romaneio {romaneio_in} cancelado com sucesso!")
+            result['status'] = 'CANCELADO'
             request.session["result"] = result
             request.session.modified = True
 
