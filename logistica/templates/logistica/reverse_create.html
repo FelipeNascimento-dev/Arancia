@@ -200,7 +200,7 @@
                         Cancelar Romaneio
                     </button>
                 </form>
-                <form method="post" action="{% url 'logistica:reverse_create' %}">
+                <form method="post" action="{% url 'logistica:send_quotes' %}">
                     {% csrf_token %}
                     <button type="submit" class="dropdown-item" name="enviar_cotacao" value="1">
                         Enviar Cotação

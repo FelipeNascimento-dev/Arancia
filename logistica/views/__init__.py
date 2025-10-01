@@ -25,3 +25,4 @@ from .view_user_ger import user_ger
 from .view_skill_ger import skill_ger
 from .view_reverse_create import reverse_create, delete_btn, cancel_btn
 from .view_consult_rom import consult_rom
+from .view_send_quotes import send_quotes
