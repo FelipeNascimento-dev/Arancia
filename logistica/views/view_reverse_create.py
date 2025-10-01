@@ -99,9 +99,13 @@ def reverse_create(request):
 
     if request.method == "POST" and form.is_valid() and "enviar_cotacao" in request.POST:
         _result = send_quotes(request)
+        order = _result.get('order_number')
 
         if _result and 'detail' not in _result:
             result = _result
+            request.session["result"] = result
+            request.session.modified = True
+            return redirect('logistica:detalhe_pedido', order=order)
 
     if request.method == "POST" and "cancelar_rom" in request.POST:
         payload = {
@@ -122,7 +126,6 @@ def reverse_create(request):
             messages.error(
                 request, f"Erro ao cancelar romaneio: {_result['detail']}")
         else:
-
             messages.success(
                 request, f"Romaneio {romaneio_in} cancelado com sucesso!")
             result['status'] = 'CANCELADO'
