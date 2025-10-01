@@ -143,6 +143,7 @@
         border: none;
         border-radius: 4px;
         cursor: pointer;
+        margin-top: 30px;
     }
 
     .btn-actions:hover {
@@ -152,17 +153,17 @@
     .actions-dropdown {
         display: none;
         position: absolute;
-        left: 0;
-        top: 110%;
+        left: 30px;
+        top: 95%;
         background: #ffffff;
         border: 1px solid #ccc;
         border-radius: 6px;
-        min-width: 180px;
+        max-width: 150px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
         z-index: 1000;
     }
 
-    .actions-dropdown form {
+    .actions-dropdown .itens {
         margin: 0;
     }
 
@@ -181,34 +182,29 @@
 </style>
 
 <div class="form-container">
-    <div class="form-card-2col" action="{{ form_action }}" method="POST">
-        <form method="POST">
-            {% include 'global/partials/_form_2col.html' %}
+    <div class="form-card-2col">
+        <form method="POST" action="{% url 'logistica:reverse_create' %}">
+            {% include 'global/partials/_form_2colV2.html' %}
             <div class="signature">
                 {{ result.status }}
             </div>
-        </form>
-        {% if result.status == 'ABERTO' %}
-        <div class="actions-menu">
+            {% if result.status == 'ABERTO' %}
             <button type="button" class="btn-actions" onclick="toggleActionsMenu()">
                 Ações ▾
             </button>
             <div id="actions-dropdown" class="actions-dropdown">
-                <form method="post" action="{% url 'logistica:cancel_btn' request.session.romaneio_num %}">
-                    {% csrf_token %}
-                    <button type="submit" class="dropdown-item " name="cancelar_rom">
+                {% csrf_token %}
+                <div class="itens">
+                    <button type="submit" class="dropdown-item" name="cancelar_rom" value="1">
                         Cancelar Romaneio
                     </button>
-                </form>
-                <form method="post" action="{% url 'logistica:send_quotes' %}">
-                    {% csrf_token %}
                     <button type="submit" class="dropdown-item" name="enviar_cotacao" value="1">
                         Enviar Cotação
                     </button>
-                </form>
+                </div>
             </div>
-        </div>
-        {% endif %}
+            {% endif %}
+        </form>
     </div>
 </div>
 
