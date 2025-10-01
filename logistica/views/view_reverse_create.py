@@ -61,10 +61,10 @@ def reverse_create(request):
 
             ultimo_volume = volums[-1]
 
-            if len(ultimo_volume["kits"]) >= 10:
-                if len(volums) >= 25:
+            if len(ultimo_volume["kits"]) >= 48:
+                if len(volums) >= 5:
                     messages.error(
-                        request, "Limite máximo de 25 volumes atingido!")
+                        request, "Limite máximo de 5 volumes atingido!")
                     return redirect("logistica:reverse_create")
                 novo_numero = int(ultimo_volume["volum_number"]) + 1
                 volums.append({"volum_number": novo_numero, "kits": []})
@@ -137,7 +137,7 @@ def reverse_create(request):
         "botao_texto": "Inserir",
         "site_title": "Reversa",
         "result": result,
-        "volums": result.get("volums", []),
+        "volums": list(reversed(result.get("volums", [])))
     }
     return render(request, "logistica/reverse_create.html", context)
 
