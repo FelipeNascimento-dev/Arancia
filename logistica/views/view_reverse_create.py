@@ -50,6 +50,9 @@ def reverse_create(request):
         for idx, k in enumerate(kits, start=1):
             k["kit_number"] = idx
 
+    if "enviar_cotacao" in request.POST:
+        pass
+
     if request.method == "POST" and form.is_valid():
         serial = form.cleaned_data.get("serial")
         if serial:
