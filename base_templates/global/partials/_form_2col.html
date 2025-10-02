@@ -53,9 +53,8 @@
     </div>
     {% endif %}
 
-    {% if proximo_disponivel %}
-    <button type="submit" class="submit-button-right btn-success" name="criar_romaneio"
-      value="{{ proximo_disponivel }}">
+    {% if request.resolver_match.url_name == 'consultar_romaneio' %}
+    <button type="submit" class="submit-button-right btn-success" name="criar_romaneio">
       Criar romaneio
     </button>
     {% endif %}

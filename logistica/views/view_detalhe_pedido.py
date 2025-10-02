@@ -90,8 +90,15 @@ def order_detail(request, order: str):
         request.POST or None,
         dados=result
     )
-    tipo = (
-        form.fields['shipment_order_type'].initial or '').strip().upper()
+    tipo = (form.fields['shipment_order_type'].initial or '').strip().upper()
+    volume_state = (result.get("volume_state") or "").strip().upper()
+    ultima_tracking = (result.get("ultima_tracking") or "").strip().upper()
+
+    mostrar_acoes = (
+        tipo == "REVERSE"
+        and volume_state != "CANCELLED"
+        and ultima_tracking != "205 - TROCA DE CUSTODIA"
+    )
 
     def bf(name):
         try:
@@ -117,4 +124,5 @@ def order_detail(request, order: str):
         "botao_texto": botao_texto,
         "site_title": "Detalhe do Pedido",
         "nome_formulario": form.form_title,
+        "mostrar_acoes": mostrar_acoes,
     })

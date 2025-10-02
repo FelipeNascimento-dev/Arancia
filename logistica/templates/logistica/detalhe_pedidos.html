@@ -477,19 +477,7 @@
     <div class="card-2col">
         <form method="POST">
             {% csrf_token %}
-
             {% include 'global/partials/_form_card_2col.html' %}
-
-            <div class="signature">
-                {{ form.sales_channel }}
-            </div>
-
-            <div class="back-detail">
-                <a href="{% url 'logistica:consultar_pedido' %}" class="back-link">
-                    <i class="fa-solid fa-arrow-left"></i>
-                    Voltar
-                </a>
-            </div>
 
             <div class="tabs" id="agenda-tabs" style="margin-top:16px;">
                 <div class="tab-list" role="tablist" aria-label="Navegação">
@@ -807,6 +795,21 @@
             }
         });
     })();
+</script>
+
+<!-- SCRIPT PARA DROPDOWN -->
+<script>
+    function toggleActionsMenu() {
+        const menu = document.getElementById("actions-dropdown");
+        menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+
+    window.addEventListener("click", function (e) {
+        const menu = document.getElementById("actions-dropdown");
+        if (!e.target.matches(".btn-actions")) {
+            menu.style.display = "none";
+        }
+    });
 </script>
 
 {% endblock %}
