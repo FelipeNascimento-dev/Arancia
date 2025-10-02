@@ -2,6 +2,17 @@
 
 <form method="POST" action="{{ acao_url }}" class="card-2col">
     {% csrf_token %}
+
+    <div class="signature">
+        {{ form.sales_channel }}
+    </div>
+
+    <div class="back-detail">
+        <a href="{% url 'logistica:consultar_pedido' %}" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i>
+            Voltar
+        </a>
+    </div>
     {{ form.non_field_errors }}
 
     {% if impar %}
@@ -38,9 +49,26 @@
         <button type="button" class="submit-button-right" id="abrirModal">
             {{ botao_texto }}
         </button>
+        {% elif botao_texto == "RECEBER REVERSA" %}
+        <div class="actions-menu">
+            <button type="button" class="btn-actions" onclick="toggleActionsMenu()">
+                Ações ▾
+            </button>
+            <div id="actions-dropdown" class="actions-dropdown">
+                {% csrf_token %}
+                <div class="itens">
+                    <button type="submit" class="dropdown-item" name="cancelar_pedido" value="1">
+                        CANCELAR PEDIDO
+                    </button>
+                    <button type="submit" class="dropdown-item" name="troca_custodia" value="1">
+                        TROCA DE CUSTODIA
+                    </button>
+                </div>
+            </div>
+        </div>
         {% else %}
-        <button type="submit" class="submit-button-right" name="enviar_evento" value="1">
-            {{ botao_texto }}
+        <button type="button" class="submit-button-right">
+            Definir botão no template _form_card_2col
         </button>
         {% endif %}
     </div>
