@@ -22,8 +22,8 @@ def ver_usuario_view(request):
         return redirect(f"{reverse('transportes:config_context')}?next={request.path}")
 
 
-    API_LIST_TEC = f"{API_BASE}tecnico/{cod_base}/buscar"
-    API_PUT_TEC = f"{API_BASE}tecnico/update/"
+    API_LIST_TEC = f"{API_BASE}/v3/tecnico/{cod_base}/buscar"
+    API_PUT_TEC = f"{API_BASE}/v3/tecnico/update/"
 
     # --- Atualização de técnico ---
     if request.method == "POST" and "uid" in request.POST:
@@ -42,15 +42,14 @@ def ver_usuario_view(request):
 
         try:
             resp = requests.put(
-                f"{API_PUT_TEC}{uid}",
-                headers={
-                    "Authorization": f"Bearer {API_TOKEN}",
-                    "Accept": "application/json",
-                    "Content-Type": "application/json",
-                },
-                json=payload,
-                
-            )
+    f"{API_PUT_TEC}{uid}",
+    headers={
+        "access_token": API_TOKEN,
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+    },
+    json=payload,
+)
             if resp.status_code in (200, 201):
                 messages.success(request, "Técnico atualizado com sucesso!")
             else:
@@ -68,7 +67,10 @@ def ver_usuario_view(request):
         resp = requests.get(
             API_LIST_TEC,
             params=params,
-            headers={"Authorization": f"Bearer {API_TOKEN}"},
+            headers = {
+            "Accept": "application/json",
+            "access_token": API_TOKEN
+        }
             
         )
         tecnicos = resp.json() if resp.status_code == 200 else []

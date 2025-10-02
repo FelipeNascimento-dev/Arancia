@@ -8,7 +8,7 @@ from utils.request import RequestClient
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.csrf import csrf_protect
 
-API_MOVER = f"{API_BASE}mover"
+API_MOVER = f"{API_BASE}/v3/mover"
 
 MOVER_FIELDS = [
     {"name": "nome_tecnico", "label": "Técnico", "type": "select", "placeholder": "Selecione o técnico", "colspan": 1},
@@ -27,7 +27,7 @@ def mover_rota_view(request):
     if not cod_base:
         return redirect(f"{reverse('transportes:config_context')}?next={request.path}")
 
-    API_TECNICOS = f"{API_BASE}tecnicos/buscar_tec/{cod_base}"
+    API_TECNICOS = f"{API_BASE}/v3/tecnicos/buscar_tec/{cod_base}"
 
     tecnicos = []
     tecnico_nome = None
@@ -88,7 +88,7 @@ def mover_rota_view(request):
                 )
                 resp = client.send_api_request()
 
-                # ✅ Tratamento da resposta
+                #  Tratamento da resposta
                 if isinstance(resp, dict):
                     moved_success = resp.get("moved_success", 0)
                     moved_error = resp.get("moved_error", 0)

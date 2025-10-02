@@ -19,21 +19,49 @@
   <br>
 
   {# Botão limpar unidade #}
-  {% if filtro_unidade %}
-  <div class="container mt-2">
-    <a href="{% query_update unidade='' %}" class="btn btn-outline-danger btn-xs">
-      Limpar Filtro
-    </a>
-  </div>
-  {% endif %}
+ 
+ 
+<br>
+ <div class="d-flex flex-wrap gap-2 mb-3">
 
-  <br>
+    {% if filtro_unidade %}
+      <a href="{% query_update unidade='' %}" class="btn btn-outline-danger btn-sm">
+        Limpar Filtro
+      </a>
+    {% endif %}
+
+    {% if ocultar_sem_nome %}
+      <a href="?ocultar_sem_nome=0" class="btn btn-sm btn-secondary">
+        Mostrar todos
+      </a>
+    {% else %}
+      <a href="?ocultar_sem_nome=1" class="btn btn-sm btn-primary">
+        Ocultar sem nome
+      </a>
+    {% endif %}
+  </div>
+
+  <!-- Busca -->
+  <form method="get" class="d-flex align-items-center mb-3">
+  <input 
+    type="text" 
+    name="search" 
+    class="form-control form-control-sm me-2" 
+    placeholder="Buscar técnico por nome ou uid..." 
+    value="{{ search|default:'' }}"
+
+    ><button type="submit" class="btn btn-primary btn-xs">
+  <i class="fa fa-search"></i>
+</button>
+</form>
+</form >
+<br>
 
   {# Cards de unidade #}
   <div class="container unidade-filter mt-2">
     <div class="row">
       {% for u in unidades %}
-        <div class="col-6 col-md-3 mb-2">
+        <div class="col-10 col-md-3 mb-2">
           <a href="{% query_update unidade=u %}"
              class="unidade-card {% if filtro_unidade == u %}active{% endif %}">
             <i class="fa-regular fa-building unidade-icon"></i>
@@ -43,9 +71,6 @@
       {% endfor %}
     </div>
   </div>
-
-
-
 
 
 

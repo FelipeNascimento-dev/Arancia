@@ -1,34 +1,73 @@
 <!-- Modal Genérico de Técnico -->
-<div class="modal fade" id="modalTecnico" tabindex="-1" aria-labelledby="modalTecnicoLabel" aria-hidden="true">
+<div
+  class="modal fade"
+  id="modalTecnico"
+  tabindex="-1"
+  aria-labelledby="modalTecnicoLabel"
+  aria-hidden="true"
+>
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      
       <!-- Cabeçalho -->
       <div class="modal-header text-white">
         <h5 class="modal-title" id="modalTecnicoLabel">
           <strong>Resumo do Técnico</strong>
         </h5>
-        <button type="button" class="btn-close btn-close-black" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        <button
+          type="button"
+          class="btn-close btn-close-black"
+          data-bs-dismiss="modal"
+          aria-label="Fechar"
+        ></button>
       </div>
-      
+
       <!-- Corpo -->
       <div class="modal-body">
         <div class="tec-ficha">
-          <div class="linha">Nome:  <span class="titulo" id="modalTecNome"></span></div>
-          <div class="linha">UID:  <span class="titulo" id="modalTecUid"></span></div>
-          <div class="linha">Unidade: <span class="titulo" id="modalTecArea"></span></div>
-          <div class="linha">Total OS: <span class="titulo" id="modalTecTotal"></span></div>
-          <div class="linha">OS Concluídas: <span class="titulo" id="modalTecConcluido"></span></div>
-          <div class="linha">OS No Tempo: <span class="titulo" id="modalTecNoTempo"></span></div>
-          <div class="linha">OS No Limite: <span class="titulo" id="modalTecNoLimite"></span></div>
-          <div class="linha">OS Atrasadas: <span class="titulo" id="modalTecAtrasado"></span></div>
-          <div class="linha">Último Login: <span class="titulo" id="modalTecLastlogin"></span></div>
-          <div class="linha">Última Abertura: <span class="titulo" id="modalTecLastopening"></span></div>
-          <div class="linha">Tempo Ocioso:   <span class="titulo" id="modalTecOcioso"></span></div>
           <div class="linha">
-           Número:
+            Nome: <span class="titulo" id="modalTecNome"></span>
+          </div>
+          <div class="linha">
+            UID: <span class="titulo" id="modalTecUid"></span>
+          </div>
+          <div class="linha">
+            Unidade: <span class="titulo" id="modalTecArea"></span>
+          </div>
+          <div class="linha">
+            Total OS: <span class="titulo" id="modalTecTotal"></span>
+          </div>
+          <div class="linha">
+            OS Concluídas: <span class="titulo" id="modalTecConcluido"></span>
+          </div>
+          <div class="linha">
+            OS No Tempo: <span class="titulo" id="modalTecNoTempo"></span>
+          </div>
+          <div class="linha">
+            OS No Limite: <span class="titulo" id="modalTecNoLimite"></span>
+          </div>
+          <div class="linha">
+            OS Atrasadas: <span class="titulo" id="modalTecAtrasado"></span>
+          </div>
+          <div class="linha">
+            Último Login: <span class="titulo" id="modalTecLastlogin"></span>
+          </div>
+          <div class="linha">
+            Última Abertura:
+            <span class="titulo" id="modalTecLastopening"></span>
+          </div>
+          <div class="linha">
+            Tempo Ocioso:
+            <span class="titulo" id="modalTecOcioso"></span>
+          </div>
+          <div class="linha">
+            Número:
             <span class="titulo">
-              <a href="#" id="modalTecPhone" class="whatsapp-link" target="_blank"></a>
+              <a
+                href="#"
+                id="modalTecPhone"
+                class="whatsapp-link"
+                target="_blank"
+              ></a>
             </span>
           </div>
         </div>
@@ -36,58 +75,73 @@
 
       <!-- Rodapé -->
       <div class="modal-footer">
-       
-       <!-- Dentro do modalTecnico -->
-      <a href="#" id="btnVerRota" class="btn btn-sm btn-primary">Ver Rota</a>
-
-     
-   
-
+        <!-- Dentro do modalTecnico -->
+        <a href="#" id="btnVerRota" class="btn btn-sm btn-primary">Ver Rota</a>
       </div>
     </div>
   </div>
 </div>
 
-
-
-
 <!-- Modal: Ordem de Serviço -->
-<div class="modal fade" id="modalOrdem" tabindex="-1" aria-labelledby="modalOrdemLabel" aria-hidden="true" >
-  <div class="modal-dialog modal-dialog-centered modal-xl" >
-    <div class="modal-content" >
-
+<div
+  class="modal fade"
+  id="modalOrdem"
+  tabindex="-1"
+  aria-labelledby="modalOrdemLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content">
       <!-- Cabeçalho -->
-         <div class="modal-header text-white" >
-        <h5 class="modal-title" id="modalTecnicoLabel" >
+      <div class="modal-header text-white">
+        <h5 class="modal-title" id="modalTecnicoLabel">
           <strong>Detalhes da Ordem de Serviço</strong>
         </h5>
-        <button type="button" class="btn-close btn-close-black" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        <button
+          type="button"
+          class="btn-close btn-close-black"
+          data-bs-dismiss="modal"
+          aria-label="Fechar"
+        ></button>
       </div>
 
       <!-- Corpo -->
-      <div class="modal-body" >
-        <div class="ordem-ficha" >
-        <div class="linha">Nome:  <span class="titulo" id="nome_tecnico"></span></div>
+      <div class="modal-body">
+        <div class="ordem-ficha">
+          <div class="linha">
+            Nome: <span class="titulo" id="nome_tecnico"></span>
+          </div>
 
-         <div class="linha">UID: <span class="titulo" id="modalUid"></span></div>
-          <div class="linha" >OS: <span class="titulo" id="modalOs"></span></div>
-          <div class="linha">Horário: <span class="titulo" id="modalHorario"></span></div>
-        
-          <div class="linha">Endereço: <span class="titulo" id="modalEndereco"></span></div>
-          <div class="linha">Status: <span class="titulo" id="modalStatus"></span></div>
-          <div class="linha">Tag: <span class="titulo" id="modalTag"></span></div>
-          <div class="linha">Flag: <span class="titulo" id="modalFlag"></span></div>
-            <div class="linha">Tempo Restante: <span class="titulo" id="modalTempo"></span></div>
-          <div class="linha">Mensagem: <span class="titulo" id="modalMensagem"></span></div>
+          <div class="linha">
+            UID: <span class="titulo" id="modalUid"></span>
+          </div>
+          <div class="linha">OS: <span class="titulo" id="modalOs"></span></div>
+          <div class="linha">
+            Horário: <span class="titulo" id="modalHorario"></span>
+          </div>
+
+          <div class="linha">
+            Endereço: <span class="titulo" id="modalEndereco"></span>
+          </div>
+          <div class="linha">
+            Status: <span class="titulo" id="modalStatus"></span>
+          </div>
+          <div class="linha">
+            Tag: <span class="titulo" id="modalTag"></span>
+          </div>
+          <div class="linha">
+            Flag: <span class="titulo" id="modalFlag"></span>
+          </div>
+          <div class="linha">
+            Tempo Restante: <span class="titulo" id="modalTempo"></span>
+          </div>
+          <div class="linha">
+            Mensagem: <span class="titulo" id="modalMensagem"></span>
+          </div>
         </div>
       </div>
 
-  <div class="modal-footer">
-    
-   
-
-      </div>
-      
+      <div class="modal-footer"></div>
     </div>
   </div>
 </div>
@@ -98,43 +152,65 @@
 
     // Modal Técnico
     if (event.target.id === "modalTecnico") {
-      document.getElementById("modalTecNome").textContent = button.dataset.nome || "—";
-      document.getElementById("modalTecUid").textContent = button.dataset.uid || "—";
-      document.getElementById("modalTecArea").textContent = button.dataset.area || "—";
-      document.getElementById("modalTecTotal").textContent = button.dataset.total || "—";
-      document.getElementById("modalTecConcluido").textContent = button.dataset.concluido || "—";
-      document.getElementById("modalTecNoTempo").textContent = button.dataset.noTempo || "—";
-      document.getElementById("modalTecNoLimite").textContent = button.dataset.noLimite || "—";
-      document.getElementById("modalTecAtrasado").textContent = button.dataset.atrasado || "—";
-      document.getElementById("modalTecLastlogin").textContent = button.dataset.lastlogin || "—";
-      document.getElementById("modalTecLastopening").textContent = button.dataset.lastopening || "—";
-      document.getElementById("modalTecOcioso").textContent = button.dataset.ocioso || "—";
+      document.getElementById("modalTecNome").textContent =
+        button.dataset.nome || "—";
+      document.getElementById("modalTecUid").textContent =
+        button.dataset.uid || "—";
+      document.getElementById("modalTecArea").textContent =
+        button.dataset.area || "—";
+      document.getElementById("modalTecTotal").textContent =
+        button.dataset.total || "—";
+      document.getElementById("modalTecConcluido").textContent =
+        button.dataset.concluido || "—";
+      document.getElementById("modalTecNoTempo").textContent =
+        button.dataset.noTempo || "—";
+      document.getElementById("modalTecNoLimite").textContent =
+        button.dataset.noLimite || "—";
+      document.getElementById("modalTecAtrasado").textContent =
+        button.dataset.atrasado || "—";
+      document.getElementById("modalTecLastlogin").textContent =
+        button.dataset.lastlogin || "—";
+      document.getElementById("modalTecLastopening").textContent =
+        button.dataset.lastopening || "—";
+      document.getElementById("modalTecOcioso").textContent =
+        button.dataset.ocioso || "—";
 
       const phone = button.dataset.phone || "";
-      const link = phone ? `https://wa.me/55${phone.replace(/\D/g, '')}` : "#";
       const phoneElement = document.getElementById("modalTecPhone");
       phoneElement.textContent = phone || "—";
-      phoneElement.href = link;
+      phoneElement.href = phone
+        ? `https://wa.me/55${phone.replace(/\D/g, "")}`
+        : "#";
 
-      // 🔹 Atualiza botão "Ver Rota"
+      // 🔹 Atualiza botão "Ver Rota" mantendo filtros ativos
       const uid = button.dataset.uid || "";
       const rotaBtn = document.getElementById("btnVerRota");
-      rotaBtn.href = `?ver_rota=${uid}`;
+      const search = new URLSearchParams(window.location.search);
+      search.set("ver_rota", uid);
+      rotaBtn.href = `?${search.toString()}`;
     }
 
     // Modal Ordem de Serviço
     if (event.target.id === "modalOrdem") {
-    document.getElementById("nome_tecnico").textContent = button.dataset.nome;
-    document.getElementById("modalOs").textContent = button.dataset.os || "—";
-    document.getElementById("modalUid").textContent = button.dataset.uid || "—";
-    document.getElementById("modalHorario").textContent = button.dataset.horario || "—";
-    document.getElementById("modalTempo").textContent = button.dataset.tempo || "—";
-    document.getElementById("modalEndereco").textContent = button.dataset.endereco || "—";
-    document.getElementById("modalStatus").textContent = button.dataset.status || "—";
-    document.getElementById("modalTag").textContent = button.dataset.tag || "—";
-    document.getElementById("modalFlag").textContent = button.dataset.flag || "—";
-    document.getElementById("modalMensagem").textContent = button.dataset.mensagem || "—";
-}
-
+      document.getElementById("nome_tecnico").textContent =
+        button.dataset.nome || "—";
+      document.getElementById("modalOs").textContent = button.dataset.os || "—";
+      document.getElementById("modalUid").textContent =
+        button.dataset.uid || "—";
+      document.getElementById("modalHorario").textContent =
+        button.dataset.horario || "—";
+      document.getElementById("modalTempo").textContent =
+        button.dataset.tempo || "—";
+      document.getElementById("modalEndereco").textContent =
+        button.dataset.endereco || "—";
+      document.getElementById("modalStatus").textContent =
+        button.dataset.status || "—";
+      document.getElementById("modalTag").textContent =
+        button.dataset.tag || "—";
+      document.getElementById("modalFlag").textContent =
+        button.dataset.flag || "—";
+      document.getElementById("modalMensagem").textContent =
+        button.dataset.mensagem || "—";
+    }
   });
 </script>

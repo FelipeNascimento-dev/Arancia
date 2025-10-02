@@ -28,25 +28,37 @@ body {
   border: 1px solid var(--borda-formularios);
   margin-right: auto;
   height: auto;
-  margin-top: 65px ;
+  margin-top: 65px;
   margin: 90px auto;
   /* centraliza horizontal e dá espaçamento em cima/baixo */
 }
+
+
+
+.setcontainer table {
+  width: 100%;
+  min-width: 1100px;
+  /* define largura mínima para não esmagar as colunas */
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
 /* Container para alinhar */
 .config-btn-wrapper {
   margin-top: 65px;
   display: flex;
-   background-color: #007bff;
+  background-color: #007bff;
   color: #fff;
   margin-left: 65px;
-  padding:  auto;
+  padding: auto;
   border-radius: 6px;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 8px; /* espaço entre ícone e texto */
+  gap: 8px;
+  /* espaço entre ícone e texto */
   transition: background 0.3s ease;
- margin-right: auto;
+  margin-right: auto;
 }
 
 

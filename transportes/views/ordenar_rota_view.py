@@ -8,7 +8,7 @@ from utils.request import RequestClient
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.csrf import csrf_protect
 
-API_ORDENAR_ROTAS = f"{API_BASE}ordenar"
+API_ORDENAR_ROTAS = f"{API_BASE}/v3/ordenar"
 
 ORDENAR_FIELDS = [
     {"name": "nome_tecnico", "label": "Técnico", "type": "select", "placeholder": "Selecione o técnico", "colspan": 2},
@@ -27,7 +27,7 @@ def ordenar_rota_view(request):
     if not cod_base:
         return redirect(f"{reverse('transportes:config_context')}?next={request.path}")
 
-    API_TECNICOS = f"{API_BASE}tecnicos/buscar_tec/{cod_base}"
+    API_TECNICOS = f"{API_BASE}/v3/tecnicos/buscar_tec/{cod_base}"
 
     tecnicos = []
     tecnico_nome = None

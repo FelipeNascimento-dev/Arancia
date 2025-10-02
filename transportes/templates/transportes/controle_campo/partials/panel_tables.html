@@ -7,9 +7,9 @@
 <div id="tabela-tecnicos" {% if filtro_ativo or ver_rota_uid %}style="display:none"{% endif %}>
 
   <h4>Resumo por Técnico</h4>
-  <div class="table-responsive">
+  <div class="table-responsive ">
     {% if tecnicos %}
-    <table class="styled-table dark">
+    <table class="styled-table dark table-sd">
       <thead>
         <tr>
           <th>Ação</th><th>Nome</th><th>UID</th><th>Unidade</th>
@@ -42,6 +42,7 @@
       </tbody>
     </table>
     {% endif %}
+    
   </div>
 </div>
 
@@ -82,7 +83,17 @@
         {% endfor %}
       </tbody>
     </table>
-  </div>
+  </div><div class="pagination">
+  {% if skip > 0 %}
+    <a href="?skip={{ prev_skip }}&limit={{ limit }}{% if filtro_status %}&status_janela={{ filtro_status }}{% endif %}{% if filtro_flag %}&flag={{ filtro_flag }}{% endif %}{% if filtro_msg %}&mensagem={{ filtro_msg }}{% endif %}{% if filtro_uid %}&uid={{ filtro_uid }}{% endif %}">
+      ← Anterior
+    </a>
+  {% endif %}
+
+  <a href="?skip={{ next_skip }}&limit={{ limit }}{% if filtro_status %}&status_janela={{ filtro_status }}{% endif %}{% if filtro_flag %}&flag={{ filtro_flag }}{% endif %}{% if filtro_msg %}&mensagem={{ filtro_msg }}{% endif %}{% if filtro_uid %}&uid={{ filtro_uid }}{% endif %}">
+    Próxima →
+  </a>
+</div>
 </div>
 
 <!-- TABELA DETALHADA POR TÉCNICO (MODAL) -->
