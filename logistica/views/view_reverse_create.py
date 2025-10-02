@@ -46,10 +46,17 @@ def reverse_create(request):
 
     volums = result.get("volums", [])
 
+    last_volume = volums[0] if volums else None
+    last_kit_serial = None
+
+    if last_volume and last_volume.get("kits"):
+        last_kit_serial = last_volume["kits"][0]["serial"]
+
     for v in volums:
-        kits = v.get("kits", [])
+        kits = list(reversed(v.get("kits", [])))
         for idx, k in enumerate(kits, start=1):
             k["kit_number"] = idx
+        v["kits"] = kits
 
     if request.method == "POST" and form.is_valid() and "enviar_evento" in request.POST:
         serial = form.cleaned_data.get("serial")
@@ -96,6 +103,13 @@ def reverse_create(request):
                 result = _result
                 request.session["result"] = result
                 request.session.modified = True
+                volums = result.get("volums", [])
+                last_volume = volums[0] if volums else None
+                last_kit_serial = None
+                if last_volume and last_volume.get("kits"):
+                    kits = (last_volume.get("kits", []))
+                    last_kit_serial = kits[0]["serial"]
+                    last_volume["kits"] = kits
 
     if request.method == "POST" and form.is_valid() and "enviar_cotacao" in request.POST:
         _result = send_quotes(request)
@@ -132,12 +146,20 @@ def reverse_create(request):
             request.session["result"] = result
             request.session.modified = True
 
+    volums = result.get("volums", [])
+    for v in volums:
+        kits = v.get("kits", [])
+        kits.sort(key=lambda k: k.get("created_at"),
+                  reverse=True)
+        v["kits"] = kits
+
     context = {
         "form": form,
         "botao_texto": "Inserir",
         "site_title": "Reversa",
         "result": result,
-        "volums": list(reversed(result.get("volums", [])))
+        "volums": volums,
+        "last_kit_serial": last_kit_serial,
     }
     return render(request, "logistica/reverse_create.html", context)
 
@@ -165,6 +187,13 @@ def delete_btn(request, serial):
             request, f"Serial {serial} removido com sucesso na API!")
 
     volums = delete_result.get("volums", [])
+    for v in volums:
+        kits = v.get("kits", [])
+        kits.sort(key=lambda k: k.get("created_at"), reverse=True)
+        v["kits"] = kits
+
+    delete_result["volums"] = volums
+
     request.session["volums"] = volums
     request.session["result"] = delete_result
     request.session.modified = True
