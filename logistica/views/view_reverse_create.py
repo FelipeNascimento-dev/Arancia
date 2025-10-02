@@ -68,8 +68,8 @@ def reverse_create(request):
 
             ultimo_volume = volums[-1]
 
-            if len(ultimo_volume["kits"]) >= 48:
-                if len(volums) >= 5:
+            if len(ultimo_volume["kits"]) >= 24:
+                if len(volums) >= 10:
                     messages.error(
                         request, "Limite máximo de 5 volumes atingido!")
                     return redirect("logistica:reverse_create")
