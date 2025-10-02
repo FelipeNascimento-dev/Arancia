@@ -7,8 +7,8 @@ JSON_CT = "application/json"
 
 def button_desn(request, order: str):
     user = request.user
-    sales_channel = user.designacao.informacao_adicional.sales_channel
-    location_id = 0 if sales_channel == 'all' else user.designacao.informacao_adicional_id
+    location_id = user.designacao.informacao_adicional_id
+
     url = f"{API_URL}/api/v2/trackings/send"
     client = RequestClient(
         url=url,
