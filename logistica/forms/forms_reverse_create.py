@@ -44,16 +44,16 @@ class ReverseCreateForm(forms.Form):
             .values_list("id", "nome")
         )
         sc_values = list(sc_qs.values_list("id", "nome")
-                         )  # vira [(25, "Caruaru")]
+                         )
 
         sc_choices = [("", "")]
         if user_sales_channel == 'all':
             sc_values.insert(0, ("all", "all"))
 
         for v in sc_values:
-            if isinstance(v, tuple):   # já é (id, nome)
+            if isinstance(v, tuple):
                 sc_choices.append(v)
-            else:                      # é só string tipo 'all'
+            else:
                 sc_choices.append((v, v))
 
         self.fields["sales_channel"].choices = sc_choices
