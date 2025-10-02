@@ -179,8 +179,8 @@
     .dropdown-item:hover {
         background-color: #f5f5f5;
     }
-    
-    .back-detail{
+
+    .back-detail {
         color: var(--form-titulo);
         border: 1px solid var(--form-titulo);
         padding: 4px 8px;
@@ -262,8 +262,10 @@
                         <td>{{ kit.order_number }}</td>
                         <td>{{ kit.created_by }}</td>
                         <td class="date-br">{{ kit.created_at }}</td>
+
                         {% if result.status == 'ABERTO' %}
                         <td>
+                            {% if kit.serial == last_kit_serial %}
                             <form method="post" action="{% url 'logistica:delete_btn' kit.serial %}">
                                 {% csrf_token %}
                                 <button type="submit" class="btn-action" name="delete_item_rom"
@@ -271,6 +273,11 @@
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </form>
+                            {% else %}
+                            <button class="btn-action" disabled title="Só é possível excluir o último kit">
+                                <i class="fa-solid fa-ban"></i>
+                            </button>
+                            {% endif %}
                         </td>
                         {% endif %}
                     </tr>
