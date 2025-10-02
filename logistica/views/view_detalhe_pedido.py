@@ -65,26 +65,14 @@ def view_order(request, order: str, ep_name: str):
 def order_detail(request, order: str):
     request_success = request.session.pop('request_success', None)
 
-    result = view_order(request, order, 'detail')
-    if not result:
-        return redirect('logistica:consultar_pedido')
-
-    form = OrderDetailForm(
-        request.POST or None,
-        dados=result
-    )
-
-    def bf(name):
-        try:
-            return form[name]
-        except Exception:
-            return None
-
-    historico_tracking = view_order(request, order, 'history')
-    tipo = (form.fields['shipment_order_type'].initial or '').strip().upper()
-    botao_texto = "RECEBER DESINSTALAÇÃO" if tipo == "RETURN" else "RECEBER REVERSA"
-
     if request.method == "POST":
+        result = request.session.get("result")
+        form = OrderDetailForm(
+            request.POST or None,
+            dados=result
+        )
+        tipo = (
+            form.fields['shipment_order_type'].initial or '').strip().upper()
         if tipo == "NORMAL":
             request.session["pedido"] = str(order)
             request.session[CARRY_PEDIDO_KEY] = True
@@ -95,8 +83,29 @@ def order_detail(request, order: str):
         elif tipo == "REVERSE":
             return redirect('logistica:consulta_result_ec')
 
+    result = view_order(request, order, 'detail')
+    if not result:
+        return redirect('logistica:consultar_pedido')
+    form = OrderDetailForm(
+        request.POST or None,
+        dados=result
+    )
+    tipo = (
+        form.fields['shipment_order_type'].initial or '').strip().upper()
+
+    def bf(name):
+        try:
+            return form[name]
+        except Exception:
+            return None
     produto_campos = [bf(n) for n in form.GRUPO_2 if n in form.fields]
     adicionais_campos = [bf(n) for n in form.GRUPO_3 if n in form.fields]
+    historico_tracking = view_order(request, order, 'history')
+    request.session["result"] = result
+
+    botao_texto = "RECEBER DESINSTALAÇÃO" if tipo == "RETURN" else "RECEBER REVERSA"
+
+    # result = None
 
     return render(request, "logistica/detalhe_pedidos.html", {
         'order': order,
