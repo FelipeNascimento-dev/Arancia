@@ -80,8 +80,8 @@ def order_detail(request, order: str):
             return redirect('logistica:pcp', code='201')
         elif tipo == "RETURN":
             return redirect('logistica:button_desn', order=order)
-        elif tipo == "REVERSE":
-            return redirect('logistica:consulta_result_ec')
+        # elif tipo == "REVERSE":
+        #     return redirect('logistica:consulta_result_ec')
 
     result = view_order(request, order, 'detail')
     if not result:
@@ -112,7 +112,24 @@ def order_detail(request, order: str):
 
     botao_texto = "RECEBER DESINSTALAÇÃO" if tipo == "RETURN" else "RECEBER REVERSA"
 
-    # result = None
+    if request.method == "POST" and "cancelar_pedido" in request.POST:
+        url = f"{API_URL}/api/reverse-order/cancel/AR{order}?canceled_by={request.user.username}"
+        client = RequestClient(
+            url=url,
+            method="POST",
+            headers={"Accept": JSON_CT,
+                     "Content-Type": JSON_CT
+                     })
+        _result = client.send_api_request()
+        if "detail" in _result:
+            messages.error(
+                request, f"Erro ao cancelar pedido: {_result['detail']}")
+        else:
+            messages.success(
+                request, f"Pedido {order} cancelado com sucesso!")
+            result['status'] = 'CANCELLED'
+            request.session["result"] = result
+            request.session.modified = True
 
     return render(request, "logistica/detalhe_pedidos.html", {
         'order': order,
