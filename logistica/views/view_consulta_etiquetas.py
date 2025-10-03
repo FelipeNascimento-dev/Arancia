@@ -6,9 +6,8 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from ..forms import EtiquetasForm
 from utils.request import RequestClient
-from setup.local_settings import API_KEY_INTELIPOST
+from setup.local_settings import API_KEY_INTELIPOST, API_URL
 
-LABEL_API_URL = "http://192.168.0.216/homo-fulfillment/api/order-sumary/get-label"
 SESSION_KEY = "consulta_etiquetas_itens"
 
 
@@ -43,7 +42,7 @@ def _add_item(items: List[Dict[str, Any]], pedido: str, volume: int) -> List[Dic
 
 def _get_label_url(pedido: str, volume: int) -> Optional[str]:
     client = RequestClient(
-        url=f"{LABEL_API_URL}/{pedido}/{volume}",
+        url=f"{API_URL}/api/order-sumary/get-label/{pedido}/{volume}",
         method="GET",
         headers={
             "Content-Type": "application/json",
