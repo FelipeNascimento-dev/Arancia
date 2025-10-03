@@ -175,9 +175,9 @@
     }
 
     .back-detail {
-        position: absolute;
-        top: 75px;
-        left: 123px;
+        position: relative;
+        /* top: 75px;
+        left: 123px; */
         font-weight: bold;
         color: var(--form-titulo);
         margin: 0;
@@ -197,6 +197,54 @@
         text-decoration: none;
         color: var(--form-titulo);
         font-size: 12px;
+    }
+
+    .actions-menu {
+        position: relative;
+        display: inline-block;
+    }
+
+    .btn-actions {
+        background: #444;
+        color: #fff;
+        padding: 8px 14px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .btn-actions:hover {
+        background: #666;
+    }
+
+    .actions-dropdown {
+        display: none;
+        position: absolute;
+        background: #ffffff;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        width: 200px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        right: 0px;
+    }
+
+    .actions-dropdown .itens {
+        margin: 0;
+    }
+
+    .dropdown-item {
+        width: 100%;
+        text-align: left;
+        padding: 8px 12px;
+        border: none;
+        background: none;
+        cursor: pointer;
+
+    }
+
+    .dropdown-item:hover {
+        background-color: #f5f5f5;
     }
 
     .modal {
@@ -477,6 +525,16 @@
     <div class="card-2col">
         <form method="POST">
             {% csrf_token %}
+            <div class="signature">
+                {{ form.sales_channel }}
+            </div>
+
+            <div class="back-detail">
+                <a href="{% url 'logistica:consultar_pedido' %}" class="back-link">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
             {% include 'global/partials/_form_card_2col.html' %}
 
             <div class="tabs" id="agenda-tabs" style="margin-top:16px;">

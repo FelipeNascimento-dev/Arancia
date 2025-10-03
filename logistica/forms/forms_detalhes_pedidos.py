@@ -40,7 +40,7 @@ class OrderDetailForm(forms.Form):
     volume_name = forms.CharField(
         label='Nome do Volume', max_length=50, required=True, disabled=True)
     volume_state = forms.CharField(
-        label='Estado do Volume', max_length=50, required=True, disabled=True)
+        label='Status', max_length=50, required=True, disabled=True)
     logistic_provider_name = forms.CharField(
         label='Código Logístico', max_length=50, required=True, disabled=True)
     sales_channel = forms.CharField(
