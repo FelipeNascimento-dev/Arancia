@@ -3,16 +3,6 @@
 <form method="POST" action="{{ acao_url }}" class="card-2col">
     {% csrf_token %}
 
-    <div class="signature">
-        {{ form.sales_channel }}
-    </div>
-
-    <div class="back-detail">
-        <a href="{% url 'logistica:consultar_pedido' %}" class="back-link">
-            <i class="fa-solid fa-arrow-left"></i>
-            Voltar
-        </a>
-    </div>
     {{ form.non_field_errors }}
 
     {% if impar %}
