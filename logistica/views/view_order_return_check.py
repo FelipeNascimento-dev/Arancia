@@ -48,8 +48,7 @@ def reserva_dedup_upper(values) -> list[str]:
 def order_return_check(request):
     user: User = request.user
     if request.method != 'POST':
-        pedido = (request.GET.get('order')
-                  or request.session.get('order') or '').strip()
+        pedido = request.session.get('order')
 
         if pedido:
             request.session['order'] = pedido

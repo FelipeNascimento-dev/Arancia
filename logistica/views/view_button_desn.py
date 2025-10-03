@@ -32,6 +32,7 @@ def button_desn(request, order: str):
     else:
         request.session['request_success'] = False
         messages.error(request, f"{result['detail']}")
-        return redirect('logistica:detalhe_pedido', order=order)
+        return False
 
-    return redirect('logistica:order_return_check', order=order)
+    request.session['order'] = order
+    return True
