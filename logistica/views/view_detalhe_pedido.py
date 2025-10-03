@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.urls import reverse
+from logistica.views.view_button_desn import button_desn
 from setup.local_settings import API_URL
 from utils.request import RequestClient
 from ..forms import OrderDetailForm
@@ -63,7 +64,7 @@ def view_order(request, order: str, ep_name: str):
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 def order_detail(request, order: str):
-    request_success = request.session.pop('request_success', None)
+    request_success = False
 
     if request.method == "POST":
         result = request.session.get("result")
@@ -79,9 +80,58 @@ def order_detail(request, order: str):
             request.session.modified = True
             return redirect('logistica:pcp', code='201')
         elif tipo == "RETURN":
-            return redirect('logistica:button_desn', order=order)
+            request_success = button_desn(request, order)
+            botao_texto = "RECEBER DESINSTALAÇÃO"
+
         # elif tipo == "REVERSE":
         #     return redirect('logistica:consulta_result_ec')
+
+        if "cancelar_pedido" in request.POST:
+            url = f"{API_URL}/api/reverse-order/cancel/AR{order}?canceled_by={request.user.username}"
+            client = RequestClient(
+                url=url,
+                method="POST",
+                headers={"Accept": JSON_CT,
+                         "Content-Type": JSON_CT
+                         })
+            _result = client.send_api_request()
+            if "detail" in _result:
+                messages.error(
+                    request, f"Erro ao cancelar pedido: {_result['detail']}")
+            else:
+                messages.success(
+                    request, f"Pedido {order} cancelado com sucesso!")
+                result['status'] = 'CANCELLED'
+                request.session["result"] = result
+                request.session.modified = True
+
+        if "troca_custodia" in request.POST:
+            user = request.user
+            location_id = user.designacao.informacao_adicional_id
+
+            url = f"{API_URL}/api/v2/trackings/send"
+            payload = {
+                "order_number": result.get("order_number"),
+                "volume_number": result.get("volume_number") or 1,
+                "order_type": result.get("shipment_order_type"),
+                "tracking_code": "205",
+                "created_by": request.user.username,
+                "to_location_id": location_id,
+            }
+
+            client = RequestClient(
+                url=url,
+                method="POST",
+                headers={"Accept": JSON_CT,
+                         "Content-Type": JSON_CT},
+                request_data=payload)
+            _result = client.send_api_request()
+            if "detail" in _result:
+                messages.error(
+                    request, f"Erro ao enviar troca de custódia: {_result['detail']}")
+            else:
+                messages.success(
+                    request, f"Troca de custódia enviada para pedido {payload['order_number']}")
 
     result = view_order(request, order, 'detail')
     if not result:
@@ -111,53 +161,6 @@ def order_detail(request, order: str):
     request.session["result"] = result
 
     botao_texto = "RECEBER DESINSTALAÇÃO" if tipo == "RETURN" else "RECEBER REVERSA"
-
-    if request.method == "POST" and "cancelar_pedido" in request.POST:
-        url = f"{API_URL}/api/reverse-order/cancel/AR{order}?canceled_by={request.user.username}"
-        client = RequestClient(
-            url=url,
-            method="POST",
-            headers={"Accept": JSON_CT,
-                     "Content-Type": JSON_CT
-                     })
-        _result = client.send_api_request()
-        if "detail" in _result:
-            messages.error(
-                request, f"Erro ao cancelar pedido: {_result['detail']}")
-        else:
-            messages.success(
-                request, f"Pedido {order} cancelado com sucesso!")
-            result['status'] = 'CANCELLED'
-            request.session["result"] = result
-            request.session.modified = True
-
-    if request.method == "POST" and "troca_custodia" in request.POST:
-        user = request.user
-        location_id = user.designacao.informacao_adicional_id
-
-        url = f"{API_URL}/api/v2/trackings/send"
-        payload = {
-            "order_number": result.get("order_number"),
-            "volume_number": result.get("volume_number") or 1,
-            "order_type": result.get("shipment_order_type"),
-            "tracking_code": "205",
-            "created_by": request.user.username,
-            "to_location_id": location_id,
-        }
-
-        client = RequestClient(
-            url=url,
-            method="POST",
-            headers={"Accept": JSON_CT,
-                     "Content-Type": JSON_CT},
-            request_data=payload)
-        _result = client.send_api_request()
-        if "detail" in _result:
-            messages.error(
-                request, f"Erro ao enviar troca de custódia: {_result['detail']}")
-        else:
-            messages.success(
-                request, f"Troca de custódia enviada para pedido {payload['order_number']}")
 
     return render(request, "logistica/detalhe_pedidos.html", {
         'order': order,
