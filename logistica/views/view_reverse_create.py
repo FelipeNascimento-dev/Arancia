@@ -120,7 +120,6 @@ def reverse_create(request):
             request.session["result"] = result
             request.session.modified = True
             return redirect('logistica:detalhe_pedido', order=order)
-
     if request.method == "POST" and "cancelar_rom" in request.POST:
         payload = {
             "status_rom": "CANCELADO",

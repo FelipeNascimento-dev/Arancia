@@ -131,6 +131,34 @@ def order_detail(request, order: str):
             request.session["result"] = result
             request.session.modified = True
 
+    if request.method == "POST" and "troca_custodia" in request.POST:
+        user = request.user
+        location_id = user.designacao.informacao_adicional_id
+
+        url = f"{API_URL}/api/v2/trackings/send"
+        payload = {
+            "order_number": result.get("order_number"),
+            "volume_number": result.get("volume_number") or 1,
+            "order_type": result.get("shipment_order_type"),
+            "tracking_code": "205",
+            "created_by": request.user.username,
+            "to_location_id": location_id,
+        }
+
+        client = RequestClient(
+            url=url,
+            method="POST",
+            headers={"Accept": JSON_CT,
+                     "Content-Type": JSON_CT},
+            request_data=payload)
+        _result = client.send_api_request()
+        if "detail" in _result:
+            messages.error(
+                request, f"Erro ao enviar troca de custódia: {_result['detail']}")
+        else:
+            messages.success(
+                request, f"Troca de custódia enviada para pedido {payload['order_number']}")
+
     return render(request, "logistica/detalhe_pedidos.html", {
         'order': order,
         'request_success': request_success,
