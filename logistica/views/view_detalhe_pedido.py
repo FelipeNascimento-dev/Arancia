@@ -83,9 +83,6 @@ def order_detail(request, order: str):
             request_success = button_desn(request, order)
             botao_texto = "RECEBER DESINSTALAÇÃO"
 
-        # elif tipo == "REVERSE":
-        #     return redirect('logistica:consulta_result_ec')
-
         if "cancelar_pedido" in request.POST:
             url = f"{API_URL}/api/reverse-order/cancel/AR{order}?canceled_by={request.user.username}"
             client = RequestClient(
