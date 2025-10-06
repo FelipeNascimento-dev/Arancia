@@ -27,6 +27,16 @@
     overflow: hidden;
   }
 
+  .card--not-today {
+    border: 2px solid #e53935 !important;
+  }
+
+  .card--not-today time.js-dt,
+  .date--not-today {
+    color: #e53935;
+    font-weight: 600;
+  }
+
   .card-header {
     display: flex;
     align-items: center;
@@ -94,10 +104,10 @@
 
 {% if tabela_dados %}
 <div class="cards-container">
-  {% for item in tabela_dados %}
+  {% for item in tabela_dados|dictsort:"created_at" %}
   <div class="card">
     <div class="card-header">
-      <span class="badge-num">{{ forloop.revcounter }}</span>
+      <span class="badge-num">{{ forloop.counter }}</span>
       <h3 class="card-title">
         <a href="{% url 'logistica:detalhe_pedido' item.order_number %}" class="pedido-link">
           {{ item.order_number }}
@@ -190,6 +200,48 @@
 
       const d = new Date(raw);
       if (!isNaN(d)) el.textContent = fmt.format(d);
+    });
+  });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    function ymdInTZ(date, tz) {
+      const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit'
+      }).formatToParts(date);
+      const pick = t => parts.find(p => p.type === t).value;
+      return `${pick('year')}-${pick('month')}-${pick('day')}`;
+    }
+
+    const TZ = 'America/Sao_Paulo';
+    const todayYMD = ymdInTZ(new Date(), TZ);
+
+    const fmt = new Intl.DateTimeFormat('pt-BR', {
+      dateStyle: 'short',
+      timeStyle: 'medium',
+      timeZone: TZ
+    });
+
+    document.querySelectorAll('time.js-dt').forEach(el => {
+      let raw = el.getAttribute('datetime') || el.textContent.trim();
+      if (!raw) return;
+
+      raw = raw.replace(/(\.\d{3})\d+/, '$1');
+      if (/^\d{4}-\d{2}-\d{2}\s+\d/.test(raw)) raw = raw.replace(' ', 'T');
+      if (!/[zZ]|[+-]\d{2}:\d{2}$/.test(raw)) raw += 'Z';
+
+      const d = new Date(raw);
+      if (isNaN(d)) return;
+
+      el.textContent = fmt.format(d);
+
+      const createdYMD = ymdInTZ(d, TZ);
+      if (createdYMD !== todayYMD) {
+        const card = el.closest('.card');
+        if (card) card.classList.add('card--not-today');
+        el.classList.add('date--not-today');
+      }
     });
   });
 </script>
