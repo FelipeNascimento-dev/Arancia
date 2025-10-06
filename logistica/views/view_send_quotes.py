@@ -8,8 +8,6 @@ JSON_CT = "application/json"
 
 
 def send_quotes(request):
-
-    # location_id = 0 if sales_channel == 'all' else user.designacao.informacao_adicional_id
     result = None
     if "enviar_cotacao" in request.POST:
         form = ReverseCreateForm(
