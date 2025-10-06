@@ -72,6 +72,16 @@
   .card-body strong {
     color: #222;
   }
+
+  .pedido-link {
+    color: #000000;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .pedido-link:hover {
+    text-decoration: none;
+  }
 </style>
 
 <div class="form-container">
@@ -88,17 +98,23 @@
   <div class="card">
     <div class="card-header">
       <span class="badge-num">{{ forloop.revcounter }}</span>
-      <h3 class="card-title">{{ item.order_number }}</h3>
+      <h3 class="card-title">
+        <a href="{% url 'logistica:detalhe_pedido' item.order_number %}" class="pedido-link">
+          {{ item.order_number }}
+        </a>
+      </h3>
     </div>
 
     <div class="card-body">
       <p><strong>Ultima Tracking:</strong> <br> {{ item.ultima_tracking }}</p>
-      <p><strong>Data de Criação:</strong> <br> 
+      <p><strong>Data de Criação:</strong> <br>
         <time class="js-dt" datetime="{{ item.created_at }}">
           {{ item.created_at}}
-        </time> 
+        </time>
       </p>
       <p><strong>Canal de Vendas:</strong> <br> {{ item.sales_channel }}</p>
+      <p><strong>Estado do Volume:</strong> <br> {{ item.volume_state }}
+      </p>
     </div>
   </div>
   {% endfor %}
