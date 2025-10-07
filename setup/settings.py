@@ -1,4 +1,5 @@
 from pathlib import Path
+from setup import local_settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -52,6 +53,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'setup.settings.db_host_context',
             ],
         },
     },
@@ -129,3 +131,7 @@ try:
     from setup.local_settings import *
 except ImportError:
     ...
+
+
+def db_host_context(request):
+    return {'DB_HOST': getattr(local_settings, 'DB_HOST', None)}

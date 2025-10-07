@@ -11,13 +11,14 @@ from .views import index, consulta_id_form, pre_recebimento, \
     consulta_ma84, btn_ma_voltar, consulta_ec01, btn_ec_voltar, consult_rom, \
     logout_confirm_view, logout_view, registrar_usuario, trackingIP, user_ger, skill_ger, \
     extracao_pedidos, consulta_etiquetas, settings_view, reverse_create, delete_btn, \
-    cancel_btn, send_quotes, \
+    cancel_btn, send_quotes, toggle_db, \
     UserPasswordChangeView
 
 app_name = 'logistica'
 
 urlpatterns = [
     path('', index, name='index'),
+    path('toggle-db/', toggle_db, name='toggle_db'),
     path('login/', UserLoginView.as_view(), name='login'),
     path('register/', registrar_usuario, name='register'),
     path('logout/', logout_confirm_view, name='logout_confirm'),
