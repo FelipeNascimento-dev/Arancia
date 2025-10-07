@@ -7,7 +7,7 @@
             <input type="text" name="q" id="q" placeholder="Pesquisar..." value="{{ request.GET.q }}">
         </form>
     </div>
-
+    {% if perms.logistica.ti_interno %}
     <div class="db-switch-container">
         <span id="db-label"
               style="color: {% if DB_HOST == '192.168.0.220' %}#e74c3c{% else %}#27ae60{% endif %};">
@@ -22,6 +22,7 @@
             <span class="slider round"></span>
         </label>
     </div>
+    {% endif %}
 
     <div class="items-nav-user">
         <div class="user-dropdown">
@@ -36,6 +37,9 @@
                 <hr>
                 <li><a href="{% url 'logistica:settings' %}"><i class="fa fa-cog"></i> Configurações</a></li>
                 <li><a href="#"><i class="fa fa-question-circle"></i> Ajuda</a></li>
+                <!-- {% if perms.auth.add_user %}
+                    <li><a href="{% url 'logistica:register' %}"><i class="fa-solid fa-user-plus"></i>Cadastrar Usuário</a></li>
+                {% endif %} -->
                 <li><a href="{% url 'logistica:logout_confirm' %}"><i class="fa fa-sign-out-alt"></i> Sair</a></li>
             </ul>
         </div>
