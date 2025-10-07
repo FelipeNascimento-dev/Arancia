@@ -55,8 +55,8 @@
       <thead>
         <tr>
           <th>Ação</th><th>OS</th><th>Técnico</th><th>UID</th>
-          <th>Horário</th><th>Tempo Restante</th><th>Endereço</th><th>Status</th>
-          <th>Tag</th><th>Flag</th><th>OBS</th>
+          <th>Horário</th><th>Tempo Restante</th><th>Status</th>
+          <th>Tag</th><th>ocorrencia</th><th>Flag</th><th>OBS</th>
         </tr>
       </thead>
       <tbody>
@@ -64,19 +64,19 @@
         <tr class="status-{{ o.status_janela|default:'' }} flag-{{ o.flag|default:'' }}">
           <td>
           <a href="#" data-bs-toggle="modal" data-bs-target="#modalOrdem"
-           data-nome="{{ o.nome_tecnico |default:"-" }}" data-os="{{ o.os |default:"-"  }}"   data-uid="{{ o.uid |default:"-" }}"
-            data-horario="{{ o.alteracao_hf |default:"-" }}" data-tempo="{{ o.tempo_restante|default:"-"  }}"
-            data-endereco="{{ o.endereco |default:"-" }}" data-status="{{ o.status_janela |default:"-" }}"
-            data-tag="{{ o.tag |default:"-" }}" data-flag="{{ o.flag|default:"-"  }}" data-mensagem="{{ o.mensagem|default:"-"  }}">
+          data-nome="{{ o.nome_tecnico|default:'' }}" data-os="{{ o.os |default:""  }}"   data-uid="{{ o.uid |default:"" }}"
+            data-horario="{{ o.alteracao_hf |default:"" }}" data-tempo="{{ o.tempo_restante|default:""  }}" data-longitude="{{ o.longitude|default:""  }}" data-latitude="{{o.latitude|default:""}}" data-imageurl="{{o.imageurl|default:'-'}}"
+            data-endereco="{{ o.endereco |default:"" }}" data-status="{{ o.status_janela |default:"" }}"
+            data-tag="{{ o.tag |default:"" }}" data-flag="{{ o.flag|default:""  }}" data-mensagem="{{ o.mensagem|default:""  }}">
             <i class="fa-regular fa-eye"></i>
           </a>
         </td>
 
-          <td>{{ o.os|default:"-"  }}</td><td>{{ o.nome_tecnico |default:"-" }}</td><td>{{ o.uid|default:"-"  }}</td>
-          <td>{{ o.alteracao_hf|default:"-" }}</td><td>{{ o.tempo_restante |default:"-" }}</td>
-          <td>{{ o.endereco |default:"-" }}</td><td class="status {{ o.status_janela }}">{{ o.status_janela |default:"-" }}</td>
-          <td>{{ o.tag |default:"-" }}</td><td class="flag {{ o.flag }}">{{ o.flag |default:"-" }}</td>
-          <td class="mensagem {{ o.mensagem }}">{{ o.mensagem|default:"-"  }}</td>
+          <td>{{ o.os|default:""  }}</td><td>{{ o.nome_tecnico |default:"" }}</td><td>{{ o.uid|default:""  }}</td>
+          <td>{{ o.alteracao_hf|default:"" }}</td><td>{{ o.tempo_restante |default:"" }}</td>
+        <td class="status {{ o.status_janela }}">{{ o.status_janela |default:"" }}</td>
+          <td>{{ o.tag |default:"" }}</td><td>{{ o.ocorrencia |default:"" }}</td><td class="flag {{ o.flag }}">{{ o.flag |default:"" }}</td>
+          <td class="mensagem {{ o.mensagem }}">{{ o.mensagem|default:""  }}</td>
         </tr>
         {% empty %}
         <tr><td colspan="11">Nenhuma ordem encontrada</td></tr>
@@ -101,7 +101,7 @@
   <div class="d-flex justify-content-between align-items-center mb-2">
     {% if ordens_os %}
     <h4 style='color:#168dd8;'>
-      Ordens Detalhadas - Técnico: {{ ordens_os.0.nome_tecnico |default:"-" }} (UID: {{ ordens_os.0.uid }})
+      Ordens Detalhadas - Técnico: {{ ordens_os.0.nome_tecnico |default:"" }} (UID: {{ ordens_os.0.uid }})
     </h4>
   {% else %}
     <h4>Ordens Detalhadas</h4>
@@ -118,24 +118,24 @@
     <table class="styled-table dark">
       <thead>
         <tr>
-          <th>Ação</th><th>OS</th><th>Horario</th><th>Tempo Restante</th><th>Endereço</th>
-          <th>Status</th><th>Tag</th><th>Flag</th><th>OBS</th>
+          <th>Ação</th><th>OS</th><th>Horario</th><th>Tempo Restante</th>
+          <th>Status</th><th>Tag</th><th>ocorrencia</th><th>Flag</th><th>OBS</th>
         </tr>
       </thead>
       <tbody>
         {% for o in ordens_os %}
         <tr class="ordem-linha" data-uid="{{ o.uid }}">
           <td> <a href="#" data-bs-toggle="modal" data-bs-target="#modalOrdem"
-           data-nome="{{ o.nome_tecnico |default:"-" }}"  data-os="{{ o.os|default:"-"  }}" data-uid="{{ o.uid|default:"-"  }}"
-            data-horario="{{ o.alteracao_hf |default:"-"  }}" data-tempo="{{ o.tempo_restante |default:"-"  }}"
-            data-endereco="{{ o.endereco |default:"-" }}" data-status="{{ o.status_janela |default:"-" }}"
-            data-tag="{{ o.tag|default:"-"  }}" data-flag="{{ o.flag|default:"-"  }}" data-mensagem="{{ o.mensagem|default:"-"  }}">
+           data-nome="{{ o.nome_tecnico |default:"" }}"  data-os="{{ o.os|default:""  }}" data-uid="{{ o.uid|default:""  }}"
+            data-horario="{{ o.alteracao_hf |default:""  }}" data-tempo="{{ o.tempo_restante |default:""  }}" data-longitude="{{ o.longitude|default:""  }}" data-latitude="{{o.latitude|default:""}}" data-imageurl="{{o.imageurl|default:'-'}}"
+            data-endereco="{{ o.endereco |default:"" }}" data-status="{{ o.status_janela |default:"" }}"
+            data-tag="{{ o.tag|default:""  }}" data-flag="{{ o.flag|default:""  }}" data-mensagem="{{ o.mensagem|default:""  }}">
             <i class="fa-regular fa-eye"></i>
           </a></td>
-          <td>{{ o.os }}</td><td>{{o.alteracao_hf |default:"-"  }}</td>
-           <td>{{ o.tempo_restante |default:"-" }}</td><td>{{ o.endereco |default:"-" }}</td><td class="status {{ o.status_janela }}">{{ o.status_janela |default:"-" }}</td><td>{{ o.tag |default:"-" }}</td>
-           <td class="flag {{ o.flag }}">{{ o.flag |default:"-"  }}</td>
-           <td class="mensagem {{ o.mensagem }}">{{ o.mensagem |default:"-" }}</td>
+          <td>{{ o.os }}</td><td>{{o.alteracao_hf |default:""  }}</td>
+           <td>{{ o.tempo_restante |default:"" }}</td><td class="status {{ o.status_janela }}">{{ o.status_janela |default:"" }}</td><td>{{ o.tag |default:"" }}</td>
+           <td>{{ o.ocorrencia |default:"" }}</td><td class="flag {{ o.flag }}">{{ o.flag |default:""  }}</td>
+           <td class="mensagem {{ o.mensagem }}">{{ o.mensagem |default:"" }}</td>
         </tr>
         {% empty %}
         <tr><td colspan="9">Nenhuma ordem detalhada encontrada</td></tr>

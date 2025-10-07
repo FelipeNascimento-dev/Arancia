@@ -1,0 +1,65 @@
+<div id="{{ modal_id }}" class="modal">
+  <div class="modal-content">
+
+    <div class="modal-header">
+      <h5>{{ modal_title }}</h5>
+      <button type="button" class="modal-close" onclick="closeModal('{{ modal_id }}')">&times;</button>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="register" value="1">
+
+      <div class="modal-body fields-grid">
+        {% block modal_fields %}
+          {% for field in form %}
+          <div class="form-group">
+            {{ field.label_tag }}
+
+            {% if field.name == "grupo" %}
+              <select name="grupo" id="grupo_{{ modal_id }}" onchange="filtrarAditionalInfos('{{ modal_id }}')">
+                <option value=""></option>
+                {% for group in all_groups %}
+                  <option value="{{ group.id }}">{{ group.name }}</option>
+                {% endfor %}
+              </select>
+
+            {% elif field.name == "aditionalinformation" %}
+              <select name="aditionalinformation" id="aditionalinformation_{{ modal_id }}">
+                <option value=""></option>
+                {% for info in additional_infos %}
+                  <option value="{{ info.id }}" data-group="{{ info.group.id }}">{{ info.nome }}</option>
+                {% endfor %}
+              </select>
+
+            {% else %}
+              {{ field }}
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% endblock %}
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('{{ modal_id }}')">Fechar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function filtrarAditionalInfos(modalId) {
+  const grupoSelect = document.getElementById("grupo_" + modalId);
+  const grupoId = grupoSelect.value;
+  const aditionalSelect = document.getElementById("aditionalinformation_" + modalId);
+
+  [...aditionalSelect.options].forEach(opt => {
+    if (!opt.value) return; // mantém o "Selecione"
+    opt.style.display = (opt.dataset.group === grupoId) ? "block" : "none";
+  });
+
+  // Reseta seleção
+  aditionalSelect.value = "";
+}
+</script>

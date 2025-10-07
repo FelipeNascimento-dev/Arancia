@@ -55,7 +55,7 @@ def dashboard_view(request):
 
     # --- cards ---
     resumo_cards = build_cards(resumo_geral, ordens, ordens_os, ver_rota_uid, filtro_uid, filtro_flag, filtro_msg)
-
+    
     # --- unidades ---
     unidades = sorted({
         t.get("area") for t in todos_tecnicos
@@ -72,7 +72,6 @@ def dashboard_view(request):
     context = {
         "geral": resumo_cards,
         "status": resumo_cards.get("status", {}),
-      
         "tecnicos": tecnicos,
         "ordens": ordens,
         "ordens_os": ordens_os,

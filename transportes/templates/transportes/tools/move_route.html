@@ -18,11 +18,16 @@
       <label for="nome_tecnico">Técnico</label>
       <select name="nome_tecnico" class="form-control">
         <option value="">Selecione um técnico</option>
-        {% for tec in tecnicos %}
+
+         <option value="2">Tirar Os Da Rota</option>
+        <option value="0">Mover Para Lista De Cancelamento</option>
+
+        {% for tec in tecnicos%}
+            {% if tec.uid is not None and tec.uid != "" %}
         <option value="{{ tec.uid }}">
           {{ tec.name }} (UID: {{ tec.uid }})
         </option>
-
+ {% endif %}
         {% endfor %}
       </select>
     </div>

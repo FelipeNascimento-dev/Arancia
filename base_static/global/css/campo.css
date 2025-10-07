@@ -23,7 +23,7 @@ body {
   border-radius: 10px;
   box-shadow: var(--box-shadow-formularios);
   width: 100%;
-  max-width: 1100px;
+  max-width: 1200px;
   /* limite no desktop */
   border: 1px solid var(--borda-formularios);
   margin-right: auto;
@@ -308,7 +308,7 @@ body {
 
 
 .styled-table.dark thead tr {
-  background: #0077b6;
+  background: #4a90e2;
   color: #ffffff;
 }
 
@@ -406,13 +406,13 @@ td.flag.AZUL {
 .flag-AZUL {
   color: rgb(0, 0, 0);
 
-  border-bottom: 3px solid rgb(82, 105, 238) !important;
+
   /* borda visível */
 }
 
 .flag-VERMELHO {
   color: rgb(0, 0, 0);
-  border-bottom: 3px solid rgb(243, 45, 10) !important;
+
   /* borda visível */
 }
 
@@ -584,12 +584,24 @@ td.flag.VERDE {
 }
 
 .linha {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background: #faf9f8;
-  border-radius: 6px;
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  /* primeira coluna fixa */
+  align-items: center;
+  padding: 8px 11px;
+  margin-bottom: 6px;
+  border-radius: 8px;
   font-size: 14px;
+}
+
+.underline {
+  border-bottom: 1px solid rgba(212, 212, 212, 0.301);
+
+}
+
+
+.linha:hover {
+  background-color: #fcfafc;
 }
 
 .linha .titulo {
@@ -743,4 +755,28 @@ td.flag.VERDE {
   border: none;
   display: block;
   /* remove espaçamento fantasma */
+}
+
+/* ===== BASE DO BADGE ===== */
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
+  margin-left: 8px;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-align: center;
+  min-width: 100px;
+  transition: background-color 0.3s ease;
+}
+
+
+
+
+/* Caso não corresponda a nenhum valor */
+.status-badge:not([data-status]) {
+  background-color: #505777;
 }
