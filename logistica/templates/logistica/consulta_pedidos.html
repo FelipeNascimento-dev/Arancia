@@ -113,7 +113,7 @@
   <div class="form-card-2col">
     <form method="POST" action="{% url 'logistica:consulta_pedidos' %}">
       {% csrf_token %}
-      {% include 'global/partials/_form_2col.html' %}
+      {% include 'global/partials/_form_2colV2.html' %}
     </form>
 
     <form method="POST" action="{% url 'logistica:extracao_pedidos' %}">
