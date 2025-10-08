@@ -51,23 +51,40 @@ def _get_label_url(pedido: str, volume: int) -> Optional[str]:
         },
     )
     resp = client.send_api_request_no_json(stream=False)
-    if getattr(resp, "status_code", 0) != 200:
+    if getattr(resp, "status_code", 0) == 500:
         return None
     try:
         data: Dict[str, Any] = resp.json()
     except Exception:
         return None
+    if 'detail' in data:
+        return data
+
     content = (data or {}).get("content") or {}
     return content.get("label_url")
 
 
-def _fill_urls_with_api(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def _fill_urls_with_api(items: List[Dict[str, Any]], request: Optional[HttpRequest] = None) -> List[Dict[str, Any]]:
     out: List[Dict[str, Any]] = []
     for it in items:
         ped = it["pedido"]
         vol = int(it["volume"])
-        url = _get_label_url(ped, vol)
-        out.append({"pedido": ped, "volume": vol, "url": url})
+        try:
+            url = _get_label_url(ped, vol)
+
+            if not url:
+                out.append({"pedido": ped, "volume": vol, "url": {
+                           "detail": "Erro interno do servidor"}})
+            elif 'detail' in url:
+                out.append({"pedido": ped, "volume": vol,
+                           "url": url})
+            else:
+                out.append({"pedido": ped, "volume": vol, "url": url})
+        except Exception as e:
+            if request:
+                messages.error(
+                    request, f"Erro na consulta do pedido {ped}: {e}")
+            out.append({"pedido": ped, "volume": vol, "url": "INSUCESSO"})
     return out
 
 
