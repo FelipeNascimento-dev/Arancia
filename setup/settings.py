@@ -54,6 +54,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'setup.settings.db_host_context',
+                'logistica.context_processors.avatar_url',
             ],
         },
     },
