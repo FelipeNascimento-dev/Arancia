@@ -1,4 +1,3 @@
-# forms.py
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
@@ -6,12 +5,17 @@ from django.contrib.auth.password_validation import validate_password
 
 class ConfiguracaoUserForm(forms.ModelForm):
     username = forms.CharField(
-        label="Username", max_length=30, required=False, disabled=True)
-    email = forms.EmailField(label="E-mail", required=True, disabled=True)
+        label="Username", max_length=30, required=False, disabled=True
+    )
+    email = forms.EmailField(
+        label="E-mail", required=False, disabled=True  # ✅ corrigido aqui
+    )
     first_name = forms.CharField(
-        label="Primeiro nome", max_length=30, required=False, disabled=True)
+        label="Primeiro nome", max_length=30, required=False, disabled=True
+    )
     last_name = forms.CharField(
-        label="Último nome", max_length=30, required=False, disabled=True)
+        label="Último nome", max_length=30, required=False, disabled=True
+    )
 
     senha_atual = forms.CharField(
         label="Senha atual",
@@ -29,14 +33,17 @@ class ConfiguracaoUserForm(forms.ModelForm):
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
     )
 
-    foto_perfil = forms.ImageField(label="Foto do perfil", required=False)
+    foto_perfil = forms.URLField(label="Foto do perfil", required=False)
 
     class Meta:
         model = User
         fields = ["username", "email", "first_name", "last_name"]
 
     def clean_email(self):
-        email = self.cleaned_data["email"].strip().lower()
+        email = self.cleaned_data.get("email", "").strip().lower()
+        if not email:
+            return email
+
         qs = User.objects.filter(
             email__iexact=email).exclude(pk=self.instance.pk)
         if qs.exists():
