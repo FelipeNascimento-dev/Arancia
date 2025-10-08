@@ -11,16 +11,8 @@ class UserProfile(models.Model):
         User, on_delete=models.CASCADE, related_name="perfil")
     cpf = models.CharField(max_length=14, unique=True,
                            blank=True, null=True)
-    avatar = models.ImageField(
-        upload_to=user_avatar_path, blank=True, null=True)
-
-    def avatar_url(self):
-        if self.avatar:
-            try:
-                return self.avatar.url
-            except Exception:
-                pass
-        return "/static/global/images/default-avatar.jpg"
+    avatar = models.URLField(
+        blank=True, null=True)
 
 
 class Romaneio(models.Model):

@@ -18,6 +18,12 @@ class RequestClient:
         self.headers = headers
         self.timeout = timeout
 
+    def upload_file(api_url, headers, files, timeout=30):
+
+        with httpx.Client(timeout=timeout) as client:
+            response = client.post(api_url, headers=headers, files=files)
+        return response
+
     def send_api_request(self):
         logger.info(f"Sending a {self.method} request to: {self.url}")
         logger.info(f"Request body/params: {self.request_data}")
