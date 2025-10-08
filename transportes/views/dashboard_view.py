@@ -42,14 +42,18 @@ def dashboard_view(request):
     resumo_geral = dados_status.get("geral", {})
 
     # --- técnicos ---
+    tratar_uid = request.GET.get("tratar_uid")
+    pessoa = request.user.username
+
     tecnicos, todos_tecnicos, media_fmt, top = build_tecnicos(
         dados_status,
         hoje,
         filtro_unidade=filtro_unidade,
         search=search,
-        ocultar_sem_nome=ocultar_sem_nome
+        ocultar_sem_nome=ocultar_sem_nome,
+        tratar_uid=tratar_uid,
+        pessoa=pessoa,
     )
-
     # --- ordens ---
     ordens, ordens_os, skip, limit = build_ordens(request, projeto, cod_base, headers, hoje_str, tecnicos)
 
@@ -70,6 +74,7 @@ def dashboard_view(request):
  
         # --- contexto ---
     context = {
+        
         "geral": resumo_cards,
         "status": resumo_cards.get("status", {}),
         "tecnicos": tecnicos,
@@ -90,6 +95,9 @@ def dashboard_view(request):
         "search": search,
         "ocultar_sem_nome": ocultar_sem_nome,
         "sem_tecnico_count": sem_tecnico_count,
+          "API_BASE": API_BASE, 
+         "usuario_logado": request.user.username,
+         
     }
 
     return render(request, "transportes/controle_campo/technical_panel.html", context)

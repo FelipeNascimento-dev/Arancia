@@ -19,17 +19,19 @@ body {
 
 .setcontainer {
   background: var(--background-formularios);
-  padding: 22px;
+  padding: 20px;
   border-radius: 10px;
   box-shadow: var(--box-shadow-formularios);
   width: 100%;
-  max-width: 1200px;
+  max-width: 1250px;
+
   /* limite no desktop */
   border: 1px solid var(--borda-formularios);
   margin-right: auto;
   height: auto;
   margin-top: 65px;
-  margin: 90px auto;
+  margin: 90px 55px  auto;
+
   /* centraliza horizontal e dá espaçamento em cima/baixo */
 }
 
@@ -112,7 +114,8 @@ body {
 }
 
 .table-responsive {
-  overflow-x: auto;
+  width: 100%;
+ 
 }
 
 .card-box:hover {
@@ -288,9 +291,6 @@ body {
   -webkit-text-fill-color: #333;
 }
 
-.table-responsive {
-  overflow-x: auto;
-}
 
 
 /* tabela */

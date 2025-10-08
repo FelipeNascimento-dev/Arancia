@@ -67,6 +67,14 @@
             <span class=" underline" id="modalTecOcioso"></span>
           </div>
           <div class="linha">
+          <span class=" titulo">Contatos hoje: </span>
+            <span class=" underline" id="modalhoje"></span>
+          </div>
+             <div class="linha">
+          <span class=" titulo">Contato geral: </span>
+            <span class=" underline" id="modalcontatogeral"></span>
+          </div>
+          <div class="linha">
            <span class=" titulo">Número:</span>
             <span class="underline">
               <a
@@ -295,7 +303,11 @@
         button.dataset.lastopening || "";
       document.getElementById("modalTecOcioso").textContent =
         button.dataset.ocioso || "";
-
+      document.getElementById("modalhoje").textContent =
+        button.dataset.hoje || "";
+      document.getElementById("modalcontatogeral").textContent =
+           button.dataset.contatogeral || "";
+           
       const phone = button.dataset.phone || "";
       const phoneElement = document.getElementById("modalTecPhone");
       phoneElement.textContent = phone || "";
