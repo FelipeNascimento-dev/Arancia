@@ -77,6 +77,17 @@
   align-items: center;
 }
 
+.user-profile-pic{
+  width: 35px;
+  border-radius: 100%;
+  align-items: center;
+  border: 1px solid #9c9c9c;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
 .user-dropdown {
   position: relative;
   display: inline-block;
