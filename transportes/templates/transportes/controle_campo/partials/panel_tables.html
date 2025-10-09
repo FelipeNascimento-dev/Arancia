@@ -26,42 +26,57 @@
           <th>Ultimo Contato</th><th>Contato Feito por</th>
         </tr>
       </thead>
-      <tbody>
-        {% for t in tecnicos %}
-        <tr {% if t.atraso_min > 29 %}class="alert-row"{% endif %}>
-          <td>
-<a href="{% if t.uid %}{% url 'transportes:registrar_tratamento' t.uid %}{% else %}#{% endif %}"
+  <tbody>
+  {% for t in tecnicos %}
+    {% if t.uid %}
+      <tr {% if t.atraso_min > 29 %}class="alert-row"{% endif %}>
+        <td>
+          <a href="{% url 'transportes:registrar_tratamento' t.uid %}"
+             data-bs-toggle="modal"
+             data-bs-target="#modalTecnico"
+             data-nome="{{ t.nome }}"
+             data-uid="{{ t.uid }}"
+             data-area="{{ t.area }}"
+             data-total="{{ t.total }}"
+             data-concluido="{{ t.concluido }}"
+             data-no-tempo="{{ t.no_tempo }}"
+             data-no-limite="{{ t.no_limite }}"
+             data-atrasado="{{ t.atrasado }}"
+             data-lastlogin="{{ t.lastlogin }}"
+             data-lastopening="{{ t.lastopening }}"
+             data-ocioso="{{ t.atraso_fmt }}"
+             data-hoje="{{ t.quantity_treatments_day }}"
+             data-contatogeral="{{ t.quantity_treatments }}"
+             data-phone="{{ t.phone }}">
+             <i class="fa-regular fa-eye {% if t.atraso_min > 29 %}icon-alert{% endif %}"></i>
+          </a>
+        </td>
 
-   data-bs-toggle="modal"
-   data-bs-target="#modalTecnico"
-   data-nome="{{ t.nome }}"
-   data-uid="{{ t.uid }}"
-   data-area="{{ t.area }}"
-   data-total="{{ t.total }}"
-   data-concluido="{{ t.concluido }}"
-   data-no-tempo="{{ t.no_tempo }}"
-   data-no-limite="{{ t.no_limite }}"
-   data-atrasado="{{ t.atrasado }}"
-   data-lastlogin="{{ t.lastlogin }}"
-   data-lastopening="{{ t.lastopening }}"
-   data-ocioso="{{ t.atraso_fmt }}"
-   data-hoje="{{ t.quantity_treatments_day }}"
-   data-contatogeral="{{ t.quantity_treatments }}"
-   data-phone="{{ t.phone }}">
-   <i class="fa-regular fa-eye {% if t.atraso_min > 29 %}icon-alert{% endif %}"></i>
-</a>
+        <td>{{ t.nome }}</td>
+        <td>{{ t.uid }}</td>
+        <td>{{ t.area }}</td>
+        <td>{{ t.total }}</td>
+        <td>{{ t.concluido }}</td>
+        <td>{{ t.no_tempo }}</td>
+        <td>{{ t.no_limite }}</td>
+        <td>{{ t.atrasado }}</td>
+        <td>{{ t.lastlogin }}</td>
+        <td>{{ t.lastopening }}</td>
+        <td>{{ t.atraso_fmt }}</td>
 
-          </td>
-          <td>{{ t.nome }}</td><td>{{ t.uid }}</td><td>{{ t.area }}</td>
-          <td>{{ t.total }}</td><td>{{ t.concluido }}</td><td>{{ t.no_tempo }}</td>
-          <td>{{ t.no_limite }}</td><td>{{ t.atrasado }}</td>
-          <td>{{ t.lastlogin }}</td><td>{{ t.lastopening }}</td><td>{{ t.atraso_fmt }}</td>
-          <td>{{ t.last_treatment }}</td> <td>{{ t.person_treated }}</td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="12">Nenhum técnico encontrado</td></tr>
-        {% endfor %}
-      </tbody>
+        {% if t.last_treatment and t.last_treatment|slice:":10" != hoje|date:"d/m/Y" %}
+          <td colspan="2">-</td> {# Não mostrar dados antigos #}
+        {% else %}
+          <td>{{ t.last_treatment }}</td>
+          <td>{{ t.person_treated }}</td>
+        {% endif %}
+      </tr>
+    {% endif %}
+  {% empty %}
+    <tr><td colspan="14">Nenhum técnico encontrado</td></tr>
+  {% endfor %}
+</tbody>
+
     </table>
     {% endif %}
     
@@ -105,17 +120,66 @@
         {% endfor %}
       </tbody>
     </table>
-  </div><div class="pagination">
-  {% if skip > 0 %}
-    <a href="?skip={{ prev_skip }}&limit={{ limit }}{% if filtro_status %}&status_janela={{ filtro_status }}{% endif %}{% if filtro_flag %}&flag={{ filtro_flag }}{% endif %}{% if filtro_msg %}&mensagem={{ filtro_msg }}{% endif %}{% if filtro_uid %}&uid={{ filtro_uid }}{% endif %}">
-      ← Anterior
-    </a>
-  {% endif %}
-
-  <a href="?skip={{ next_skip }}&limit={{ limit }}{% if filtro_status %}&status_janela={{ filtro_status }}{% endif %}{% if filtro_flag %}&flag={{ filtro_flag }}{% endif %}{% if filtro_msg %}&mensagem={{ filtro_msg }}{% endif %}{% if filtro_uid %}&uid={{ filtro_uid }}{% endif %}">
-    Próxima →
-  </a>
+  </div>
+  
+<!-- CONTROLES DE PAGINAÇÃO -->
+<div id="pagination-controls" class="d-flex justify-content-center mt-3">
+  <button id="prev-page" class="btn btn-outline-secondary btn-sm me-2" disabled>Anterior</button>
+  <span id="page-info" class="align-self-center">Página 1</span>
+  <button id="next-page" class="btn btn-outline-secondary btn-sm ms-2">Próxima</button>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Seleciona as linhas dentro da tabela de ordens
+  const tabela = document.querySelector("#tabela-ordens table");
+  if (!tabela) return; // segurança: não faz nada se a tabela não existe
+
+  const rows = tabela.querySelectorAll("tbody tr");
+  if (!rows.length) return; // se não tem linhas, sai
+
+  const rowsPerPage = 100; // número de linhas por página
+  let currentPage = 1;
+  const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+  const prevBtn = document.getElementById("prev-page");
+  const nextBtn = document.getElementById("next-page");
+  const pageInfo = document.getElementById("page-info");
+
+  function renderPage(page) {
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    rows.forEach((row, index) => {
+      row.style.display = (index >= start && index < end) ? "" : "none";
+    });
+
+    pageInfo.textContent = `Página ${page} de ${totalPages}`;
+    prevBtn.disabled = (page === 1);
+    nextBtn.disabled = (page === totalPages);
+
+    // rola até o topo da tabela
+    tabela.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  prevBtn.addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderPage(currentPage);
+    }
+  });
+
+  nextBtn.addEventListener("click", () => {
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderPage(currentPage);
+    }
+  });
+
+  // Mostra a primeira página ao carregar
+  renderPage(currentPage);
+});
+</script>
 </div>
 
 <!-- TABELA DETALHADA POR TÉCNICO (MODAL) -->

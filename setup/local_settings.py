@@ -51,7 +51,7 @@ DATABASES = {
 #CONTROLE DE CAMPO
 
 API_BASE = "http://127.0.0.1:8000/RetencaoAPI/api"
-TOKEN = "123"
+TOKEN = "K90nIR4PK90nIR4PBKIy0rPZ6uwSqKCDX"
 
 # Mapas
 status_labels = {

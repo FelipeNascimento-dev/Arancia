@@ -30,7 +30,7 @@ body {
   margin-right: auto;
   height: auto;
   margin-top: 65px;
-  margin: 90px 55px  auto;
+  margin: 90px 55px auto;
 
   /* centraliza horizontal e dá espaçamento em cima/baixo */
 }
@@ -115,7 +115,7 @@ body {
 
 .table-responsive {
   width: 100%;
- 
+
 }
 
 .card-box:hover {
@@ -423,7 +423,7 @@ td.flag.VERMELHO {
 
 .flag-VERDE {
   color: rgb(0, 0, 0);
-  border-bottom: 3px solid rgb(87, 153, 96) !important;
+
   /* borda visível */
 }
 

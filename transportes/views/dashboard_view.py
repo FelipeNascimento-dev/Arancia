@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.timezone import now, localtime
@@ -15,8 +16,9 @@ from .view_cards import build_cards
 def dashboard_view(request):
 
     headers = {"accept": "application/json", "access_token": "123"}
-    hoje_str = now().strftime("%Y-%m-%d")
-    hoje = localtime(now()).date()
+  
+    hoje = localtime(now()).date() - timedelta(days=0)
+    hoje_str = hoje.strftime("%Y-%m-%d")
     
     cod_base = request.session.get("COD_BASE")
     projeto = request.session.get("PROJETO")
@@ -59,7 +61,11 @@ def dashboard_view(request):
 
     # --- cards ---
     resumo_cards = build_cards(resumo_geral, ordens, ordens_os, ver_rota_uid, filtro_uid, filtro_flag, filtro_msg)
-    
+    sem_tecnico_count = len([
+    o for o in ordens
+    if not o.get("uid") or str(o.get("uid")).strip().lower() in ["", "none", "null", "0"]
+])
+
     # --- unidades ---
     unidades = sorted({
         t.get("area") for t in todos_tecnicos
@@ -95,8 +101,9 @@ def dashboard_view(request):
         "search": search,
         "ocultar_sem_nome": ocultar_sem_nome,
         "sem_tecnico_count": sem_tecnico_count,
-          "API_BASE": API_BASE, 
-         "usuario_logado": request.user.username,
+        "API_BASE": API_BASE, 
+        "usuario_logado": request.user.username,
+        "hoje": hoje,
          
     }
 
