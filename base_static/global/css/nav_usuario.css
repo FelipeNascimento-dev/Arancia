@@ -198,6 +198,7 @@
   display: inline-block;
   width: 46px;
   height: 24px;
+  margin-top: 4px;
 }
 
 .switch input {
