@@ -24,7 +24,6 @@ def get_user_sales_channel(user):
 
     qs = (
         GroupAditionalInformation.objects
-        .filter(group__name="arancia_PA")
         .exclude(sales_channel__isnull=True)
         .exclude(sales_channel__exact="")
         .values_list("sales_channel", flat=True)
