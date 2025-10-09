@@ -17,11 +17,11 @@ def toggle_db(request):
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        match = re.search(r"DB_HOST\s*=\s*'([^']+)'", content)
-        if not match:
+        match_host = re.search(r"DB_HOST\s*=\s*'([^']+)'", content)
+        if not match_host:
             return JsonResponse({'status': 'erro', 'msg': 'Linha DB_HOST não encontrada no local_settings.py'})
 
-        current_host = match.group(1).strip()
+        current_host = match_host.group(1).strip()
 
         if current_host == '192.168.0.219':
             new_host = '192.168.0.220'
@@ -30,16 +30,33 @@ def toggle_db(request):
             new_host = '192.168.0.219'
             ambiente = 'Homologação'
 
-        new_content = re.sub(
+        content = re.sub(
             r"DB_HOST\s*=\s*'[^']+'",
             f"DB_HOST = '{new_host}'",
             content
         )
 
-        with open(file_path, 'w', encoding='utf-8') as f:
-            f.write(new_content)
+        match_debug = re.search(r"LOCAL_DEBUG\s*=\s*(True|False)", content)
+        if match_debug:
+            current_debug = match_debug.group(1) == 'True'
+            new_debug = not current_debug
+            content = re.sub(
+                r"LOCAL_DEBUG\s*=\s*(True|False)",
+                f"LOCAL_DEBUG = {str(new_debug)}",
+                content
+            )
+        else:
+            content += f"\nLOCAL_DEBUG = False\n"
 
-        return JsonResponse({'status': 'ok', 'ambiente': ambiente, 'db_host': new_host})
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+
+        return JsonResponse({
+            'status': 'ok',
+            'ambiente': ambiente,
+            'db_host': new_host,
+            'local_debug': new_debug if match_debug else False
+        })
 
     except Exception as e:
-        re
+        return JsonResponse({'status': 'erro', 'msg': str(e)})
