@@ -140,7 +140,16 @@
     </div>
 
     <div class="card-body">
-      <p><strong>Ultima Tracking:</strong> <br> {{ item.ultima_tracking }}</p>
+      <p>
+        <strong>Ultima Tracking:</strong> <br>
+        {% if item.ultima_tracking == "TROCA DE CUSTODIA PENDENTE" %}
+        <span style="color:#e53935; font-weight:700;">
+          {{ item.ultima_tracking }}
+        </span>
+        {% else %}
+        {{ item.ultima_tracking }}
+        {% endif %}
+      </p>
       <p><strong>Data de Criação:</strong> <br>
         <time class="js-dt" datetime="{{ item.created_at }}">
           {{ item.created_at}}
