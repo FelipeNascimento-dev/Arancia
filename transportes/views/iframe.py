@@ -25,9 +25,9 @@ def extrair_enderecos_view(request):
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('transportes.controle_campo', raise_exception=True)
-def painel_tecnicos_view(request):
+def painel_Dashboard_view(request):
     return render(request, "transportes/controle_campo/iframe.html", {
-        "titulo": "Painel de Técnicos",
-        "url": "http://192.168.0.221:8000"
+        "titulo": "Dashboard",
+        "url": "http://192.168.0.221:8501/"
     })
     
