@@ -107,7 +107,6 @@ def order_detail(request, order: str):
                 code = match.group(1)
                 return redirect("logistica:pcp", code=code)
 
-            # fallback
             return redirect("logistica:pcp", code=201)
 
         elif tipo == "RETURN":
