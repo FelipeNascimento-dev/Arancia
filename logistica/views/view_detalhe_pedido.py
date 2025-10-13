@@ -74,7 +74,7 @@ def order_detail(request, order: str):
         )
 
         if "receber_insucesso" in request.POST:
-            return redirect('logistica:unsuccessful')
+            return redirect('logistica:unsuccessful_insert')
 
         tipo = (
             form.fields['shipment_order_type'].initial or '').strip().upper()
