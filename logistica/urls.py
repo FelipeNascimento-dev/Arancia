@@ -11,7 +11,7 @@ from .views import index, consulta_id_form, pre_recebimento, \
     consulta_ma84, btn_ma_voltar, consulta_ec01, btn_ec_voltar, consult_rom, \
     logout_confirm_view, logout_view, registrar_usuario, trackingIP, user_ger, skill_ger, \
     extracao_pedidos, consulta_etiquetas, settings_view, reverse_create, delete_btn, \
-    cancel_btn, send_quotes, toggle_db, unsuccessful, unsuccessful_insert, \
+    cancel_btn, send_quotes, toggle_db, unsuccessful_insert, \
     UserPasswordChangeView
 
 app_name = 'logistica'
@@ -66,7 +66,6 @@ urlpatterns = [
     path('reverse/delete/<str:serial>/', delete_btn, name='delete_btn'),
     path('reverse/cancel/<str:id>/', cancel_btn, name='cancel_btn'),
     path('reverse/envio', send_quotes, name='send_quotes'),
-    path('insucesso/', unsuccessful, name='unsuccessful'),
     path('insucesso/insert/<str:order>/',
          unsuccessful_insert, name='unsuccessful_insert'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
