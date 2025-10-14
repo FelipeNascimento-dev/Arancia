@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from ..forms import UnsuccessfulInsertForm
+from django.contrib.auth.decorators import login_required, permission_required
 
 
+@login_required(login_url='logistica:login')
 def unsuccessful_insert(request, order=None):
     titulo = 'Recebimento de Insucesso'
     session_key = 'unsuccessful_serials'
