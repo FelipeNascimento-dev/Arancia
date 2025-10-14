@@ -233,27 +233,49 @@ document.addEventListener("DOMContentLoaded", function() {
 </div>
 </div>
 <script>
-document.querySelectorAll('[data-bs-target="#modalTecnico"]').forEach(link => {
-  link.addEventListener("click", async (e) => {
-    e.preventDefault();
-    const url = link.getAttribute("href");
-    const uid = link.dataset.uid;
-    const row = link.closest("tr");
-    if (!url || !row) return;
+document.addEventListener("DOMContentLoaded", () => {
+  let tecnicoAtual = null;
 
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data.ok) {
-        const now = new Date();
-        const fmt = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-        row.querySelector('[data-field="last_treatment"]').textContent = fmt;
-        row.style.backgroundColor = "#d4edda"; // verde leve
-        console.log(`✅ Técnico ${uid} tratado`);
+  // Quando o usuário clica em um técnico da tabela para abrir o modal
+  document.querySelectorAll('[data-bs-target="#modalTecnico"]').forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      tecnicoAtual = {
+        url: link.getAttribute("href"),
+        uid: link.dataset.uid,
+        row: link.closest("tr")
+      };
+
+      // opcional: limpar cor anterior
+      if (tecnicoAtual.row) {
+        tecnicoAtual.row.style.backgroundColor = "";
       }
-    } catch (err) {
-      console.error("Erro:", err);
-    }
+    });
   });
+
+  // Quando clicar no link do WhatsApp dentro do modal
+  const linkZap = document.getElementById("modalTecPhone");
+  if (linkZap) {
+    linkZap.addEventListener("click", async (e) => {
+      if (!tecnicoAtual?.url || !tecnicoAtual?.row) return;
+
+      try {
+        const res = await fetch(tecnicoAtual.url);
+        const data = await res.json();
+
+        if (data.ok) {
+          const now = new Date();
+          const fmt = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+          const campo = tecnicoAtual.row.querySelector('[data-field="last_treatment"]');
+          if (campo) campo.textContent = fmt;
+          tecnicoAtual.row.style.backgroundColor = "#d4edda";
+          console.log(`Técnico ${tecnicoAtual.uid} tratado via link WhatsApp`);
+        }
+      } catch (err) {
+        console.error("Erro ao tratar:", err);
+      }
+    });
+  }
 });
 </script>

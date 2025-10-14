@@ -50,7 +50,7 @@ DATABASES = {
 
 #CONTROLE DE CAMPO
 
-API_BASE = "http://127.0.0.1:8000/RetencaoAPI/api"
+API_BASE = "http://192.168.0.214/RetencaoAPI/api"
 TOKEN = "K90nIR4PK90nIR4PBKIy0rPZ6uwSqKCDX"
 
 # Mapas

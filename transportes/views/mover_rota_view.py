@@ -70,8 +70,8 @@ def mover_rota_view(request):
                 tec_match = next((t for t in tecnicos if str(t["uid"]) == str(uid)), None)
                 tecnico_nome = tec_match["name"] if tec_match else f"UID {uid}"
 
-                # 🔄 Chamada da API de mover rota
-                url = f"{API_MOVER}/{uid}"
+                #  Chamada da API de mover rota
+                url = f"{API_MOVER}/{uid}?created_by={request.user.username}"
                 headers_put = {
                     "Accept": "application/json",
                     "access_token": API_TOKEN,
@@ -81,6 +81,7 @@ def mover_rota_view(request):
                 os_data = [o.strip() for o in os_list.splitlines() if o.strip()]
 
                 client = RequestClient(
+                    
                     method="put",
                     url=url,
                     headers=headers_put,
@@ -122,6 +123,7 @@ def mover_rota_view(request):
 
     return render(
         request,
+         
         "transportes/tools/move_route.html",
-        {"fields": MOVER_FIELDS, "tecnicos": tecnicos, "tecnico_nome": tecnico_nome},
+        {"fields": MOVER_FIELDS, "tecnicos": tecnicos, "tecnico_nome": tecnico_nome,"created_by": request.user.username},
     )
