@@ -1,0 +1,23 @@
+from ..forms import ClientCheckInForm
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+
+
+@login_required(login_url='logistica:login')
+def client_checkin(request):
+    titulo = "Check-In de Clientes"
+
+    if request.method == "POST":
+        form = ClientCheckInForm(request.POST, nome_form=titulo)
+
+    else:
+        messages.error(
+            request, "Método inválido. Use o formulário para enviar dados.")
+        form = ClientCheckInForm(nome_form=titulo)
+
+    return render(request, 'logistica/client_checkin.html', {
+        "form": form,
+        "site_title": titulo,
+        "botao_texto": "Registrar Check-In",
+    })
