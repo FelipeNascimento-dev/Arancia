@@ -32,5 +32,5 @@ def client_select(request):
     return render(request, 'logistica/client_select.html', {
         'form': form,
         'site_title': titulo,
-        'botao_texto': 'Consultar Cliente'
+        'botao_texto': 'Selecionar Cliente'
     })

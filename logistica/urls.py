@@ -68,5 +68,5 @@ urlpatterns = [
     path('reverse/envio', send_quotes, name='send_quotes'),
     path('insucesso/insert/<str:order>/',
          unsuccessful_insert, name='unsuccessful_insert'),
-    path('selecao-clientes/', client_select, name='client_select'),
+    path('check-in/selecao-clientes/', client_select, name='client_select'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
