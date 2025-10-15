@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from ..forms import ClientSelectForm
@@ -12,7 +12,7 @@ JSON_CT = "application/json"
 @login_required(login_url='logistica:login')
 def client_select(request):
     titulo = "Seleção de Cliente"
-
+    clients_dict = {}
     choices = []
 
     try:
@@ -56,8 +56,19 @@ def client_select(request):
             request.POST, nome_form=titulo, client_choices=choices)
         if form.is_valid():
             selected_client = form.cleaned_data["client"]
+            client_id = clients_dict.get(selected_client)
+            client_name = next(
+                (name for code, name in choices if code == selected_client), "Cliente"
+            )
+
+            request.session["selected_client"] = {
+                "client_code": selected_client,
+                "client_id": client_id,
+                "client_name": client_name,
+            }
             messages.success(
                 request, f"Cliente selecionado: {selected_client}")
+            return redirect('logistica:client_checkin')
         else:
             messages.error(request, "Falha ao selecionar o cliente.")
     else:
