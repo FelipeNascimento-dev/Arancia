@@ -6,7 +6,10 @@ from django.contrib import messages
 
 @login_required(login_url='logistica:login')
 def client_checkin(request):
-    titulo = "Check-In de Clientes"
+    client_data = request.session.get("selected_client", {})
+    client_name = client_data.get("client_name", "Cliente não selecionado")
+
+    titulo = f"Check-In {client_name}"
 
     if request.method == "POST":
         form = ClientCheckInForm(request.POST, nome_form=titulo)
