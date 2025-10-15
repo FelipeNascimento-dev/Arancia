@@ -1,11 +1,13 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 import os
 import re
 
 
 @csrf_exempt
+@login_required(login_url='logistica:login')
 def toggle_db(request):
     try:
         file_path = os.path.join(
