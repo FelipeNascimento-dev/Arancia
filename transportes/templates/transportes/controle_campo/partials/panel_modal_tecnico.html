@@ -1,4 +1,54 @@
 <!-- Modal Genérico de Técnico -->
+<style>
+  /* Força o alinhamento real e centralizado horizontal/vertical */
+.modal.show .modal-dialog {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 0 auto !important;
+  transform: none !important;
+}
+
+/* Mantém proporção e estética dos modais grandes */
+.modal-dialog.modal-xl,
+.modal-dialog.modal-lg {
+  max-width: 900px !important; /* ajuste conforme necessário */
+  width: 90% !important;
+  background: transparent !important;
+}
+
+/* Deixa o conteúdo com sombra e borda arredondada */
+.modal-dialog .modal-content {
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.25);
+  margin: auto;
+}
+
+  /* Centraliza o modal na tela */
+.modal-pos-central {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 0 auto !important;
+  transform: none !important;
+}
+
+/* Garante que o conteúdo fique proporcional */
+.modal-pos-central .modal-content {
+  width: 90%;
+  max-width: 800px;
+  margin: auto;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.25);
+}
+
+/* Remove fundo do dialog se quiser ele "flutuando" */
+.modal-pos-central {
+  background: transparent !important;
+}
+
+</style>
 <div
   class="modal fade"
   id="modalTecnico"
@@ -6,7 +56,8 @@
   aria-labelledby="modalTecnicoLabel"
   aria-hidden="true"
 >
-  <div class="modal-dialog modal-dialog-centered modal-xl">
+ <div class="modal-dialog modal-lg modal-dialog-centered modal-pos-central" style="box-shadow:None;" role="document">
+
     <div class="modal-content">
       <!-- Cabeçalho -->
       <div class="modal-header text-white">
@@ -105,7 +156,8 @@
   aria-labelledby="modalOrdemLabel"
   aria-hidden="true"
 >
-  <div class="modal-dialog modal-dialog-centered modal-xl">
+ <div class="modal-dialog modal-lg modal-dialog-centered modal-pos-central" style="box-shadow:None;" role="document">
+
     <div class="modal-content">
       <!-- Cabeçalho -->
       <div class="modal-header text-white">
@@ -249,7 +301,7 @@
   aria-labelledby="modalFotoLabel"
   aria-hidden="true"
 >
-  <div class="modal-dialog modal-xl modal-dialog-centered">
+  <div class="modal-dialog modal-xl modal-dialog-centered "style="box-shadow:None;" role="document" >
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="modalFotoLabel">
@@ -262,7 +314,7 @@
           aria-label="Close"
         ></button>
       </div>
-      <div class="modal-body text-center">
+      <div class="modal-body text-center" >
         <img
           id="imageInModalFoto"
           src=""

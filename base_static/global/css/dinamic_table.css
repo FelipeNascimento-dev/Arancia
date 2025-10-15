@@ -1,0 +1,51 @@
+.tabela-dinamica-container {
+    width: 100%;
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow-x: auto;
+}
+
+.tabela-dinamica {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.tabela-dinamica thead {
+    background: #0077b6;
+    color: #fff;
+}
+
+.tabela-dinamica th,
+.tabela-dinamica td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #eaeaea;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.tabela-dinamica tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+.tabela-dinamica tbody tr:hover {
+    background-color: #f1faff;
+}
+
+.tabela-dinamica td.status-ok {
+    color: #2ecc71;
+    font-weight: bold;
+}
+
+.tabela-dinamica td.status-error {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.text-muted {
+    color: #888;
+    font-style: italic;
+}

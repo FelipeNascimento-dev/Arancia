@@ -1,0 +1,72 @@
+<h2>{{ form.nome_formulario }}</h2>
+
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+
+  {% if impar %}
+  <div class="form-group form-centralizado">
+    {{ primeiro_campo.label_tag }}
+    {{ primeiro_campo }}
+    {% if primeiro_campo.errors %}
+    <div class="error">{{ primeiro_campo.errors }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <div class="form-grid-2col">
+    {% for campo in form %}
+    {% if campo.name != primeiro_campo.name %}
+    <div class="form-group">
+      {{ campo.label_tag }}
+      {{ campo }}
+      {% if campo.errors %}
+      <div class="error">{{ campo.errors }}</div>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+
+  {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' or request.resolver_match.url_name == 'recebimento_remessa' or request.resolver_match.url_name == 'order_return_check' %}
+  {% if serials %}
+  <div class="chips-wrap" aria-label="Seriais adicionados">
+    {% for s in serials %}
+    <button type="submit" name="remove_serial" value="{{ forloop.counter0 }}" class="chip" title="{{ s }}"
+      formnovalidate>
+      <span class="chip-text">{{ s }}</span>
+      <span class="chip-x" aria-hidden="true">✕</span>
+    </button>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endif %}
+
+  <div class="form-actions">
+    {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' or request.resolver_match.url_name == 'recebimento_remessa' or request.resolver_match.url_name == 'order_return_check'%}
+    <button type="submit" class="submit-button-right push-left" name="clear_serials" value="1" formnovalidate>
+      Limpar
+    </button>
+
+    <div class="serial-counter" role="status" aria-live="polite" title="{{ serials|length }} seriais bipados">
+      {{ serials|length }}
+    </div>
+    {% endif %}
+
+    {% if proximo_disponivel %}
+    <button type="submit" class="submit-button-right btn-success" name="criar_romaneio"
+      value="{{ proximo_disponivel }}">
+      Criar romaneio
+    </button>
+    {% endif %}
+    
+    {% if result.status == 'ABERTO' %}
+    <button type="submit" class="submit-button-right" name="enviar_evento" value="1">
+      {{ botao_texto }}
+    </button>
+    {% endif %}
+
+    <button type="submit" class="submit-button-right" name="enviar_evento" value="1">
+      {{ botao_texto }}
+    </button>
+
+  </div>

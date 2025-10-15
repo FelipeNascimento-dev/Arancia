@@ -1,0 +1,242 @@
+{% extends "global/base.html" %}
+{% block content %}
+
+<h2 class="title-skill-ger"><i class="fa-solid fa-layer-group"></i> Gestão de Informações Adicionais</h2>
+
+<div class="grid-container">
+
+    <div class="box" id="box-group">
+        <div class="box-header">
+            <h3>Grupos Existentes</h3>
+            <button type="button" class="btn btn-primary btn-sm" onclick="openCreateGroupModal()">
+                <i class="fa-solid fa-plus"></i> Novo Grupo
+            </button>
+        </div>
+
+        <ul>
+            {% for g in grupos %}
+            <li>
+                <a href="?group_id={{ g.id }}"
+                    class="{% if selected_group and g.id == selected_group.id %}active{% endif %}">
+                    {{ g.nome }} ({{ g.userdesignation_set.count }} usuários)
+                </a>
+            </li>
+            {% empty %}
+            <li class="muted">Nenhum grupo cadastrado.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="box" id="box-group2">
+        <h3>Editar grupo - {{ selected_group.nome }}</h3>
+
+        <div class="tab-header">
+            <button class="tab-btn active" data-tab="tab1">Informações Principais</button>
+            <button class="tab-btn" data-tab="tab2">Informações de Endereço</button>
+            <button class="tab-btn" data-tab="tab3">Informações de Contato</button>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="edit_group" value="1">
+            <input type="hidden" name="group_id" value="{{ selected_group.id }}">
+
+            <div class="tab-content active" id="tab1">
+                <div class="form-group">
+                    <label for="nome">Razão Social:</label>
+                    <input type="text" name="razao_social" value="{{ selected_group.razao_social|default:'' }}"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="cnpj">CNPJ:</label>
+                    <input type="text" name="cnpj" value="{{ selected_group.cnpj|default:'' }}"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="nome">Nome:</label>
+                    <input type="text" name="nome" value="{{ selected_group.nome|default:'' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="cod_iata">Código IATA:</label>
+                    <input type="text" name="cod_iata" value="{{ selected_group.cod_iata|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="sales_channel">Canal:</label>
+                    <input type="text" name="sales_channel" value="{{ selected_group.sales_channel|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="cod_center">Código Centro:</label>
+                    <input type="text" name="cod_center" value="{{ selected_group.cod_center|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="deposito">Depósito:</label>
+                    <input type="text" name="deposito" value="{{ selected_group.deposito|default:'' }}">
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab2">
+                <div class="form-group">
+                    <label for="logradouro">Logradouro:</label>
+                    <input type="text" name="logradouro" value="{{ selected_group.logradouro|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="numero">Número:</label>
+                    <input type="text" name="numero" value="{{ selected_group.numero|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="complemento">Complemento:</label>
+                    <input type="text" name="complemento" value="{{ selected_group.complemento|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="bairro">Bairro:</label>
+                    <input type="text" name="bairro" value="{{ selected_group.bairro|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="cidade">Cidade:</label>
+                    <input type="text" name="cidade" value="{{ selected_group.cidade|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="estado">Estado:</label>
+                    <input type="text" name="estado" value="{{ selected_group.estado|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="CEP">CEP:</label>
+                    <input type="text" name="CEP" value="{{ selected_group.CEP|default:'' }}">
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab3">
+                <div class="form-group">
+                    <label for="telefone1">Telefone 1:</label>
+                    <input type="text" name="telefone1" value="{{ selected_group.telefone1|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="telefone2">Telefone 2:</label>
+                    <input type="text" name="telefone2" value="{{ selected_group.telefone2|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="email">E-mail:</label>
+                    <input type="email" name="email" value="{{ selected_group.email|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="responsavel">Responsável:</label>
+                    <input type="text" name="responsavel" value="{{ selected_group.responsavel|default:'' }}">
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+
+    {% if selected_group %}
+    <div class="box wide">
+
+        <div class="user-grid">
+            <div class="user-list">
+                <h4>Usuários vinculados:</h4>
+                <ul>
+                    {% for u in usuarios_vinculados %}
+                    <li>{{ u.username }} - {{ u.get_full_name }}</li>
+                    {% empty %}
+                    <li class="muted">Nenhum usuário vinculado.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="user-form">
+                <h4>Vincular novo usuário:</h4>
+                <form method="post" autocomplete="off">
+                    {% csrf_token %}
+                    <input type="hidden" name="add_user" value="1">
+
+                    <div class="autocomplete">
+                        <input type="text" id="userSearch" placeholder="Digite para buscar usuário...">
+                        <input type="hidden" name="user_id" id="userId">
+                        <ul class="autocomplete-list" id="autocompleteList"></ul>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Vincular</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- MODAL PARA CRIAÇÃO DE G.A.I -->
+{% include 'global/partials/_modal_create_gai.html' %}
+
+
+<script>
+    function openCreateGroupModal() {
+        document.getElementById("modalCreateGroup").style.display = "block";
+    }
+
+    function closeCreateGroupModal() {
+        document.getElementById("modalCreateGroup").style.display = "none";
+    }
+
+    window.onclick = function (event) {
+        const modal = document.getElementById("modalCreateGroup");
+        if (event.target === modal) {
+            closeCreateGroupModal();
+        }
+    }
+</script>
+
+<script>
+    const users = [
+        {% for u in all_users %}
+    { id: "{{ u.id }}", text: "{{ u.username }} - {{ u.get_full_name }}" },
+    {% endfor %}
+    ];
+
+    const input = document.getElementById("userSearch");
+    const hiddenInput = document.getElementById("userId");
+    const list = document.getElementById("autocompleteList");
+
+    input.addEventListener("input", function () {
+        const value = this.value.toLowerCase();
+        list.innerHTML = "";
+
+        if (value.length > 0) {
+            const filtered = users.filter(u => u.text.toLowerCase().includes(value));
+            filtered.slice(0, 8).forEach(u => {
+                const li = document.createElement("li");
+                li.textContent = u.text;
+                li.dataset.id = u.id;
+                li.addEventListener("click", () => {
+                    input.value = u.text;
+                    hiddenInput.value = u.id;
+                    list.innerHTML = "";
+                });
+                list.appendChild(li);
+            });
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest(".autocomplete")) {
+            list.innerHTML = "";
+        }
+    });
+</script>
+
+<script>
+    const tabs = document.querySelectorAll(".tab-btn");
+    const contents = document.querySelectorAll(".tab-content");
+
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            tabs.forEach(t => t.classList.remove("active"));
+            contents.forEach(c => c.classList.remove("active"));
+
+            tab.classList.add("active");
+            document.getElementById(tab.dataset.tab).classList.add("active");
+        });
+    });
+</script>
+
+{% endblock %}

@@ -11,16 +11,8 @@ class UserProfile(models.Model):
         User, on_delete=models.CASCADE, related_name="perfil")
     cpf = models.CharField(max_length=14, unique=True,
                            blank=True, null=True)
-    avatar = models.ImageField(
-        upload_to=user_avatar_path, blank=True, null=True)
-
-    def avatar_url(self):
-        if self.avatar:
-            try:
-                return self.avatar.url
-            except Exception:
-                pass
-        return "/static/global/images/default-avatar.jpg"
+    avatar = models.URLField(
+        blank=True, null=True)
 
 
 class Romaneio(models.Model):
@@ -59,17 +51,33 @@ class PontoAtendimentoInfo(models.Model):
         return f"{self.group.name} - {self.endereco}"
 
 
+class RomaneioReverse(models.Model):
+    numero = models.CharField(max_length=10, unique=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Romaneio {self.numero}"
+
+
 class GroupAditionalInformation(models.Model):
     group = models.ForeignKey(Group, related_name='informacoes_adicionais',
                               blank=True, null=True, on_delete=models.CASCADE)
+    razao_social = models.CharField(
+        max_length=100, verbose_name="Razão Social", blank=True, null=True)
     nome = models.CharField(
         max_length=100, verbose_name="Nome", blank=True, null=True)
     cod_iata = models.CharField(
         max_length=100, verbose_name="Código IATA", blank=True, null=True)
     sales_channel = models.CharField(
         max_length=100, verbose_name="Sales Channel", blank=True, null=True)
+    cod_center = models.CharField(
+        verbose_name="Centro de Custos", blank=True, null=True)
     deposito = models.CharField(
         max_length=100, verbose_name="Depósito", blank=True, null=True)
+    cnpj = models.CharField(
+        max_length=100, verbose_name="CNPJ", blank=True, null=True)
+    inscricao_estadual = models.CharField(
+        max_length=50, verbose_name="Inscrição Estadual", blank=True, null=True)
     logradouro = models.CharField(
         max_length=255, verbose_name="Logradouro", blank=True, null=True)
     numero = models.CharField(
@@ -113,9 +121,12 @@ class PermissaoUsuarioDummy(models.Model):
         verbose_name = "--Personalizada--"
         verbose_name_plural = "--Personalizadas--"
         permissions = [
+            ("ti_interno", "TI Interno"),
+            ("logistica_perm", "Permissão Logistica"),
             ("lastmile_b2c", "LastMile (B2C)"),
             ("entrada_flfm", "Entrada (Fulfillment)"),
-            ("pode_gerenciar_filiais", "Pode Gerenciar Filiais")
+            ("pode_gerenciar_filiais", "Pode Gerenciar Filiais"),
+            ("gestao_total", "Gestão Total"),
         ]
 
     def __str__(self):

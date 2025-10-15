@@ -1,4 +1,3 @@
-{# templates/logistica/consulta_etiquetas.html #}
 {% extends 'global/base.html' %}
 
 {% block content %}
@@ -52,10 +51,12 @@
                     <td>{{ r.pedido }}</td>
                     <td>{{ r.volume }}</td>
                     <td>
-                        {% if r.url %}
-                        <a href="{{ r.url }}" target="_blank" rel="noopener">Clique aqui para abrir a etiqueta</a>
+                        {% if "detail" in r.url %}
+                            <em class="muted" style="color:#b00;">{{ r.url.detail }}</em>
+                        {% elif r.url %}
+                            <a href="{{ r.url }}" target="_blank" rel="noopener">Clique aqui para abrir a etiqueta</a>
                         {% else %}
-                        <em class="muted">Consulte novamente a etiqueta para obter novamente o link</em>
+                            <em class="muted">Clique em consultar para gerar o link</em>
                         {% endif %}
                     </td>
                 </tr>

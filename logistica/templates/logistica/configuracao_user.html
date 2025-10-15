@@ -20,8 +20,14 @@
       <div class="profile-grid">
         <div class="avatar-col">
           <label class="avatar" id="avatarPreview">
-            <img class="foto-perfil" src="{% static 'global/images/default-avatar.jpg' %}" alt="foto">
+            <img class="foto-perfil" src="{{ avatar_url }}" alt="foto">
           </label>
+
+          <input type="file" name="foto_perfil" id="id_foto_perfil" accept="image/*" class="file-input-visually-hidden">
+
+          <button type="button" class="avatar-btn" id="btnAlterarFoto">
+            Alterar foto
+          </button>
         </div>
 
         <div class="fields">
@@ -63,29 +69,29 @@
             </a>
           </label>
 
-            <div class="form-group hidden" id="grpNovaSenha1">
-              <label for="{{ form.nova_senha1.id_for_label }}" class="label">
-                {{ form.nova_senha1.label }}
-              </label>
-              <div class="input-with-eye">
-                {{ form.nova_senha1 }}
-                <button type="button" class="eye-btn" data-eye="nova_senha1" aria-label="Mostrar/ocultar senha">
-                  <i class="fa-solid fa-eye"></i>
-                </button>
-              </div>
+          <div class="form-group hidden" id="grpNovaSenha1">
+            <label for="{{ form.nova_senha1.id_for_label }}" class="label">
+              {{ form.nova_senha1.label }}
+            </label>
+            <div class="input-with-eye">
+              {{ form.nova_senha1 }}
+              <button type="button" class="eye-btn" data-eye="nova_senha1" aria-label="Mostrar/ocultar senha">
+                <i class="fa-solid fa-eye"></i>
+              </button>
             </div>
+          </div>
 
-            <div class="form-group hidden" id="grpNovaSenha2">
-              <label for="{{ form.nova_senha2.id_for_label }}" class="label">
-                {{ form.nova_senha2.label }}
-              </label>
-              <div class="input-with-eye">
-                {{ form.nova_senha2 }}
-                <button type="button" class="eye-btn" data-eye="nova_senha2" aria-label="Mostrar/ocultar senha">
-                  <i class="fa-solid fa-eye"></i>
-                </button>
-              </div>
+          <div class="form-group hidden" id="grpNovaSenha2">
+            <label for="{{ form.nova_senha2.id_for_label }}" class="label">
+              {{ form.nova_senha2.label }}
+            </label>
+            <div class="input-with-eye">
+              {{ form.nova_senha2 }}
+              <button type="button" class="eye-btn" data-eye="nova_senha2" aria-label="Mostrar/ocultar senha">
+                <i class="fa-solid fa-eye"></i>
+              </button>
             </div>
+          </div>
 
         </div>
       </div>
@@ -148,6 +154,19 @@
           icon.classList.add('fa-eye');
         }
       });
+    });
+  });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('id_foto_perfil');
+    const btn = document.getElementById('btnAlterarFoto');
+    const img = document.querySelector('.foto-perfil');
+    btn.addEventListener('click', () => input.click());
+    input.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) img.src = URL.createObjectURL(file);
     });
   });
 </script>
