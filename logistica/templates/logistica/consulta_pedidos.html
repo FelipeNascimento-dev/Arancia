@@ -107,6 +107,11 @@
   .btn-extrair:hover {
     filter: brightness(0.95);
   }
+
+  .pedido-link.clicked {
+    color: gray;
+    text-decoration: line-through;
+  }
 </style>
 
 <div class="form-container">
@@ -133,7 +138,8 @@
     <div class="card-header">
       <span class="badge-num">{{ forloop.counter }}</span>
       <h3 class="card-title">
-        <a href="{% url 'logistica:detalhe_pedido' item.order_number %}" class="pedido-link">
+        <a href="{% url 'logistica:detalhe_pedido' item.order_number %}" target="_blank" rel="noopener noreferrer"
+          class="pedido-link">
           {{ item.order_number }}
         </a>
       </h3>
@@ -279,5 +285,22 @@
   });
 </script>
 
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Restaura o estado dos links clicados
+    document.querySelectorAll('.pedido-link').forEach(link => {
+      const id = link.dataset.id;
+      if (localStorage.getItem('pedido_clicado_' + id)) {
+        link.classList.add('clicked');
+      }
+
+      // Marca como clicado ao abrir
+      link.addEventListener('click', () => {
+        localStorage.setItem('pedido_clicado_' + id, 'true');
+        link.classList.add('clicked');
+      });
+    });
+  });
+</script>
 
 {% endblock %}

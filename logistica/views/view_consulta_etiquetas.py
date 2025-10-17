@@ -121,7 +121,9 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
             "rows": items,
         })
 
-    pedido = (request.POST.get("pedido") or "").strip()
+    pedido = (request.POST.get("pedido")
+              or request.session.get("pedido") or "").strip()
+
     try:
         volume = int(request.POST.get("qtde_vol") or 1)
     except ValueError:
