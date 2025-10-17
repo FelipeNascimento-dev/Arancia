@@ -30,3 +30,4 @@ from .toggle_db_view import toggle_db
 from .view_unsuccessful_insert import unsuccessful_insert
 from .view_client_select import client_select
 from .view_client_checkin import client_checkin
+from .view_order_select import order_select
