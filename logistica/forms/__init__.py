@@ -23,3 +23,4 @@ from .forms_consult_rom import RomaneioConsultaForm
 from .forms_unsuccessful_insert import UnsuccessfulInsertForm
 from .forms_client_select import ClientSelectForm
 from .forms_client_checkin import ClientCheckInForm
+from .forms_order_select import OrderSelectForm

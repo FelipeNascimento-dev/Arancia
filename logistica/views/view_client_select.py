@@ -71,7 +71,7 @@ def client_select(request):
                 request, f"Cliente selecionado: {selected_client}")
 
             if selected_client == "cielo":
-                return redirect('logistica:detalhe_pedido')
+                return redirect('logistica:order_select')
             else:
                 return redirect('logistica:client_checkin')
         else:
