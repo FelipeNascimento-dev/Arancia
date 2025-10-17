@@ -69,7 +69,11 @@ def client_select(request):
             }
             messages.success(
                 request, f"Cliente selecionado: {selected_client}")
-            return redirect('logistica:client_checkin')
+
+            if selected_client == "cielo":
+                return redirect('logistica:detalhe_pedido')
+            else:
+                return redirect('logistica:client_checkin')
         else:
             messages.error(request, "Falha ao selecionar o cliente.")
     else:
