@@ -16,6 +16,7 @@ DEBUG = True  # NUNCA mude para FALSE. Se não para de funcionar
 
 ALLOWED_HOSTS = []
 
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -27,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'logistica',
+    'transportes',
 ]
 
 MIDDLEWARE = [
