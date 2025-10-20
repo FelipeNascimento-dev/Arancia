@@ -103,5 +103,5 @@ def ordenar_rota_view(request):
     return render(
         request,
         "transportes/tools/order_route.html",
-        {"fields": ORDENAR_FIELDS, "tecnicos": tecnicos, "tecnico_nome": tecnico_nome},
+        {  "show_config_link": True,"fields": ORDENAR_FIELDS, "tecnicos": tecnicos, "tecnico_nome": tecnico_nome},
     )

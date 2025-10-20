@@ -104,7 +104,7 @@ def dashboard_view(request):
         "API_BASE": API_BASE, 
         "usuario_logado": request.user.username,
         "hoje": hoje,
-         
+    "show_config_link": True,
     }
 
     return render(request, "transportes/controle_campo/technical_panel.html", context)

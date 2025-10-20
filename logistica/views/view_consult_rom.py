@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from ..forms import RomaneioConsultaForm
 from setup.local_settings import STOCK_API_URL
+from django.contrib.auth.decorators import login_required, permission_required
 
 JSON_CT = "application/json"
 
@@ -17,6 +18,8 @@ def _extract_next(result):
     return None
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.lastmile_b2c', raise_exception=True)
 def consult_rom(request):
     titulo = "Consultar Romaneio"
     proximo_disponivel = None

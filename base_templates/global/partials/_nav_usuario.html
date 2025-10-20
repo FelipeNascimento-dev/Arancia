@@ -1,6 +1,21 @@
 <div class="user-navbar" style="{% if DB_HOST == '192.168.0.219' %}background-color:#62ee9c;{% endif %}">
     <div class="macro-guia" id="macroGuia"></div>
-
+    {% if show_config_link %}
+  <a
+    href="{% url 'transportes:config_context' %}?next={{ request.path }}"
+    style="
+      text-decoration: none;
+      margin-top: 5px;
+      color: black;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100%;
+    "
+  >
+    Configurações de Filtros
+  </a>
+  {% endif %}    
     <div class="form-container-center">
         <form method="get" action="" class="form-pesquisa">
             <i class="fa-solid fa-magnifying-glass search-icon-inside"></i>
