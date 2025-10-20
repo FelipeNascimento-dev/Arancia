@@ -130,14 +130,20 @@
       width: 200px;
       height: 200px;
       border-radius: 50%;
-      background: #ddd center/cover no-repeat;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ddd;
       box-shadow: 0 4px 16px rgba(0, 0, 0, .12);
   }
 
   .foto-perfil {
-      width: 200px;
-      height: 200px;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
       border-radius: 50%;
+      display: block;
   }
 
   .file-input-visually-hidden {

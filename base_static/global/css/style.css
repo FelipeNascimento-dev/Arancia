@@ -30,6 +30,7 @@
 
 
 
+
 :root {
   --background-formularios: #fff;
   --box-shadow-formularios: 0 0 17px rgba(0, 0, 0, 0.05);
@@ -64,18 +65,6 @@ body {
   align-items: flex-start;
   box-sizing: border-box;
   position: relative;
-}
-
-.forma::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  min-height: 100%;
-  width: 100%;
-  z-index: -1;
-  background: #ffffff;
-  clip-path: polygon(0 0, 60% 0, 100% 100%, 0% 200%);
 }
 
 .hidden {
