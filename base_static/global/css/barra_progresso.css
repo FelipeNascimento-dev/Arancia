@@ -1,7 +1,6 @@
 .etapas-container {
     width: 100% !important;
     background-color: #ffffff;
-    /* padding: 0 0 20px; */
     box-sizing: border-box;
     margin-top: 50px;
     margin-bottom: 15px;
@@ -38,10 +37,11 @@
     justify-content: center;
     background-color: var(--sidebar-bg);
     color: #000;
-    padding: 10px 25px;
+    padding: 10px 15px;
     font-weight: bold;
     font-size: 13px;
-    min-width: 180px;
+    min-width: 162px;
+    width: auto;
     text-align: center;
     z-index: 1;
     transition: background-color 0.3s ease;

@@ -1,4 +1,5 @@
 from pathlib import Path
+from setup import local_settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -11,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-wg8bt!49d#axro8-8299a1pup&&f*kueeu=%x=2)k0i(0@rtpj'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True # NUNCA mude para FALSE. Se não para de funcionar
+DEBUG = True  # NUNCA mude para FALSE. Se não para de funcionar
 
 ALLOWED_HOSTS = ["*"]
 
@@ -52,6 +53,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'setup.settings.db_host_context',
+                'logistica.context_processors.avatar_url',
             ],
         },
     },
@@ -130,3 +133,7 @@ try:
 except ImportError:
     ...
 
+
+
+def db_host_context(request):
+    return {'DB_HOST': getattr(local_settings, 'DB_HOST', None)}

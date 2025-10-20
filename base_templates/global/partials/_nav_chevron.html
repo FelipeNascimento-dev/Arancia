@@ -39,6 +39,10 @@
       <a class="etapa {% if etapa_ativa == 'expedicao' %}ativa{% endif %}" href="{% url 'logistica:expedicao' 204 %}">
         Expedição
       </a>
+
+      <a class="etapa" href="{% url 'logistica:consulta_etiquetas' %}">
+        Etiquetas
+      </a>
     </div>
   </div>
 </div>

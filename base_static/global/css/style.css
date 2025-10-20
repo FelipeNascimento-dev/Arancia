@@ -6,6 +6,7 @@
 @import url(form_3col.css);
 @import url(form_2col.css);
 @import url(form_1col.css);
+@import url(form_card_2col.css);
 @import url(button_1b.css);
 @import url(button_2b.css);
 @import url(consulta_id.css);
@@ -14,9 +15,13 @@
 @import url(nav_usuario.css);
 @import url(trackingIP.css);
 @import url(configuracao_user.css);
+@import url(user_ger.css);
+@import url(skill_ger.css);
+@import url(dinamic_table.css);
 @import url(responsividade.css);
 @import url(campo.css);
 @import url(ferramentas.css);
+
 
 
 
@@ -152,8 +157,3 @@ body {
     transform: translateY(0);
   }
 }
-
-
-
-
-

@@ -1,4 +1,4 @@
-from ..forms import ConsultaEntradaPedForm
+from ..forms import OrderConsultForm
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
@@ -8,8 +8,8 @@ from django.contrib import messages
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
-def entrada_pedido(request):
-    form = ConsultaEntradaPedForm(request.POST or None)
+def order_consult(request):
+    form = OrderConsultForm(request.POST or None)
     titulo = 'Consultar Pedido Entrada'
 
     if request.method == "POST" and form.is_valid():
@@ -17,11 +17,11 @@ def entrada_pedido(request):
         if not order:
             messages.warning(request, "Informe o número do pedido.")
         else:
-            return redirect('logistica:visu_pedido', order=order)
+            return redirect('logistica:detalhe_pedido', order=order)
 
     return render(
         request,
-        "logistica/consultar_entrada_pedido.html",
+        "logistica/consultar_pedido.html",
         {
             "form": form,
             "botao_texto": "Consultar",

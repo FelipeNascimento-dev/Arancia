@@ -17,5 +17,13 @@ from .view_consulta_pedidos import consulta_pedidos
 from .login_view import UserLoginView
 from .configuracao_user_view import UserPasswordChangeView, settings_view
 from .view_recebimento_remessa import recebimento_remessa
-from .view_consulta_entrada_pedido import entrada_pedido
-from .view_visu_pedidos import visu_pedido
+from .view_consulta_entrada_pedido import order_consult
+from .view_detalhe_pedido import order_detail
+from .view_button_desn import button_desn
+from .view_order_return_check import order_return_check
+from .view_user_ger import user_ger
+from .view_skill_ger import skill_ger
+from .view_reverse_create import reverse_create, delete_btn, cancel_btn
+from .view_consult_rom import consult_rom
+from .view_send_quotes import send_quotes
+from .toggle_db_view import toggle_db

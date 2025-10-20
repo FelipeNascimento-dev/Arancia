@@ -15,7 +15,7 @@ class CustomUserCreationForm(UserCreationForm):
     first_name = forms.CharField(label="Primeiro nome", max_length=30)
     last_name = forms.CharField(label="Último nome", max_length=30)
     email = forms.EmailField(label="E-mail")
-    cpf = forms.CharField(label="CPF", max_length=14)
+    cpf = forms.CharField(label="CPF", max_length=14, required=False)
 
     grupo = forms.ModelChoiceField(
         queryset=Group.objects.filter(name__startswith="arancia_"),
@@ -54,7 +54,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     def clean_cpf(self):
         cpf = self.cleaned_data["cpf"]
-        if UserProfile.objects.filter(cpf=cpf).exists():
+        if cpf and UserProfile.objects.filter(cpf=cpf).exists():
             raise forms.ValidationError("CPF já cadastrado.")
         return cpf
 
@@ -87,10 +87,14 @@ class CustomUserCreationForm(UserCreationForm):
 
             grupo = self.cleaned_data["grupo"]
             user.groups.add(grupo)
-
-            UserProfile.objects.update_or_create(
-                user=user, defaults={"cpf": self.cleaned_data["cpf"]}
-            )
+            if self.cleaned_data["cpf"]:
+                UserProfile.objects.update_or_create(
+                    user=user, defaults={"cpf": self.cleaned_data["cpf"]}
+                )
+            else:
+                UserProfile.objects.update_or_create(
+                    user=user
+                )
 
             gai = self.cleaned_data["aditionalinformation"]
             UserDesignation.objects.update_or_create(

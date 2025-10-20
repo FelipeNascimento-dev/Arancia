@@ -101,6 +101,6 @@ def ver_usuario_view(request):
             "search": search,
             "cod_base": cod_base,
             "projeto": projeto,
-            "profile": profile,
+            "profile": profile,  "show_config_link": True,
         },
     )

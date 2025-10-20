@@ -28,7 +28,7 @@
     {% endfor %}
   </div>
 
-  {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' or request.resolver_match.url_name == 'recebimento_remessa' %}
+  {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' or request.resolver_match.url_name == 'recebimento_remessa' or request.resolver_match.url_name == 'order_return_check' %}
   {% if serials %}
   <div class="chips-wrap" aria-label="Seriais adicionados">
     {% for s in serials %}
@@ -43,7 +43,7 @@
   {% endif %}
 
   <div class="form-actions">
-    {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' or request.resolver_match.url_name == 'recebimento_remessa' %}
+    {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' or request.resolver_match.url_name == 'recebimento_remessa' or request.resolver_match.url_name == 'order_return_check'%}
     <button type="submit" class="submit-button-right push-left" name="clear_serials" value="1" formnovalidate>
       Limpar
     </button>
@@ -51,13 +51,17 @@
     <div class="serial-counter" role="status" aria-live="polite" title="{{ serials|length }} seriais bipados">
       {{ serials|length }}
     </div>
-
-    <!-- <button type="submit" class="submit-button-right" name="add_serial" value="1" formnovalidate>
-      Inserir serial
-    </button> -->
     {% endif %}
+
+    {% if request.resolver_match.url_name == 'consultar_romaneio' %}
+    <button type="submit" class="submit-button-right btn-success" name="criar_romaneio">
+      Criar romaneio
+    </button>
+    {% endif %}
+    
     <button type="submit" class="submit-button-right" name="enviar_evento" value="1">
       {{ botao_texto }}
     </button>
+
   </div>
 </form>

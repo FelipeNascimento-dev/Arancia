@@ -33,6 +33,7 @@ def extracao_pedidos(request: HttpRequest) -> HttpResponse:
     if request.method == "GET" and request.GET.get("download") == "1":
         # sales_channel = request.session.get("sales_channel") or "All"
         sales_channel = get_user_sales_channel(request.user)
+        form = ExtracaoForm(request.POST)
 
         if not sales_channel:
             messages.error(

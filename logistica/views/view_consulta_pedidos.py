@@ -14,25 +14,26 @@ JSON_CT = "application/json"
 
 
 def get_user_sales_channel(user):
-
     if not user.has_perm(PERM_GERENCIAR):
-        sales_channel = (
-            user.designacao.informacao_adicional.sales_channel
-            if user.designacao and user.designacao.informacao_adicional
-            else None
-        )
-        return [sales_channel]
+        sc = None
+        if getattr(user, 'designacao', None) and user.designacao.informacao_adicional:
+            gai = user.designacao.informacao_adicional
+            if getattr(gai, 'group', None) and gai.group.name == "arancia_PA":
+                sc = (gai.sales_channel or "").strip()
+        return [sc] if sc else []
 
-    qs_base = (
+    qs = (
         GroupAditionalInformation.objects
         .exclude(sales_channel__isnull=True)
         .exclude(sales_channel__exact="")
+        .values_list("sales_channel", flat=True)
         .distinct()
     )
-    sales_channels = []
-    for item in qs_base:
-        if item.sales_channel not in sales_channels:
-            sales_channels.append(item.sales_channel)
+
+    sales_channels = sorted(
+        {(sc or "").strip() for sc in qs if sc},
+        key=lambda s: s.lower()
+    )
     return sales_channels
 
 

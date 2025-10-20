@@ -6,16 +6,19 @@ from django.urls import path
 from .viewsV2 import trackingIPV2
 from .views import index, consulta_id_form, pre_recebimento, \
     recebimento, registrar_romaneio, consulta_id_table, consulta_result, \
-    consulta_pedidos, recebimento_remessa, entrada_pedido, \
-    btn_voltar, reserva_equip, saida_campo, visu_pedido, \
-    consulta_ma84, btn_ma_voltar, consulta_ec01, btn_ec_voltar, \
-    logout_confirm_view, logout_view, registrar_usuario, trackingIP, \
-    extracao_pedidos, consulta_etiquetas, settings_view, UserPasswordChangeView
+    consulta_pedidos, recebimento_remessa, order_consult, button_desn, \
+    btn_voltar, reserva_equip, saida_campo, order_detail, order_return_check, \
+    consulta_ma84, btn_ma_voltar, consulta_ec01, btn_ec_voltar, consult_rom, \
+    logout_confirm_view, logout_view, registrar_usuario, trackingIP, user_ger, skill_ger, \
+    extracao_pedidos, consulta_etiquetas, settings_view, reverse_create, delete_btn, \
+    cancel_btn, send_quotes, toggle_db, \
+    UserPasswordChangeView
 
 app_name = 'logistica'
 
 urlpatterns = [
     path('', index, name='index'),
+    path('toggle-db/', toggle_db, name='toggle_db'),
     path('login/', UserLoginView.as_view(), name='login'),
     path('register/', registrar_usuario, name='register'),
     path('logout/', logout_confirm_view, name='logout_confirm'),
@@ -52,7 +55,15 @@ urlpatterns = [
     path('consulta-etiquetas/', consulta_etiquetas, name='consulta_etiquetas'),
     path('consulta-pedidos/', consulta_pedidos, name='consulta_pedidos'),
     path('recebimento-remessa/', recebimento_remessa, name='recebimento_remessa'),
-    path('entrada-pedido/', entrada_pedido, name='entrada_pedido'),
-    path('pedido/<str:order>/',
-         visu_pedido, name='visu_pedido'),
+    path('consultar-pedido/', order_consult, name='consultar_pedido'),
+    path('buttons-order/<str:order>', button_desn, name='button_desn'),
+    path('consultar-pedido/<str:order>/', order_detail, name='detalhe_pedido'),
+    path('conferir-retirada', order_return_check, name='order_return_check'),
+    path('user-ger/', user_ger, name='user_ger'),
+    path('skill-ger/', skill_ger, name='skill_ger'),
+    path('reverse/consulta/', consult_rom, name='consultar_romaneio'),
+    path('reverse/', reverse_create, name='reverse_create'),
+    path('reverse/delete/<str:serial>/', delete_btn, name='delete_btn'),
+    path('reverse/cancel/<str:id>/', cancel_btn, name='cancel_btn'),
+    path('reverse/envio', send_quotes, name='send_quotes'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

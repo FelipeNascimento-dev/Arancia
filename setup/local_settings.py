@@ -3,11 +3,13 @@ LOCAL_DEBUG = False
 if LOCAL_DEBUG:
     API_KEY_INTELIPOST = '2c7b1f95-9dfc-2e5e-d844-ece50622eb54eacv'
     API_URL = 'http://192.168.0.216/homo-fulfillment'
-    DB_HOST = '192.168.0.219'
+    STOCK_API_URL = 'http://192.168.0.214/hg-stock/api'
+    DB_HOST = '192.168.0.220'
 else:
     API_KEY_INTELIPOST = 'e92231bc-18a9-033b-738d-2039f9452e12etyu'
     DB_HOST = '192.168.0.220'
     API_URL = 'http://192.168.0.216/fulfillment'
+    STOCK_API_URL = 'http://192.168.0.214/stock/api'
 
 PROJECT_BASE_PATH = '/arancia/'
 

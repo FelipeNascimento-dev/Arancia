@@ -22,7 +22,7 @@
         </a>
 
         <!-- Relatórios -->
-        <!--PROBLEMA MAL RESOLVIDO, NAO PODE MEXER AQUI SE NAO QUEBRAR TUDO-->
+        <!--PROBLEMA MAL RESOLVIDO, NAO PODE MEXER AQUI SE NAO VAI QUEBRAR TUDO-->
         <div class="dropdown" style="display: none;">
             <button type="button" class="dropbtn itens-sidebar" id="fake-button">
             </button>
@@ -65,13 +65,14 @@
         </div> -->
 
         <!-- Logística -->
+        {% if perms.logistica.logistica_perm %}
         <div class="dropdown">
             <button type="button" class="dropbtn itens-sidebar">
                 <i class="fas fa-tools"></i>
                 <span class="texto-item">&nbsp; Logística</span>
             </button>
             <div class="dropdown-content">
-                {% if perms.logistica.entrada_flfm %}
+                <!-- {% if perms.logistica.entrada_flfm %}
                 <h5 class="submenu-toggle" data-target="estornos-sub">Entrada (Fulfillment)</h5>
                 <div class="sub-submenu" id="estornos-sub">
                     <a href="{% url 'logistica:consulta_id_form' %}">SAP - Consulta ID</a>
@@ -84,32 +85,55 @@
                         <a href="{% url 'logistica:recebimento' 16 %}">SAP - Estorno de Recebimento</a>
                     </div>
                 </div>
-                {% endif %}
+                {% endif %} -->
+
                 {% if perms.logistica.lastmile_b2c %}
+                <h5 class="submenu-toggle" data-target="consulta-sub">Consultas</h5>
+                <div class="sub-submenu" id="consulta-sub">
+                    <a href="{% url 'logistica:consultar_pedido' %}">Consultar pedidos</a>
+                </div>
                 <h5 class="submenu-toggle" data-target="lastmile-sub">Lastmile (B2C)</h5>
                 <div class="sub-submenu" id="lastmile-sub">
-                    <a href="{% url 'logistica:extracao_pedidos' %}">IP - Extração de Pedidos</a>
-                    <a href="{% url 'logistica:consulta_etiquetas' %}">IP - Consulta de Etiquetas</a>
-                    <a href="{% url 'logistica:consulta_pedidos' %}">IP - Consulta de Pedidos</a>
-                    <a href="{% url 'logistica:pcp' 201 %}">IP - PCP</a>
-                    <h5 class="submenu-toggle" data-target="reserva-sub">SAP - Reserva de equipamento</h5>
-                    <div class="sub-submenu" id="reserva-sub">
-                        <a href="{% url 'logistica:reserva_equip' 84 %}">SAP - Reserva</a>
-                        <a href="{% url 'logistica:consulta_result_ma' %}">SAP - Consulta</a>
+                    {% if perms.logistica.reverse %}
+                    <h5 class="submenu-toggle" data-target="reverse-sub">Reversa</h5>
+                    <div class="sub-submenu" id="reverse-sub">
+                        <a href="{% url 'logistica:consultar_romaneio' %}">Consultar Romaneio</a>
+                        <a href="{% url 'logistica:consulta_etiquetas' %}">Consulta de Etiquetas</a>
                     </div>
-                    <a href="{% url 'logistica:retorno_picking' 202 %}">IP - Retorno do Picking</a>
-                    <a href="{% url 'logistica:consolidacao' 203 %}">IP - Consolidação</a>
-                    <h5 class="submenu-toggle" data-target="saida-sub">SAP - Saída para Campo</h5>
-                    <div class="sub-submenu" id="saida-sub">
-                        <a href="{% url 'logistica:saida_campo' 1 %}">SAP - Saída</a>
-                        <a href="{% url 'logistica:consulta_result_ec' %}">SAP - Consulta</a>
+                    {% endif %}
+                    <h5 class="submenu-toggle" data-target="lastmile-entrada-sub">Fluxo de Entrega</h5>
+                    <div class="sub-submenu" id="lastmile-entrada-sub">
+                        <!-- <a href="{% url 'logistica:extracao_pedidos' %}">IP - Extração de Pedidos</a> -->
+                        <a href="{% url 'logistica:consulta_pedidos' %}">IP - Extração de Pedidos</a>
+                        <a href="{% url 'logistica:pcp' 201 %}">IP - PCP</a>
+                        <h5 class="submenu-toggle" data-target="reserva-sub">SAP - Reserva de equipamento</h5>
+                        <div class="sub-submenu" id="reserva-sub">
+                            <a href="{% url 'logistica:reserva_equip' 84 %}">SAP - Reserva</a>
+                            <a href="{% url 'logistica:consulta_result_ma' %}">SAP - Consulta</a>
+                        </div>
+                        <a href="{% url 'logistica:retorno_picking' 202 %}">IP - Retorno do Picking</a>
+                        <a href="{% url 'logistica:consolidacao' 203 %}">IP - Consolidação</a>
+                        <h5 class="submenu-toggle" data-target="saida-sub">SAP - Saída para Campo</h5>
+                        <div class="sub-submenu" id="saida-sub">
+                            <a href="{% url 'logistica:saida_campo' 1 %}">SAP - Saída</a>
+                            <a href="{% url 'logistica:consulta_result_ec' %}">SAP - Consulta</a>
+                        </div>
+                        <a href="{% url 'logistica:expedicao' 204 %}">IP - Expedição</a>
+                        <a href="{% url 'logistica:consulta_etiquetas' %}">IP - Consulta de Etiquetas</a>
+                        <a href="{% url 'logistica:troca_custodia' 205 %}">IP - Troca de Custódia</a>
+                        <h5 class="submenu-toggle" data-target="estornos-saida-reserva">SAP - Estornos</h5>
+                        <div class="sub-submenu" id="estornos-saida-reserva">
+                            <a href="{% url 'logistica:estorno_reserva' 85 %}">SAP - Estorno Reserva de Equipamento</a>
+                            <a href="{% url 'logistica:cancelamento_saida_campo' 2 %}">SAP - Estorno Saida para
+                                Campo</a>
+                        </div>
                     </div>
-                    <a href="{% url 'logistica:expedicao' 204 %}">IP - Expedição</a>
-                    <a href="{% url 'logistica:troca_custodia' 205 %}">IP - Troca de Custódia</a>
-                    <h5 class="submenu-toggle" data-target="estornos-saida-reserva">SAP - Estornos</h5>
-                    <div class="sub-submenu" id="estornos-saida-reserva">
-                        <a href="{% url 'logistica:estorno_reserva' 85 %}">SAP - Estorno Reserva de Equipamento</a>
-                        <a href="{% url 'logistica:cancelamento_saida_campo' 2 %}">SAP - Estorno Saida para Campo</a>
+                    <h5 class="submenu-toggle" data-target="lastmile-retirada-sub">Fluxo de Retirada</h5>
+                    <div class="sub-submenu" id="lastmile-retirada-sub">
+                        <h5 class="submenu-toggle" data-target="retirada-sub">Retirada de Pedidos</h5>
+                        <div class="sub-submenu" id="retirada-sub">
+                            <a href="{% url 'logistica:order_return_check' %}">Conferir Retirada</a>
+                        </div>
                     </div>
                 </div>
                 <!-- <h5 class="submenu-toggle" data-target="recebimentos-sub">Recebimento via Remessa</h5>
@@ -120,8 +144,12 @@
                 {% endif %}
             </div>
         </div>
-        {% if perms.transportes.transp_menu %}
-        <!-- Transportes -->
+        {% endif %}
+
+
+
+         {% if perms.transportes.transp_menu %}
+          <!-- Transportes -->
         <div class="dropdown">
             <button type="button" class="dropbtn itens-sidebar">
                 <i class="fa-solid fa-motorcycle"></i>
@@ -172,6 +200,22 @@
 
         </div>
         {% endif %}
+
+
+        
+        <!-- Gerenciamento -->
+        {% if perms.logistica.gestao_total %}
+        <div class="dropdown">
+            <button type="button" class="dropbtn itens-sidebar">
+                <i class="fa-solid fa-users"></i>
+                <span class="texto-item">&nbsp; Gerenciamento</span>
+            </button>
+            <div class="dropdown-content">
+                <a href="{% url 'logistica:user_ger' %}">Gestão de Usuários</a>
+                <a href="{% url 'logistica:skill_ger' %}">Gestão de Skills</a>
+            </div>
+        </div>
+        {% endif %}
         <!-- Sistemas -->
         <div class="dropdown">
             <button type="button" class="dropbtn itens-sidebar">
@@ -187,18 +231,6 @@
                 <a href="http://192.168.0.214/site/Index.aspx" target="_blank">Gerencial</a>
             </div>
         </div>
-
-        <!-- Gerenciamento -->
-        <!-- <div class="dropdown">
-            <button type="button" class="dropbtn itens-sidebar">
-                <i class="fa-solid fa-users"></i>
-                <span class="texto-item">&nbsp; Gerenciamento</span>
-            </button>
-            <div class="dropdown-content">
-                <a href="#">Gestão de Setores/PAs</a>
-                <a href="#">Criação de Usuários</a>
-            </div>
-        </div> -->
     </div>
 </div>
 
