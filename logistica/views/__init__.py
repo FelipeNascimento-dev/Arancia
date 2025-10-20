@@ -27,7 +27,3 @@ from .view_reverse_create import reverse_create, delete_btn, cancel_btn
 from .view_consult_rom import consult_rom
 from .view_send_quotes import send_quotes
 from .toggle_db_view import toggle_db
-from .view_unsuccessful_insert import unsuccessful_insert
-from .view_client_select import client_select
-from .view_client_checkin import client_checkin
-from .view_order_select import order_select

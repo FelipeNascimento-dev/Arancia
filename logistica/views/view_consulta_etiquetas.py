@@ -92,20 +92,7 @@ def _fill_urls_with_api(items: List[Dict[str, Any]], request: Optional[HttpReque
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
-    pedido_sessao = (request.session.get("pedido") or "").strip()
-
     if request.method == "GET":
-        if pedido_sessao:
-            items = _add_item([], pedido_sessao, 1)
-            _save_items(request, items)
-            form = EtiquetasForm(initial={"pedido": pedido_sessao})
-            return render(request, "logistica/consulta_etiquetas.html", {
-                "form": form,
-                "botao_texto": "Consultar",
-                "rows": items,
-                'site_title': 'Consulta de Etiquetas'
-            })
-
         _save_items(request, [])
         return render(request, "logistica/consulta_etiquetas.html", {
             "form": EtiquetasForm(),
@@ -134,9 +121,7 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
             "rows": items,
         })
 
-    pedido = (request.POST.get("pedido")
-              or request.session.get("pedido") or "").strip()
-
+    pedido = (request.POST.get("pedido") or "").strip()
     try:
         volume = int(request.POST.get("qtde_vol") or 1)
     except ValueError:

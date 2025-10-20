@@ -5,46 +5,32 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 
 CARRY_PEDIDO_KEY = "carry_pedido_next"
-
-
 def _mark_carry_next(request):
     request.session[CARRY_PEDIDO_KEY] = True
     request.session.modified = True
-
-
 def _consume_carry_next(request) -> bool:
     return request.session.pop(CARRY_PEDIDO_KEY, False)
 
-
 RESERVA_SERIALS_KEY = "reserva_serials"
-
-
 def reserva_get_serials(request) -> list[str]:
     return request.session.get(RESERVA_SERIALS_KEY, [])
-
-
 def reserva_save_serials(request, serials: list[str]) -> None:
     request.session[RESERVA_SERIALS_KEY] = serials
     request.session.modified = True
-
-
 def reserva_dedup_upper(values) -> list[str]:
-    seen = set()
-    out = []
+    seen = set(); out = []
     for v in values or []:
         s = (v or "").strip().upper()
         if s and s not in seen:
-            seen.add(s)
-            out.append(s)
+            seen.add(s); out.append(s)
     return out
 
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 def reserva_equip(request, tp_reg):
-    titulo = 'SAP - Reserva de Equipamento' if str(
-        tp_reg) == '84' else 'SAP - Estorno Reserva de Equipamento'
-    cod_deposito = request.user.designacao.informacao_adicional.deposito
+    titulo = 'SAP - Reserva de Equipamento' if str(tp_reg) == '84' else 'SAP - Estorno Reserva de Equipamento'
+
     if request.method != 'POST':
         initial = {}
         if _consume_carry_next(request):
@@ -138,8 +124,7 @@ def reserva_equip(request, tp_reg):
         if not serials:
             unico = (form.cleaned_data.get('serial') or '').strip().upper()
             if not unico:
-                messages.warning(
-                    request, "Adicione ao menos 1 serial antes de enviar.")
+                messages.warning(request, "Adicione ao menos 1 serial antes de enviar.")
                 return render(request, 'logistica/reserva_equip.html', {
                     'form': form,
                     'etapa_ativa': 'reserva',
@@ -157,19 +142,18 @@ def reserva_equip(request, tp_reg):
             request_data={
                 "serges": serials,
                 "centro": "CTRD",
-                "deposito": cod_deposito
+                "deposito": "989A"
             }
         )
 
         try:
             request_client.send_api_request()
-
-            messages.success(
-                request, f"{len(serials)} serial(is) enviado(s) com sucesso.")
+            
+            messages.success(request, f"{len(serials)} serial(is) enviado(s) com sucesso.")
             reserva_save_serials(request, [])
             _mark_carry_next(request)
             return redirect('logistica:consulta_result_ma')
-
+           
         except Exception as e:
             messages.error(request, f"Erro ao enviar requisição: {e}")
 
@@ -182,8 +166,7 @@ def reserva_equip(request, tp_reg):
             'show_serial': True,
         })
     else:
-        messages.warning(
-            request, f"Corrija os erros do formulário: {form.errors.as_text()}")
+        messages.warning(request, f"Corrija os erros do formulário: {form.errors.as_text()}")
         return render(request, 'logistica/reserva_equip.html', {
             'form': form,
             'etapa_ativa': 'reserva',

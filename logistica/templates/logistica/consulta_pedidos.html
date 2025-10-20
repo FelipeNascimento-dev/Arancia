@@ -1,4 +1,6 @@
-{% extends 'global/base.html' %} {% block content %}
+{% extends 'global/base.html' %}
+
+{% block content %}
 
 <style>
   .form-card-2col {
@@ -21,7 +23,7 @@
   .card {
     background: #fff;
     border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
     overflow: hidden;
   }
 
@@ -45,7 +47,7 @@
   }
 
   .badge-num {
-    background: #4caf50;
+    background: #4CAF50;
     color: #fff;
     border-radius: 50%;
     width: 28px;
@@ -54,7 +56,7 @@
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: .9rem;
     flex: 0 0 28px;
   }
 
@@ -74,7 +76,7 @@
   .card-body p {
     margin: 6px 0;
     color: #555;
-    font-size: 0.92rem;
+    font-size: .92rem;
   }
 
   .card-body strong {
@@ -105,11 +107,6 @@
   .btn-extrair:hover {
     filter: brightness(0.95);
   }
-
-  .pedido-link.clicked {
-    color: gray;
-    text-decoration: line-through;
-  }
 </style>
 
 <div class="form-container">
@@ -136,8 +133,7 @@
     <div class="card-header">
       <span class="badge-num">{{ forloop.counter }}</span>
       <h3 class="card-title">
-        <a href="{% url 'logistica:detalhe_pedido' item.order_number %}" target="_blank" rel="noopener noreferrer"
-          class="pedido-link" data-id="{{ item.order_number }}">
+        <a href="{% url 'logistica:detalhe_pedido' item.order_number %}" class="pedido-link">
           {{ item.order_number }}
         </a>
       </h3>
@@ -167,13 +163,9 @@
   {% endfor %}
 </div>
 
-<form
-  action="{% url 'logistica:consulta_pedidos' %}"
-  method="POST"
-  style="margin-top: 16px"
->
+<form action="{% url 'logistica:consulta_pedidos' %}" method="POST" style="margin-top:16px">
   {% csrf_token %}
-  <input type="hidden" name="id" value="{{ form.id.value }}" />
+  <input type="hidden" name="id" value="{{ form.id.value }}">
   <button class="btn-voltar" type="submit">Voltar</button>
 </form>
 {% endif %}
@@ -183,19 +175,16 @@
     const cards = Array.from(document.querySelectorAll(".card"));
 
     function closeAll(except = null) {
-      cards.forEach((c) => {
+      cards.forEach(c => {
         if (c !== except) {
           c.classList.remove("open");
           const btn = c.querySelector(".toggle-btn");
-          if (btn) {
-            btn.textContent = "+";
-            btn.setAttribute("aria-expanded", "false");
-          }
+          if (btn) { btn.textContent = "+"; btn.setAttribute("aria-expanded", "false"); }
         }
       });
     }
 
-    cards.forEach((card) => {
+    cards.forEach(card => {
       const btn = card.querySelector(".toggle-btn");
       if (!btn) return;
 
@@ -227,20 +216,20 @@
     document.addEventListener("click", () => closeAll());
   });
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const fmt = new Intl.DateTimeFormat("pt-BR", {
-      dateStyle: "short",
-      timeStyle: "medium",
-      timeZone: "America/Sao_Paulo",
+  document.addEventListener('DOMContentLoaded', () => {
+    const fmt = new Intl.DateTimeFormat('pt-BR', {
+      dateStyle: 'short',
+      timeStyle: 'medium',
+      timeZone: 'America/Sao_Paulo'
     });
 
-    document.querySelectorAll("time.js-dt").forEach((el) => {
-      let raw = el.getAttribute("datetime") || el.textContent.trim();
+    document.querySelectorAll('time.js-dt').forEach(el => {
+      let raw = el.getAttribute('datetime') || el.textContent.trim();
       if (!raw) return;
 
-      raw = raw.replace(/(\.\d{3})\d+/, "$1");
-      if (/^\d{4}-\d{2}-\d{2}\s+\d/.test(raw)) raw = raw.replace(" ", "T");
-      if (!/[zZ]|[+-]\d{2}:\d{2}$/.test(raw)) raw += "Z";
+      raw = raw.replace(/(\.\d{3})\d+/, '$1');
+      if (/^\d{4}-\d{2}-\d{2}\s+\d/.test(raw)) raw = raw.replace(' ', 'T');
+      if (!/[zZ]|[+-]\d{2}:\d{2}$/.test(raw)) raw += 'Z';
 
       const d = new Date(raw);
       if (!isNaN(d)) el.textContent = fmt.format(d);
@@ -290,22 +279,5 @@
   });
 </script>
 
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    // Restaura o estado dos links clicados
-    document.querySelectorAll('.pedido-link').forEach(link => {
-      const id = link.dataset.id;
-      if (localStorage.getItem('pedido_clicado_' + id)) {
-        link.classList.add('clicked');
-      }
-
-      // Marca como clicado ao abrir
-      link.addEventListener('click', () => {
-        localStorage.setItem('pedido_clicado_' + id, 'true');
-        link.classList.add('clicked');
-      });
-    });
-  });
-</script>
 
 {% endblock %}

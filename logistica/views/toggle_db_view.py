@@ -1,9 +1,9 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
 import os
 import re
+from django.contrib.auth.decorators import login_required, permission_required
 
 
 @csrf_exempt

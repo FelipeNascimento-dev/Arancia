@@ -137,6 +137,6 @@ def mover_rota_view(request):
             "tecnicos": tecnicos,
             "tecnico_nome": tecnico_nome,
             "created_by": request.user.username,
-            "show_config_link": True,
+              "show_config_link": True,
         },
     )

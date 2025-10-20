@@ -88,20 +88,13 @@
                 {% endif %} -->
 
                 {% if perms.logistica.lastmile_b2c %}
-                <h5 class="submenu-toggle" data-target="checkin-sub">Check-in Geral</h5>
-                <div class="sub-submenu" id="checkin-sub">
-                    <a href="{% url 'logistica:client_select' %}">Seleção de Clientes</a>
+                <h5 class="submenu-toggle" data-target="consulta-sub">Consultas</h5>
+                <div class="sub-submenu" id="consulta-sub">
+                    <a href="{% url 'logistica:consultar_pedido' %}">Consultar pedidos</a>
                 </div>
-
                 <h5 class="submenu-toggle" data-target="lastmile-sub">Lastmile (B2C)</h5>
                 <div class="sub-submenu" id="lastmile-sub">
                     {% if perms.logistica.reverse %}
-                    <h5 class="submenu-toggle" data-target="consulta-sub">Consultas</h5>
-                    <div class="sub-submenu" id="consulta-sub">
-                        <a href="{% url 'logistica:consultar_pedido' %}">Consultar pedidos</a>
-                        <a href="{% url 'logistica:consulta_pedidos' %}">IP - Extração de Pedidos</a>
-                        <a href="{% url 'logistica:consulta_etiquetas' %}">IP - Consulta de Etiquetas</a>
-                    </div>
                     <h5 class="submenu-toggle" data-target="reverse-sub">Reversa</h5>
                     <div class="sub-submenu" id="reverse-sub">
                         <a href="{% url 'logistica:consultar_romaneio' %}">Consultar Romaneio</a>
@@ -153,19 +146,56 @@
         </div>
         {% endif %}
 
-        <!-- Gerenciamento -->
-        {% if perms.logistica.gestao_total %}
+
+
+         {% if perms.transportes.transp_menu %}
+          <!-- Transportes -->
         <div class="dropdown">
             <button type="button" class="dropbtn itens-sidebar">
-                <i class="fa-solid fa-users"></i>
-                <span class="texto-item">&nbsp; Gerenciamento</span>
+                <i class="fa-solid fa-motorcycle"></i>
+                <span class="texto-item">&nbsp;Transportes</span>
             </button>
             <div class="dropdown-content">
-                <a href="{% url 'logistica:user_ger' %}">Gestão de Usuários</a>
-                <a href="{% url 'logistica:skill_ger' %}">Gestão de Skills</a>
+                {% if perms.transportes.gerar_etiquetas %}
+                <!-- <a href="{% url 'transportes:gerar_etiquetas' %}">Gerar Etiquetas</a> -->
+                {% endif %}
+                {% if perms.transportes.controle_campo %}
+                <h5 class="submenu-toggle" data-target="controle-campo">Controle de Campo</h5>
+                <div class="sub-submenu" id="controle-campo">
+                    <a href="{% url 'transportes:extrair_enderecos' %}">Extrair Endereços</a>
+                    <h5 class="submenu-toggle" data-target="controle-campo1">Painel</h5>
+                    <div class="sub-submenu" id="controle-campo1">
+                        <a href="{% url 'transportes:controle' %}">Controle</a>
+                         <a href="{% url 'transportes:Dashboard' %}">Dashboard</a>
+                    </div>
+
+
+
+
+                    <h5 class="submenu-toggle" data-target="Ferramentas">Ferramentas</h5>
+                    <div class="sub-submenu" id="Ferramentas">
+                        {% if perms.transportes.CC_admin %}
+                        <h5 class="submenu-toggle" data-target="Ferramentas1">Usuarios</h5>
+                        <div class="sub-submenu" id="Ferramentas1">
+                            <a href="{% url 'transportes:criar_usuario' %}">Criar Usuario</a>
+                            <a href="{% url 'transportes:ver_usuario' %}">Editar Usuario</a>
+                        </div>
+                        {% endif %}
+                        {% if perms.transportes.controle_campo %}
+                        <h5 class="submenu-toggle" data-target="Ferramentas2">Rotas</h5>
+                        <div class="sub-submenu" id="Ferramentas2">
+                            <a href="{% url 'transportes:ordenar_rota' %}">Ordenar Rotas</a>
+                            <a href="{% url 'transportes:mover_rota' %}">Mover Rotas</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+
+
             </div>
-        </div>
-        {% endif %}
+
 
 
         </div>
