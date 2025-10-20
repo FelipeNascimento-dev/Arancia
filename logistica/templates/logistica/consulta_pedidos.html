@@ -285,6 +285,7 @@
   });
 </script>
 
+
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll('.pedido-link').forEach(link => {
@@ -292,6 +293,7 @@
       if (localStorage.getItem('pedido_clicado_' + id)) {
         link.classList.add('clicked');
       }
+
 
       link.addEventListener('click', () => {
         localStorage.setItem('pedido_clicado_' + id, 'true');
