@@ -1,6 +1,4 @@
-{% extends 'global/base.html' %}
-
-{% block content %}
+{% extends 'global/base.html' %} {% block content %}
 
 <style>
   .form-card-2col {
@@ -23,7 +21,7 @@
   .card {
     background: #fff;
     border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     overflow: hidden;
   }
 
@@ -47,7 +45,7 @@
   }
 
   .badge-num {
-    background: #4CAF50;
+    background: #4caf50;
     color: #fff;
     border-radius: 50%;
     width: 28px;
@@ -56,7 +54,7 @@
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: .9rem;
+    font-size: 0.9rem;
     flex: 0 0 28px;
   }
 
@@ -76,7 +74,7 @@
   .card-body p {
     margin: 6px 0;
     color: #555;
-    font-size: .92rem;
+    font-size: 0.92rem;
   }
 
   .card-body strong {
@@ -101,30 +99,31 @@
     padding: 8px 12px;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, .12);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
   }
 
   .btn-extrair:hover {
     filter: brightness(0.95);
+  }
+
+  .pedido-link.clicked {
+    color: gray;
+    text-decoration: line-through;
   }
 </style>
 
 <div class="form-container">
   <div class="form-card-2col">
     <form method="POST" action="{% url 'logistica:consulta_pedidos' %}">
-      {% csrf_token %}
-      {% include 'global/partials/_form_2colV2.html' %}
+      {% csrf_token %} {% include 'global/partials/_form_2colV2.html' %}
     </form>
 
     <form method="POST" action="{% url 'logistica:extracao_pedidos' %}">
       {% csrf_token %}
-      <button type="submit" class="btn-extrair">
-        Extrair pedidos
-      </button>
+      <button type="submit" class="btn-extrair">Extrair pedidos</button>
     </form>
   </div>
 </div>
-
 
 {% if tabela_dados %}
 <div class="cards-container">
@@ -133,7 +132,13 @@
     <div class="card-header">
       <span class="badge-num">{{ forloop.counter }}</span>
       <h3 class="card-title">
-        <a href="{% url 'logistica:detalhe_pedido' item.order_number %}" class="pedido-link">
+        <a
+          href="{% url 'logistica:detalhe_pedido' item.order_number %}"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="pedido-link"
+          data-id="{{ item.order_number }}"
+        >
           {{ item.order_number }}
         </a>
       </h3>
@@ -141,31 +146,39 @@
 
     <div class="card-body">
       <p>
-        <strong>Ultima Tracking:</strong> <br>
+        <strong>Ultima Tracking:</strong> <br />
         {% if item.ultima_tracking == "TROCA DE CUSTODIA PENDENTE" %}
-        <span style="color:#e53935; font-weight:700;">
+        <span style="color: #e53935; font-weight: 700">
           {{ item.ultima_tracking }}
         </span>
-        {% else %}
-        {{ item.ultima_tracking }}
-        {% endif %}
+        {% else %} {{ item.ultima_tracking }} {% endif %}
       </p>
-      <p><strong>Data de Criação:</strong> <br>
+      <p>
+        <strong>Data de Criação:</strong> <br />
         <time class="js-dt" datetime="{{ item.created_at }}">
           {{ item.created_at}}
         </time>
       </p>
-      <p><strong>Canal de Vendas:</strong> <br> {{ item.sales_channel }}</p>
-      <p><strong>Estado do Volume:</strong> <br> {{ item.volume_state }}
+      <p>
+        <strong>Canal de Vendas:</strong> <br />
+        {{ item.sales_channel }}
+      </p>
+      <p>
+        <strong>Estado do Volume:</strong> <br />
+        {{ item.volume_state }}
       </p>
     </div>
   </div>
   {% endfor %}
 </div>
 
-<form action="{% url 'logistica:consulta_pedidos' %}" method="POST" style="margin-top:16px">
+<form
+  action="{% url 'logistica:consulta_pedidos' %}"
+  method="POST"
+  style="margin-top: 16px"
+>
   {% csrf_token %}
-  <input type="hidden" name="id" value="{{ form.id.value }}">
+  <input type="hidden" name="id" value="{{ form.id.value }}" />
   <button class="btn-voltar" type="submit">Voltar</button>
 </form>
 {% endif %}
@@ -175,16 +188,19 @@
     const cards = Array.from(document.querySelectorAll(".card"));
 
     function closeAll(except = null) {
-      cards.forEach(c => {
+      cards.forEach((c) => {
         if (c !== except) {
           c.classList.remove("open");
           const btn = c.querySelector(".toggle-btn");
-          if (btn) { btn.textContent = "+"; btn.setAttribute("aria-expanded", "false"); }
+          if (btn) {
+            btn.textContent = "+";
+            btn.setAttribute("aria-expanded", "false");
+          }
         }
       });
     }
 
-    cards.forEach(card => {
+    cards.forEach((card) => {
       const btn = card.querySelector(".toggle-btn");
       if (!btn) return;
 
@@ -216,20 +232,20 @@
     document.addEventListener("click", () => closeAll());
   });
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const fmt = new Intl.DateTimeFormat('pt-BR', {
-      dateStyle: 'short',
-      timeStyle: 'medium',
-      timeZone: 'America/Sao_Paulo'
+  document.addEventListener("DOMContentLoaded", () => {
+    const fmt = new Intl.DateTimeFormat("pt-BR", {
+      dateStyle: "short",
+      timeStyle: "medium",
+      timeZone: "America/Sao_Paulo",
     });
 
-    document.querySelectorAll('time.js-dt').forEach(el => {
-      let raw = el.getAttribute('datetime') || el.textContent.trim();
+    document.querySelectorAll("time.js-dt").forEach((el) => {
+      let raw = el.getAttribute("datetime") || el.textContent.trim();
       if (!raw) return;
 
-      raw = raw.replace(/(\.\d{3})\d+/, '$1');
-      if (/^\d{4}-\d{2}-\d{2}\s+\d/.test(raw)) raw = raw.replace(' ', 'T');
-      if (!/[zZ]|[+-]\d{2}:\d{2}$/.test(raw)) raw += 'Z';
+      raw = raw.replace(/(\.\d{3})\d+/, "$1");
+      if (/^\d{4}-\d{2}-\d{2}\s+\d/.test(raw)) raw = raw.replace(" ", "T");
+      if (!/[zZ]|[+-]\d{2}:\d{2}$/.test(raw)) raw += "Z";
 
       const d = new Date(raw);
       if (!isNaN(d)) el.textContent = fmt.format(d);
@@ -238,31 +254,34 @@
 </script>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener("DOMContentLoaded", () => {
     function ymdInTZ(date, tz) {
-      const parts = new Intl.DateTimeFormat('en-GB', {
-        timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit'
+      const parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: tz,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
       }).formatToParts(date);
-      const pick = t => parts.find(p => p.type === t).value;
-      return `${pick('year')}-${pick('month')}-${pick('day')}`;
+      const pick = (t) => parts.find((p) => p.type === t).value;
+      return `${pick("year")}-${pick("month")}-${pick("day")}`;
     }
 
-    const TZ = 'America/Sao_Paulo';
+    const TZ = "America/Sao_Paulo";
     const todayYMD = ymdInTZ(new Date(), TZ);
 
-    const fmt = new Intl.DateTimeFormat('pt-BR', {
-      dateStyle: 'short',
-      timeStyle: 'medium',
-      timeZone: TZ
+    const fmt = new Intl.DateTimeFormat("pt-BR", {
+      dateStyle: "short",
+      timeStyle: "medium",
+      timeZone: TZ,
     });
 
-    document.querySelectorAll('time.js-dt').forEach(el => {
-      let raw = el.getAttribute('datetime') || el.textContent.trim();
+    document.querySelectorAll("time.js-dt").forEach((el) => {
+      let raw = el.getAttribute("datetime") || el.textContent.trim();
       if (!raw) return;
 
-      raw = raw.replace(/(\.\d{3})\d+/, '$1');
-      if (/^\d{4}-\d{2}-\d{2}\s+\d/.test(raw)) raw = raw.replace(' ', 'T');
-      if (!/[zZ]|[+-]\d{2}:\d{2}$/.test(raw)) raw += 'Z';
+      raw = raw.replace(/(\.\d{3})\d+/, "$1");
+      if (/^\d{4}-\d{2}-\d{2}\s+\d/.test(raw)) raw = raw.replace(" ", "T");
+      if (!/[zZ]|[+-]\d{2}:\d{2}$/.test(raw)) raw += "Z";
 
       const d = new Date(raw);
       if (isNaN(d)) return;
@@ -271,13 +290,28 @@
 
       const createdYMD = ymdInTZ(d, TZ);
       if (createdYMD !== todayYMD) {
-        const card = el.closest('.card');
-        if (card) card.classList.add('card--not-today');
-        el.classList.add('date--not-today');
+        const card = el.closest(".card");
+        if (card) card.classList.add("card--not-today");
+        el.classList.add("date--not-today");
       }
     });
   });
 </script>
 
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".pedido-link").forEach((link) => {
+      const id = link.dataset.id;
+      if (localStorage.getItem("pedido_clicado_" + id)) {
+        link.classList.add("clicked");
+      }
+
+      link.addEventListener("click", () => {
+        localStorage.setItem("pedido_clicado_" + id, "true");
+        link.classList.add("clicked");
+      });
+    });
+  });
+</script>
 
 {% endblock %}
