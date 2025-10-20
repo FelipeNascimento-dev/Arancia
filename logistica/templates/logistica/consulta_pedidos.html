@@ -287,14 +287,12 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    // Restaura o estado dos links clicados
     document.querySelectorAll('.pedido-link').forEach(link => {
       const id = link.dataset.id;
       if (localStorage.getItem('pedido_clicado_' + id)) {
         link.classList.add('clicked');
       }
 
-      // Marca como clicado ao abrir
       link.addEventListener('click', () => {
         localStorage.setItem('pedido_clicado_' + id, 'true');
         link.classList.add('clicked');
