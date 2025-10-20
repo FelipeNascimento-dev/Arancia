@@ -139,7 +139,7 @@
       <span class="badge-num">{{ forloop.counter }}</span>
       <h3 class="card-title">
         <a href="{% url 'logistica:detalhe_pedido' item.order_number %}" target="_blank" rel="noopener noreferrer"
-          class="pedido-link">
+          class="pedido-link" data-id="{{ item.order_number }}">
           {{ item.order_number }}
         </a>
       </h3>
@@ -286,7 +286,7 @@
 </script>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
+  document.addEventListener("DOMContentLoaded", function () {
     // Restaura o estado dos links clicados
     document.querySelectorAll('.pedido-link').forEach(link => {
       const id = link.dataset.id;
