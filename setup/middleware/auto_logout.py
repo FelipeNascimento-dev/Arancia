@@ -8,7 +8,7 @@ class AutoLogoutMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
         self.TIMEOUT = getattr(
-            settings, 'AUTO_LOGOUT_DELAY', 21000)  # 30 minutos
+            settings, 'AUTO_LOGOUT_DELAY', 21600)  # 6 horas de inatividade
 
     def __call__(self, request):
         if request.user.is_authenticated:
