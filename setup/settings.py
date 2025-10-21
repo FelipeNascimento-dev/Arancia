@@ -129,6 +129,17 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
 
 
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # ou RabbitMQ, se preferir
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+# Configuração de agendamento
+CELERY_BEAT_SCHEDULE = {
+    'desativar_usuarios_inativos_diariamente': {
+        'task': 'usuarios.tasks.deactivate_inactive_users',
+        'schedule': 86400.0,  # a cada 24h (em segundos)
+    },
+}
+
 try:
     from setup.local_settings import *
 except ImportError:
