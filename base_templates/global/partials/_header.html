@@ -86,8 +86,8 @@
                     </div>
                 </div>
                 {% endif %} -->
-                
-{% if perms.logistica.lastmile_b2c %}
+
+                {% if perms.logistica.lastmile_b2c %}
                 <!-- <h5 class="submenu-toggle" data-target="checkin-sub">Check-in Geral</h5>
                 <div class="sub-submenu" id="checkin-sub">
                     <a href="{% url 'logistica:client_select' %}">Seleção de Clientes</a>
@@ -155,8 +155,8 @@
 
 
 
-         {% if perms.transportes.transp_menu %}
-          <!-- Transportes -->
+        {% if perms.transportes.transp_menu %}
+        <!-- Transportes -->
         <div class="dropdown">
             <button type="button" class="dropbtn itens-sidebar">
                 <i class="fa-solid fa-motorcycle"></i>
@@ -173,7 +173,7 @@
                     <h5 class="submenu-toggle" data-target="controle-campo1">Painel</h5>
                     <div class="sub-submenu" id="controle-campo1">
                         <a href="{% url 'transportes:controle' %}">Controle</a>
-                         <a href="{% url 'transportes:Dashboard' %}">Dashboard</a>
+                        <a href="{% url 'transportes:Dashboard' %}">Dashboard</a>
                     </div>
 
 
@@ -209,7 +209,7 @@
         {% endif %}
 
 
-        
+
         <!-- Gerenciamento -->
         {% if perms.logistica.gestao_total %}
         <div class="dropdown">
