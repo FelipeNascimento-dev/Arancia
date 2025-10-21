@@ -37,6 +37,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'setup.middleware.auto_logout.AutoLogoutMiddleware',
 ]
 
 ROOT_URLCONF = 'setup.urls'
@@ -132,7 +133,6 @@ try:
     from setup.local_settings import *
 except ImportError:
     ...
-
 
 
 def db_host_context(request):
