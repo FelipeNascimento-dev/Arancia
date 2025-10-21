@@ -12,7 +12,7 @@ class UserProfile(models.Model):
     cpf = models.CharField(max_length=14, unique=True,
                            blank=True, null=True)
     avatar = models.URLField(
-        blank=True, null=True, default="https://storage.googleapis.com/appandroidios-38136.appspot.com/Foto%20de%20perfil%20para%20redes%20sociais%20gradiente%20simples%20%284%29_02361f4b-38fb-485d-9bc6-548cb8a442e0.png")
+        blank=True, null=True)
 
 
 class Romaneio(models.Model):

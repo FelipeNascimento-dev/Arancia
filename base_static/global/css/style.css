@@ -19,6 +19,15 @@
 @import url(skill_ger.css);
 @import url(dinamic_table.css);
 @import url(responsividade.css);
+@import url(campo.css);
+@import url(ferramentas.css);
+
+
+
+
+
+
+
 
 
 :root {
@@ -55,6 +64,18 @@ body {
   align-items: flex-start;
   box-sizing: border-box;
   position: relative;
+}
+
+.forma::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-height: 100%;
+  width: 100%;
+  z-index: -1;
+  background: #ffffff;
+  clip-path: polygon(0 0, 60% 0, 100% 100%, 0% 200%);
 }
 
 .hidden {

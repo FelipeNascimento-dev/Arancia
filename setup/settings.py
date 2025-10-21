@@ -14,8 +14,7 @@ SECRET_KEY = 'django-insecure-wg8bt!49d#axro8-8299a1pup&&f*kueeu=%x=2)k0i(0@rtpj
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # NUNCA mude para FALSE. Se não para de funcionar
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -27,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'logistica',
+    'transportes',
 ]
 
 MIDDLEWARE = [
@@ -132,6 +132,7 @@ try:
     from setup.local_settings import *
 except ImportError:
     ...
+
 
 
 def db_host_context(request):

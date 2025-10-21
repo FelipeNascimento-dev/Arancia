@@ -8,24 +8,19 @@ SAIDA_SERIALS_KEY = "saida_serials"
 
 CARRY_PEDIDO_KEY = "carry_pedido_next"
 
-
 def _mark_carry_next(request):
     request.session[CARRY_PEDIDO_KEY] = True
     request.session.modified = True
 
-
 def _consume_carry_next(request) -> bool:
     return request.session.pop(CARRY_PEDIDO_KEY, False)
-
 
 def saida_get_serials(request) -> list[str]:
     return request.session.get(SAIDA_SERIALS_KEY, [])
 
-
 def saida_save_serials(request, serials: list[str]) -> None:
     request.session[SAIDA_SERIALS_KEY] = serials
     request.session.modified = True
-
 
 def saida_dedup_upper(values) -> list[str]:
     seen = set()
@@ -41,10 +36,9 @@ def saida_dedup_upper(values) -> list[str]:
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 def saida_campo(request, tp_reg: str):
-    titulo = 'SAP - Saida para Campo' if str(
-        tp_reg) == '1' else 'SAP - Cancelamento de Saida para Campo'
+    titulo = 'SAP - Saida para Campo' if str(tp_reg) == '1' else 'SAP - Cancelamento de Saida para Campo'
     tp_reg_new = str(tp_reg).zfill(2)
-    cod_deposito = request.user.designacao.informacao_adicional.deposito
+
     serials = saida_get_serials(request)
 
     if request.method == 'POST':
@@ -124,8 +118,7 @@ def saida_campo(request, tp_reg: str):
             if not serials:
                 unico = (form.cleaned_data.get('serial') or '').strip().upper()
                 if not unico:
-                    messages.warning(
-                        request, "Adicione ao menos 1 serial antes de enviar.")
+                    messages.warning(request, "Adicione ao menos 1 serial antes de enviar.")
                     return render(request, 'logistica/saida_campo.html', {
                         'form': form,
                         'etapa_ativa': 'saida_campo',
@@ -139,7 +132,7 @@ def saida_campo(request, tp_reg: str):
             request.session['serials_ec'] = serials
             request.session['gtec'] = gtec
             request.session['origem_os'] = origem_os
-
+            
             request_client = RequestClient(
                 url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ec/{tp_reg_new}/list',
                 method='POST',
@@ -148,17 +141,17 @@ def saida_campo(request, tp_reg: str):
                     "serges": serials,
                     "znum_gt": gtec,
                     "centro": "CTRD",
-                    "deposito": cod_deposito,
+                    "deposito": "989A",
                     "bktxt": "0",
                     "origem_os": origem_os,
                 }
             )
             try:
-                resp = request_client.send_api_request()
+                resp=request_client.send_api_request() 
                 if not isinstance(resp, list):
                     if isinstance(resp, dict) and resp.get("detail"):
                         raise Exception(resp)
-                messages.success(request, 'Mensagem enviada com sucesso')
+                messages.success(request,'Mensagem enviada com sucesso')
             except Exception as e:
                 messages.error(request, f"Erro ao enviar requisição: {e}")
                 return render(request, 'logistica/saida_campo.html', {
@@ -174,8 +167,7 @@ def saida_campo(request, tp_reg: str):
             _mark_carry_next(request)
             return redirect('logistica:consulta_result_ec')
 
-        messages.error(
-            request, f"Corrija os erros do formulário: {form.errors.as_text()}")
+        messages.error(request, f"Corrija os erros do formulário: {form.errors.as_text()}")
         return render(request, 'logistica/saida_campo.html', {
             'form': form,
             'etapa_ativa': 'saida_campo',

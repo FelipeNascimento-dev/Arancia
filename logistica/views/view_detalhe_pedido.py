@@ -72,10 +72,6 @@ def order_detail(request, order: str):
             request.POST or None,
             dados=result
         )
-
-        if "receber_insucesso" in request.POST:
-            return redirect('logistica:unsuccessful_insert', order=order)
-
         tipo = (
             form.fields['shipment_order_type'].initial or '').strip().upper()
         if tipo == "NORMAL":
@@ -181,12 +177,6 @@ def order_detail(request, order: str):
         and ultima_tracking != "205 - TROCA DE CUSTODIA"
     )
 
-    mostrar_receber_insucesso = (
-        tipo == "NORMAL"
-        and volume_state == "DELIVERY_FAILED"
-        and "TROCA DE CUSTODIA" in ultima_tracking
-    )
-
     def bf(name):
         try:
             return form[name]
@@ -205,9 +195,6 @@ def order_detail(request, order: str):
 
     botao_texto = dict_botao_texto.get(tipo)
 
-    if mostrar_receber_insucesso:
-        botao_texto = "RECEBER INSUCESSO"
-
     return render(request, "logistica/detalhe_pedidos.html", {
         'order': order,
         'request_success': request_success,
@@ -219,5 +206,4 @@ def order_detail(request, order: str):
         "site_title": "Detalhe do Pedido",
         "nome_formulario": form.form_title,
         "mostrar_acoes": mostrar_acoes,
-        "mostrar_receber_insucesso": mostrar_receber_insucesso,
     })

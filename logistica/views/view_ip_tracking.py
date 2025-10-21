@@ -243,7 +243,7 @@ def _post_success_redirect(code_info: TrackingOriginalCode, numero_pedido: str) 
     elif code_info.original_code == "203":
         return redirect("logistica:saida_campo", tp_reg=1)
     elif code_info.original_code == "204":
-        return redirect("logistica:consulta_etiquetas")
+        return redirect("logistica:pcp", code=201)
     elif code_info.original_code == "205":
         return redirect("logistica:pcp", code=205)
     else:

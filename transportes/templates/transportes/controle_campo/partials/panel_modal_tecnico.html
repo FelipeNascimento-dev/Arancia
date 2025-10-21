@@ -1,0 +1,488 @@
+<!-- Modal Genérico de Técnico -->
+<style>
+  /* Força o alinhamento real e centralizado horizontal/vertical */
+.modal.show .modal-dialog {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 0 auto !important;
+  transform: none !important;
+}
+
+/* Mantém proporção e estética dos modais grandes */
+.modal-dialog.modal-xl,
+.modal-dialog.modal-lg {
+  max-width: 900px !important; /* ajuste conforme necessário */
+  width: 90% !important;
+  background: transparent !important;
+}
+
+/* Deixa o conteúdo com sombra e borda arredondada */
+.modal-dialog .modal-content {
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.25);
+  margin: auto;
+}
+
+  /* Centraliza o modal na tela */
+.modal-pos-central {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 0 auto !important;
+  transform: none !important;
+}
+
+/* Garante que o conteúdo fique proporcional */
+.modal-pos-central .modal-content {
+  width: 90%;
+  max-width: 800px;
+  margin: auto;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.25);
+}
+
+/* Remove fundo do dialog se quiser ele "flutuando" */
+.modal-pos-central {
+  background: transparent !important;
+}
+
+</style>
+<div
+  class="modal fade"
+  id="modalTecnico"
+  tabindex="-1"
+  aria-labelledby="modalTecnicoLabel"
+  aria-hidden="true"
+>
+ <div class="modal-dialog modal-lg modal-dialog-centered modal-pos-central" style="box-shadow:None;" role="document">
+
+    <div class="modal-content">
+      <!-- Cabeçalho -->
+      <div class="modal-header text-white">
+        <h5 class="modal-title" id="modalTecnicoLabel">
+          <strong>Resumo do Técnico</strong>
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-black"
+          data-bs-dismiss="modal"
+          aria-label="Fechar"
+        ></button>
+      </div>
+
+      <!-- Corpo -->
+      <div class="modal-body">
+        <div class="tec-ficha">
+          <div class="linha">
+           <span class=" titulo"> Nome: </span> <span class=" underline" id="modalTecNome"></span>
+          </div>
+          <div class="linha">
+           <span class=" titulo"> UID: </span><span class=" underline" id="modalTecUid"></span>
+          </div> 
+          <div class="linha">
+          <span class=" titulo"> Unidade: </span>
+            <span class=" underline underline" id="modalTecArea"></span>
+          </div>
+          <div class="linha">
+            <span class=" titulo">Total OS: </span>
+            <span class=" underline underline" id="modalTecTotal"></span>
+          </div>
+          <div class="linha">
+          <span class=" titulo"> OS Concluídas: </span>
+            <span class=" underline" id="modalTecConcluido"></span>
+          </div>
+          <div class="linha">
+        <span class=" titulo">  OS No Tempo: </span>
+            <span class=" underline" id="modalTecNoTempo"></span>
+          </div>
+          <div class="linha">
+           <span class=" titulo"> OS No Limite: </span>
+            <span class=" underline" id="modalTecNoLimite"></span>
+          </div>
+          <div class="linha">
+            <span class=" titulo">OS Atrasadas: </span>
+            <span class=" underline" id="modalTecAtrasado"></span>
+          </div>
+          <div class="linha">
+           <span class=" titulo">Último Login: </span>
+            <span  class=" underline" id="modalTecLastlogin"></span>
+          </div>
+          <div class="linha">
+          <span class=" titulo"> Última Abertura: </span>
+            <span class=" underline" id="modalTecLastopening"></span>
+          </div>
+          <div class="linha">
+          <span class=" titulo">Tempo Ocioso: </span>
+            <span class=" underline" id="modalTecOcioso"></span>
+          </div>
+          <div class="linha">
+          <span class=" titulo">Contatos hoje: </span>
+            <span class=" underline" id="modalhoje"></span>
+          </div>
+             <div class="linha">
+          <span class=" titulo">Contato geral: </span>
+            <span class=" underline" id="modalcontatogeral"></span>
+          </div>
+          <div class="linha">
+           <span class=" titulo">Número:</span>
+            <span class="underline">
+              <a
+                href="#"
+                id="modalTecPhone"
+                class="whatsapp-link"
+                target="_blank"
+              ></a>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rodapé -->
+      <div class="modal-footer">
+        <!-- Dentro do modalTecnico -->
+        <a href="#" id="btnVerRota" class="btn btn-sm btn-primary">Ver Rota</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Ordem de Serviço -->
+<div
+  class="modal fade"
+  id="modalOrdem"
+  tabindex="-1"
+  aria-labelledby="modalOrdemLabel"
+  aria-hidden="true"
+>
+ <div class="modal-dialog modal-lg modal-dialog-centered modal-pos-central" style="box-shadow:None;" role="document">
+
+    <div class="modal-content">
+      <!-- Cabeçalho -->
+      <div class="modal-header text-white">
+        <h5 class="modal-title" id="modalTecnicoLabel">
+          Detalhes da os
+          <strong>
+            <span class="titulo" id="modalOs"></span>
+            <div class="titulo">
+              <span class="status-badge" id="modalStatus"></span></div
+          ></strong>
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-black"
+          data-bs-dismiss="modal"
+          aria-label="Fechar"
+        ></button>
+      </div>
+
+      <!-- Corpo -->
+      <div class="modal-body">
+        <div class="ordem-ficha">
+          <div class="linha">
+           <span class ="titulo" >Nome:</span>
+            <div class=" underline">
+              <span id="nome_tecnico"></span> (<span id="modalUid"></span>)
+            </div>
+          </div>
+
+          <div class="linha">
+             <span class ="titulo" >Horário: </span><span class=" underline" id="modalHorario"></span>
+          </div>
+
+          <div class="linha">
+            <span class ="titulo" > Endereço: </span><span class=" underline" id="modalEndereco"></span>
+          </div>
+
+          <div class="linha">
+            <span class ="titulo" > Tag:</span> <span class=" underline" id="modalTag"></span>
+          </div>
+          <div class="linha">
+            <span class ="titulo" > Flag:</span> <span class=" underline" id="modalFlag"></span>
+          </div>
+          <div class="linha">
+           <span class ="titulo" > Tempo Restante:</span>
+            <span class=" underline" id="modalTempo"></span>
+          </div>
+
+          <div class="linha">
+            <span class ="titulo" > Longitude:</span>
+            <span class=" underline" id="modalLongitude"> </span>
+          </div>
+
+          <div class="linha">
+            <span class ="titulo" > Latitude:</span> <span class="underline" id="modalLatitude"></span>
+          </div>
+          <div class="linha">
+           <span class ="titulo" > Mensagem:</span> <span class=" underline" id="modalMensagem"></span>
+          </div>
+          <i
+                class="fa fa-camera icon-black"
+                style="color:white; cursor: pointer"
+                data-bs-toggle="modal"
+                data-bs-target="#modalFoto"
+              >
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              gap: 2px;
+            "
+          >
+            <img
+              id="modalImageurl"
+              src=""
+              alt="Imagem da OS"
+              style="
+                max-width: 0px;
+                height: auto;
+                border-radius: 2px;
+                margin: 0;
+              "
+            />
+
+            <span>
+              <i
+                class="fa fa-camera icon-black"
+                style="color: black; cursor: pointer"
+                data-bs-toggle="modal"
+                data-bs-target="#modalFoto"
+              >
+              </i></span>
+          </div> </i>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div>Mover OS:</div>
+        <form
+          id="formMoverRota"
+          method="POST"
+          style="display: flex; align-items: center; gap: 10px"
+        >
+          {% csrf_token %}
+
+          <select
+            name="nome_tecnico"
+            id="selectMoverTecnico"
+            class="form-control"
+          >
+            <option value="">Selecione um técnico</option>
+              <option value="2"> Tirar os da rota</option>
+              <option value="0"> Mover para lista de cancelamento</option>
+            {% for tec in tecnicos %}
+              {% if tec.uid is not None and tec.uid != "" %}
+            <option value="{{ tec.uid }}">
+            {{ tec.nome_tecnico}} (UID: {{ tec.uid }})
+            </option>
+              {% endif %}
+            {% endfor %}
+          </select>
+
+          <button
+            type="button"
+            id="btnMoverRota"
+            class="btn btn-sm btn-primary"
+          >
+            Mover <i class="fa fa-share" aria-hidden="true"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="modalFoto"
+  tabindex="-1"
+  aria-labelledby="modalFotoLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-xl modal-dialog-centered "style="box-shadow:None;" role="document" >
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalFotoLabel">
+          Visualização da Imagem da OS
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body text-center" >
+        <img
+          id="imageInModalFoto"
+          src=""
+          alt="Foto detalhada da OS"
+          style="max-width: 30%; height: auto; cursor: zoom-in"
+        />
+      </div>
+      <div class="modal-footer"></div>
+    </div>
+  </div>
+</div>
+<script>
+  document.addEventListener("show.bs.modal", function (event) {
+    const button = event.relatedTarget;
+    if (!button) return;
+
+    // Modal Técnico
+    if (event.target.id === "modalTecnico") {
+      document.getElementById("modalTecNome").textContent =
+        button.dataset.nome || "";
+      document.getElementById("modalTecUid").textContent =
+        button.dataset.uid || "";
+      document.getElementById("modalTecArea").textContent =
+        button.dataset.area || "";
+      document.getElementById("modalTecTotal").textContent =
+        button.dataset.total || "";
+      document.getElementById("modalTecConcluido").textContent =
+        button.dataset.concluido || "";
+      document.getElementById("modalTecNoTempo").textContent =
+        button.dataset.noTempo || "";
+      document.getElementById("modalTecNoLimite").textContent =
+        button.dataset.noLimite || "";
+      document.getElementById("modalTecAtrasado").textContent =
+        button.dataset.atrasado || "";
+      document.getElementById("modalTecLastlogin").textContent =
+        button.dataset.lastlogin || "";
+      document.getElementById("modalTecLastopening").textContent =
+        button.dataset.lastopening || "";
+      document.getElementById("modalTecOcioso").textContent =
+        button.dataset.ocioso || "";
+      document.getElementById("modalhoje").textContent =
+        button.dataset.hoje || "";
+      document.getElementById("modalcontatogeral").textContent =
+           button.dataset.contatogeral || "";
+           
+      const phone = button.dataset.phone || "";
+      const phoneElement = document.getElementById("modalTecPhone");
+      phoneElement.textContent = phone || "";
+      phoneElement.href = phone
+        ? `https://wa.me/55${phone.replace(/\D/g, "")}`
+        : "#";
+
+      //  Atualiza botão "Ver Rota" mantendo filtros ativos
+      const uid = button.dataset.uid || "";
+      const rotaBtn = document.getElementById("btnVerRota");
+      const search = new URLSearchParams(window.location.search);
+      search.set("ver_rota", uid);
+      rotaBtn.href = `?${search.toString()}`;
+    }
+
+    // Modal Ordem de Serviço
+    if (event.target.id === "modalOrdem") {
+      document.getElementById("nome_tecnico").textContent =
+        button.dataset.nome || "";
+      document.getElementById("modalOs").textContent = button.dataset.os || "";
+      document.getElementById("modalUid").textContent =
+        button.dataset.uid || "";
+      document.getElementById("modalHorario").textContent =
+        button.dataset.horario || "";
+      document.getElementById("modalTempo").textContent =
+        button.dataset.tempo || "";
+      document.getElementById("modalLongitude").textContent =
+        button.dataset.longitude || "";
+      document.getElementById("modalLatitude").textContent =
+        button.dataset.latitude || "";
+
+      document.getElementById("modalEndereco").textContent =
+        button.dataset.endereco || "";
+      document.getElementById("modalStatus").textContent =
+        button.dataset.status || "";
+      document.getElementById("modalTag").textContent =
+        button.dataset.tag || "";
+      document.getElementById("modalFlag").textContent =
+        button.dataset.flag || "";
+      document.getElementById("modalMensagem").textContent =
+        button.dataset.mensagem || "";
+    }
+
+    const imageUrl = button.dataset.imageurl || "";
+
+    // 1. Lógica para a imagem PEQUENA no modal de Ordem de Serviço
+    const el = document.getElementById("modalImageurl");
+    const cameraIcon = el.nextElementSibling; // Assume que o ícone está logo após a img
+
+
+    // 2. Lógica para carregar a imagem no NOVO modal de foto (#modalFoto)
+    const photoModalElement = document.getElementById("modalFoto");
+    const imageInModalFoto = document.getElementById("imageInModalFoto");
+
+    // Usa o evento 'show.bs.modal' do modal de FOTO para aplicar o zoom
+    // (isso garante que o elemento de imagem está visível quando o código de zoom roda)
+    photoModalElement.addEventListener("show.bs.modal", function () {
+      if (imageUrl) {
+        imageInModalFoto.src = imageUrl;
+
+        // Reseta o estado do zoom para o padrão (se estava zoomeado na última vez)
+        imageInModalFoto.style.transform = "scale(1)";
+        imageInModalFoto.style.transition = "none"; // Evita transição ao resetar
+        imageInModalFoto.style.cursor = "zoom-in";
+        imageInModalFoto.style.maxWidth = "30%";
+      }
+    });
+
+    // 3. Lógica para o Zoom (aplicada à imagem DENTRO do novo modal)
+    imageInModalFoto.onclick = function () {
+      // Usa 'scale(2)' para um zoom razoável dentro do modal grande
+      if (this.style.transform === "scale(2)") {
+        this.style.transform = "scale(1)";
+        this.style.cursor = "zoom-in";
+        this.style.maxWidth = "30%";
+      } else {
+        this.style.transform = "scale(2)";
+        this.style.cursor = "zoom-out";
+        this.style.maxWidth = "none"; // Permite que a imagem exceda o modal-body
+      }
+      this.style.transition = "transform 0.3s ease";
+      this.style.transformOrigin = "center center";
+    };
+  });
+</script>
+<script>
+  document
+    .getElementById("btnMoverRota")
+    .addEventListener("click", async function () {
+      const tecnicoUid = document.getElementById("selectMoverTecnico").value;
+      const osNumero = document.getElementById("modalOs").textContent.trim();
+
+      if (!tecnicoUid) {
+        alert("Selecione um técnico para mover a OS.");
+        return;
+      }
+
+      if (!osNumero) {
+        alert("Nenhuma OS selecionada.");
+        return;
+      }
+
+      // Monta o payload igual ao formulário "Mover Rotas"
+      const payload = new FormData();
+      payload.append("nome_tecnico", tecnicoUid);
+      payload.append("os_list", osNumero);
+
+      try {
+        const response = await fetch("{% url 'transportes:mover_rota' %}", {
+          method: "POST",
+          headers: { "X-CSRFToken": "{{ csrf_token }}" },
+          body: payload,
+        });
+
+        if (response.ok) {
+          alert("OS movida com sucesso!");
+          location.reload(); // atualiza a tabela
+        } else {
+          const msg = await response.text();
+          alert("Erro ao mover OS:\n" + msg);
+        }
+      } catch (err) {
+        alert("Erro na conexão com o servidor: " + err.message);
+      }
+    });
+</script>

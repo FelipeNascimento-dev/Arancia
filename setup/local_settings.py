@@ -45,3 +45,29 @@ DATABASES = {
         'PORT': '5432',       # padrão do PostgreSQL
     }
 }
+
+
+
+
+
+#CONTROLE DE CAMPO
+
+API_BASE = "http://192.168.0.214/RetencaoAPI/api"
+TOKEN = "K90nIR4PK90nIR4PBKIy0rPZ6uwSqKCDX"
+
+# Mapas
+status_labels = {
+    "concluido": "Concluído",
+    "no_tempo": "No Tempo",
+    "no_limite": "No Limite",
+    "atrasado": "Atrasado",
+    "sem_horario_definido": "Sem Horário",
+}
+status_colors = {
+    "concluido": "bg-blue-600",
+    "no_tempo": "bg-green-600",
+    "no_limite": "bg-yellow-500",
+    "atrasado": "bg-red-600",
+    "sem_horario_definido": "bg-gray-500"
+}
+
