@@ -13,19 +13,21 @@ JSON_CT = "application/json"
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 def client_select(request):
     titulo = "Seleção de Cliente"
-
+    choices = []
     if request.method == "POST":
-        client = request.POST.get("client", None)
-        if client:
 
+        client = request.POST.get("client", None)
+        order = request.POST.get("order", None)
+        if client:
             if client == "cielo":
-                return redirect('logistica:order_select')
+                return redirect('logistica:detalhe_pedido', order=order)
             else:
                 return redirect('logistica:client_checkin')
         else:
             messages.error(request, "Falha ao selecionar o cliente.")
 
-    choices = []
+    request.session.pop('order', None)
+
     try:
         url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=100"
 
