@@ -15,7 +15,6 @@ def client_select(request):
     titulo = "Seleção de Cliente"
     choices = []
     if request.method == "POST":
-
         client = request.POST.get("client", None)
         order = request.POST.get("order", None)
         if client:
