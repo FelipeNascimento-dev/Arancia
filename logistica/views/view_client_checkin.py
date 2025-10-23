@@ -16,9 +16,7 @@ def client_checkin(request):
         form = ClientCheckInForm(request.POST, nome_form=titulo)
 
     else:
-        messages.error(
-            request, "Método inválido. Use o formulário para enviar dados.")
-        form = ClientCheckInForm(nome_form=titulo)
+        form = ClientCheckInForm(request.GET, nome_form=titulo)
 
     return render(request, 'logistica/client_checkin.html', {
         "form": form,

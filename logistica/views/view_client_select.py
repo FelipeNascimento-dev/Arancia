@@ -13,9 +13,19 @@ JSON_CT = "application/json"
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 def client_select(request):
     titulo = "Seleção de Cliente"
-    clients_dict = {}
-    choices = []
 
+    if request.method == "POST":
+        client = request.POST.get("client", None)
+        if client:
+
+            if client == "cielo":
+                return redirect('logistica:order_select')
+            else:
+                return redirect('logistica:client_checkin')
+        else:
+            messages.error(request, "Falha ao selecionar o cliente.")
+
+    choices = []
     try:
         url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=100"
 
@@ -52,32 +62,7 @@ def client_select(request):
         messages.error(request, f"Erro ao obter clientes: {e}")
         choices = [("", "Erro ao carregar clientes")]
 
-    if request.method == "POST":
-        form = ClientSelectForm(
-            request.POST, nome_form=titulo, client_choices=choices)
-        if form.is_valid():
-            selected_client = form.cleaned_data["client"]
-            client_id = clients_dict.get(selected_client)
-            client_name = next(
-                (name for code, name in choices if code == selected_client), "Cliente"
-            )
-
-            request.session["selected_client"] = {
-                "client_code": selected_client,
-                "client_id": client_id,
-                "client_name": client_name,
-            }
-            messages.success(
-                request, f"Cliente selecionado: {selected_client}")
-
-            if selected_client == "cielo":
-                return redirect('logistica:order_select')
-            else:
-                return redirect('logistica:client_checkin')
-        else:
-            messages.error(request, "Falha ao selecionar o cliente.")
-    else:
-        form = ClientSelectForm(nome_form=titulo, client_choices=choices)
+    form = ClientSelectForm(nome_form=titulo, client_choices=choices)
 
     return render(
         request,
