@@ -88,26 +88,19 @@
                 {% endif %} -->
 
                 {% if perms.logistica.lastmile_b2c %}
-                <h5 class="submenu-toggle" data-target="checkin-sub">Check-in Geral</h5>
+                <!-- <h5 class="submenu-toggle" data-target="checkin-sub">Check-in Geral</h5>
                 <div class="sub-submenu" id="checkin-sub">
                     <a href="{% url 'logistica:client_select' %}">Seleção de Clientes</a>
-                </div>
+                </div> -->
 
                 <h5 class="submenu-toggle" data-target="lastmile-sub">Lastmile (B2C)</h5>
                 <div class="sub-submenu" id="lastmile-sub">
-                    {% if perms.logistica.reverse %}
                     <h5 class="submenu-toggle" data-target="consulta-sub">Consultas</h5>
                     <div class="sub-submenu" id="consulta-sub">
-                        <a href="{% url 'logistica:consultar_pedido' %}">Consultar pedidos</a>
+                        <a href="{% url 'logistica:consultar_pedido' %}">Consultar pedido</a>
                         <a href="{% url 'logistica:consulta_pedidos' %}">IP - Extração de Pedidos</a>
                         <a href="{% url 'logistica:consulta_etiquetas' %}">IP - Consulta de Etiquetas</a>
                     </div>
-                    <h5 class="submenu-toggle" data-target="reverse-sub">Reversa</h5>
-                    <div class="sub-submenu" id="reverse-sub">
-                        <a href="{% url 'logistica:consultar_romaneio' %}">Consultar Romaneio</a>
-                        <a href="{% url 'logistica:consulta_etiquetas' %}">Consulta de Etiquetas</a>
-                    </div>
-                    {% endif %}
                     <h5 class="submenu-toggle" data-target="lastmile-entrada-sub">Fluxo de Entrega</h5>
                     <div class="sub-submenu" id="lastmile-entrada-sub">
                         <!-- <a href="{% url 'logistica:extracao_pedidos' %}">IP - Extração de Pedidos</a> -->
@@ -137,11 +130,18 @@
                     </div>
                     <h5 class="submenu-toggle" data-target="lastmile-retirada-sub">Fluxo de Retirada</h5>
                     <div class="sub-submenu" id="lastmile-retirada-sub">
-                        <h5 class="submenu-toggle" data-target="retirada-sub">Retirada de Pedidos</h5>
-                        <div class="sub-submenu" id="retirada-sub">
+                        <!-- <h5 class="submenu-toggle" data-target="retirada-sub">Retirada de Pedidos</h5>
+                        <div class="sub-submenu" id="retirada-sub"> -->
                             <a href="{% url 'logistica:order_return_check' %}">Conferir Retirada</a>
-                        </div>
+                        <!-- </div> -->
                     </div>
+                    {% if perms.logistica.reverse %}
+                    <h5 class="submenu-toggle" data-target="reverse-sub">Reversa</h5>
+                    <div class="sub-submenu" id="reverse-sub">
+                        <a href="{% url 'logistica:consultar_romaneio' %}">Consultar Romaneio</a>
+                        <a href="{% url 'logistica:consulta_etiquetas' %}">Consulta de Etiquetas</a>
+                    </div>
+                    {% endif %}
                 </div>
                 <!-- <h5 class="submenu-toggle" data-target="recebimentos-sub">Recebimento via Remessa</h5>
                 <div class="sub-submenu" id="recebimentos-sub">
