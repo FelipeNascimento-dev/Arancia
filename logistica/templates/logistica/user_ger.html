@@ -21,7 +21,7 @@
                     <th>Usuário</th>
                     <th>Nome Completo</th>
                     <th>E-mail</th>
-                    <th>CPF</th>
+                    <!-- <th>CPF</th> -->
                     <th>Grupos</th>
                     <th>Informação Adicional</th>
                     <th>Ações</th>
@@ -33,7 +33,7 @@
                     <td><strong>{{ user.username }}</strong></td>
                     <td>{{ user.get_full_name|default:"-" }}</td>
                     <td>{{ user.email|default:"-" }}</td>
-                    <td>{{ user.perfil.cpf|default:"-" }}</td>
+                    <!-- <td>{{ user.perfil.cpf|default:"-" }}</td> -->
                     <td>
                         {% for group in user.groups.all %}
                         {% if "CTB" in group.name or "arancia" in group.name %}

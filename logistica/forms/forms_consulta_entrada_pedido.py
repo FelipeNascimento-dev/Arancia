@@ -7,4 +7,4 @@ class OrderConsultForm(forms.Form):
 
     def __init__(self, *args, nome_form=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.nome_formulario = nome_form or "Consultar Entrada"
+        self.nome_formulario = nome_form or "Consultar Pedido"
