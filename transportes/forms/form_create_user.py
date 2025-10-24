@@ -18,7 +18,11 @@ class UsuarioForm(forms.Form):
     )
     documento = forms.CharField(label="Documento", required=True)
     profile = forms.CharField(label="Projeto", required=False)
-
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        
+        self.fields["nome_unidade"].label_from_instance = lambda obj: f"{obj.nome} ({obj.cod_iata}) "
+        
     def clean(self):
         cleaned_data = super().clean()
         pwd = cleaned_data.get("pwd")
