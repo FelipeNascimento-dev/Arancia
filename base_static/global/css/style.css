@@ -1,0 +1,159 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+@import url(navbar.css);
+@import url(login.css);
+@import url(logout.css);
+@import url(register.css);
+@import url(form_3col.css);
+@import url(form_2col.css);
+@import url(form_1col.css);
+@import url(form_card_2col.css);
+@import url(button_1b.css);
+@import url(button_2b.css);
+@import url(consulta_id.css);
+@import url(pagination.css);
+@import url(barra_progresso.css);
+@import url(nav_usuario.css);
+@import url(trackingIP.css);
+@import url(configuracao_user.css);
+@import url(user_ger.css);
+@import url(skill_ger.css);
+@import url(dinamic_table.css);
+@import url(responsividade.css);
+@import url(campo.css);
+@import url(ferramentas.css);
+
+
+
+
+
+
+
+
+
+:root {
+  --background-formularios: #fff;
+  --box-shadow-formularios: 0 0 17px rgba(0, 0, 0, 0.05);
+  --borda-formularios: #cccccc3d;
+  --form-titulo: #3F3F3F;
+  --form-label-color: #3f3f3f;
+  --form-input-color: #fff;
+  --form-input-border: #cccccc77;
+  --button-form-color: #fc9b63;
+  --button-form-color-hover: #ff833c;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.forma {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.forma::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-height: 100%;
+  width: 100%;
+  z-index: -1;
+  background: #ffffff;
+  clip-path: polygon(0 0, 60% 0, 100% 100%, 0% 200%);
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-100%);
+  transition: all 0.4s ease;
+}
+
+.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition: all 0.4s ease;
+}
+
+.welcome-banner {
+  background: linear-gradient(135deg, #ffffff, #f7fafc);
+  border: 1px solid #e2e8f0;
+  padding: 24px;
+  border-radius: 14px;
+  margin: 20px 0;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+  color: #1f2937;
+  animation: fadeIn .5s ease;
+  margin-left: 90px;
+  margin-top: 70px;
+  margin-right: 20px;
+}
+
+.welcome-banner h2 {
+  margin: 0 0 10px;
+  font-size: 1.6rem;
+  color: #0f172a;
+}
+
+.welcome-banner h3 {
+  margin: 14px 0 6px;
+  font-size: 1.1rem;
+  color: #1e293b;
+}
+
+.welcome-banner p,
+.welcome-banner li {
+  line-height: 1.55;
+}
+
+.welcome-banner ul,
+.welcome-banner ol {
+  margin: 8px 0 10px 20px;
+}
+
+.welcome-banner hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 14px 0;
+}
+
+.welcome-banner .tip {
+  background: #eef6ff;
+  border-left: 4px solid #3b82f6;
+  padding: 10px 12px;
+  border-radius: 6px;
+}
+
+.welcome-banner .closing {
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

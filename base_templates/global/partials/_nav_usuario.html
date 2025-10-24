@@ -1,0 +1,117 @@
+<div class="user-navbar" style="{% if DB_HOST == '192.168.0.219' %}background-color:#62ee9c;{% endif %}">
+    <div class="macro-guia" id="macroGuia"></div>
+    {% if show_config_link %}
+  <a
+    href="{% url 'transportes:config_context' %}?next={{ request.path }}"
+    style="
+      text-decoration: none;
+      margin-top: 5px;
+      color: black;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100%;
+    "
+  >
+    Configurações de Filtros
+  </a>
+  {% endif %}    
+    <div class="form-container-center">
+        <form method="get" action="" class="form-pesquisa">
+            <i class="fa-solid fa-magnifying-glass search-icon-inside"></i>
+            <input type="text" name="q" id="q" placeholder="Pesquisar..." value="{{ request.GET.q }}">
+        </form>
+    </div>
+    {% if perms.logistica.ti_interno %}
+    <div class="db-switch-container">
+        <span id="db-label"
+              style="color: {% if DB_HOST == '192.168.0.220' %}#e74c3c{% else %}#27ae60{% endif %};">
+            {% if DB_HOST == '192.168.0.220' %}
+                Produção (DB 220)
+            {% else %}
+                Homologação (DB 219)
+            {% endif %}
+        </span>
+        <label class="switch">
+            <input type="checkbox" id="dbSwitch" {% if DB_HOST == '192.168.0.220' %}checked{% endif %}>
+            <span class="slider round"></span>
+        </label>
+    </div>
+    {% endif %}
+
+    <div class="items-nav-user">
+        <div class="user-dropdown">
+            <button class="user-dropdown-toggle" onclick="toggleUserDropdown()">
+                <div class="user-pic">
+                    <img class="user-profile-pic" src="{{ avatar_url }}" alt="Foto">
+                </div>
+                <span class="user-name">{{ request.user.first_name }} - {{ request.user.username }}</span>
+                <i class="fa fa-chevron-down arrow-icon"></i>
+            </button>
+
+            <ul class="user-dropdown-menu" id="userDropdownMenu">
+                <li class="user-greeting">👋 Olá, {{ request.user.first_name }} {{ request.user.last_name }}</li>
+                <hr>
+                <li><a href="{% url 'logistica:settings' %}"><i class="fa fa-user"></i> Meu Perfil</a></li>
+                <li><a href="#"><i class="fa fa-question-circle"></i> Ajuda</a></li>
+                <!-- {% if perms.auth.add_user %}
+                    <li><a href="{% url 'logistica:register' %}"><i class="fa-solid fa-user-plus"></i>Cadastrar Usuário</a></li>
+                {% endif %} -->
+                <li><a href="{% url 'logistica:logout_confirm' %}"><i class="fa fa-sign-out-alt"></i> Sair</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleUserDropdown() {
+    const menu = document.getElementById('userDropdownMenu');
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+
+document.addEventListener('click', function(e) {
+    const button = document.querySelector('.user-dropdown-toggle');
+    const menu = document.getElementById('userDropdownMenu');
+    if (!button.contains(e.target) && !menu.contains(e.target)) {
+        menu.style.display = 'none';
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const dbSwitch = document.getElementById('dbSwitch');
+    const label = document.getElementById('db-label');
+    if (!dbSwitch || !label) return;
+
+    function atualizarTexto(ativo) {
+        if (ativo) {
+            label.textContent = "Produção (DB 220)";
+            label.style.color = "#e74c3c";
+        } else {
+            label.textContent = "Homologação (DB 219)";
+            label.style.color = "#27ae60";
+        }
+    }
+
+    atualizarTexto(dbSwitch.checked);
+
+    dbSwitch.addEventListener('change', function() {
+        const ativo = this.checked;
+        atualizarTexto(ativo);
+
+        fetch("{% url 'logistica:toggle_db' %}", {
+            method: "POST",
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                alert(`✅ Ambiente alterado para ${data.ambiente} (${data.db_host})`);
+                location.reload();
+            } else {
+                alert("❌ Erro: " + data.msg);
+            }
+        })
+        .catch(() => alert("❌ Falha ao trocar o banco"));
+    });
+});
+</script>

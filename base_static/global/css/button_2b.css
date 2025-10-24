@@ -1,0 +1,48 @@
+.botoes-romaneio {
+  margin-top: 35px;
+  display: flex;
+  width: 100%;
+  gap: 0; 
+  justify-content: space-between;
+}
+
+.botoes-romaneio button {
+  margin: 0 30px; 
+}
+
+.botoes-romaneio button {
+  flex: 1;
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  background-color: #003f5c;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.botoes-romaneio button:hover {
+  background-color: #00517e;
+}
+
+#btn-encerrar {
+  background-color: #d61515;
+}
+
+#btn-encerrar:hover {
+  background-color: #911515;
+}
+
+#contador {
+  flex: 0 0 20%;
+  background-color: #003f5c;
+  color: white;
+  text-align: center;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

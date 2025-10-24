@@ -1,0 +1,251 @@
+.user-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background-color: var(--sidebar-bg);
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 9;
+  gap: 20px;
+}
+
+.macro-guia {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #777;
+  padding-left: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  margin-left: 50px;
+}
+
+.macro-guia a {
+  color: #777;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.form-container-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  transform: none;
+  left: auto;
+}
+
+.form-pesquisa {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.form-pesquisa input[type="text"] {
+  padding: 8px 12px 8px 36px;
+  border: 1.5px solid var(--borda-formularios);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background-color: #ffffff;
+  color: var(--form-titulo);
+  width: 320px;
+  transition: all 0.2s ease-in-out;
+}
+
+.search-icon-inside {
+  position: absolute;
+  left: 10px;
+  font-size: 14px;
+  color: #777;
+  pointer-events: none;
+}
+
+.items-nav-user {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.user-profile-pic {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid #9c9c9c;
+  background: #f0f0f0 center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-profile-pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 50%;
+  display: block;
+}
+
+.user-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.user-dropdown-toggle {
+  background: none;
+  border: none;
+  font: inherit;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.arrow-icon {
+  font-size: 12px;
+  color: #555;
+}
+
+.user-name {
+  font-size: 18px;
+  white-space: nowrap;
+  color: #2c3e50;
+}
+
+.user-dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 8px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  min-width: 220px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  z-index: 10000;
+  list-style: none;
+  padding: 8px 0;
+}
+
+.user-dropdown-menu li {
+  padding: 8px 16px;
+}
+
+.user-dropdown-menu li a {
+  color: #2c3e50;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-dropdown-menu li:hover {
+  background-color: #f2f2f2;
+}
+
+.user-dropdown-menu .user-greeting {
+  padding: 10px;
+  font-weight: bold;
+  color: #333;
+  background: #f9f9f9;
+  cursor: default;
+}
+
+.user-dropdown-menu hr {
+  margin: 5px 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
+
+.user-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  padding: 8px 16px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.db-switch-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.db-label {
+  font-size: 14px;
+  min-width: 160px;
+  text-align: right;
+  user-select: none;
+  font-weight: 600;
+  color: #27ae60;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+  margin-top: 4px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.3s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked+.slider {
+  background-color: #f32121;
+}
+
+input:checked+.slider:before {
+  transform: translateX(22px);
+}

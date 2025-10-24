@@ -1,0 +1,32 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+<div class="form-card-2col" style="margin-top: 65px">
+  <h2><i class="fa fa-user-plus"></i> Criar Usuário</h2>
+
+  <form method="POST" class="form-grid-2col">
+    {% csrf_token %}
+    
+    {% for field in form %}
+      <div class="form-group" style="margin-bottom:15px;">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        
+        <!-- Mostra erros específicos do campo -->
+        {% if field.errors %}
+          <div class="text-danger" style="font-size: 13px;">
+            {% for error in field.errors %}
+              <small>{{ error }}</small><br>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <div class="form-actions" style="grid-column: 1 / -1; text-align: right;">
+      <button type="submit" class="submit-button-right">
+        <i class="fa fa-save"></i> Criar
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

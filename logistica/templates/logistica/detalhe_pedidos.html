@@ -1,0 +1,873 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+    .card-2col {
+        height: auto;
+        margin-top: 65px;
+    }
+
+    .card-group input {
+        font-weight: normal;
+        font-weight: 500;
+    }
+
+    .form-grid.form-3col {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px 24px
+    }
+
+    @media (min-width:720px) {
+        .form-grid.form-3col {
+            grid-template-columns: repeat(2, minmax(0, 1fr))
+        }
+    }
+
+    @media (min-width:1040px) {
+        .form-grid.form-3col {
+            grid-template-columns: repeat(3, minmax(0, 1fr))
+        }
+    }
+
+    .form-field {
+        display: block;
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: transparent;
+        transition: background .2s ease;
+    }
+
+    .form-field:hover {
+        background: rgba(0, 0, 0, .02)
+    }
+
+    .form-field label {
+        display: block;
+        font-size: .78rem;
+        font-weight: 600;
+        letter-spacing: .02em;
+        color: #6b7280;
+        margin-bottom: 4px
+    }
+
+    .form-3col input {
+        border: none !important;
+        border-bottom: 1px solid #e5e7eb !important;
+        padding-bottom: 4px;
+        text-indent: .25rem;
+    }
+
+    .card-display {
+        display: block;
+        width: 100%;
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        outline: none !important;
+        font-size: .98rem;
+        font-weight: 600;
+        color: #111827;
+        caret-color: transparent;
+        pointer-events: none
+    }
+
+    .card-display[disabled] {
+        opacity: 1 !important;
+        -webkit-text-fill-color: #111827
+    }
+
+    input[type="hidden"] {
+        display: none !important
+    }
+
+    .tabs {
+        width: 100%
+    }
+
+    .tab-list {
+        display: flex;
+        gap: 16px;
+        border-bottom: 1px solid #e5e7eb
+    }
+
+    .tab {
+        appearance: none;
+        background: transparent;
+        border: 0;
+        padding: 10px 8px;
+        font-weight: 600;
+        color: #6b7280;
+        cursor: pointer;
+        position: relative
+    }
+
+    .tab[aria-selected="true"] {
+        color: #111827
+    }
+
+    .tab[aria-selected="true"]::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 2px;
+        background: #6366f1;
+        border-radius: 2px
+    }
+
+    .tab-panel {
+        display: none;
+    }
+
+    .tab-panel.active {
+        display: block
+    }
+
+    .tab-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, .06);
+        padding: 16px
+    }
+
+    .signature {
+        position: absolute;
+        top: 115px;
+        right: 50px;
+        font-weight: bold;
+        color: var(--form-titulo);
+        margin: 0;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 100 !important;
+        background-color: #fff;
+    }
+
+    #id_sales_channel {
+        background-color: transparent !important;
+        border: none !important;
+    }
+
+    .card-2col form .card-group:has([name="operation"]),
+    .card-2col form .card-group:has([name="order_number"]),
+    .card-2col form .card-group:has([name="simcard_priority"]),
+    .card-2col form .card-group:has([name="sales_channel"]),
+    .card-2col form .card-group:has([name="maquinetas_key"]),
+    .card-2col form .card-group:has([name="model"]),
+    .card-2col form .card-group:has([name="matnr"]),
+    .card-2col form .card-group:has([name="category"]),
+    .card-2col form .card-group:has([name="terminal_logical_numbers"]),
+    .card-2col form .card-group:has([name="logistic_provider_name"]),
+    .card-2col form .card-group:has([name="origin_name"]),
+    .card-2col form .card-group:has([name="origin_quarter"]),
+    .card-2col form .card-group:has([name="origin_city"]),
+    .card-2col form .card-group:has([name="origin_state_code"]),
+    .card-2col form .card-group:has([name="end_customer_id"]) {
+        display: none !important;
+    }
+
+    .back-detail {
+        position: relative;
+        /* top: 75px;
+        left: 123px; */
+        font-weight: bold;
+        color: var(--form-titulo);
+        margin: 0;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 100;
+        background-color: #fff;
+        border: 1px solid var(--form-titulo);
+        padding: 4px 8px;
+        border-radius: 8px;
+
+    }
+
+    .back-link {
+        text-decoration: none;
+        color: var(--form-titulo);
+        font-size: 12px;
+    }
+
+    .actions-menu {
+        position: relative;
+        display: inline-block;
+    }
+
+    .btn-actions {
+        background: #444;
+        color: #fff;
+        padding: 8px 14px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .btn-actions:hover {
+        background: #666;
+    }
+
+    .actions-dropdown {
+        display: none;
+        position: absolute;
+        background: #ffffff;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        width: 200px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        right: 0px;
+    }
+
+    .actions-dropdown .itens {
+        margin: 0;
+    }
+
+    .dropdown-item {
+        width: 100%;
+        text-align: left;
+        padding: 8px 12px;
+        border: none;
+        background: none;
+        cursor: pointer;
+
+    }
+
+    .dropdown-item:hover {
+        background-color: #f5f5f5;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal.open {
+        display: flex;
+    }
+
+    .modal-content {
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        max-width: 450px;
+        width: 90%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 20px;
+    }
+
+    .modal-redirect {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-redirect.open {
+        display: flex;
+    }
+
+    .modal-content-redirect {
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        max-width: 450px;
+        width: 90%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .modal-actions-redirect {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 20px;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* TABELA */
+
+    .tabela-dinamica-container {
+        width: 100%;
+        margin-top: 0px;
+        padding: 5px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        overflow-x: auto;
+    }
+
+    .tabela-dinamica {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+    }
+
+    .tabela-dinamica thead {
+        background: transparent;
+        color: #757575;
+        font-weight: bold;
+        border-bottom: 2px solid #ccc;
+    }
+
+    .tabela-dinamica th,
+    .tabela-dinamica td {
+        padding: 10px 14px;
+        border-bottom: 1px solid #eaeaea;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .tabela-dinamica tbody tr:nth-child(odd) {
+        background-color: #f9f9f9;
+    }
+
+    .tabela-dinamica tbody tr:hover {
+        background-color: #f1faff;
+    }
+
+    .tabela-dinamica td.status-ok {
+        color: #2ecc71;
+        font-weight: bold;
+    }
+
+    .tabela-dinamica td.status-error {
+        color: #e74c3c;
+        font-weight: bold;
+    }
+
+    .text-muted {
+        color: #888;
+        font-style: italic;
+    }
+
+    .icon-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        color: #0077b6;
+        transition: color 0.2s;
+    }
+
+    .icon-btn:hover {
+        color: #005f86;
+    }
+
+    /* MODAL PARA EXTRAIR PAYLOAD OU RESPONSE */
+
+    /* Modal */
+    .modal-json {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+    }
+
+    .json-modal-content {
+        background: #fff;
+        margin: 4% auto;
+        padding: 20px;
+        border-radius: 10px;
+        width: 85%;
+        max-width: 900px;
+        max-height: 85%;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .json-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .json-modal-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #333;
+    }
+
+    .json-modal-content pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 15px;
+        border-radius: 6px;
+        overflow-x: auto;
+        white-space: pre;
+        text-align: left;
+        font-family: "Courier New", monospace;
+        font-size: 0.9rem;
+        flex-grow: 1;
+    }
+
+    .json-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 10px;
+        gap: 10px;
+    }
+
+    .close {
+        font-size: 26px;
+        cursor: pointer;
+        color: #666;
+    }
+
+    .close:hover {
+        color: #000;
+    }
+
+    .btn-json {
+        padding: 6px 10px;
+        font-size: 18px;
+        border: none;
+        border-radius: 5px;
+        background: transparent;
+        color: #095ab1;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .btn-json:hover {
+        background: #dbdbdb;
+    }
+
+    .btn-copy,
+    .btn-close,
+    .btn-download {
+        padding: 6px 14px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .btn-copy {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-copy:hover {
+        background: #1e7e34;
+    }
+
+    .btn-download {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .btn-download:hover {
+        background: #117a8b;
+    }
+
+    .btn-close {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-close:hover {
+        background: #5a6268;
+    }
+</style>
+
+<div class="form-container">
+    <div class="card-2col">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="signature">
+                {{ form.sales_channel }}
+            </div>
+
+            <div class="back-detail">
+                <a href="{% url 'logistica:consultar_pedido' %}" class="back-link">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
+            {% include 'global/partials/_form_card_2col.html' %}
+
+            <div class="tabs" id="agenda-tabs" style="margin-top:16px;">
+                <div class="tab-list" role="tablist" aria-label="Navegação">
+                    <button class="tab" role="tab" id="tab-produto" aria-controls="panel-produto"
+                        aria-selected="true">Produto
+                    </button>
+                    <button class="tab" role="tab" id="tab-adicionais" aria-controls="panel-adicionais"
+                        aria-selected="false">Adicionais
+                    </button>
+                    <button class="tab" role="tab" id="tab-tracking" aria-controls="panel-tracking"
+                        aria-selected="false">Histórico de Tracking
+                    </button>
+                </div>
+
+                <section class="tab-panel active" role="tabpanel" id="panel-produto" aria-labelledby="tab-produto">
+                    <div class="form-grid form-3col">
+                        {% for campo in produto_campos %}
+                        {% if campo %}
+                        <div class="form-field">
+                            <label>{{ campo.label }}</label>
+                            <input type="text" class="card-display"
+                                value="{{ campo.value|default_if_none:campo.initial }}" disabled>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section class="tab-panel" role="tabpanel" id="panel-adicionais" aria-labelledby="tab-adicionais"
+                    hidden>
+                    <div class="form-grid form-3col">
+                        {% for campo in adicionais_campos %}
+                        {% if campo %}
+                        <div class="form-field">
+                            <label>{{ campo.label }}</label>
+                            <input type="text" class="card-display"
+                                value="{{ campo.value|default_if_none:campo.initial }}" disabled>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section class="tab-panel" role="tabpanel" id="panel-tracking" aria-labelledby="tab-tracking" hidden>
+                    <div class="table-responsive">
+                        {% include "global/partials/_dinamic_table.html" with dados=historico_tracking %}
+                    </div>
+                </section>
+
+                {% if request_success %}
+                <div id="modalRedirect" class="modal-redirect">
+                    <div class="modal-content-redirect">
+                        <h3>Desinstalação Recebida</h3>
+                        <br>
+                        <p>Qual ação deseja realizar a seguir?</p>
+                        <div class="modal-actions-redirect">
+                            <button id="option1" class="submit-button-right"
+                                data-url="{% url 'logistica:consultar_pedido' %}">
+                                Receber novo pedido
+                            </button>
+                            <button id="option2" class="submit-button-right"
+                                data-url="{% url 'logistica:order_return_check' %}?order={{ order|urlencode }}">
+                                Conferência de pedido
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL PARA EXTRAIR PAYLOAD OU RESPONSE -->
+
+<div id="jsonModal" class="modal-json">
+    <div class="json-modal-content">
+        <div class="json-modal-header">
+            <h3 id="jsonModalTitle">JSON</h3>
+            <span class="close" onclick="closeJsonModal()">&times;</span>
+        </div>
+        <pre id="jsonContent"></pre>
+        <div class="json-modal-footer">
+            <button class="btn-copy" onclick="copyJson()">Copiar</button>
+            <button class="btn-download" onclick="downloadJson()">Download</button>
+            <button class="btn-close" onclick="closeJsonModal()">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let lastJsonText = "";
+    let lastJsonTitle = "JSON";
+
+    function showJsonModal(btn) {
+        const raw = btn.getAttribute("data-json");
+        let pretty;
+        try {
+            pretty = JSON.stringify(JSON.parse(raw), null, 2);
+        } catch (e) {
+            pretty = raw;
+        }
+        lastJsonTitle = btn.getAttribute("data-key") || "JSON";
+        lastJsonText = pretty;
+
+        document.getElementById("jsonModalTitle").innerText = lastJsonTitle;
+        document.getElementById("jsonContent").innerText = pretty;
+        document.getElementById("jsonModal").style.display = "block";
+    }
+
+    function closeJsonModal() {
+        document.getElementById("jsonModal").style.display = "none";
+    }
+
+    function copyJson() {
+        navigator.clipboard.writeText(lastJsonText).then(() => {
+            alert("JSON copiado!");
+        });
+    }
+
+    function downloadJson() {
+        const blob = new Blob([lastJsonText], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${lastJsonTitle.replace(/\s+/g, "_").toLowerCase()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    window.onclick = function (event) {
+        const modal = document.getElementById("jsonModal");
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
+
+<script>
+        (function () {
+            const modal = document.getElementById('modalRedirect');
+            if (!modal) return;
+
+            const btn1 = document.getElementById('option1');
+            const btn2 = document.getElementById('option2');
+
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
+            modal.setAttribute('aria-hidden', 'true');
+            modal.setAttribute('tabindex', '-1');
+
+            function openModal() {
+                modal.classList.add('open');
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+                (btn1 || btn2 || modal).focus();
+            }
+
+            function _closeInterno() {
+                modal.classList.remove('open');
+                modal.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+            }
+
+            openModal();
+
+            modal.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+
+            btn1?.addEventListener('click', () => {
+                const url = btn1.dataset.url;
+                if (url) {
+                    _closeInterno();
+                    window.location.href = url;
+                }
+            });
+
+            btn2?.addEventListener('click', () => {
+                const url = btn2.dataset.url;
+                if (url) {
+                    _closeInterno();
+                    window.location.href = url;
+                }
+            });
+
+            function getFocusable() {
+                return Array.from(
+                    modal.querySelectorAll(
+                        'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
+                    )
+                ).filter(el => !el.disabled && el.offsetParent !== null);
+            }
+
+            modal.addEventListener('keydown', (e) => {
+                if (modal.getAttribute('aria-hidden') === 'true') return;
+
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    return;
+                }
+
+                if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.altKey) {
+                    const ae = document.activeElement;
+                    if (ae && ae.tagName === 'BUTTON') {
+                        e.preventDefault();
+                        ae.click();
+                    }
+                    return;
+                }
+
+                if (e.key === 'Tab') {
+                    const nodes = getFocusable();
+                    if (!nodes.length) return;
+                    const first = nodes[0];
+                    const last = nodes[nodes.length - 1];
+
+                    if (e.shiftKey && document.activeElement === first) {
+                        e.preventDefault();
+                        last.focus();
+                    } else if (!e.shiftKey && document.activeElement === last) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                }
+            });
+
+            window._modalAPI = { modal };
+        })();
+
+    (function () {
+        const root = document.getElementById('agenda-tabs');
+        const tabs = root.querySelectorAll('[role="tab"]');
+        function activateTab(tab) {
+            tabs.forEach(t => {
+                const selected = (t === tab);
+                t.setAttribute('aria-selected', selected);
+                t.tabIndex = selected ? 0 : -1;
+                const panel = document.getElementById(t.getAttribute('aria-controls'));
+                panel.classList.toggle('active', selected);
+                panel.hidden = !selected;
+            });
+            tab.focus();
+        }
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => activateTab(tab));
+            tab.addEventListener('keydown', e => {
+                const list = Array.from(tabs);
+                const i = list.indexOf(tab);
+                if (e.key === 'ArrowRight') { e.preventDefault(); activateTab(list[(i + 1) % list.length]); }
+                if (e.key === 'ArrowLeft') { e.preventDefault(); activateTab(list[(i - 1 + list.length) % list.length]); }
+            });
+        });
+    })();
+</script>
+
+<script>
+    (function () {
+        function pad(n) { return String(n).padStart(2, '0'); }
+
+        function parseIsoSmart(isoRaw) {
+            if (!isoRaw) return null;
+            let iso = String(isoRaw).trim();
+            iso = iso.replace(/(\.\d{3})\d+$/, '$1');
+            if (/[Zz]|[+\-]\d{2}:\d{2}$/.test(iso)) {
+                const d = new Date(iso);
+                return isNaN(d) ? null : d;
+            }
+            const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/);
+            if (!m) return null;
+            const [_, Y, M, D, h, mnt, s] = m;
+            return new Date(Number(Y), Number(M) - 1, Number(D), Number(h), Number(mnt), s ? Number(s) : 0, 0);
+        }
+
+        function formatBR(date) {
+            if (!date) return "";
+            const dd = pad(date.getDate());
+            const mm = pad(date.getMonth() + 1);
+            const yyyy = date.getFullYear();
+            const HH = pad(date.getHours());
+            const MM = pad(date.getMinutes());
+            return `${dd}/${mm}/${yyyy} ${HH}:${MM}`;
+        }
+
+        const createdInput = document.getElementById('id_created_at');
+        const updatedInput = document.getElementById('id_updated_at');
+
+        if (createdInput && createdInput.value) {
+            const d = parseIsoSmart(createdInput.value);
+            if (d) createdInput.value = formatBR(d);
+        }
+        if (updatedInput && updatedInput.value) {
+            const d = parseIsoSmart(updatedInput.value);
+            if (d) updatedInput.value = formatBR(d);
+        }
+
+        const createdOut = document.getElementById('createdAtHeader');
+        const updatedOut = document.getElementById('updatedAtHeader');
+        if (createdOut && createdInput) createdOut.textContent = createdInput.value;
+        if (updatedOut && updatedInput) updatedOut.textContent = updatedInput.value;
+
+        document.addEventListener('keydown', function (e) {
+            const api = window._modalAPI;
+            if (!api) return;
+            const { modal } = api;
+
+            const isOpen = modal.classList.contains('open') && modal.getAttribute('aria-hidden') === 'false';
+            if (!isOpen) return;
+
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                return;
+            }
+        });
+    })();
+</script>
+
+<!-- SCRIPT PARA DROPDOWN -->
+<script>
+    function toggleActionsMenu() {
+        const menu = document.getElementById("actions-dropdown");
+        menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+
+    window.addEventListener("click", function (e) {
+        const menu = document.getElementById("actions-dropdown");
+        if (!e.target.matches(".btn-actions")) {
+            menu.style.display = "none";
+        }
+    });
+</script>
+
+{% endblock %}

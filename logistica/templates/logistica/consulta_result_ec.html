@@ -1,0 +1,110 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+{% include 'global/partials/_nav_chevron.html' %}
+
+<style>
+    .form-card-2col {
+        height: auto;
+    }
+
+    .cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+        align-items: start;
+        margin-left: 85px;
+    }
+
+    .card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
+        overflow: hidden;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: flex-start;
+        padding: 12px 14px;
+        background: #f7f7f7;
+    }
+
+    .badge-num {
+        background: #4CAF50;
+        color: #fff;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: .9rem;
+        flex: 0 0 28px;
+    }
+
+    .card-title {
+        margin: 0;
+        font-size: 1rem;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .card-body {
+        padding: 12px 14px;
+    }
+
+    .card-body p {
+        margin: 6px 0;
+        color: #555;
+        font-size: .92rem;
+    }
+
+    .card-body strong {
+        color: #222;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="post" class="form-2col">
+            {% include 'global/partials/_form_2col.html' %}
+        </form>
+    </div>
+</div>
+
+{% if tabela_dados %}
+<div class="cards-container">
+    {% for item in tabela_dados %}
+    <div class="card">
+        <div class="card-header">
+            <span class="badge-num">{{ forloop.revcounter }}</span>
+            <h3 class="card-title">{{ item.mensagem }}</h3>
+        </div>
+
+        <div class="card-body">
+            <p><strong>nr_arq:</strong> {{ item.nr_arq }}</p>
+            <p><strong>status:</strong> {{ item.status }}</p>
+            <p><strong>data:</strong> {{ item.data }}</p>
+            <p><strong>hora:</strong> {{ item.hora }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<form action="{% url 'logistica:btn_ec_voltar' %}" method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="id" value="{{ form.id.value }}">
+    <button class="btn-voltar" type="submit">Voltar</button>
+</form>
+</div>
+{% endif %}
+
+{% endblock content %}
