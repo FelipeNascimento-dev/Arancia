@@ -19,7 +19,11 @@ def criar_user_view(request):
         form = UsuarioForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-
+            unidade = data["nome_unidade"]
+            data["user_created_id"] = request.user.id
+            data["gai_id"] = unidade.id  
+            data["nome_unidade"] = f"PA_{unidade.cod_iata}"
+            
             headers = {
                 "accept": "application/json",
                 "access_token": TOKEN,
