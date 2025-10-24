@@ -75,40 +75,10 @@ def order_detail(request, order: str):
         tipo = (
             form.fields['shipment_order_type'].initial or '').strip().upper()
         if tipo == "NORMAL":
-            try:
-                tracking_atual = int(
-                    (result.get("ultima_tracking") or "200").split(" ")[0])
-                proxima_tracking = min(tracking_atual + 1, 205)
-            except Exception:
-                proxima_tracking = 201
-
             request.session["pedido"] = str(order)
             request.session[CARRY_PEDIDO_KEY] = True
             request.session.modified = True
-
-            return redirect("logistica:pcp", code=proxima_tracking)
-
-        elif tipo in ["RETURN", "REVERSE"]:
-            try:
-                client = RequestClient(
-                    url=f"{API_URL}/api/order-sumary/{order}",
-                    method="GET",
-                    headers={"Accept": "application/json"},
-                )
-                result_detail = client.send_api_request()
-                ultima_tracking = (result_detail.get(
-                    "ultima_tracking") or "").strip().upper()
-            except Exception:
-                ultima_tracking = ""
-
-            import re
-            match = re.match(r"(\d+)", ultima_tracking)
-            if match:
-                code = match.group(1)
-                return redirect("logistica:pcp", code=code)
-
-            return redirect("logistica:pcp", code=201)
-
+            return redirect('logistica:pcp', code='201')
         elif tipo == "RETURN":
             request_success = button_desn(request, order)
             botao_texto = "RECEBER DESINSTALAÇÃO"
@@ -187,13 +157,7 @@ def order_detail(request, order: str):
     historico_tracking = view_order(request, order, 'history')
     request.session["result"] = result
 
-    dict_botao_texto = {
-        "RETURN": "RECEBER DESINSTALAÇÃO",
-        "REVERSE": "RECEBER REVERSA",
-        "NORMAL": "PROXIMA TRACKING"
-    }
-
-    botao_texto = dict_botao_texto.get(tipo)
+    botao_texto = "RECEBER DESINSTALAÇÃO" if tipo == "RETURN" else "RECEBER REVERSA"
 
     return render(request, "logistica/detalhe_pedidos.html", {
         'order': order,
