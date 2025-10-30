@@ -18,6 +18,7 @@ def client_select(request):
         client = request.POST.get("client", None)
         order = request.POST.get("order", None)
         if client:
+            request.session["order"] = order
             if client == "cielo":
                 return redirect('logistica:detalhe_pedido', order=order)
             else:
