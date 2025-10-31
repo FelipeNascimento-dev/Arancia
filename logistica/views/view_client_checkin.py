@@ -12,14 +12,18 @@ def client_checkin(request):
 
     titulo = f"Check-In {client_name}"
 
-    if request.method == "POST":
-        form = ClientCheckInForm(request.POST, nome_form=titulo)
+    pedido_atrelado = request.session.get('order')
 
+    if request.method == "POST":
+        form = ClientCheckInForm(
+            request.POST, nome_form=titulo)
     else:
-        form = ClientCheckInForm(request.GET, nome_form=titulo)
+        form = ClientCheckInForm(
+            request.GET, nome_form=titulo)
 
     return render(request, 'logistica/client_checkin.html', {
         "form": form,
         "site_title": titulo,
         "botao_texto": "Registrar Check-In",
+        "pedido_atrelado": pedido_atrelado,
     })
