@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django import forms
-from .models import PontoAtendimentoInfo, GroupAditionalInformation, UserDesignation
+from .models import PontoAtendimentoInfo, GroupAditionalInformation, UserDesignation, GroupAditionalInformationLegacy
 
 class PontoAtendimentoInfoAdminForm(forms.ModelForm):
     limite_opcoes = [
@@ -34,3 +34,8 @@ class UserDesignationAdmin(admin.ModelAdmin):
     list_display = ('user', 'informacao_adicional')
     search_fields = ('user__username', 'informacao_adicional__nome')
     autocomplete_fields = ('user', 'informacao_adicional')
+
+@admin.register(GroupAditionalInformationLegacy)
+class GroupAditionalInformationLegacyAdmin(admin.ModelAdmin):
+    list_display = ('gaiid', 'cod_contato')
+    search_fields = ('gaiid__nome', 'cod_contato')

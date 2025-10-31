@@ -106,6 +106,21 @@ class GroupAditionalInformation(models.Model):
         return f"{self.cod_iata}-{self.nome}" if self.group else "Sem grupo"
 
 
+class GroupAditionalInformationLegacy(models.Model):
+    id = models.AutoField(primary_key=True)
+    gaiid = models.ForeignKey(
+        GroupAditionalInformation,
+        on_delete=models.CASCADE,
+        related_name="legacy_entries",
+        verbose_name="GAI (GroupAditionalInformation)"
+    )
+    cod_contato = models.CharField(
+        max_length=100, verbose_name="Código do Contato")
+
+    def __str__(self):
+        return f"Legacy {self.gaiid} - {self.cod_contato}"
+
+
 class UserDesignation(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='designacao')
