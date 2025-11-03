@@ -7,20 +7,25 @@ from setup.local_settings import STOCK_API_URL
 import json
 
 JSON_CT = "application/json"
-
-
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 def client_select(request):
     titulo = "Seleção de Cliente"
     choices = []
+    
     if request.method == "POST":
         client = request.POST.get("client", None)
         order = request.POST.get("order", None)
+
+        request.session["order"] = order
+
         if client:
-            request.session["order"] = order
-            if client == "cielo":
+            if client.lower() == "cielo":
+                if not order or order.strip() == "":
+                    messages.error(request, "O campo 'Order' é obrigatório para o cliente Cielo.")
+                    return redirect('logistica:client_select')
                 return redirect('logistica:detalhe_pedido', order=order)
+
             else:
                 return redirect('logistica:client_checkin')
         else:
@@ -30,12 +35,7 @@ def client_select(request):
 
     try:
         url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=100"
-
-        res = RequestClient(
-            url=url,
-            method="GET",
-            headers={"Accept": JSON_CT},
-        )
+        res = RequestClient(url=url, method="GET", headers={"Accept": JSON_CT})
         result = res.send_api_request()
 
         try:
@@ -49,7 +49,7 @@ def client_select(request):
                 data = json.loads(result.text)
             else:
                 data = []
-        except Exception as e:
+        except Exception:
             data = []
 
         if isinstance(data, list) and len(data) > 0:
