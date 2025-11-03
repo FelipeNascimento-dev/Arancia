@@ -20,6 +20,8 @@ def client_select(request):
         request.session["order"] = order
 
         if client:
+            request.session["selected_client"] = {"client_name": client}
+
             if client.lower() == "cielo":
                 if not order or order.strip() == "":
                     messages.error(request, "O campo 'Order' é obrigatório para o cliente Cielo.")

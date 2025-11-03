@@ -61,7 +61,6 @@ def client_checkin(request):
     else:
         initial_data = {
             "pedido_atrelado": pedido_atrelado,
-            # o valor real do destino (texto legível)
             "to_location": to_location_value,
         }
 
@@ -71,7 +70,6 @@ def client_checkin(request):
             from_choices=from_choices,
         )
 
-        # 🔹 Aqui está o ajuste essencial
         if to_location_value:
             form.fields["to_location"].choices = [(to_location_value, to_location_value)]
             form.fields["to_location"].initial = to_location_value
