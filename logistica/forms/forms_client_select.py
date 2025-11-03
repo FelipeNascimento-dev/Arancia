@@ -10,7 +10,7 @@ class ClientSelectForm(forms.Form):
 
     order = forms.CharField(
         label="Número do Pedido (opcional)",
-        required=False,
+        required=False, widget=forms.TextInput(attrs={'autocomplete': 'off'})
     )
 
     def __init__(self, *args, nome_form=None, client_choices=None, **kwargs):
