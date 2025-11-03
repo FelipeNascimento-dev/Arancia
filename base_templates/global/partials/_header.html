@@ -86,8 +86,8 @@
                     </div>
                 </div>
                 {% endif %} -->
-                
-{% if perms.logistica.lastmile_b2c %}
+
+                {% if perms.logistica.lastmile_b2c %}
                 <!-- <h5 class="submenu-toggle" data-target="checkin-sub">Check-in Geral</h5>
                 <div class="sub-submenu" id="checkin-sub">
                     <a href="{% url 'logistica:client_select' %}">Seleção de Clientes</a>
@@ -95,19 +95,12 @@
 
                 <h5 class="submenu-toggle" data-target="lastmile-sub">Lastmile (B2C)</h5>
                 <div class="sub-submenu" id="lastmile-sub">
-                    {% if perms.logistica.reverse %}
                     <h5 class="submenu-toggle" data-target="consulta-sub">Consultas</h5>
                     <div class="sub-submenu" id="consulta-sub">
-                        <a href="{% url 'logistica:consultar_pedido' %}">Consultar pedidos</a>
+                        <a href="{% url 'logistica:consultar_pedido' %}">Consultar pedido</a>
                         <a href="{% url 'logistica:consulta_pedidos' %}">IP - Extração de Pedidos</a>
                         <a href="{% url 'logistica:consulta_etiquetas' %}">IP - Consulta de Etiquetas</a>
                     </div>
-                    <h5 class="submenu-toggle" data-target="reverse-sub">Reversa</h5>
-                    <div class="sub-submenu" id="reverse-sub">
-                        <a href="{% url 'logistica:consultar_romaneio' %}">Consultar Romaneio</a>
-                        <a href="{% url 'logistica:consulta_etiquetas' %}">Consulta de Etiquetas</a>
-                    </div>
-                    {% endif %}
                     <h5 class="submenu-toggle" data-target="lastmile-entrada-sub">Fluxo de Entrega</h5>
                     <div class="sub-submenu" id="lastmile-entrada-sub">
                         <!-- <a href="{% url 'logistica:extracao_pedidos' %}">IP - Extração de Pedidos</a> -->
@@ -137,11 +130,18 @@
                     </div>
                     <h5 class="submenu-toggle" data-target="lastmile-retirada-sub">Fluxo de Retirada</h5>
                     <div class="sub-submenu" id="lastmile-retirada-sub">
-                        <h5 class="submenu-toggle" data-target="retirada-sub">Retirada de Pedidos</h5>
-                        <div class="sub-submenu" id="retirada-sub">
+                        <!-- <h5 class="submenu-toggle" data-target="retirada-sub">Retirada de Pedidos</h5>
+                        <div class="sub-submenu" id="retirada-sub"> -->
                             <a href="{% url 'logistica:order_return_check' %}">Conferir Retirada</a>
-                        </div>
+                        <!-- </div> -->
                     </div>
+                    {% if perms.logistica.reverse %}
+                    <h5 class="submenu-toggle" data-target="reverse-sub">Reversa</h5>
+                    <div class="sub-submenu" id="reverse-sub">
+                        <a href="{% url 'logistica:consultar_romaneio' %}">Consultar Romaneio</a>
+                        <a href="{% url 'logistica:consulta_etiquetas' %}">Consulta de Etiquetas</a>
+                    </div>
+                    {% endif %}
                 </div>
                 <!-- <h5 class="submenu-toggle" data-target="recebimentos-sub">Recebimento via Remessa</h5>
                 <div class="sub-submenu" id="recebimentos-sub">
@@ -155,8 +155,8 @@
 
 
 
-         {% if perms.transportes.transp_menu %}
-          <!-- Transportes -->
+        {% if perms.transportes.transp_menu %}
+        <!-- Transportes -->
         <div class="dropdown">
             <button type="button" class="dropbtn itens-sidebar">
                 <i class="fa-solid fa-motorcycle"></i>
@@ -173,7 +173,7 @@
                     <h5 class="submenu-toggle" data-target="controle-campo1">Painel</h5>
                     <div class="sub-submenu" id="controle-campo1">
                         <a href="{% url 'transportes:controle' %}">Controle</a>
-                         <a href="{% url 'transportes:Dashboard' %}">Dashboard</a>
+                        <a href="{% url 'transportes:Dashboard' %}">Dashboard</a>
                     </div>
 
 
@@ -209,7 +209,58 @@
         {% endif %}
 
 
-        
+
+
+
+
+
+
+
+ 
+            <!-- BKO-->
+
+        {% if perms.transportes.transp_menu %}
+        <!-- BKO -->
+        <div class="dropdown">
+            <button type="button" class="dropbtn itens-sidebar">
+               <i class="fa-solid fa-file-lines"></i>
+                <span class="texto-item">&nbsp;Backoffice</span>
+            </button>
+            <div class="dropdown-content">
+                {% if perms.transportes.gerar_etiquetas %}
+                <!-- <a href="{% url 'transportes:gerar_etiquetas' %}">Gerar Etiquetas</a> -->
+                {% endif %}
+                {% if perms.transportes.controle_campo %}
+                <h5 class="submenu-toggle" data-target="bko">Importar</h5>
+                <div class="sub-submenu" id="bko">
+                    <a href="{% url 'backoffice:importar_excel' %}"> Equipamentos</a>
+                    <h5 class="submenu-toggle" data-target="bko1">Atualizar Status</h5>
+                    <div class="sub-submenu" id="bko1">
+                        <a href="#">Equipamentos</a>
+                    
+                    </div>
+
+
+                </div>
+                {% endif %}
+
+
+
+            </div>
+
+
+
+        </div>
+        {% endif %}
+
+
+
+
+
+
+
+
+
         <!-- Gerenciamento -->
         {% if perms.logistica.gestao_total %}
         <div class="dropdown">

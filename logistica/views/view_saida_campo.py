@@ -132,7 +132,17 @@ def saida_campo(request, tp_reg: str):
             request.session['serials_ec'] = serials
             request.session['gtec'] = gtec
             request.session['origem_os'] = origem_os
-            
+            user = request.user
+            deposito = (
+            user.designacao.informacao_adicional.deposito
+            if user.designacao and user.designacao.informacao_adicional
+            else None
+        )   
+            cod_centro = (
+            user.designacao.informacao_adicional.cod_center
+            if user.designacao and user.designacao.informacao_adicional
+            else None
+        )
             request_client = RequestClient(
                 url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ec/{tp_reg_new}/list',
                 method='POST',
@@ -140,8 +150,8 @@ def saida_campo(request, tp_reg: str):
                 request_data={
                     "serges": serials,
                     "znum_gt": gtec,
-                    "centro": "CTRD",
-                    "deposito": "989A",
+                    "centro": cod_centro,
+                    "deposito": deposito,
                     "bktxt": "0",
                     "origem_os": origem_os,
                 }

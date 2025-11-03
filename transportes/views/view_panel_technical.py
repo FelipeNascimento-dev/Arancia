@@ -36,8 +36,14 @@ def build_tecnicos(
             lastlogin_dt = make_aware(lastlogin_dt)
 
         # --- atraso ---
+      # --- atraso ---
         atraso_min, atraso_fmt, abriu_hoje = 0, "—", False
         lastopening = parse_datetime(t.get("lastopening")) if t.get("lastopening") else None
+
+        # Total de OS e OS concluídas
+        total_os = contagem.get("total", 0)
+        concluidas = status_counts.get("concluido", 0)
+
         if lastopening:
             if is_naive(lastopening):
                 lastopening = make_aware(lastopening)
@@ -49,6 +55,10 @@ def build_tecnicos(
                 atraso_fmt = f"{horas}h {minutos}min" if horas else f"{minutos}min"
                 atrasos.append(atraso_min)
 
+        # 🚫 Se total == concluído, não marcar como atrasado
+        if total_os and total_os == concluidas:
+            atraso_min = 0
+            atraso_fmt = "-"
         # --- TRATAR APENAS O TÉCNICO SELECIONADO ---
         if tratar_uid and pessoa and str(tratar_uid) == uid_str:
             url = TRATAMENTOS.format(APIBASE=API_BASE, uid=uid_str, pessoa=pessoa)
@@ -60,14 +70,14 @@ def build_tecnicos(
                 )
 
                 if response.status_code == 200:
-                    print(f"✅ Técnico {uid_str} tratado com sucesso ({response.status_code})")
+                    print(f" Técnico {uid_str} tratado com sucesso ({response.status_code})")
                 else:
-                    print(f"⚠️ Tratamento falhou p/ UID {uid_str} - status {response.status_code}")
+                    print(f" Tratamento falhou p/ UID {uid_str} - status {response.status_code}")
 
             except requests.exceptions.Timeout:
-                print(f"⏳ Timeout ao tratar técnico {uid_str}")
+                print(f" Timeout ao tratar técnico {uid_str}")
             except requests.exceptions.RequestException as e:
-                print(f"❌ Erro de requisição ao tratar técnico {uid_str}: {e}")
+                print(f" Erro de requisição ao tratar técnico {uid_str}: {e}")
 
         # --- append final ---
         tecnicos.append({

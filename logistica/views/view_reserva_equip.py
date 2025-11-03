@@ -30,7 +30,7 @@ def reserva_dedup_upper(values) -> list[str]:
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 def reserva_equip(request, tp_reg):
     titulo = 'SAP - Reserva de Equipamento' if str(tp_reg) == '84' else 'SAP - Estorno Reserva de Equipamento'
-
+    user = request.user
     if request.method != 'POST':
         initial = {}
         if _consume_carry_next(request):
@@ -134,15 +134,24 @@ def reserva_equip(request, tp_reg):
                     'show_serial': True,
                 })
             serials = [unico]
-
+        deposito = (
+        user.designacao.informacao_adicional.deposito
+        if user.designacao and user.designacao.informacao_adicional
+        else None
+    )   
+        cod_centro = (
+        user.designacao.informacao_adicional.cod_center
+        if user.designacao and user.designacao.informacao_adicional
+        else None
+    )
         request_client = RequestClient(
             url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ma/{tp_reg}/list',
             method='POST',
             headers={'Content-Type': 'application/json'},
             request_data={
                 "serges": serials,
-                "centro": "CTRD",
-                "deposito": "989A"
+                "centro": cod_centro,
+                "deposito":deposito
             }
         )
 
