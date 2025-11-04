@@ -7,35 +7,305 @@
     margin-top: 65px;
   }
 
-  .btn-novo-produto {
-    display: inline-block;
-    margin-top: 20px;
-    background-color: #007bff;
-    color: white;
-    padding: 10px 22px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 40px;
+    margin-left: 90px;
+    margin-right: 25px
   }
 
-  .btn-novo-produto:hover {
-    background-color: #0056b3;
+  .section-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-color, #333);
+    border-bottom: 2px solid var(--primary-color, #c41e3a);
+    display: inline-block;
+    padding-bottom: 4px;
+  }
+
+  .btn-create {
+    background: var(--primary-color, #c41e3a);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+
+  .btn-create:active {
+    transform: scale(0.97);
+  }
+
+  .product-card {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 12px;
+    margin-left: 65px;
+    margin-top: 22px;
+    margin-bottom: 22px;
+    padding: 18px 22px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    transition: all 0.25s ease;
+  }
+
+  .product-card:hover {
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
+
+  .product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .product-header h4 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-color, #111);
+  }
+
+  .product-header p {
+    margin: 4px 0 0;
+    font-size: 0.9rem;
+    color: var(--text-muted, #555);
+  }
+
+  .expand-icon {
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: var(--primary-color, #c41e3a);
+    transition: transform 0.3s ease, color 0.3s ease;
+  }
+
+  .product-card:hover .expand-icon {
+    color: var(--primary-hover, #a1132e);
+  }
+
+  .expanded .expand-icon {
+    transform: rotate(45deg);
+  }
+
+  .product-details {
+    display: none;
+    margin-top: 16px;
+    background: var(--inner-bg, #fafafa);
+    border-radius: 10px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color, #e3e3e3);
+    animation: fadeIn 0.25s ease-in;
+  }
+
+  .expanded .product-details {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .responsive-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    border-radius: 8px;
+    overflow-x: auto;
+    background: var(--table-bg, #fff);
+  }
+
+  .responsive-table th,
+  .responsive-table td {
+    border: 1px solid var(--border-color, #e0e0e0);
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .responsive-table th {
+    background: var(--primary-light, #f6f6f6);
+    color: var(--text-color, #222);
+    font-weight: 600;
+  }
+
+  .responsive-table tr:nth-child(even) td {
+    background: var(--table-zebra, #fdfdfd);
+  }
+
+  .info-title {
+    font-weight: 600;
+    color: var(--primary-color, #c41e3a);
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    text-transform: capitalize;
+  }
+
+  @media (max-width: 768px) {
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+      margin-left: 20px;
+      margin-right: 20px;
+    }
+
+    .btn-create {
+      margin-top: 12px;
+    }
+
+    .product-card {
+      margin-left: 0;
+      padding: 16px;
+    }
+
+    .responsive-table {
+      font-size: 0.8rem;
+      overflow-x: auto;
+      display: block;
+      white-space: nowrap;
+    }
   }
 </style>
 
 <div class="form-container">
   <div class="form-card-2col">
-    <form method="post">
+    <form method="get">
       {% csrf_token %}
       {% include 'global/partials/_form_2colV2.html' %}
-      <button type="submit" class="submit-button-right" name="enviar_evento" value="1">
-        {{ botao_texto }}
-      </button>
-      <button type="submit" name="action" value="criar_produto" class="submit-button-right">
-        Criar novo produto
-      </button>
     </form>
   </div>
 </div>
+
+{% if produtos %}
+<div class="section-header">
+  <h3 class="section-title">Produtos encontrados</h3>
+  <button type="button" class="btn-create" name="criar_produto"
+    onclick="window.location.href='{% url 'logistica:product_create' %}'">
+    Criar novo produto
+  </button>
+</div>
+
+{% for p in produtos %}
+<div class="product-card" id="card-{{ forloop.counter }}">
+  <div class="product-header" onclick="toggleCard('{{ forloop.counter }}')">
+    <div>
+      <h4>{{ p.sku }} - {{ p.description }}</h4>
+      <p><strong>Categoria:</strong> {{ p.category }}</p>
+    </div>
+    <span class="expand-icon">+</span>
+  </div>
+
+  <div class="product-details">
+    {% if p.extra_info %}
+    <div class="info-title">extra_info</div>
+    {% with extra=p.extra_info %}
+    {% if extra.measures %}
+    <div class="info-title">measures</div>
+    {% with info=extra.measures %}
+    <table class="responsive-table">
+      <thead>
+        <tr>
+          {% for key, value in info.items %}
+          <th>{{ key|title }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          {% for key, value in info.items %}
+          <td>
+            {% if value.items %}
+            <div class="info-title">{{ key }}</div>
+            <table class="responsive-table">
+              <thead>
+                <tr>
+                  {% for k2, v2 in value.items %}
+                  <th>{{ k2|title }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {% for k2, v2 in value.items %}
+                  <td>{{ v2 }}</td>
+                  {% endfor %}
+                </tr>
+              </tbody>
+            </table>
+            {% else %}
+            {{ value }}
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+    {% endwith %}
+    {% else %}
+    <table class="responsive-table">
+      <thead>
+        <tr>
+          {% for key, value in extra.items %}
+          <th>{{ key|title }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          {% for key, value in extra.items %}
+          <td>
+            {% if value.items %}
+            <div class="info-title">{{ key }}</div>
+            <table class="responsive-table">
+              <thead>
+                <tr>
+                  {% for k2, v2 in value.items %}
+                  <th>{{ k2|title }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {% for k2, v2 in value.items %}
+                  <td>{{ v2 }}</td>
+                  {% endfor %}
+                </tr>
+              </tbody>
+            </table>
+            {% else %}
+            {{ value }}
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+    {% endif %}
+    {% endwith %}
+    {% endif %}
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+
+<script>
+  function toggleCard(id) {
+    const card = document.getElementById('card-' + id);
+    card.classList.toggle('expanded');
+  }
+</script>
 {% endblock %}
