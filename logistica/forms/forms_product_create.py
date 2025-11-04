@@ -2,7 +2,6 @@ from django import forms
 
 
 class ProductCreateForm(forms.Form):
-    product_name = forms.CharField(label='Nome do Produto', max_length=100)
     client = forms.ChoiceField(
         label="Selecione o Cliente",
         choices=[]
