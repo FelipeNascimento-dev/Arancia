@@ -1,21 +1,41 @@
 {% extends 'global/base.html' %}
 
 {% block content %}
-
 <style>
   .form-card-2col {
     height: auto;
     margin-top: 65px;
   }
-</style>
 
+  .btn-novo-produto {
+    display: inline-block;
+    margin-top: 20px;
+    background-color: #007bff;
+    color: white;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .btn-novo-produto:hover {
+    background-color: #0056b3;
+  }
+</style>
 
 <div class="form-container">
   <div class="form-card-2col">
-    <form method="POST">
-      {% include 'global/partials/_form_2col.html' %}
+    <form method="post">
+      {% csrf_token %}
+      {% include 'global/partials/_form_2colV2.html' %}
+      <button type="submit" class="submit-button-right" name="enviar_evento" value="1">
+        {{ botao_texto }}
+      </button>
+      <button type="submit" name="action" value="criar_produto" class="submit-button-right">
+        Criar novo produto
+      </button>
     </form>
   </div>
 </div>
-
 {% endblock %}
