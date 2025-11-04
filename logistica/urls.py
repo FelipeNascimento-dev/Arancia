@@ -61,9 +61,6 @@ urls_LastmileB2C = [
     path('reverse/envio', send_quotes, name='send_quotes'),
     path('insucesso/insert/<str:order>/',
          unsuccessful_insert, name='unsuccessful_insert'),
-    path('check-in/selecao-clientes/', client_select, name='client_select'),
-    path('check-in/order/select/', order_select, name='order_select'),
-    path('check-in/registro/', client_checkin, name='client_checkin'),
 ]
 
 urls_Gerenciamento = [
@@ -71,5 +68,12 @@ urls_Gerenciamento = [
     path('skill-ger/', skill_ger, name='skill_ger'),
 ]
 
-urlpatterns = urls_User + urls_LastmileB2C + urls_Gerenciamento + \
+urls_Checkin = [
+    path('check-in/selecao-clientes/', client_select, name='client_select'),
+    path('check-in/order/select/', order_select, name='order_select'),
+    path('check-in/registro/', client_checkin, name='client_checkin'),
+    path('check-in/product/create/', product_create, name='product_create'),
+]
+
+urlpatterns = urls_User + urls_LastmileB2C + urls_Gerenciamento + urls_Checkin + \
     static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
