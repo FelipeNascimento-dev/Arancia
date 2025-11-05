@@ -13,11 +13,13 @@ JSON_CT = "application/json"
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 def product_create(request):
     titulo = "Consultar Produtos"
-    choices = []
     produtos = []
     client_map = {}
     cliente_id_para_modal = None
+    form = None
+    choices = []
 
+    # === BUSCA CLIENTES ===
     try:
         url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=100"
         res = RequestClient(url=url, method="GET", headers={"Accept": JSON_CT})
@@ -39,7 +41,6 @@ def product_create(request):
                 (str(i.get("client_code", "")), i.get("client_name", "Sem nome"))
                 for i in data
             ]
-
             client_map = {
                 str(i.get("client_code", "")): i.get("id")
                 for i in data
@@ -52,12 +53,14 @@ def product_create(request):
         messages.error(request, f"Erro ao obter clientes: {e}")
         choices = [("", "Erro ao carregar clientes")]
 
-    if request.method == "POST" and 'criar_produto' in request.POST:
+    # === CRIAR PRODUTO ===
+    if request.method == "POST" and request.POST.get("criar_produto"):
+        form = ProductCreateForm(nome_form=titulo, client_choices=choices)
         try:
             sku = request.POST.get("sku")
             description = request.POST.get("description")
             category = request.POST.get("category")
-            client_id = request.POST.get("client_id")  # já vem numérico oculto
+            client_id = request.POST.get("client_id")
             extra_info_json = request.POST.get("extra_info_json")
 
             payload = {
@@ -73,15 +76,10 @@ def product_create(request):
             res = RequestClient(
                 url=url,
                 method="POST",
-                headers={
-                    "Content-Type": JSON_CT,
-                    "Accept": JSON_CT,
-                },
+                headers={"Content-Type": JSON_CT, "Accept": JSON_CT},
                 request_data=payload,
             )
             api_response = res.send_api_request()
-
-            print(payload)
 
             if isinstance(api_response, (dict, list)):
                 messages.success(request, f"Produto {sku} criado com sucesso!")
@@ -90,31 +88,64 @@ def product_create(request):
                     request, f"Resposta inesperada da API: {api_response}"
                 )
 
+        except json.JSONDecodeError:
+            messages.error(request, "Formato inválido no campo extra_info.")
         except Exception as e:
             messages.error(request, f"Erro ao criar produto: {e}")
 
+    # === EDITAR PRODUTO ===
+    elif request.method == "POST" and request.POST.get("editar_produto"):
         form = ProductCreateForm(nome_form=titulo, client_choices=choices)
+        try:
+            product_id = request.POST.get("product_id")
+            if not product_id:
+                messages.error(request, "ID do produto ausente.")
+            else:
+                payload = {
+                    "sku": request.POST.get("sku"),
+                    "description": request.POST.get("description"),
+                    "category": request.POST.get("category"),
+                    "client_id": request.POST.get("client_id"),
+                    "created_by": request.user.username,
+                    "extra_info": json.loads(request.POST.get("extra_info_json") or "{}"),
+                }
 
-    elif request.method == "GET" and 'enviar_evento' in request.GET:
+                url = f"{STOCK_API_URL}/v1/products/{product_id}"
+                res = RequestClient(
+                    url=url,
+                    method="PUT",
+                    headers={"Content-Type": JSON_CT, "Accept": JSON_CT},
+                    request_data=payload,
+                )
+                api_response = res.send_api_request()
+
+                if isinstance(api_response, dict):
+                    messages.success(
+                        request, f"Produto {payload['sku']} atualizado com sucesso!"
+                    )
+                else:
+                    messages.warning(
+                        request, f"Resposta inesperada da API: {api_response}"
+                    )
+
+        except json.JSONDecodeError:
+            messages.error(request, "Erro no formato de extra_info ao editar.")
+        except Exception as e:
+            messages.error(request, f"Erro ao atualizar produto: {e}")
+
+    # === CONSULTAR PRODUTOS ===
+    elif request.method == "GET" and request.GET.get("enviar_evento"):
         form = ProductCreateForm(
             request.GET, nome_form=titulo, client_choices=choices)
         if form.is_valid():
             client_selected = form.cleaned_data.get("client")
             client_id_selected = client_map.get(client_selected)
-
             cliente_id_para_modal = client_id_selected
-
-            messages.success(
-                request, f"Cliente selecionado: {client_selected}"
-            )
 
             try:
                 url = f"{STOCK_API_URL}/v1/products/{client_selected}"
-                res = RequestClient(
-                    url=url,
-                    method="GET",
-                    headers={"Accept": JSON_CT},
-                )
+                res = RequestClient(url=url, method="GET",
+                                    headers={"Accept": JSON_CT})
                 produtos_response = res.send_api_request()
 
                 if isinstance(produtos_response, str):
@@ -125,7 +156,10 @@ def product_create(request):
                 elif isinstance(produtos_response, dict):
                     produtos = [produtos_response]
 
-                if not produtos:
+                if produtos:
+                    messages.success(
+                        request, f"Cliente {client_selected} carregado com sucesso.")
+                else:
                     messages.info(
                         request, "Nenhum produto encontrado para este cliente.")
 
@@ -133,6 +167,7 @@ def product_create(request):
                 messages.error(request, f"Erro ao obter produtos: {e}")
         else:
             messages.error(request, "Formulário inválido. Verifique os dados.")
+
     else:
         form = ProductCreateForm(nome_form=titulo, client_choices=choices)
 
