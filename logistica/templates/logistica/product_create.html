@@ -13,7 +13,7 @@
     justify-content: space-between;
     margin-top: 40px;
     margin-left: 90px;
-    margin-right: 25px
+    margin-right: 25px;
   }
 
   .section-title {
@@ -179,6 +179,121 @@
       white-space: nowrap;
     }
   }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .modal-content {
+    background: #fff;
+    padding: 25px 30px;
+    border-radius: 12px;
+    width: 480px;
+    max-width: 90%;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    animation: slideDown 0.3s ease-out;
+    position: relative;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    color: var(--primary-color, #c41e3a);
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.3s ease;
+  }
+
+  .close-btn:hover {
+    color: var(--primary-color, #c41e3a);
+  }
+
+  .modal-body form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .modal-body input,
+  .modal-body select {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.95rem;
+  }
+
+  .modal-body button {
+    background: var(--primary-color, #c41e3a);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @keyframes slideDown {
+    from {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  .field-row input,
+  .group-container input {
+    margin-right: 6px;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+
+  .remove-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #c41e3a;
+    font-size: 1rem;
+  }
+
+  .group-container {
+    background: #fafafa;
+    border-radius: 8px;
+    padding: 8px;
+  }
 </style>
 
 <div class="form-container">
@@ -193,8 +308,7 @@
 {% if produtos %}
 <div class="section-header">
   <h3 class="section-title">Produtos encontrados</h3>
-  <button type="button" class="btn-create" name="criar_produto"
-    onclick="window.location.href='{% url 'logistica:product_create' %}'">
+  <button type="button" class="btn-create" id="openModalBtn">
     Criar novo produto
   </button>
 </div>
@@ -302,10 +416,113 @@
 {% endfor %}
 {% endif %}
 
+<div id="createProductModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Criar novo produto</h3>
+      <button class="close-btn" id="closeModalBtn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="createProductForm" method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="criar_produto" value="1">
+        <input type="text" name="sku" placeholder="SKU" required>
+        <input type="text" name="description" placeholder="Descrição" required>
+        <input type="text" name="category" placeholder="Categoria" required>
+        <input type="hidden" name="client_id" value="{{ cliente_id_para_modal|default:'' }}">
+
+        <hr>
+        <h4>Extra Info</h4>
+        <div id="extraInfoContainer"></div>
+        <button type="button" class="btn-create" id="addGroup">+ Adicionar Grupo</button>
+
+        <input type="hidden" name="extra_info_json" id="extra_info_json">
+
+        <hr>
+        <button type="submit" class="btn-create">Salvar Produto</button>
+      </form>
+    </div>
+  </div>
+</div>
+
 <script>
-  function toggleCard(id) {
-    const card = document.getElementById('card-' + id);
-    card.classList.toggle('expanded');
+  // Abre/fecha modal
+  const modal = document.getElementById("createProductModal");
+  const openBtn = document.getElementById("openModalBtn");
+  const closeBtn = document.getElementById("closeModalBtn");
+
+  openBtn.onclick = () => modal.style.display = "flex";
+  closeBtn.onclick = () => modal.style.display = "none";
+  window.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
+
+  const extraContainer = document.getElementById("extraInfoContainer");
+
+  function createGroup(parentDiv, level = 0) {
+    const group = document.createElement("div");
+    group.classList.add("group-container");
+    group.style.marginLeft = `${level * 20}px`;
+
+    const nameInput = document.createElement("input");
+    nameInput.placeholder = "Nome do grupo (ex: measures)";
+    nameInput.classList.add("group-name");
+
+    const fieldArea = document.createElement("div");
+    const addFieldBtn = document.createElement("button");
+    addFieldBtn.type = "button";
+    addFieldBtn.textContent = "+ Campo";
+    addFieldBtn.classList.add("btn-create");
+    addFieldBtn.onclick = () => {
+      const f = document.createElement("div");
+      f.innerHTML = `
+        <input type="text" class="key" placeholder="Chave">
+        <input type="text" class="val" placeholder="Valor">
+        <button type="button" class="remove-btn">🗑</button>
+      `;
+      f.querySelector(".remove-btn").onclick = () => f.remove();
+      fieldArea.appendChild(f);
+    };
+
+    const addSubGroup = document.createElement("button");
+    addSubGroup.type = "button";
+    addSubGroup.textContent = "+ Subgrupo";
+    addSubGroup.classList.add("btn-create");
+    addSubGroup.onclick = () => createGroup(fieldArea, level + 1);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.textContent = "🗑";
+    removeBtn.classList.add("remove-btn");
+    removeBtn.onclick = () => group.remove();
+
+    group.append(nameInput, addFieldBtn, addSubGroup, removeBtn, fieldArea);
+    parentDiv.appendChild(group);
+  }
+
+  document.getElementById("addGroup").onclick = () => createGroup(extraContainer);
+
+  document.getElementById("createProductForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const jsonData = parseContainer(extraContainer);
+    document.getElementById("extra_info_json").value = JSON.stringify(jsonData);
+    e.target.submit();
+  });
+
+  function parseContainer(container) {
+    const data = {};
+    container.querySelectorAll(":scope > .group-container").forEach(group => {
+      const name = group.querySelector(".group-name").value.trim();
+      const inner = {};
+      group.querySelectorAll(":scope > div > .key").forEach((k, i) => {
+        const key = k.value.trim();
+        const val = k.parentElement.querySelector(".val").value.trim();
+        if (key) inner[key] = isNaN(val) ? val : parseFloat(val);
+      });
+      const subs = parseContainer(group.querySelector(":scope > div:last-child"));
+      Object.assign(inner, subs);
+      if (name) data[name] = inner;
+    });
+    return data;
   }
 </script>
+
 {% endblock %}
