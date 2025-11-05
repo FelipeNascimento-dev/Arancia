@@ -446,7 +446,13 @@
 </div>
 
 <script>
-  // Abre/fecha modal
+  function toggleCard(id) {
+    const card = document.getElementById('card-' + id);
+    card.classList.toggle('expanded');
+  }
+</script>
+
+<script>
   const modal = document.getElementById("createProductModal");
   const openBtn = document.getElementById("openModalBtn");
   const closeBtn = document.getElementById("closeModalBtn");
@@ -509,18 +515,27 @@
 
   function parseContainer(container) {
     const data = {};
+
     container.querySelectorAll(":scope > .group-container").forEach(group => {
-      const name = group.querySelector(".group-name").value.trim();
+      const name = group.querySelector(".group-name")?.value.trim();
       const inner = {};
-      group.querySelectorAll(":scope > div > .key").forEach((k, i) => {
+
+      group.querySelectorAll(".key").forEach(k => {
         const key = k.value.trim();
         const val = k.parentElement.querySelector(".val").value.trim();
-        if (key) inner[key] = isNaN(val) ? val : parseFloat(val);
+        if (key) {
+          inner[key] = val !== "" && !isNaN(val) ? parseFloat(val) : val;
+        }
       });
-      const subs = parseContainer(group.querySelector(":scope > div:last-child"));
+
+      const fieldArea = group.querySelector(":scope > .group-container > div:last-child");
+      const subContainer = group.querySelector(":scope > div:last-child");
+      const subs = parseContainer(subContainer);
       Object.assign(inner, subs);
+
       if (name) data[name] = inner;
     });
+
     return data;
   }
 </script>
