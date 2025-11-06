@@ -103,7 +103,8 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
                 "form": form,
                 "botao_texto": "Consultar",
                 "rows": items,
-                'site_title': 'Consulta de Etiquetas'
+                'site_title': 'Consulta de Etiquetas',
+                "etapa_ativa": 'consulta_etiquetas',
             })
 
         _save_items(request, [])
@@ -111,7 +112,8 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
             "form": EtiquetasForm(),
             "botao_texto": "Consultar",
             "rows": [],
-            'site_title': 'Consulta de Etiquetas'
+            'site_title': 'Consulta de Etiquetas',
+            "etapa_ativa": 'consulta_etiquetas',
         })
 
     items = _get_items(request)
@@ -124,6 +126,7 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
                 "form": EtiquetasForm(),
                 "botao_texto": "Consultar",
                 "rows": [],
+                "etapa_ativa": 'consulta_etiquetas',
             })
 
         items = _fill_urls_with_api(items)
@@ -132,6 +135,7 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
             "form": EtiquetasForm(),
             "botao_texto": "Consultar",
             "rows": items,
+            "etapa_ativa": 'consulta_etiquetas',
         })
 
     pedido = (request.POST.get("pedido") or "").strip()
@@ -148,5 +152,6 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
         "form": EtiquetasForm(),
         "botao_texto": "Consultar",
         "rows": items,
-        'site_title': 'Consulta de Etiquetas'
+        'site_title': 'Consulta de Etiquetas',
+        "etapa_ativa": 'consulta_etiquetas',
     })
