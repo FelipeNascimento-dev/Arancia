@@ -590,13 +590,11 @@
 </div>
 
 <script>
-  /* === EXPANDIR / CONTRAIR CARDS === */
   function toggleCard(id) {
     const card = document.getElementById('card-' + id);
     card.classList.toggle('expanded');
   }
 
-  /* === MODAL E FORM === */
   const modal = document.getElementById("createProductModal");
   const openBtn = document.getElementById("openModalBtn");
   const closeBtn = document.getElementById("closeModalBtn");
@@ -608,50 +606,75 @@
 
   openBtn.onclick = () => modal.style.display = "flex";
 
-  // Cria grupos e subgrupos
-  function createGroup(parentDiv, level = 0) {
-    const group = document.createElement("div");
-    group.classList.add("group-container");
-    group.style.marginLeft = `${level * 20}px`;
+function createGroup(parentDiv, level = 0) {
+  const group = document.createElement("div");
+  group.classList.add("group-container");
+  group.style.marginLeft = `${level * 20}px`;
 
-    const nameInput = document.createElement("input");
-    nameInput.placeholder = "Nome do grupo (ex: measures)";
-    nameInput.classList.add("group-name");
+  const nameInput = document.createElement("input");
+  nameInput.placeholder = level === 0 ? "Nome do grupo (ex: medidas)" : "Nome do subgrupo";
+  nameInput.classList.add("group-name");
 
-    const fieldArea = document.createElement("div");
-    const addFieldBtn = document.createElement("button");
-    addFieldBtn.type = "button";
-    addFieldBtn.textContent = "+ Campo";
-    addFieldBtn.classList.add("btn-create");
-    addFieldBtn.onclick = () => {
-      const f = document.createElement("div");
-      f.classList.add("field-row");
-      f.innerHTML = `
-        <input type="text" class="key" placeholder="Chave">
-        <input type="text" class="val" placeholder="Valor">
-        <button type="button" class="remove-btn">🗑</button>
-      `;
-      f.querySelector(".remove-btn").onclick = () => f.remove();
-      fieldArea.appendChild(f);
-    };
+  const fieldArea = document.createElement("div");
 
-    const addSubGroup = document.createElement("button");
-    addSubGroup.type = "button";
-    addSubGroup.textContent = "+ Subgrupo";
-    addSubGroup.classList.add("btn-create");
-    addSubGroup.onclick = () => createGroup(fieldArea, level + 1);
+  const addFieldBtn = document.createElement("button");
+  addFieldBtn.type = "button";
+  addFieldBtn.textContent = "+ Campo";
+  addFieldBtn.classList.add("btn-create");
+  addFieldBtn.onclick = () => {
+    const f = document.createElement("div");
+    f.classList.add("field-row");
+    f.innerHTML = `
+      <input type="text" class="key" placeholder="Chave">
+      <input type="text" class="val" placeholder="Valor">
+      <button type="button" class="remove-btn">🗑</button>
+    `;
+    f.querySelector(".remove-btn").onclick = () => f.remove();
+    fieldArea.appendChild(f);
+  };
 
-    const removeBtn = document.createElement("button");
-    removeBtn.type = "button";
-    removeBtn.textContent = "🗑";
-    removeBtn.classList.add("remove-btn");
-    removeBtn.onclick = () => group.remove();
+  const addSubGroup = document.createElement("button");
+  addSubGroup.type = "button";
+  addSubGroup.textContent = "+ Subgrupo";
+  addSubGroup.classList.add("btn-create");
+  addSubGroup.onclick = () => {
+    const maxSubGroups = 2;
+    const currentSubGroups = fieldArea.querySelectorAll(":scope > .group-container").length;
 
-    group.append(nameInput, addFieldBtn, addSubGroup, removeBtn, fieldArea);
-    parentDiv.appendChild(group);
-  }
+    if (currentSubGroups >= maxSubGroups) {
+      alert(`⚠️ Este grupo já possui o máximo de ${maxSubGroups} subgrupos.`);
+      return;
+    }
 
-  document.getElementById("addGroup").onclick = () => createGroup(extraContainer);
+    if (level >= 1) {
+      alert("⚠️ Subgrupos não podem conter outros subgrupos.");
+      return;
+    }
+
+    createGroup(fieldArea, level + 1);
+  };
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.textContent = "🗑";
+  removeBtn.classList.add("remove-btn");
+  removeBtn.onclick = () => group.remove();
+
+  group.append(nameInput, addFieldBtn, addSubGroup, removeBtn, fieldArea);
+  parentDiv.appendChild(group);
+}
+
+  document.getElementById("addGroup").onclick = () => {
+    const maxGroups = 2;
+    const currentGroups = extraContainer.querySelectorAll(":scope > .group-container").length;
+
+    if (currentGroups >= maxGroups) {
+      alert(`⚠️ Você só pode adicionar até ${maxGroups} grupos.`);
+      return;
+    }
+
+    createGroup(extraContainer);
+  };
 
   form.addEventListener("submit", e => {
     e.preventDefault();
@@ -660,7 +683,6 @@
     e.target.submit();
   });
 
-  // Converter campos para JSON
   function parseContainer(container) {
     const data = {};
     container.querySelectorAll(":scope > .group-container").forEach(group => {
@@ -682,7 +704,6 @@
     return data;
   }
 
-  /* === EDIÇÃO === */
   function openEditModal(id, sku, description, category, extraInfo) {
     modal.style.display = "flex";
     isEditing = true;
@@ -746,7 +767,6 @@
     });
   }
 
-  /* === FECHAR MODAL === */
   closeBtn.onclick = () => resetModal();
   window.onclick = e => { if (e.target === modal) resetModal(); };
 
