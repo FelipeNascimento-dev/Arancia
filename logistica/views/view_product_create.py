@@ -156,14 +156,12 @@ def product_create(request):
                 elif isinstance(produtos_response, dict):
                     produtos = [produtos_response]
 
-                # --- Converter extra_info em JSON string para o template ---
                 for produto in produtos:
                     extra_info = produto.get("extra_info")
                     if isinstance(extra_info, (dict, list)):
                         produto["extra_info_json"] = json.dumps(
                             extra_info, ensure_ascii=False)
                     elif isinstance(extra_info, str):
-                        # tenta converter em dict e reserializar
                         try:
                             produto["extra_info_json"] = json.dumps(
                                 json.loads(extra_info), ensure_ascii=False)
