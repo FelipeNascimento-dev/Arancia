@@ -28,7 +28,13 @@
 
 .etapas {
     display: flex;
+    width: 100%;
     overflow-x: auto;
+}
+
+.etapa {
+    flex: 1;
+    min-width: 0;
 }
 
 .etapa {
