@@ -174,7 +174,6 @@ def _build_request_data(code_info: TrackingOriginalCode, numero_pedido: str, ser
         "tracking_code": code_info.original_code,
         "created_by": request.user.username,
         "from_location_id": location_id,
-        "to_location_id": 0
     }
 
     if code_info.original_code == "202" and seriais_concat:
