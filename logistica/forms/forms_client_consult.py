@@ -2,10 +2,6 @@ from django import forms
 
 
 class ClientConsultForm(forms.Form):
-    client = forms.ChoiceField(
-        label="Selecione o Cliente",
-        choices=[]
-    )
 
     def __init__(self, *args, nome_form=None, client_choices=None, **kwargs):
         super().__init__(*args, **kwargs)
