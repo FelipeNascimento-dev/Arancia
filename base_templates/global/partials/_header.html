@@ -90,6 +90,7 @@
                 {% if perms.logistica.lastmile_b2c %}
                 <h5 class="submenu-toggle" data-target="checkin-sub">Check-in Geral</h5>
                 <div class="sub-submenu" id="checkin-sub">
+                    <a href="{% url 'logistica:client_consult' %}">Consulta de Clientes</a>
                     <a href="{% url 'logistica:client_select' %}">Seleção de Clientes</a>
                     <a href="{% url 'logistica:product_create' %}">Consulta de Produtos</a>
                 </div>
