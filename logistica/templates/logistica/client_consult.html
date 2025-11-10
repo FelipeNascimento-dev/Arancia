@@ -1,16 +1,53 @@
 {% extends 'global/base.html' %}
-
 {% block content %}
 
 <style>
   .form-card-2col {
-    height: auto;
     margin-top: 65px;
+  }
+
+  .actions-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+  }
+
+  .cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 18px;
+    margin-top: 30px;
+    margin-bottom: 50px;
+  }
+
+  .client-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    padding: 18px;
+    transition: transform 0.2s ease;
+  }
+
+  .client-card:hover {
+    transform: translateY(-3px);
+  }
+
+  .client-card h4 {
+    color: #3a5ed4;
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+  }
+
+  .client-card p {
+    font-size: 0.9rem;
+    margin: 4px 0;
+    color: #444;
   }
 
   .modal {
     display: none;
-    /* começa escondido */
     position: fixed;
     z-index: 9999;
     top: 0;
@@ -23,7 +60,6 @@
     align-items: center;
   }
 
-  /* ===== Conteúdo do Modal ===== */
   .modal-content {
     background: #fff;
     border-radius: 12px;
@@ -32,11 +68,9 @@
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
     padding: 30px 35px;
     position: relative;
-    animation: fadeIn 0.25s ease-out;
     border: 1px solid #ddd;
   }
 
-  /* ===== Cabeçalho ===== */
   .modal-content h2 {
     text-align: center;
     margin-top: 0;
@@ -46,7 +80,6 @@
     font-weight: 600;
   }
 
-  /* ===== Botão de Fechar ===== */
   .close {
     position: absolute;
     top: 14px;
@@ -60,52 +93,27 @@
 
   .close:hover {
     color: #ff4d4f;
-    transform: scale(1.1);
   }
 
-  /* ===== Campos ===== */
   .modal-content form {
     display: flex;
     flex-direction: column;
     gap: 14px;
   }
 
-  .modal-content label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #333;
-  }
-
   .modal-content input,
   .modal-content textarea {
     background: #fafafa;
     border: 1px solid #ccc;
-    color: #333;
     border-radius: 6px;
     padding: 8px 10px;
-    font-size: 0.95rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
   }
 
-  .modal-content input:focus,
-  .modal-content textarea:focus {
-    border-color: #007bff;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
-  }
-
-  .modal-content textarea {
-    resize: vertical;
-    min-height: 70px;
-    font-family: monospace;
-  }
-
-  /* ===== Botão Salvar ===== */
   .btn-success {
     background: #16a34a;
     border: none;
     color: #fff;
-    padding: 10px 0;
+    padding: 10px 16px;
     font-size: 1rem;
     font-weight: 600;
     border-radius: 6px;
@@ -118,37 +126,62 @@
     transform: scale(1.02);
   }
 
-  /* ===== Animação ===== */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
+  .btn-consultar {
+    background: #444;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+    border: none;
+  }
 
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  .btn-consultar:hover {
+    background: #666;
+  }
+
+  #openModalBtn {
+    background: linear-gradient(135deg, #1e9e3a, #16a34a);
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin-top: 15px;
+    margin-left: 65px;
+  }
+
+  #openModalBtn:hover {
+    background: linear-gradient(135deg, #149142, #0f8538);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(20, 145, 66, 0.4);
+  }
+
+  #openModalBtn:active {
+    transform: scale(0.97);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
   }
 </style>
-
 
 <div class="form-container">
   <div class="form-card-2col">
     <form method="POST">
       {% include 'global/partials/_form_2colV2.html' %}
-      <div class="form-actions">
-        <button type="button" class="submit-button-right" name="new_client" id="openModalBtn" value="1">
-          Adicionar cliente
-        </button>
-      </div>
     </form>
   </div>
 </div>
 
+<button type="button" id="openModalBtn">
+  + Novo Cliente
+</button>
+
 <div class="modal" id="clientModal">
   <div class="modal-content">
-    <span class="close" id="closeModalBtn" onclick="document.getElementById('clientModal').style.display='none'">&times;</span>
+    <span class="close" onclick="document.getElementById('clientModal').style.display='none'">&times;</span>
     <h2>Criar Novo Cliente</h2>
 
     <form method="POST" action="">
@@ -168,6 +201,19 @@
     </form>
   </div>
 </div>
+
+{% if clientes %}
+<div class="cards-container">
+  {% for c in clientes %}
+  <div class="client-card">
+    <h4>{{ c.client_name }}</h4>
+    <p><strong>Código:</strong> {{ c.client_code }}</p>
+    <p><strong>Criado por:</strong> {{ c.created_by|default:"—" }}</p>
+    <p><strong>Extra Info:</strong> {{ c.extra_info|default:"" }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
 
 <script>
   const modal = document.getElementById('clientModal');
