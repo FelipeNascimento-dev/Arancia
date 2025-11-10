@@ -15,50 +15,6 @@ def client_select(request):
     titulo = "Seleção de Cliente"
     choices = []
 
-    # ======== CRIA NOVO CLIENTE ========
-    if request.method == "POST" and request.POST.get("new_client") == "1":
-        client_code = request.POST.get("client_code")
-        client_name = request.POST.get("client_name")
-        created_by = request.user.username
-        extra_info_raw = request.POST.get("extra_info", "{}")
-
-        try:
-            extra_info = json.loads(
-                extra_info_raw) if extra_info_raw.strip() else {}
-        except Exception:
-            extra_info = {}
-
-        payload = {
-            "client_code": client_code,
-            "client_name": client_name,
-            "created_by": created_by,
-            "extra_info": extra_info,
-        }
-
-        url = f"{STOCK_API_URL}/v1/clients/"
-        headers = {"Content-Type": JSON_CT, "Accept": JSON_CT}
-
-        try:
-            res = RequestClient(
-                url=url,
-                method="POST",
-                headers=headers,
-                request_data=payload,
-            )
-            result = res.send_api_request()
-
-            if isinstance(result, dict) and result.get("client_code"):
-                messages.success(
-                    request, f"Cliente '{client_name}' criado com sucesso!"
-                )
-            else:
-                messages.error(request, f"Erro ao criar cliente: {result}")
-        except Exception as e:
-            messages.error(request, f"Falha ao criar cliente: {e}")
-
-        return redirect("logistica:client_select")
-
-    # ======== SELECIONA CLIENTE EXISTENTE ========
     if request.method == "POST":
         client = request.POST.get("client", None)
         order = request.POST.get("order", None)
@@ -81,7 +37,6 @@ def client_select(request):
         else:
             messages.error(request, "Falha ao selecionar o cliente.")
 
-    # ======== LISTA CLIENTES EXISTENTES ========
     request.session.pop("order", None)
 
     try:
