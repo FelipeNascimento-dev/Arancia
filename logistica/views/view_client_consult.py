@@ -63,6 +63,54 @@ def client_consult(request):
 
         return redirect("logistica:client_consult")
 
+    elif request.method == "POST" and request.POST.get("edit_client"):
+        client_code = request.POST.get("client_code")
+        client_name = request.POST.get("client_name")
+        extra_info_raw = request.POST.get("extra_info", "").strip()
+        client_id = request.POST.get("client_id") or request.POST.get("id")
+        created_by = request.user.username
+
+        payload = {
+            "client_code": client_code,
+            "client_name": client_name,
+            "created_by": created_by,
+        }
+
+        if extra_info_raw:
+            try:
+                extra_info = json.loads(extra_info_raw)
+                payload["extra_info"] = extra_info
+            except json.JSONDecodeError:
+                messages.warning(
+                    request,
+                    "⚠️ JSON inválido no campo 'Informações Extras'."
+                )
+                return redirect("logistica:client_consult")
+
+        url = f"{STOCK_API_URL}/v1/clients/{client_id}"
+        headers = {"Content-Type": JSON_CT, "Accept": JSON_CT}
+
+        print(payload)
+
+        try:
+            res = RequestClient(
+                url=url, method="PUT",
+                headers=headers,
+                request_data=payload
+            )
+            result = res.send_api_request()
+
+            if isinstance(result, dict) and result.get("client_code"):
+                messages.success(
+                    request, f"Cliente '{client_name}' atualizado com sucesso!"
+                )
+            else:
+                messages.error(request, f"Erro ao atualizar cliente: {result}")
+        except Exception as e:
+            messages.error(request, f"Falha ao atualizar cliente: {e}")
+
+        return redirect("logistica:client_consult")
+
     elif request.method == "POST" and request.POST.get("enviar_evento") == "1":
         try:
             url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=100"
