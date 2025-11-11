@@ -83,7 +83,7 @@ def client_consult(request):
             except json.JSONDecodeError:
                 messages.warning(
                     request,
-                    "⚠️ JSON inválido no campo 'Informações Extras'."
+                    "JSON inválido no campo 'Informações Extras'."
                 )
                 return redirect("logistica:client_consult")
 
