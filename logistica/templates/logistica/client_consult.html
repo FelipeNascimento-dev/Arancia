@@ -15,7 +15,7 @@
 
   .cards-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 18px;
     margin-top: 30px;
     margin-bottom: 50px;
@@ -165,6 +165,21 @@
     transform: scale(0.97);
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
   }
+
+  .edit-icon {
+    color: #444;
+    cursor: pointer;
+    font-size: 1.2rem;
+    border: none;
+    background: none;
+    float: right;
+    transition: color 0.2s ease, transform 0.2s ease;
+  }
+
+  .edit-icon:hover {
+    color: #d43f3a;
+    transform: scale(1.15);
+  }
 </style>
 
 <div class="form-container">
@@ -206,7 +221,17 @@
 <div class="cards-container">
   {% for c in clientes %}
   <div class="client-card">
-    <h4>{{ c.client_name }}</h4>
+    <h4>
+      {{ c.client_name }}
+      <button type="button" name="edit_client" class="edit-icon" data-client='{
+          "id": {{ c.id }},
+          "client_code": "{{ c.client_code }}",
+          "client_name": "{{ c.client_name }}",
+          "extra_info": {{ c.extra_info|default:"{}" }}
+        }' title="Editar Cliente">
+        <i class="fa-solid fa-pencil"></i>
+      </button>
+    </h4>
     <p><strong>Código:</strong> {{ c.client_code }}</p>
     <p><strong>Criado por:</strong> {{ c.created_by|default:"—" }}</p>
     <p><strong>Extra Info:</strong> {{ c.extra_info|default:"" }}</p>
@@ -215,11 +240,58 @@
 </div>
 {% endif %}
 
+<div class="modal" id="editModal">
+  <div class="modal-content">
+    <span class="close" onclick="document.getElementById('editModal').style.display='none'">&times;</span>
+    <h2>Editar Cliente</h2>
+
+    <form method="POST" action="">
+      {% csrf_token %}
+      <input type="hidden" name="edit_client" value="1">
+
+      <input type="hidden" id="edit_client_id" name="client_id">
+
+      <label for="edit_client_code">Código do Cliente</label>
+      <input type="text" id="edit_client_code" name="client_code" readonly>
+
+      <label for="edit_client_name">Nome do Cliente</label>
+      <input type="text" id="edit_client_name" name="client_name" required>
+
+      <label for="edit_extra_info">Informações Extras (JSON)</label>
+      <textarea id="edit_extra_info" name="extra_info" placeholder='{"endereco": "Rua X"}'></textarea>
+
+      <button type="submit" class="btn-success">Salvar Alterações</button>
+    </form>
+  </div>
+</div>
+
 <script>
   const modal = document.getElementById('clientModal');
   const openBtn = document.getElementById('openModalBtn');
   openBtn.onclick = () => modal.style.display = 'flex';
   window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+
+  const editModal = document.getElementById('editModal');
+  const editButtons = document.querySelectorAll('.edit-icon');
+
+  editButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      try {
+        const clientData = JSON.parse(btn.getAttribute('data-client'));
+        document.getElementById('edit_client_code').value = clientData.client_code || '';
+        document.getElementById('edit_client_name').value = clientData.client_name || '';
+        document.getElementById('edit_client_id').value = clientData.id || '';
+        document.getElementById('edit_extra_info').value = JSON.stringify(clientData.extra_info || {}, null, 2);
+        editModal.style.display = 'flex';
+      } catch (err) {
+        console.error('Erro ao carregar dados do cliente:', err);
+      }
+    });
+  });
+
+  window.onclick = (e) => {
+    if (e.target === editModal) editModal.style.display = 'none';
+  };
 </script>
 
 {% endblock %}
