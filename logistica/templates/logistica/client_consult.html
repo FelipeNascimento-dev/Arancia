@@ -190,9 +190,11 @@
   </div>
 </div>
 
+{% if perms.logistica.ti_interno %}
 <button type="button" id="openModalBtn">
   + Novo Cliente
 </button>
+{% endif %}
 
 <div class="modal" id="clientModal">
   <div class="modal-content">
@@ -223,6 +225,7 @@
   <div class="client-card">
     <h4>
       {{ c.client_name }}
+      {% if perms.logistica.ti_interno %}
       <button type="button" name="edit_client" class="edit-icon" data-client='{
           "id": {{ c.id }},
           "client_code": "{{ c.client_code }}",
@@ -231,6 +234,7 @@
         }' title="Editar Cliente">
         <i class="fa-solid fa-pencil"></i>
       </button>
+      {% endif %}
     </h4>
     <p><strong>Código:</strong> {{ c.client_code }}</p>
     <p><strong>Criado por:</strong> {{ c.created_by|default:"—" }}</p>
