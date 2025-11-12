@@ -12,20 +12,23 @@ class ClientCheckInForm(forms.Form):
         max_length=100,
         widget=forms.TextInput(attrs={'autocomplete': 'off'})
     )
-    product = forms.CharField(
-        label='Material',
-        max_length=100,
-        widget=forms.TextInput(attrs={'autocomplete': 'off'})
+    product = forms.ChoiceField(
+        label="Produto",
+        required=True,
+        choices=[],
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     volume = forms.IntegerField(
         label='Volume (opcional)',
         min_value=1,
-        required=False
+        required=False,
+        initial=1
     )
-    kit = forms.CharField(
+    kit = forms.IntegerField(
         label='Kit (opcional)',
-        max_length=100,
-        required=False
+        min_value=1,
+        required=False,
+        initial=1
     )
     pedido_atrelado = forms.CharField(
         label='Pedido Atrelado (opcional)',
@@ -45,6 +48,7 @@ class ClientCheckInForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         from_choices = kwargs.pop('from_choices', None)
+        product_choices = kwargs.pop('product_choices', None)
         nome_form = kwargs.pop('nome_form', None)
 
         self.nome_formulario = nome_form or "Definir nome do formulário"
@@ -52,3 +56,6 @@ class ClientCheckInForm(forms.Form):
 
         if from_choices:
             self.fields['from_location'].choices = from_choices
+
+        if product_choices:
+            self.fields['product'].choices = product_choices
