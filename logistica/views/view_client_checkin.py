@@ -93,7 +93,12 @@ def client_checkin(request):
 
         if user_designacao and user_designacao.informacao_adicional:
             group_info = user_designacao.informacao_adicional
-
+            group = group_info.group
+            if group:
+                to_location_value = {
+                    "id": group.id,
+                    "label": f"{group.name} - {group_info.nome or group_info.razao_social or 'Sem nome'}"
+                }
     except Exception as e:
         messages.error(request, f"Erro ao identificar destino do usuário: {e}")
 
@@ -101,6 +106,7 @@ def client_checkin(request):
         messages.error(request, f"Erro ao identificar destino do usuário: {e}")
 
     if request.method == "POST":
+        # recupera valores da sessão
         to_location_id = str(request.session.get("to_location_id", ""))
         to_location_label = ""
         if isinstance(to_location_value, dict):
@@ -108,6 +114,7 @@ def client_checkin(request):
         elif to_location_id:
             to_location_label = f"Destino {to_location_id}"
 
+        # recria o form e reatribui o destino
         form = ClientCheckInForm(
             request.POST,
             nome_form=titulo,
@@ -115,6 +122,7 @@ def client_checkin(request):
             product_choices=product_choices,
         )
 
+        # 🔧 garante que o valor postado (ID) é reconhecido
         form.fields["to_location"].choices = [
             (to_location_id, to_location_label)
         ]
