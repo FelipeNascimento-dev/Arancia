@@ -2,8 +2,10 @@ from ..forms import ClientCheckInForm
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
-from django.contrib.auth.models import Group
 from ..models import GroupAditionalInformation, UserDesignation
+from utils.request import RequestClient
+from setup.local_settings import STOCK_API_URL
+import json
 
 
 @login_required(login_url='logistica:login')
@@ -14,6 +16,47 @@ def client_checkin(request):
     titulo = f"Check-In {client_name}"
 
     pedido_atrelado = request.session.get("order", "")
+
+    product_choices = []
+    try:
+        if client_name:
+            url_products = f"{STOCK_API_URL}/v1/products/{client_name.lower()}"
+            res = RequestClient(
+                url=url_products,
+                method="GET",
+                headers={"Accept": "application/json"}
+            )
+            result = res.send_api_request()
+
+            try:
+                if isinstance(result, (dict, list)):
+                    data = result
+                elif isinstance(result, (str, bytes)):
+                    data = json.loads(result)
+                elif hasattr(result, "json"):
+                    data = result.json()
+                elif hasattr(result, "text"):
+                    data = json.loads(result.text)
+                else:
+                    data = []
+            except Exception:
+                data = []
+
+            if isinstance(data, list) and len(data) > 0:
+                product_choices = []
+                for p in data:
+                    sku = p.get("sku") or p.get("product_code") or ""
+                    desc = p.get("description") or p.get(
+                        "product_name") or "Sem descrição"
+                    display = f"{sku} - {desc}".strip(" -")
+                    product_choices.append((sku, display))
+            else:
+                product_choices = [("", "Nenhum produto encontrado")]
+        else:
+            product_choices = [("", "Cliente não selecionado")]
+    except Exception as e:
+        messages.error(request, f"Erro ao obter produtos: {e}")
+        product_choices = [("", "Erro ao carregar produtos")]
 
     try:
         grupos = GroupAditionalInformation.objects.filter(
@@ -48,7 +91,6 @@ def client_checkin(request):
     except Exception as e:
         messages.error(request, f"Erro ao identificar destino do usuário: {e}")
 
-
     except Exception as e:
         messages.error(request, f"Erro ao identificar destino do usuário: {e}")
 
@@ -68,14 +110,16 @@ def client_checkin(request):
             nome_form=titulo,
             initial=initial_data,
             from_choices=from_choices,
+            product_choices=product_choices,
         )
 
         if to_location_value:
-            form.fields["to_location"].choices = [(to_location_value, to_location_value)]
+            form.fields["to_location"].choices = [
+                (to_location_value, to_location_value)]
             form.fields["to_location"].initial = to_location_value
         else:
-            form.fields["to_location"].choices = [("", "Destino não identificado")]
-
+            form.fields["to_location"].choices = [
+                ("", "Destino não identificado")]
 
     return render(
         request,
