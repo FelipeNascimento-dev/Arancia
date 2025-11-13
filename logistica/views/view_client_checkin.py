@@ -142,6 +142,13 @@ def client_checkin(request):
                     form.cleaned_data.get("from_location") or 0)
                 to_location_id = group_info.id
 
+                order_number = form.cleaned_data.get("pedido_atrelado")
+
+                romaneio_number = form.cleaned_data.get("pedido")
+
+                extra_info_root = {
+                    "romaneio_number": romaneio_number} if romaneio_number else {}
+
                 payload = {
                     "item": {
                         "product_id": product_id,
@@ -153,9 +160,10 @@ def client_checkin(request):
                     "from_location_id": from_location_id,
                     "to_location_id": to_location_id,
                     "order_origin_id": 3,
-                    "order_number": form.cleaned_data.get("pedido_atrelado") or form.cleaned_data.get("pedido"),
+                    "order_number": order_number,  # pedido_atrelado
                     "volume_number": form.cleaned_data.get("volume") or 1,
                     "kit_number": f"KIT-{form.cleaned_data.get('kit') or 1}",
+                    "extra_info": extra_info_root,  # romaneio_number OU {}
                     "created_by": request.user.username.upper(),
                 }
 
@@ -167,6 +175,8 @@ def client_checkin(request):
                              "Content-Type": "application/json"},
                     request_data=payload
                 ).send_api_request()
+
+                print(payload)
 
                 if isinstance(res, dict) and (res.get("id") or "success" in str(res).lower()):
                     messages.success(
