@@ -1,5 +1,6 @@
 from ..forms import ClientCheckInForm
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from ..models import GroupAditionalInformation, UserDesignation
@@ -106,7 +107,6 @@ def client_checkin(request):
         messages.error(request, f"Erro ao identificar destino do usuário: {e}")
 
     if request.method == "POST":
-        # recupera valores da sessão
         to_location_id = str(request.session.get("to_location_id", ""))
         to_location_label = ""
         if isinstance(to_location_value, dict):
@@ -114,7 +114,6 @@ def client_checkin(request):
         elif to_location_id:
             to_location_label = f"Destino {to_location_id}"
 
-        # recria o form e reatribui o destino
         form = ClientCheckInForm(
             request.POST,
             nome_form=titulo,
@@ -122,13 +121,21 @@ def client_checkin(request):
             product_choices=product_choices,
         )
 
-        # 🔧 garante que o valor postado (ID) é reconhecido
         form.fields["to_location"].choices = [
             (to_location_id, to_location_label)
         ]
         form.fields["to_location"].initial = to_location_id
 
         if form.is_valid():
+            request.session["checkin_form_data"] = {
+                "product": form.cleaned_data.get("product"),
+                "from_location": form.cleaned_data.get("from_location"),
+                "pedido_atrelado": form.cleaned_data.get("pedido_atrelado"),
+                "pedido": form.cleaned_data.get("pedido"),
+                "volume": form.cleaned_data.get("volume"),
+                "kit": form.cleaned_data.get("kit"),
+            }
+
             try:
                 product_id = int(form.cleaned_data.get("product"))
                 from_location_id = int(
@@ -152,8 +159,6 @@ def client_checkin(request):
                     "created_by": request.user.username.upper(),
                 }
 
-                print(payload)
-
                 url_mov = f"{STOCK_API_URL}/v1/movements/"
                 res = RequestClient(
                     url=url_mov,
@@ -166,6 +171,7 @@ def client_checkin(request):
                 if isinstance(res, dict) and (res.get("id") or "success" in str(res).lower()):
                     messages.success(
                         request, "Movimento registrado com sucesso!")
+                    return redirect(reverse("logistica:client_checkin"))
                 else:
                     messages.error(
                         request, f"Falha ao registrar movimento: {res}")
@@ -173,8 +179,16 @@ def client_checkin(request):
             except Exception as e:
                 messages.error(request, f"Erro ao enviar movimento: {e}")
     else:
+        saved = request.session.pop("checkin_form_data", {})
+
         initial_data = {
-            "pedido_atrelado": pedido_atrelado,
+            "product": saved.get("product", ""),
+            "from_location": saved.get("from_location", ""),
+            "pedido_atrelado": saved.get("pedido_atrelado", pedido_atrelado),
+            "pedido": saved.get("pedido", ""),
+            "volume": saved.get("volume", "1"),
+            "kit": saved.get("kit", "1"),
+            "serial": "",
             "to_location": to_location_value.get("label", "") if isinstance(to_location_value, dict) else "",
         }
 
