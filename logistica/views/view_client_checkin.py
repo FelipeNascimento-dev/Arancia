@@ -160,10 +160,10 @@ def client_checkin(request):
                     "from_location_id": from_location_id,
                     "to_location_id": to_location_id,
                     "order_origin_id": 3,
-                    "order_number": order_number,  # pedido_atrelado
+                    "order_number": order_number,
                     "volume_number": form.cleaned_data.get("volume") or 1,
                     "kit_number": f"KIT-{form.cleaned_data.get('kit') or 1}",
-                    "extra_info": extra_info_root,  # romaneio_number OU {}
+                    "extra_info": extra_info_root,
                     "created_by": request.user.username.upper(),
                 }
 
@@ -175,8 +175,6 @@ def client_checkin(request):
                              "Content-Type": "application/json"},
                     request_data=payload
                 ).send_api_request()
-
-                print(payload)
 
                 if isinstance(res, dict) and (res.get("id") or "success" in str(res).lower()):
                     messages.success(
