@@ -535,7 +535,7 @@
                     Voltar
                 </a>
             </div>
-            {% include 'global/partials/_form_card_2col.html' %}
+            {% include 'global/partials/_form_card_2col.html' with order=order botao_texto=botao_texto %}
 
             <div class="tabs" id="agenda-tabs" style="margin-top:16px;">
                 <div class="tab-list" role="tablist" aria-label="Navegação">
@@ -606,6 +606,20 @@
                 {% endif %}
             </div>
         </form>
+    </div>
+</div>
+
+<!-- MODAL PARA CONFIRMAR ENVIO DE TRACKING -->
+
+<div id="modalConfirmEvento" class="modal">
+    <div class="modal-content">
+        <h3>Confirmar Envio</h3>
+        <p>Essa ação é <strong>irreversível</strong>. Deseja continuar?</p>
+
+        <div class="modal-actions">
+            <button id="cancelarEvento" class="submit-button-right">Cancelar</button>
+            <button id="confirmarEvento" class="submit-button-right">Confirmar</button>
+        </div>
     </div>
 </div>
 
@@ -854,6 +868,35 @@
         });
     })();
 </script>
+
+<script>
+    (function () {
+        const btnEnviarEvento = document.querySelector('button[name="enviar_evento"]');
+        const modal = document.getElementById("modalConfirmEvento");
+        const cancelar = document.getElementById("cancelarEvento");
+        const confirmar = document.getElementById("confirmarEvento");
+
+        if (!btnEnviarEvento) return;
+
+        // Interrompe o envio e mostra modal
+        btnEnviarEvento.addEventListener("click", function (e) {
+            e.preventDefault();
+            modal.classList.add("open");
+        });
+
+        // Fechar modal
+        cancelar.addEventListener("click", function () {
+            modal.classList.remove("open");
+        });
+
+        // Confirmar envio → envia form de verdade
+        confirmar.addEventListener("click", function () {
+            btnEnviarEvento.closest("form").submit();
+        });
+
+    })();
+</script>
+
 
 <!-- SCRIPT PARA DROPDOWN -->
 <script>

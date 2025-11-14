@@ -155,8 +155,6 @@
         </div>
         {% endif %}
 
-
-
         {% if perms.transportes.transp_menu %}
         <!-- Transportes -->
         <div class="dropdown">
@@ -177,10 +175,6 @@
                         <a href="{% url 'transportes:controle' %}">Controle</a>
                         <a href="{% url 'transportes:Dashboard' %}">Dashboard</a>
                     </div>
-
-
-
-
                     <h5 class="submenu-toggle" data-target="Ferramentas">Ferramentas</h5>
                     <div class="sub-submenu" id="Ferramentas">
                         {% if perms.transportes.CC_admin %}
@@ -200,13 +194,7 @@
                     </div>
                 </div>
                 {% endif %}
-
-
-
             </div>
-
-
-
         </div>
         {% endif %}
 
