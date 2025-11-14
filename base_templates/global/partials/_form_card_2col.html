@@ -56,6 +56,10 @@
                 </div>
             </div>
         </div>
+        {% elif botao_texto == "RECEBER INSUCESSO" %}
+        <a href="{% url 'logistica:unsuccessful_insert' order=order %}" style="text-decoration: none;" class="submit-button-right">
+            {{ botao_texto }}
+        </a>
         {% elif botao_texto == "PROXIMA TRACKING" %}
         <button type="submit" class="submit-button-right" name="enviar_evento" value="1">
             {{ botao_texto }}
