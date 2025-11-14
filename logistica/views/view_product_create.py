@@ -14,6 +14,7 @@ JSON_CT = "application/json"
 def product_create(request):
     titulo = "Consultar Produtos"
     produtos = []
+    consultado = bool(request.GET.get("enviar_evento"))
     client_map = {}
     cliente_id_para_modal = None
     form = None
@@ -194,5 +195,6 @@ def product_create(request):
             "botao_texto": "Consultar Produtos",
             "produtos": produtos,
             "cliente_id_para_modal": cliente_id_para_modal,
+            "consultado": consultado,
         },
     )
