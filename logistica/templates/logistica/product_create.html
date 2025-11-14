@@ -483,6 +483,18 @@
   </div>
 </div>
 
+{% if consultado and not produtos %}
+<div class="section-header">
+  <h3 class="section-title">Produtos encontrados</h3>
+  <button type="button" class="btn-create" id="openModalBtn">
+    Criar novo produto
+  </button>
+</div>
+<p style="margin-left: 90px; color: #555; font-size: 1rem;">
+  Nenhum produto encontrado. Clique em "Criar novo produto" para adicionar um.
+</p>
+{% endif %}
+
 {% if produtos %}
 <div class="section-header">
   <h3 class="section-title">Produtos encontrados</h3>
