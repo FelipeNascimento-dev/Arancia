@@ -61,6 +61,7 @@ def order_detail(request, order: str):
         form = OrderDetailForm(request.POST or None, dados=result)
         tipo = (
             form.fields['shipment_order_type'].initial or '').strip().upper()
+        volume_state = (result.get("volume_state") or "").strip().upper()
 
         if tipo == "NORMAL":
             try:
@@ -174,7 +175,11 @@ def order_detail(request, order: str):
         "REVERSE": "RECEBER REVERSA",
         "NORMAL": "PROXIMA TRACKING"
     }
+
     botao_texto = dict_botao_texto.get(tipo, "AÇÕES DISPONÍVEIS")
+
+    if volume_state == "CLARIFY_DELIVERY_FAIL" and tipo == "NORMAL":
+        botao_texto = "RECEBER INSUCESSO"
 
     return render(request, "logistica/detalhe_pedidos.html", {
         "order": order,
