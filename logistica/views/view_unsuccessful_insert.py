@@ -7,9 +7,14 @@ from django.contrib.auth.decorators import login_required, permission_required
 @login_required(login_url='logistica:login')
 def unsuccessful_insert(request, order=None):
     titulo = 'Recebimento de Insucesso'
-    session_key = 'unsuccessful_serials'
 
-    serials = request.session.get(session_key, [])
+    key_good = 'unsuccessful_serials_good'
+    key_bad = 'unsuccessful_serials_bad'
+
+    serials_good = request.session.get(key_good, [])
+    serials_bad = request.session.get(key_bad, [])
+
+    serials_display = serials_good + serials_bad
 
     numero_pedido = order or request.GET.get('order')
 
@@ -24,14 +29,26 @@ def unsuccessful_insert(request, order=None):
 
                 if not serial:
                     messages.warning(request, "Digite um serial válido.")
-                elif serial in serials:
-                    messages.info(
-                        request, f"O serial {serial} já foi adicionado.")
+
                 else:
-                    serials.append(serial)
-                    request.session[session_key] = serials
-                    messages.success(
-                        request, f"Serial {serial} adicionado com sucesso.")
+                    if material == 'EC21':
+                        if serial not in serials_good:
+                            serials_good.append(serial)
+                            request.session[key_good] = serials_good
+                            messages.success(request, f"{serial} -> GOOD")
+                        else:
+                            messages.info(
+                                request, f"{serial} já está em GOOD.")
+
+                    elif material == 'EC22':
+                        if serial not in serials_bad:
+                            serials_bad.append(serial)
+                            request.session[key_bad] = serials_bad
+                            messages.success(request, f"{serial} -> BAD")
+                        else:
+                            messages.info(request, f"{serial} já está em BAD.")
+
+                serials_display = serials_good + serials_bad
 
                 form = UnsuccessfulInsertForm(
                     initial={'pedido': pedido, 'material': material},
@@ -40,16 +57,29 @@ def unsuccessful_insert(request, order=None):
 
         elif 'remove_serial' in request.POST:
             index = int(request.POST.get('remove_serial'))
-            if 0 <= index < len(serials):
-                removido = serials.pop(index)
-                request.session[session_key] = serials
-                messages.info(request, f"Serial {removido} removido.")
+
+            if index < len(serials_good):
+                removido = serials_good.pop(index)
+                request.session[key_good] = serials_good
+                messages.info(request, f"{removido} removido de GOOD.")
+            else:
+                real_index = index - len(serials_good)
+                if real_index < len(serials_bad):
+                    removido = serials_bad.pop(real_index)
+                    request.session[key_bad] = serials_bad
+                    messages.info(request, f"{removido} removido de BAD.")
+
+            serials_display = serials_good + serials_bad
             form = UnsuccessfulInsertForm(request.POST, nome_form=titulo)
 
         elif 'clear_serials' in request.POST:
-            request.session[session_key] = []
-            serials = []
-            messages.info(request, "Todos os seriais foram limpos.")
+            serials_good = []
+            serials_bad = []
+            request.session[key_good] = []
+            request.session[key_bad] = []
+            serials_display = []
+            messages.info(request, "Lista de seriais limpa.")
+
             form = UnsuccessfulInsertForm(
                 initial={'pedido': numero_pedido},
                 nome_form=titulo
@@ -60,21 +90,29 @@ def unsuccessful_insert(request, order=None):
                 pedido = form.cleaned_data.get('pedido') or numero_pedido
                 material = form.cleaned_data.get('material')
 
-                if not serials:
-                    messages.error(request, "Nenhum serial foi inserido.")
-                else:
-                    for s in serials:
-                        print(
-                            f"Salvar -> Pedido {pedido} | Serial {s} | Material {material}")
+                if not serials_good and not serials_bad:
+                    messages.error(
+                        request, "Nenhum serial foi inserido.")
+                    return redirect(request.path)
 
-                    request.session[session_key] = []
-                    messages.success(
-                        request, f"{len(serials)} seriais registrados com sucesso!")
-                    return redirect('logistica:unsuccessful_insert', order=pedido)
+                if serials_good:
+                    for s in serials_good:
+                        print(
+                            f"GOOD → Pedido {pedido} | Serial {s} | Material {material}")
+
+                if serials_bad:
+                    for s in serials_bad:
+                        print(
+                            f"BAD → Pedido {pedido} | Serial {s} | Material {material}")
+
+                request.session[key_good] = []
+                request.session[key_bad] = []
+
+                messages.success(request, "Envio concluído com sucesso!")
+                return redirect('logistica:unsuccessful_insert', order=pedido)
 
             else:
-                messages.error(
-                    request, "Preencha os campos obrigatórios corretamente.")
+                messages.error(request, "Preencha os campos obrigatórios.")
 
     else:
         form = UnsuccessfulInsertForm(
@@ -87,8 +125,8 @@ def unsuccessful_insert(request, order=None):
 
     return render(request, 'logistica/unsuccessful_insert.html', {
         'form': form,
+        'serials': serials_display,
         'botao_texto': 'Registrar Insucesso',
         'site_title': titulo,
-        'serials': serials,
         'etapa_ativa': 'unsuccessful_insert',
     })
