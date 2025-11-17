@@ -64,17 +64,37 @@ def order_detail(request, order: str):
         volume_state = (result.get("volume_state") or "").strip().upper()
 
         if tipo == "NORMAL":
-            try:
-                tracking_atual = int(
-                    (result.get("ultima_tracking") or "200").split(" ")[0])
-                proxima_tracking = min(tracking_atual + 1, 205)
-            except Exception:
-                proxima_tracking = 201
+            if volume_state != "CLARIFY_DELIVERY_FAIL":
+                try:
+                    tracking_atual = int(
+                        (result.get("ultima_tracking") or "200").split(" ")[0])
+                    proxima_tracking = min(tracking_atual + 1, 205)
+                except Exception:
+                    proxima_tracking = 201
 
-            request.session["pedido"] = str(order)
-            request.session[CARRY_PEDIDO_KEY] = True
-            request.session.modified = True
-            return redirect("logistica:pcp", code=proxima_tracking)
+                request.session["pedido"] = str(order)
+                request.session[CARRY_PEDIDO_KEY] = True
+                request.session.modified = True
+                return redirect("logistica:pcp", code=proxima_tracking)
+            else:
+                tipo = 'NORMAL|INSUCESSO' if (
+                    tipo == 'NORMAL' and volume_state == 'CLARIFY_DELIVERY_FAIL') else tipo
+                payload = {
+                    "order_number": result.get("order_number"),
+                    "volume_number": result.get("volume_number") or 1,
+                    "order_type": "FAILURE",
+                    "tracking_code": "206",
+                    "created_by": request.user.username,
+                }
+
+                client = RequestClient(
+                    url=f"{API_URL}/api/v2/trackings/send",
+                    method="POST",
+                    headers={"Accept": JSON_CT, "Content-Type": JSON_CT},
+                    request_data=payload
+                )
+                _result = client.send_api_request()
+            return redirect("logistica:unsuccessful_insert", order=order)
 
         elif tipo == "RETURN":
             request_success = button_desn(request, order)
@@ -152,7 +172,8 @@ def order_detail(request, order: str):
     tipo = (form.fields['shipment_order_type'].initial or '').strip().upper()
     volume_state = (result.get("volume_state") or "").strip().upper()
     ultima_tracking = (result.get("ultima_tracking") or "").strip().upper()
-
+    tipo = 'NORMAL|INSUCESSO' if (
+        tipo == 'NORMAL' and volume_state == 'CLARIFY_DELIVERY_FAIL') else tipo
     mostrar_acoes = (
         tipo == "REVERSE"
         and volume_state != "CANCELLED"
@@ -173,13 +194,11 @@ def order_detail(request, order: str):
     dict_botao_texto = {
         "RETURN": "RECEBER DESINSTALAÇÃO",
         "REVERSE": "RECEBER REVERSA",
-        "NORMAL": "PROXIMA TRACKING"
+        "NORMAL": "PROXIMA TRACKING",
+        "NORMAL|INSUCESSO": "RECEBER INSUCESSO",
     }
 
     botao_texto = dict_botao_texto.get(tipo, "AÇÕES DISPONÍVEIS")
-
-    if volume_state == "CLARIFY_DELIVERY_FAIL" and tipo == "NORMAL":
-        botao_texto = "RECEBER INSUCESSO"
 
     return render(request, "logistica/detalhe_pedidos.html", {
         "order": order,
