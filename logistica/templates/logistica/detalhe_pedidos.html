@@ -604,6 +604,24 @@
                     </div>
                 </div>
                 {% endif %}
+                {% if request_insucesso_success %}
+                <div id="modalInsuccessoRedirect" class="modal-redirect">
+                    <div class="modal-content-redirect">
+                        <h3>Insucesso Registrado</h3>
+                        <br>
+                        <p>Qual ação deseja realizar a seguir?</p>
+                        <div class="modal-actions-redirect">
+                            <button class="submit-button-right" data-url="{% url 'logistica:consultar_pedido' %}">
+                                Receber novo pedido
+                            </button>
+                            <button class="submit-button-right"
+                                data-url="{% url 'logistica:unsuccessful_insert' order=order %}">
+                                Conferência de insucesso
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </form>
     </div>
@@ -796,6 +814,22 @@
 
             window._modalAPI = { modal };
         })();
+
+    (function () {
+        const modal = document.getElementById('modalInsuccessoRedirect');
+        if (!modal) return;
+
+        const btns = modal.querySelectorAll("button[data-url]");
+
+        modal.classList.add("open");
+
+        btns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const url = btn.dataset.url;
+                if (url) window.location.href = url;
+            });
+        });
+    })();
 
     (function () {
         const root = document.getElementById('agenda-tabs');

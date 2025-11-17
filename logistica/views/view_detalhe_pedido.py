@@ -94,7 +94,8 @@ def order_detail(request, order: str):
                     request_data=payload
                 )
                 _result = client.send_api_request()
-            return redirect("logistica:unsuccessful_insert", order=order)
+            request.session["request_insucesso_success"] = True
+            return redirect("logistica:detalhe_pedido", order=order)
 
         elif tipo == "RETURN":
             request_success = button_desn(request, order)
@@ -165,6 +166,9 @@ def order_detail(request, order: str):
                     request, f"Troca de custódia enviada para pedido {payload['order_number']}")
 
     result = view_order(request, order, 'detail')
+    request_insucesso_success = request.session.pop(
+        "request_insucesso_success", False)
+
     if not result:
         return redirect('logistica:consultar_pedido')
 
@@ -203,6 +207,7 @@ def order_detail(request, order: str):
     return render(request, "logistica/detalhe_pedidos.html", {
         "order": order,
         "request_success": request_success,
+        "request_insucesso_success": request_insucesso_success,
         "form": form,
         "produto_campos": produto_campos,
         "adicionais_campos": adicionais_campos,
