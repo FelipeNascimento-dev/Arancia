@@ -604,8 +604,41 @@
                     </div>
                 </div>
                 {% endif %}
+                {% if request_insucesso_success %}
+                <div id="modalInsuccessoRedirect" class="modal-redirect">
+                    <div class="modal-content-redirect">
+                        <h3>Insucesso Registrado</h3>
+                        <br>
+                        <p>Qual ação deseja realizar a seguir?</p>
+                        <div class="modal-actions-redirect">
+                            <button class="submit-button-right" data-url="{% url 'logistica:consultar_pedido' %}">
+                                Receber novo pedido
+                            </button>
+                            <button class="submit-button-right"
+                                data-url="{% url 'logistica:unsuccessful_insert' order=order %}">
+                                Conferência de insucesso
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </form>
+    </div>
+</div>
+
+<!-- MODAL INSUCESSO -->
+<div id="modalConfirmInsuccesso" class="modal">
+    <div class="modal-content">
+        <h3>Confirmação</h3>
+        <p>Deseja realmente registrar o insucesso?</p>
+
+        <div class="modal-actions">
+            <button id="cancelarInsuccesso" class="submit-button-right">Cancelar</button>
+            <button id="confirmarInsuccesso" class="submit-button-right">
+                Confirmar
+            </button>
+        </div>
     </div>
 </div>
 
@@ -783,6 +816,22 @@
         })();
 
     (function () {
+        const modal = document.getElementById('modalInsuccessoRedirect');
+        if (!modal) return;
+
+        const btns = modal.querySelectorAll("button[data-url]");
+
+        modal.classList.add("open");
+
+        btns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const url = btn.dataset.url;
+                if (url) window.location.href = url;
+            });
+        });
+    })();
+
+    (function () {
         const root = document.getElementById('agenda-tabs');
         const tabs = root.querySelectorAll('[role="tab"]');
         function activateTab(tab) {
@@ -895,6 +944,39 @@
         });
 
     })();
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const btn = document.getElementById("btnInsuccesso");
+        const modal = document.getElementById("modalConfirmInsuccesso");
+        const cancelar = document.getElementById("cancelarInsuccesso");
+        const confirmar = document.getElementById("confirmarInsuccesso");
+
+        if (!btn) return;
+
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            modal.classList.add("open");
+        });
+
+        cancelar.addEventListener("click", () => {
+            modal.classList.remove("open");
+        });
+
+        confirmar.addEventListener("click", () => {
+            // Cria input hidden para indicar ação
+            const form = btn.closest("form");
+            let campo = document.createElement("input");
+            campo.type = "hidden";
+            campo.name = "enviar_insucesso";
+            campo.value = "1";
+            form.appendChild(campo);
+
+            form.submit();
+        });
+    });
 </script>
 
 
