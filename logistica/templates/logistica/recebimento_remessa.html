@@ -36,6 +36,30 @@
 {% endif %}
 
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const input = document.getElementById("id_box_codes");
+
+        if (input) {
+            input.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();  // impede submit da tela
+
+                    // cria input hidden simulando button add_serial
+                    const form = input.form;
+                    const hidden = document.createElement("input");
+                    hidden.type = "hidden";
+                    hidden.name = "add_serial";
+                    hidden.value = "1";
+                    form.appendChild(hidden);
+
+                    form.submit();
+                }
+            });
+        }
+    });
+</script>
+
+<script>
     (function () {
         const MAP = JSON.parse('{{ depositos_map_json|escapejs }}');
 
