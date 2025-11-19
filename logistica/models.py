@@ -142,7 +142,8 @@ class PermissaoUsuarioDummy(models.Model):
             ("entrada_flfm", "Entrada (Fulfillment)"),
             ("pode_gerenciar_filiais", "Pode Gerenciar Filiais"),
             ("gestao_total", "Gestão Total"),
-            ("inst_simplified", "Instalação Simplificada")
+            ("inst_simplified", "Instalação Simplificada"),
+            ("entrega_com_sap", "Entrega com SAP"),
         ]
 
     def __str__(self):
