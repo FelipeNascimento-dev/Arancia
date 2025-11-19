@@ -30,40 +30,6 @@
             </div>
         </div>
 
-        <!-- Relatórios -->
-        <!-- <div class="dropdown">
-            <button type="button" class="dropbtn itens-sidebar" id="real-button">
-                <i class="fa-solid fa-file" style="margin-left: 3px; margin-right: 2px;"></i>
-                <span class="texto-item">&nbsp; Relatórios</span>
-            </button>
-            <div class="dropdown-content" id="relatorios-dropdown">
-                <a href="#">PDFs Pendentes</a>
-                <a href="#">PDFs Selecionados</a>
-            </div>
-        </div> -->
-
-        <!-- Transporte
-        <div class="dropdown">
-            <button type="button" class="dropbtn itens-sidebar">
-                <i class="fa-solid fa-truck"></i>
-                <span class="texto-item">&nbsp; Transporte</span>
-            </button>
-            <div class="dropdown-content">
-                <h5 class="submenu-toggle" data-target="estornos-sub">Entrada-Fulfillment</h5>
-                <div class="sub-submenu" id="estornos-sub">
-                    <a href="{% url 'logistica:consulta_id_form' %}">SAP - Consulta ID</a>
-                    <a href="{% url 'logistica:pre_recebimento' 13 %}">SAP - Pré-Recebimento</a>
-                    <a href="{% url 'logistica:recebimento' 15 %}">SAP - Recebimento</a>
-                    <a href="{% url 'logistica:consulta_resultados' %}">SAP - Consulta Resultados</a>
-                    <h5 class="submenu-toggle" data-target="estornos-pre-sub">Estornos</h5>
-                    <div class="sub-submenu" id="estornos-pre-sub">
-                        <a href="{% url 'logistica:pre_recebimento' 14 %}">SAP - Estorno de Pré-Recebimento</a>
-                        <a href="{% url 'logistica:recebimento' 16 %}">SAP - Estorno de Recebimento</a>
-                    </div>
-                </div>
-            </div>
-        </div> -->
-
         <!-- Logística -->
         {% if perms.logistica.logistica_perm %}
         <div class="dropdown">
@@ -72,21 +38,6 @@
                 <span class="texto-item">&nbsp; Logística</span>
             </button>
             <div class="dropdown-content">
-                <!-- {% if perms.logistica.entrada_flfm %}
-                <h5 class="submenu-toggle" data-target="estornos-sub">Entrada (Fulfillment)</h5>
-                <div class="sub-submenu" id="estornos-sub">
-                    <a href="{% url 'logistica:consulta_id_form' %}">SAP - Consulta ID</a>
-                    <a href="{% url 'logistica:pre_recebimento' 13 %}">SAP - Pré-Recebimento</a>
-                    <a href="{% url 'logistica:recebimento' 15 %}">SAP - Recebimento</a>
-                    <a href="{% url 'logistica:consulta_resultados' %}">SAP - Consulta Resultados</a>
-                    <h5 class="submenu-toggle" data-target="estornos-pre-sub">Estornos</h5>
-                    <div class="sub-submenu" id="estornos-pre-sub">
-                        <a href="{% url 'logistica:pre_recebimento' 14 %}">SAP - Estorno de Pré-Recebimento</a>
-                        <a href="{% url 'logistica:recebimento' 16 %}">SAP - Estorno de Recebimento</a>
-                    </div>
-                </div>
-                {% endif %} -->
-
                 {% if perms.logistica.lastmile_b2c %}
                 <h5 class="submenu-toggle" data-target="checkin-sub">Check-in Geral</h5>
                 <div class="sub-submenu" id="checkin-sub">
@@ -94,61 +45,96 @@
                     <a href="{% url 'logistica:client_select' %}">Seleção de Clientes</a>
                     <a href="{% url 'logistica:product_create' %}">Consulta de Produtos</a>
                 </div>
-
-                <h5 class="submenu-toggle" data-target="lastmile-sub">Lastmile (B2C)</h5>
-                <div class="sub-submenu" id="lastmile-sub">
-                    <h5 class="submenu-toggle" data-target="consulta-sub">Consultas</h5>
-                    <div class="sub-submenu" id="consulta-sub">
-                        <a href="{% url 'logistica:consultar_pedido' %}">Consultar pedido</a>
-                        <a href="{% url 'logistica:consulta_pedidos' %}">IP - Extração de Pedidos</a>
-                        <a href="{% url 'logistica:consulta_etiquetas' %}">IP - Consulta de Etiquetas</a>
-                    </div>
-                    <h5 class="submenu-toggle" data-target="lastmile-entrada-sub">Fluxo de Entrega</h5>
-                    <div class="sub-submenu" id="lastmile-entrada-sub">
-                        <a href="{% url 'logistica:consulta_pedidos' %}">IP - Extração de Pedidos</a>
-                        <a href="{% url 'logistica:pcp' 201 %}">IP - PCP</a>
-                        <h5 class="submenu-toggle" data-target="reserva-sub">SAP - Reserva de equipamento</h5>
-                        <div class="sub-submenu" id="reserva-sub">
-                            <a href="{% url 'logistica:reserva_equip' 84 %}">SAP - Reserva</a>
-                            <a href="{% url 'logistica:consulta_result_ma' %}">SAP - Consulta</a>
+                    {% if perms.logistica.inst_simplified %}
+                    <h5 class="submenu-toggle" data-target="lastmile-sub">Lastmile (B2C)</h5>
+                    <div class="sub-submenu" id="lastmile-sub">
+                        <h5 class="submenu-toggle" data-target="consulta-sub">Consultas</h5>
+                        <div class="sub-submenu" id="consulta-sub">
+                            <a href="{% url 'logistica:consultar_pedido' %}">Consultar pedido</a>
+                            <a href="{% url 'logistica:consulta_pedidos' %}">IP - Extração de Pedidos</a>
+                            <a href="{% url 'logistica:consulta_etiquetas' %}">IP - Consulta de Etiquetas</a>
                         </div>
-                        <a href="{% url 'logistica:retorno_picking' 202 %}">IP - Retorno do Picking</a>
-                        <a href="{% url 'logistica:consolidacao' 203 %}">IP - Consolidação</a>
-                        <h5 class="submenu-toggle" data-target="saida-sub">SAP - Saída para Campo</h5>
-                        <div class="sub-submenu" id="saida-sub">
-                            <a href="{% url 'logistica:saida_campo' 1 %}">SAP - Saída</a>
-                            <a href="{% url 'logistica:consulta_result_ec' %}">SAP - Consulta</a>
+                        <h5 class="submenu-toggle" data-target="lastmile-entrada-sub">Fluxo de Entrega</h5>
+                        <div class="sub-submenu" id="lastmile-entrada-sub">
+                            <a href="{% url 'logistica:consulta_pedidos' %}">IP - Extração de Pedidos</a>
+                            <a href="{% url 'logistica:pcp_simpl' 201 %}">IP - PCP</a>
+                            <a href="{% url 'logistica:retorno_picking_simpl' 202 %}">IP - Retorno do Picking</a>
+                            <a href="{% url 'logistica:consolidacao_simpl' 203 %}">IP - Consolidação</a>
+                            <a href="{% url 'logistica:expedicao_simpl' 204 %}">IP - Expedição</a>
+                            <a href="{% url 'logistica:consulta_etiquetas' %}">IP - Consulta de Etiquetas</a>
+                            <a href="{% url 'logistica:troca_custodia_simpl' 205 %}">IP - Troca de Custódia</a>
                         </div>
-                        <a href="{% url 'logistica:expedicao' 204 %}">IP - Expedição</a>
-                        <a href="{% url 'logistica:consulta_etiquetas' %}">IP - Consulta de Etiquetas</a>
-                        <a href="{% url 'logistica:troca_custodia' 205 %}">IP - Troca de Custódia</a>
-                        <h5 class="submenu-toggle" data-target="estornos-saida-reserva">SAP - Estornos</h5>
-                        <div class="sub-submenu" id="estornos-saida-reserva">
-                            <a href="{% url 'logistica:estorno_reserva' 85 %}">SAP - Estorno Reserva de Equipamento</a>
-                            <a href="{% url 'logistica:cancelamento_saida_campo' 2 %}">SAP - Estorno Saida para
-                                Campo</a>
-                        </div>
-                    </div>
-                    <h5 class="submenu-toggle" data-target="lastmile-retirada-sub">Fluxo de Retirada</h5>
-                    <div class="sub-submenu" id="lastmile-retirada-sub">
-                        <!-- <h5 class="submenu-toggle" data-target="retirada-sub">Retirada de Pedidos</h5>
-                        <div class="sub-submenu" id="retirada-sub"> -->
+                        <h5 class="submenu-toggle" data-target="lastmile-retirada-sub">Fluxo de Retirada</h5>
+                        <div class="sub-submenu" id="lastmile-retirada-sub">
                             <a href="{% url 'logistica:order_return_check' %}">Conferir Retirada</a>
-                        <!-- </div> -->
+                        </div>
+                        {% if perms.logistica.reverse %}
+                        <h5 class="submenu-toggle" data-target="reverse-sub">Reversa</h5>
+                        <div class="sub-submenu" id="reverse-sub">
+                            <a href="{% url 'logistica:consultar_romaneio' %}">Consultar Romaneio</a>
+                            <a href="{% url 'logistica:consulta_etiquetas' %}">Consulta de Etiquetas</a>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% if perms.logistica.reverse %}
-                    <h5 class="submenu-toggle" data-target="reverse-sub">Reversa</h5>
-                    <div class="sub-submenu" id="reverse-sub">
-                        <a href="{% url 'logistica:consultar_romaneio' %}">Consultar Romaneio</a>
-                        <a href="{% url 'logistica:consulta_etiquetas' %}">Consulta de Etiquetas</a>
+                    <h5 class="submenu-toggle" data-target="recebimentos-sub">Recebimento via Remessa</h5>
+                    <div class="sub-submenu" id="recebimentos-sub">
+                        <a href="{% url 'logistica:recebimento_remessa' %}">Recebimento</a>
+                    </div>
+                    {% else %}
+                    <h5 class="submenu-toggle" data-target="lastmile-sub">Lastmile (B2C)</h5>
+                    <div class="sub-submenu" id="lastmile-sub">
+                        <h5 class="submenu-toggle" data-target="consulta-sub">Consultas</h5>
+                        <div class="sub-submenu" id="consulta-sub">
+                            <a href="{% url 'logistica:consultar_pedido' %}">Consultar pedido</a>
+                            <a href="{% url 'logistica:consulta_pedidos' %}">IP - Extração de Pedidos</a>
+                            <a href="{% url 'logistica:consulta_etiquetas' %}">IP - Consulta de Etiquetas</a>
+                        </div>
+                        <h5 class="submenu-toggle" data-target="lastmile-entrada-sub">Fluxo de Entrega</h5>
+                        <div class="sub-submenu" id="lastmile-entrada-sub">
+                            <a href="{% url 'logistica:consulta_pedidos' %}">IP - Extração de Pedidos</a>
+                            <a href="{% url 'logistica:pcp' 201 %}">IP - PCP</a>
+                            <h5 class="submenu-toggle" data-target="reserva-sub">SAP - Reserva de equipamento</h5>
+                            <div class="sub-submenu" id="reserva-sub">
+                                <a href="{% url 'logistica:reserva_equip' 84 %}">SAP - Reserva</a>
+                                <a href="{% url 'logistica:consulta_result_ma' %}">SAP - Consulta</a>
+                            </div>
+                            <a href="{% url 'logistica:retorno_picking' 202 %}">IP - Retorno do Picking</a>
+                            <a href="{% url 'logistica:consolidacao' 203 %}">IP - Consolidação</a>
+                            <h5 class="submenu-toggle" data-target="saida-sub">SAP - Saída para Campo</h5>
+                            <div class="sub-submenu" id="saida-sub">
+                                <a href="{% url 'logistica:saida_campo' 1 %}">SAP - Saída</a>
+                                <a href="{% url 'logistica:consulta_result_ec' %}">SAP - Consulta</a>
+                            </div>
+                            <a href="{% url 'logistica:expedicao' 204 %}">IP - Expedição</a>
+                            <a href="{% url 'logistica:consulta_etiquetas' %}">IP - Consulta de Etiquetas</a>
+                            <a href="{% url 'logistica:troca_custodia' 205 %}">IP - Troca de Custódia</a>
+                            <h5 class="submenu-toggle" data-target="estornos-saida-reserva">SAP - Estornos</h5>
+                            <div class="sub-submenu" id="estornos-saida-reserva">
+                                <a href="{% url 'logistica:estorno_reserva' 85 %}">SAP - Estorno Reserva de Equipamento</a>
+                                <a href="{% url 'logistica:cancelamento_saida_campo' 2 %}">SAP - Estorno Saida para
+                                    Campo</a>
+                            </div>
+                        </div>
+                        <h5 class="submenu-toggle" data-target="lastmile-retirada-sub">Fluxo de Retirada</h5>
+                        <div class="sub-submenu" id="lastmile-retirada-sub">
+                            <!-- <h5 class="submenu-toggle" data-target="retirada-sub">Retirada de Pedidos</h5>
+                            <div class="sub-submenu" id="retirada-sub"> -->
+                                <a href="{% url 'logistica:order_return_check' %}">Conferir Retirada</a>
+                            <!-- </div> -->
+                        </div>
+                        {% if perms.logistica.reverse %}
+                        <h5 class="submenu-toggle" data-target="reverse-sub">Reversa</h5>
+                        <div class="sub-submenu" id="reverse-sub">
+                            <a href="{% url 'logistica:consultar_romaneio' %}">Consultar Romaneio</a>
+                            <a href="{% url 'logistica:consulta_etiquetas' %}">Consulta de Etiquetas</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <h5 class="submenu-toggle" data-target="recebimentos-sub">Recebimento via Remessa</h5>
+                    <div class="sub-submenu" id="recebimentos-sub">
+                        <a href="{% url 'logistica:recebimento_remessa' %}">Recebimento</a>
                     </div>
                     {% endif %}
-                </div>
-                <h5 class="submenu-toggle" data-target="recebimentos-sub">Recebimento via Remessa</h5>
-                <div class="sub-submenu" id="recebimentos-sub">
-                    <a href="{% url 'logistica:recebimento_remessa' %}">Recebimento</a>
-                    <a href="#">Check-In</a>
-                </div>
                 {% endif %}
             </div>
         </div>
@@ -196,8 +182,6 @@
             </div>
         </div>
         {% endif %}
-
-
 
         <!-- Gerenciamento -->
         {% if perms.logistica.gestao_total %}

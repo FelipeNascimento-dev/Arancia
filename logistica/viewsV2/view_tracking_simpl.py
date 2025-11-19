@@ -209,9 +209,9 @@ def _send_tracking(request_data: dict) -> Tuple[str, dict]:
 
 def _post_success_redirect(code_info: TrackingOriginalCode, numero_pedido: str) -> HttpResponse:
     redirect_map = {
-        "201": ("logistica:pcp", 202),
-        "202": ("logistica:pcp", 203),
-        "203": ("logistica:pcp", 204),
+        "201": ("logistica:pcp_simpl", 202),
+        "202": ("logistica:pcp_simpl", 203),
+        "203": ("logistica:pcp_simpl", 204),
         "204": ("logistica:consulta_etiquetas", None),
     }
     view_name, next_code = redirect_map.get(

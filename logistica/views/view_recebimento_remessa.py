@@ -28,8 +28,16 @@ def recebimento_remessa(request):
     destino_obj = getattr(user.designacao, "informacao_adicional", None)
 
     if destino_obj:
-        destino_choices = [
-            (destino_obj.id, f"{destino_obj.cod_iata} - {destino_obj.nome}")]
+        if user.designacao.informacao_adicional.sales_channel == 'all':
+            destino_queryset = GroupAditionalInformation.objects.filter(
+                group__name__in=["arancia_PA"]
+            )
+            destino_choices = [
+                (g.id, f"{g.cod_iata} - {g.nome}") for g in destino_queryset
+            ]
+        else:
+            destino_choices = [
+                (destino_obj.id, f"{destino_obj.cod_iata} - {destino_obj.nome}")]
     else:
         destino_choices = [("", "Sem designação configurada")]
 
