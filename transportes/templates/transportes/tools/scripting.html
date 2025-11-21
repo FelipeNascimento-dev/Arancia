@@ -46,18 +46,20 @@
       <input type="file"
              id="id_arquivo"
              name="arquivo"
-             accept=".xls,.xlsx">
-    </div>
+             accept=".xls,.xlsx">     </div>
 
-  
-    
+    <div>    
+    <button type="submit"  style="margin-s" class="submit-button-right">Enviar Arquivo</button>
+   
+     <strong><a  style="margin-left:8px; color: #37a1e7ff;"href="https://storage.googleapis.com/appandroidios-38136.appspot.com/Template_importacao_d28fb51f-5453-484f-8024-c7f1e8fdc3c0.xlsx" download>Baixar Template</a></strong>
+
+  </div>  
   </form>
 
   <br>
   <br>
-  <button type="submit" class="submit-button-right">Enviar Arquivo</button>
- 
-        <strong><a  style="margin-left:8px; color: #37a1e7ff;"href="https://storage.googleapis.com/appandroidios-38136.appspot.com/Template_importacao_d28fb51f-5453-484f-8024-c7f1e8fdc3c0.xlsx" download>Baixar Template</a></strong>
+
+  <br>
   {% if mensagem %}
     <div class="mensagem">{{ mensagem }}</div>
   {% endif %}
