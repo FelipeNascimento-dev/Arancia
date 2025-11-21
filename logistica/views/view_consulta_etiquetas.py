@@ -40,9 +40,15 @@ def _add_item(items: List[Dict[str, Any]], pedido: str, volume: int) -> List[Dic
     return items
 
 
-def _get_label_url(pedido: str, volume: int) -> Optional[str]:
+def _get_label_url(request, pedido: str, volume: int) -> Optional[str]:
+    simplified = "true" if request.user.has_perm(
+        "logistica.inst_simplified") else "false"
+    url = (
+        f"{API_URL}/api/order-sumary/get-label/"
+        f"{pedido}/{volume}?simplificated={simplified}"
+    )
     client = RequestClient(
-        url=f"{API_URL}/api/order-sumary/get-label/{pedido}/{volume}",
+        url=url,
         method="GET",
         headers={
             "Content-Type": "application/json",
@@ -70,7 +76,7 @@ def _fill_urls_with_api(items: List[Dict[str, Any]], request: Optional[HttpReque
         ped = it["pedido"]
         vol = int(it["volume"])
         try:
-            url = _get_label_url(ped, vol)
+            url = _get_label_url(request, ped, vol)
 
             if not url:
                 out.append({"pedido": ped, "volume": vol, "url": {
@@ -129,7 +135,7 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
                 "etapa_ativa": 'consulta_etiquetas',
             })
 
-        items = _fill_urls_with_api(items)
+        items = _fill_urls_with_api(items, request)
         _save_items(request, items)
         return render(request, "logistica/consulta_etiquetas.html", {
             "form": EtiquetasForm(),
