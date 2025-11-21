@@ -93,23 +93,28 @@ def unsuccessful_insert(request, order=None):
             if form.is_valid():
                 pedido = form.cleaned_data.get('pedido') or numero_pedido
                 material = form.cleaned_data.get('material')
+                user = request.user
+                location_id = user.designacao.informacao_adicional_id
 
                 if not serials_good and not serials_bad:
                     messages.error(request, "Nenhum serial foi inserido.")
                     return redirect(request.path)
 
-                url = f"{API_URL}/v2/trackings/send"
+                url = f"{API_URL}/api/v2/trackings/send"
 
                 if serials_good:
                     payload_good = {
                         "order_number": pedido,
                         "volume_number": 1,
-                        "order_type": "NORMAL",
-                        "tracking_code": pedido,
+                        "order_type": "FAILURE",
+                        "tracking_code": "207",
                         "created_by": str(request.user),
                         "bar_codes": serials_good,
+                        "from_location_id": location_id,
+                        "to_location_id": location_id,
                         "equipament_state": "GOOD"
                     }
+                    print("Payload GOOD:", payload_good)
 
                     client_good = RequestClient(
                         url=url,
@@ -134,13 +139,16 @@ def unsuccessful_insert(request, order=None):
                     payload_bad = {
                         "order_number": pedido,
                         "volume_number": 1,
-                        "order_type": "NORMAL",
-                        "tracking_code": pedido,
+                        "order_type": "FAILURE",
+                        "tracking_code": "207",
                         "created_by": str(request.user),
                         "bar_codes": serials_bad,
+                        "from_location_id": location_id,
+                        "to_location_id": location_id,
                         "equipament_state": "BAD"
                     }
 
+                    print("Payload BAD:", payload_bad)
                     client_bad = RequestClient(
                         url=url,
                         method="POST",
