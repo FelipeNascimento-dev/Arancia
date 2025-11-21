@@ -178,7 +178,7 @@ def _build_request_data(code_info: TrackingOriginalCode, numero_pedido: str, ser
 
     if code_info.original_code == "202" and seriais_concat:
         payload["bar_codes"] = seriais_concat.split("|")
-    print(payload)
+    # print(payload)
 
     return payload
 
@@ -190,7 +190,7 @@ def _send_tracking(request_data: dict) -> Tuple[str, dict]:
         headers=TRACKING_HEADERS,
         request_data=request_data
     )
-
+    print(request_data)
     resp = client.send_api_request()
 
     if isinstance(resp, str):
@@ -215,7 +215,7 @@ def _post_success_redirect(code_info: TrackingOriginalCode, numero_pedido: str) 
         "204": ("logistica:consulta_etiquetas", None),
     }
     view_name, next_code = redirect_map.get(
-        code_info.original_code, ("logistica:pcp", int(code_info.original_code) + 1))
+        code_info.original_code, ("logistica:pcp_simpl", int(code_info.original_code) + 1))
     return redirect(view_name, code=next_code) if next_code else redirect(view_name)
 
 

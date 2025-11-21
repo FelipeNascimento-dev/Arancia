@@ -113,7 +113,7 @@ def client_consult(request):
 
     elif request.method == "POST" and request.POST.get("enviar_evento") == "1":
         try:
-            url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=100"
+            url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=1000"
             res = RequestClient(url=url, method="GET",
                                 headers={"Accept": JSON_CT})
             result = res.send_api_request()
