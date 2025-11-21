@@ -1,7 +1,11 @@
 {% extends 'global/base.html' %}
 
 {% block content %}
-{% include 'global/partials/_nav_chevron_simpl.html' %}
+{% if perms.logistica.inst_simplified %}
+    {% include 'global/partials/_nav_chevron_simpl.html' %}
+{% else %}
+    {% include 'global/partials/_nav_chevron.html' %}
+{% endif %}
 <style>
     .form-card-2col {
         height: auto;

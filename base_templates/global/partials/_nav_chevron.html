@@ -40,7 +40,7 @@
         Expedição
       </a>
 
-      <a class="etapa" href="{% url 'logistica:consulta_etiquetas' %}">
+      <a class="etapa {% if etapa_ativa == 'consulta_etiquetas' %}ativa{% endif %}" href="{% url 'logistica:consulta_etiquetas' %}">
         Etiquetas
       </a>
     </div>
