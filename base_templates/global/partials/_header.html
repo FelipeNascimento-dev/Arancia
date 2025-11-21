@@ -139,6 +139,7 @@
                     <h5 class="submenu-toggle" data-target="Ferramentas">Ferramentas</h5>
                     <div class="sub-submenu" id="Ferramentas">
                         {% if perms.transportes.CC_admin %}
+
                         <h5 class="submenu-toggle" data-target="Ferramentas1">Usuarios</h5>
                         <div class="sub-submenu" id="Ferramentas1">
                             <a href="{% url 'transportes:criar_usuario' %}">Criar Usuario</a>
@@ -148,17 +149,36 @@
                         {% if perms.transportes.controle_campo %}
                         <h5 class="submenu-toggle" data-target="Ferramentas2">Rotas</h5>
                         <div class="sub-submenu" id="Ferramentas2">
-                            <a href="{% url 'transportes:ordenar_rota' %}">Ordenar Rotas</a>
+                            <a href="{% url 'transportes:scripting' %}">Roteirização</a>
                             <a href="{% url 'transportes:mover_rota' %}">Mover Rotas</a>
+                           <a href="{% url 'transportes:ordenar_rota' %}">Ordenar Rotas</a>
                         </div>
                         {% endif %}
-                    </div>
+                    
                 </div>
                 {% endif %}
             </div>
         </div>
         {% endif %}
-
+        <!-- BKO-->
+        {% if perms.backoffice.BKO %}
+        <!-- BKO -->
+        <div class="dropdown">
+            <button type="button" class="dropbtn itens-sidebar">
+                <i class="fa-solid fa-file-lines"></i>
+                <span class="texto-item">&nbsp;Backoffice</span>
+            </button>
+            <div class="dropdown-content">
+                {% if perms.backoffice.Importar %}
+                <!-- <a href="{% url 'transportes:gerar_etiquetas' %}">Gerar Etiquetas</a> -->
+                <h5 class="submenu-toggle" data-target="bko">Importar</h5>
+                <div class="sub-submenu" id="bko">
+                    <a href="{% url 'backoffice:importar_excel' %}"> Equipamentos</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
         <!-- Gerenciamento -->
         {% if perms.logistica.gestao_total %}
         <div class="dropdown">

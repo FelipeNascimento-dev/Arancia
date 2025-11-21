@@ -203,7 +203,6 @@ def order_detail(request, order: str):
         "NORMAL": "PROXIMA TRACKING",
         "NORMAL|INSUCESSO": "RECEBER INSUCESSO",
     }
-
     botao_texto = dict_botao_texto.get(tipo, "AÇÕES DISPONÍVEIS")
 
     return render(request, "logistica/detalhe_pedidos.html", {

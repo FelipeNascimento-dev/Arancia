@@ -1,0 +1,2 @@
+from .importar_view import  importar_excel_view
+from .baixar_duplicados_view import baixar_duplicados_view

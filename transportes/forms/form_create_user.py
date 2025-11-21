@@ -1,5 +1,7 @@
 from django import forms
 
+from logistica.models import GroupAditionalInformation
+
 class UsuarioForm(forms.Form):
     username = forms.CharField(label="Usuário", max_length=150, required=True)
     name = forms.CharField(label="Nome", max_length=150, required=True)
@@ -8,10 +10,19 @@ class UsuarioForm(forms.Form):
     phone = forms.CharField(label="Telefone", max_length=20, required=False)
     email = forms.EmailField(label="E-mail", required=True)
     cod_base = forms.CharField(label="Código Base", required=True)
-    nome_unidade = forms.CharField(label="Unidade", required=False)
+    nome_unidade = forms.ModelChoiceField(
+        label="Unidade",
+        queryset=GroupAditionalInformation.objects.filter(group__name__icontains="arancia_pa"),
+        empty_label="Selecione uma unidade",
+        required=True
+    )
     documento = forms.CharField(label="Documento", required=True)
     profile = forms.CharField(label="Projeto", required=False)
-
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        
+        self.fields["nome_unidade"].label_from_instance = lambda obj: f"{obj.nome} ({obj.cod_iata}) "
+        
     def clean(self):
         cleaned_data = super().clean()
         pwd = cleaned_data.get("pwd")

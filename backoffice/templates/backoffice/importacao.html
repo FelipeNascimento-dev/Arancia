@@ -1,0 +1,91 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+{% load query_filters %}
+<style>
+  .file-upload {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+        color: white;
+  }
+  .file-upload input[type="file"] {
+    display: none; /* esconde o campo nativo */
+       
+  }
+  .file-label {
+    
+    padding: 8px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+       
+  }
+  .file-name {
+    font-style: italic;
+    color: #555;
+  }
+
+    .mensagem { background: #e0ffe0; padding: 10px; border-radius: 5px; }
+    .erro { background: #ffe0e0; padding: 10px; border-radius: 5px; }
+  </style>
+<div class="form-card-2col"   style="margin-top: 95px" >
+    
+   <h2>Importar Equipamentos</h2>
+<br>
+<form method="post" enctype="multipart/form-data" class="form-grid-2col">
+  {% csrf_token %}
+  <div class="file-upload">
+    <label for="id_arquivo" class="file-label btn btn-primary" style="    color: white;"> Escolher arquivo Excel</label>
+    <span id="file-name" class="file-name">Nenhum arquivo selecionado</span>
+    {{ form.arquivo }}
+    
+  </div>
+    
+    <button type="submit" class="btn btn-primary">Enviar Arquivo</button>
+    
+  <br>
+    <strong><a style="color: #37a1e7ff;" href="https://storage.googleapis.com/appandroidios-38136.appspot.com/Template_import_7ec01301-8cb4-40eb-8cf5-12db86afbd0d.xlsx" download>Baixar Template</a></strong>
+
+    </div>
+  </form>
+  
+<br>
+
+<br>
+  {% if duplicados %}
+    <h3>Registros Duplicados</h3><br>
+    <table class="styled-table dark table-sd">
+      <thead>
+        <tr>
+          {% for coluna in duplicados.0.keys %}
+            <th>{{ coluna }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for linha in duplicados %}
+          <tr>
+            {% for valor in linha.values %}
+              <td>{{ valor }}</td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <br>
+    <a href="{% url 'backoffice:baixar_duplicados' %}">
+      <button type="button"  class="btn btn-primary">Baixar Duplicados em Excel</button>
+    </a>
+  {% endif %}
+
+
+</div>
+
+<script>
+  const input = document.getElementById('id_arquivo');
+  const fileName = document.getElementById('file-name');
+  input.addEventListener('change', function() {
+    fileName.textContent = this.files.length ? this.files[0].name : 'Nenhum arquivo selecionado';
+  });
+</script>
+  {% endblock %}
