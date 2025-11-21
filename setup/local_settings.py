@@ -54,7 +54,7 @@ DATABASES = {
 
 API_BASE = "http://192.168.0.214/RetencaoAPI/api"
 TOKEN = "K90nIR4PK90nIR4PBKIy0rPZ6uwSqKCDX"
-API_BASE_BKO ="http://172.16.11.118:8001/api-importacao/api/"
+API_BASE_BKO ="http://192.168.0.214/api-importacao/api/"
 # Mapas
 status_labels = {
     "concluido": "Concluído",

@@ -15,6 +15,7 @@ class PersonalPermissions(models.Model):
         verbose_name = "--BKO-Permission--"
         verbose_name_plural = "--BKO-Permissions--"
         permissions = [
+            ("BKO", "permission BKO"),
             ("Importar", "importar"),
            
         ]

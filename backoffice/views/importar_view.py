@@ -14,7 +14,7 @@ API_MOVER = f"{API_BASE_BKO}v1/import_equipaments/create"
 
 @csrf_protect
 @login_required(login_url='logistica:login')
-@permission_required('transportes.controle_campo', raise_exception=True)
+@permission_required('backoffice.Importar', raise_exception=True)
 def importar_excel_view(request):
     contexto = {"form": ImportacaoForm()}
 
