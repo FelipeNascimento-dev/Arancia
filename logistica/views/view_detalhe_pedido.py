@@ -62,9 +62,10 @@ def order_detail(request, order: str):
         tipo = (
             form.fields['shipment_order_type'].initial or '').strip().upper()
         volume_state = (result.get("volume_state") or "").strip().upper()
+        ultima_tracking = (result.get("ultima_tracking") or "").strip().upper()
 
         if tipo == "NORMAL":
-            if volume_state != "CLARIFY_DELIVERY_FAIL":
+            if ultima_tracking[:3] != '205' and volume_state != "CLARIFY_DELIVERY_FAIL":
                 try:
                     tracking_atual = int(
                         (result.get("ultima_tracking") or "200").split(" ")[0])
@@ -177,7 +178,8 @@ def order_detail(request, order: str):
     volume_state = (result.get("volume_state") or "").strip().upper()
     ultima_tracking = (result.get("ultima_tracking") or "").strip().upper()
     tipo = 'NORMAL|INSUCESSO' if (
-        tipo == 'NORMAL' and volume_state == 'CLARIFY_DELIVERY_FAIL') else tipo
+        tipo == 'NORMAL' and volume_state == 'CLARIFY_DELIVERY_FAIL'
+        and ultima_tracking[:3] == '205') else tipo
     mostrar_acoes = (
         tipo == "REVERSE"
         and volume_state != "CANCELLED"

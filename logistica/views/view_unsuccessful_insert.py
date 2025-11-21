@@ -1,7 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from ..forms import UnsuccessfulInsertForm
+from utils.request import RequestClient
+from setup.local_settings import API_URL
 from django.contrib.auth.decorators import login_required, permission_required
+
+JSON_CT = "application/json"
 
 
 @login_required(login_url='logistica:login')
@@ -89,18 +93,77 @@ def unsuccessful_insert(request, order=None):
             if form.is_valid():
                 pedido = form.cleaned_data.get('pedido') or numero_pedido
                 material = form.cleaned_data.get('material')
+                user = request.user
+                location_id = user.designacao.informacao_adicional_id
 
                 if not serials_good and not serials_bad:
-                    messages.error(
-                        request, "Nenhum serial foi inserido.")
+                    messages.error(request, "Nenhum serial foi inserido.")
                     return redirect(request.path)
 
+                url = f"{API_URL}/api/v2/trackings/send"
+
                 if serials_good:
+                    payload_good = {
+                        "order_number": pedido,
+                        "volume_number": 1,
+                        "order_type": "FAILURE",
+                        "tracking_code": "207",
+                        "created_by": str(request.user),
+                        "bar_codes": serials_good,
+                        "from_location_id": location_id,
+                        "to_location_id": location_id,
+                        "equipament_state": "GOOD"
+                    }
+                    print("Payload GOOD:", payload_good)
+
+                    client_good = RequestClient(
+                        url=url,
+                        method="POST",
+                        headers={"Accept": JSON_CT},
+                        request_data=payload_good
+                    )
+
+                    result_good = client_good.send_api_request()
+
+                    if isinstance(result_good, dict) and result_good.get('detail'):
+                        messages.error(request, f"{result_good['detail']}")
+                    else:
+                        messages.success(
+                            request, "Insucesso registrado com sucesso!")
+
                     for s in serials_good:
                         print(
                             f"GOOD → Pedido {pedido} | Serial {s} | Material {material}")
 
                 if serials_bad:
+                    payload_bad = {
+                        "order_number": pedido,
+                        "volume_number": 1,
+                        "order_type": "FAILURE",
+                        "tracking_code": "207",
+                        "created_by": str(request.user),
+                        "bar_codes": serials_bad,
+                        "from_location_id": location_id,
+                        "to_location_id": location_id,
+                        "equipament_state": "BAD"
+                    }
+
+                    print("Payload BAD:", payload_bad)
+                    client_bad = RequestClient(
+                        url=url,
+                        method="POST",
+                        headers={"Accept": JSON_CT},
+                        request_data=payload_bad
+                    )
+
+                    result_bad = client_bad.send_api_request()
+
+                    if isinstance(result_bad, dict) and result_bad.get('detail'):
+                        messages.error(request, f"{result_bad['detail']}")
+                    else:
+                        messages.success(
+                            request, "Insucesso registrado com sucesso!")
+
                     for s in serials_bad:
                         print(
                             f"BAD → Pedido {pedido} | Serial {s} | Material {material}")

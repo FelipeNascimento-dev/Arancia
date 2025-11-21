@@ -6,7 +6,7 @@ class UnsuccessfulInsertForm(forms.Form):
         label='Pedido', max_length=50, widget=forms.TextInput(attrs={'autocomplete': 'off'}))
     serial = forms.CharField(
         label='Serial', max_length=50, required=False, widget=forms.TextInput(attrs={'autocomplete': 'off'}))
-    material = forms.ChoiceField(label='Status do Material', choices=[
+    material = forms.ChoiceField(label='Status do Material', required=False, choices=[
         ('', ''),
         ('EC21', 'GOOD'),
         ('EC22', 'BAD'),
