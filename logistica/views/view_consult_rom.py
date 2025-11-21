@@ -38,19 +38,6 @@ def consult_rom(request):
         if form.is_valid():
 
             if "criar_romaneio" in request.POST:
-                # numero_criar = request.POST.get(
-                #     "criar_romaneio", "").strip().upper()
-                # normalizado = (numero_criar)
-                # if not normalizado:
-                #     messages.error(
-                #         request, "Formato inválido. Use AR00001 (AR + 5 dígitos).")
-                #     return render(request, "logistica/consult_rom.html", {
-                #         "form": form,
-                #         "botao_texto": botao_texto,
-                #         "site_title": titulo,
-                #         "proximo_disponivel": proximo_disponivel,
-                #     })
-
                 url_post = f"{STOCK_API_URL}/v1/romaneios/"
                 payload = {
                     "created_by": user.username,
