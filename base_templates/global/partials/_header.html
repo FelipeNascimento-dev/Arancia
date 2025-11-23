@@ -39,12 +39,14 @@
             </button>
             <div class="dropdown-content">
                 {% if perms.logistica.lastmile_b2c %}
-                <h5 class="submenu-toggle" data-target="checkin-sub">Check-in Geral</h5>
-                <div class="sub-submenu" id="checkin-sub">
-                    <a href="{% url 'logistica:client_select' %}">Iniciar Check-in</a>
-                    <a href="{% url 'logistica:client_consult' %}">Consulta de Clientes</a>
-                    <a href="{% url 'logistica:product_create' %}">Consulta de Produtos</a>
-                </div>
+                    {% if perms.logistica.checkin_principal %}
+                    <h5 class="submenu-toggle" data-target="checkin-sub">Check-in Geral</h5>
+                    <div class="sub-submenu" id="checkin-sub">
+                        <a href="{% url 'logistica:client_select' %}">Iniciar Check-in</a>
+                        <a href="{% url 'logistica:client_consult' %}">Consulta de Clientes</a>
+                        <a href="{% url 'logistica:product_create' %}">Consulta de Produtos</a>
+                    </div>
+                    {% endif %}
                 
                 <h5 class="submenu-toggle" data-target="lastmile-sub">Lastmile (B2C)</h5>
                 <div class="sub-submenu" id="lastmile-sub">
