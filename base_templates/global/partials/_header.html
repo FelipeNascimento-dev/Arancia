@@ -40,11 +40,17 @@
             <div class="dropdown-content">
                 {% if perms.logistica.lastmile_b2c %}
                     {% if perms.logistica.checkin_principal %}
-                    <h5 class="submenu-toggle" data-target="checkin-sub">Check-in Geral</h5>
+                    <h5 class="submenu-toggle" data-target="checkin-sub">Check-In Geral</h5>
                     <div class="sub-submenu" id="checkin-sub">
-                        <a href="{% url 'logistica:client_select' %}">Iniciar Check-in</a>
+                        <a href="{% url 'logistica:client_select' 'IN' %}">Iniciar Check-In</a>
                         <a href="{% url 'logistica:client_consult' %}">Consulta de Clientes</a>
                         <a href="{% url 'logistica:product_create' %}">Consulta de Produtos</a>
+                    </div>
+                    {% endif %}
+                    {% if perms.logistica.checkin_principal %}
+                    <h5 class="submenu-toggle" data-target="checkout-sub">Check-Out Geral</h5>
+                    <div class="sub-submenu" id="checkout-sub">
+                        <a href="{% url 'logistica:client_select' 'OUT' %}">Iniciar Check-Out</a>
                     </div>
                     {% endif %}
                 
