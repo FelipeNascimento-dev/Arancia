@@ -11,8 +11,10 @@ JSON_CT = "application/json"
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.checkin_principal', raise_exception=True)
-def client_select(request):
+def client_select(request, vetor):
     titulo = "Seleção de Cliente"
+
+    request.session["vetor"] = vetor.upper()
 
     try:
         url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=1000"
@@ -56,10 +58,13 @@ def client_select(request):
             if not order:
                 messages.error(
                     request, "O campo 'Order' é obrigatório para Cielo.")
-                return redirect("logistica:client_select")
+                return redirect("logistica:client_select", vetor=vetor)
             return redirect("logistica:detalhe_pedido", order=order)
 
-        return redirect("logistica:client_checkin")
+        if vetor.upper() == "IN":
+            return redirect("logistica:client_checkin")
+        else:
+            return redirect("logistica:order_return_check")
 
     return render(request, "logistica/client_select.html", {
         "form": form,
