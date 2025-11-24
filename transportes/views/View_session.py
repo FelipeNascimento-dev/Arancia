@@ -4,11 +4,11 @@ from django.contrib.auth.decorators import login_required
 
 PROJECTS_BY_BASE = {
     
-    "CTBSEQ": ["CTBPO", "CIELO","CLARO"],
+    "CTBSEQ": ["CTBPO", "CIELO","CLARO","CTB Transportes"],
     "CTBFED": ["FIRST", "CTB", "C6-BANK", "PICPAY"],
 }
 
-PROFILE_OPTIONS = ["CLARO", "CIELO", "FEDEX", "CTB"]
+PROFILE_OPTIONS = ["CLARO", "CIELO", "FEDEX", "CTB","CTB Transportes"]
 
 
 @login_required

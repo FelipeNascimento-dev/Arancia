@@ -5,6 +5,12 @@ from logistica.views.view_button_desn import button_desn
 from setup.local_settings import API_URL
 from utils.request import RequestClient
 from ..forms import OrderDetailForm
+from ..viewsV2.view_tracking_simpl import (_send_tracking,
+                                           _build_request_data,
+                                           TRACKING_HEADERS,
+                                           TRACKING_URL,
+                                           TrackingOriginalCode)
+
 import json
 import re
 
@@ -117,9 +123,28 @@ def order_detail(request, order: str):
             match = re.match(r"(\d+)", ultima_tracking)
             if match:
                 code = match.group(1)
-                return redirect("logistica:pcp", code=code)
+                return redirect("logistica:pcp_simpl", code=code)
 
-            return redirect("logistica:pcp", code=201)
+            location_id = request.user.designacao.informacao_adicional_id
+            payload = {
+                "order_number": order,
+                "volume_number": 1,
+                "order_type": "REVERSE",
+                "tracking_code": '205',
+                "created_by": request.user.username,
+                "from_location_id": location_id,
+            }
+            result = _send_tracking(
+                request_data=payload
+            )
+            if 'success' in result[1]:
+                messages.success(
+                    request, f"Tracking enviada com sucesso para o pedido {order}.")
+            elif 'detail' in result[1]:
+                messages.error(
+                    request, f"Erro ao enviar tracking: {result['detail']}")
+
+            return redirect("logistica:detalhe_pedido", order=order)
 
         if "cancelar_pedido" in request.POST:
             url = f"{API_URL}/api/reverse-order/cancel/AR{order}?canceled_by={request.user.username}"
@@ -203,7 +228,6 @@ def order_detail(request, order: str):
         "NORMAL": "PROXIMA TRACKING",
         "NORMAL|INSUCESSO": "RECEBER INSUCESSO",
     }
-
     botao_texto = dict_botao_texto.get(tipo, "AÇÕES DISPONÍVEIS")
 
     return render(request, "logistica/detalhe_pedidos.html", {

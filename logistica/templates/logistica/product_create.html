@@ -498,9 +498,11 @@
 {% if produtos %}
 <div class="section-header">
   <h3 class="section-title">Produtos encontrados</h3>
+  {% if perms.logistica.products_management %}
   <button type="button" class="btn-create" id="openModalBtn">
     Criar novo produto
   </button>
+  {% endif %}
 </div>
 
 {% for p in produtos %}
@@ -511,12 +513,14 @@
       <p><strong>Categoria:</strong> {{ p.category }}</p>
     </div>
     <span class="expand-icon">+</span>
+    {% if perms.logistica.products_management %}
     <div class="card-actions">
       <button type="button" class="btn-edit"
         onclick="openEditModal('{{ p.id }}', '{{ p.sku }}', '{{ p.description }}', '{{ p.category }}', '{{ p.extra_info_json|escapejs }}')">
         Editar
       </button>
     </div>
+    {% endif %}
   </div>
 
   <div class="product-details">

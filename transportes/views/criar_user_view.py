@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_protect
 from setup.local_settings import API_BASE
 from utils.request import RequestClient
 from transportes.forms.form_create_user import UsuarioForm
-
+from logistica.models import GroupAditionalInformation
 
 API_CRIACAO = f"{API_BASE}/v1/auth/create/"
 TOKEN = "123"
@@ -15,11 +15,16 @@ TOKEN = "123"
 @login_required(login_url='logistica:login')
 @permission_required('transportes.CC_admin', raise_exception=True)
 def criar_user_view(request):
+
     if request.method == "POST":
         form = UsuarioForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-
+            unidade = data["nome_unidade"]
+            data["user_created_id"] = request.user.id
+            data["gai_id"] = unidade.id  
+            data["nome_unidade"] = f"PA_{unidade.cod_iata}"
+            
             headers = {
                 "accept": "application/json",
                 "access_token": TOKEN,

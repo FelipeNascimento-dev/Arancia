@@ -2,6 +2,7 @@ from django.urls import path
 
 from transportes.views.View_session import config_context_view
 from transportes.views.iframe import painel_Dashboard_view
+from transportes.views.scripting_view import scripting_view
 from transportes.views.view_panel_technical import registrar_tratamento_view
 
 
@@ -26,5 +27,6 @@ urlpatterns = [
     path("Ferramentas/criar-usuarios/", criar_user_view, name="criar_usuario"),
     path("Ferramentas/ver-usuarios/", ver_usuario_view, name="ver_usuario"),
     path("Ferramentas/mover-rotas/", mover_rota_view, name="mover_rota"),
-    path("Ferramentas/ordenar_rotas/", ordenar_rota_view, name="ordenar_rota"),
+    path("Ferramentas/ordenar-rotas/", ordenar_rota_view, name="ordenar_rota"),
+    path("Ferramentas/roteirizacao/", scripting_view, name="scripting"),
 ]

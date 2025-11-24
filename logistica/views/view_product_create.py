@@ -22,7 +22,7 @@ def product_create(request):
 
     # === BUSCA CLIENTES ===
     try:
-        url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=100"
+        url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=1000"
         res = RequestClient(url=url, method="GET", headers={"Accept": JSON_CT})
         result = res.send_api_request()
 

@@ -144,6 +144,8 @@ class PermissaoUsuarioDummy(models.Model):
             ("gestao_total", "Gestão Total"),
             ("inst_simplified", "Instalação Simplificada"),
             ("entrega_com_sap", "Entrega com SAP"),
+            ("checkin_principal", "Check-in Principal"),
+            ("products_management", "Gerenciamento de Produtos"),
         ]
 
     def __str__(self):

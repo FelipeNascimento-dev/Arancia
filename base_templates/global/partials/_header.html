@@ -39,12 +39,14 @@
             </button>
             <div class="dropdown-content">
                 {% if perms.logistica.lastmile_b2c %}
-                <h5 class="submenu-toggle" data-target="checkin-sub">Check-in Geral</h5>
-                <div class="sub-submenu" id="checkin-sub">
-                    <a href="{% url 'logistica:client_consult' %}">Consulta de Clientes</a>
-                    <a href="{% url 'logistica:client_select' %}">Seleção de Clientes</a>
-                    <a href="{% url 'logistica:product_create' %}">Consulta de Produtos</a>
-                </div>
+                    {% if perms.logistica.checkin_principal %}
+                    <h5 class="submenu-toggle" data-target="checkin-sub">Check-in Geral</h5>
+                    <div class="sub-submenu" id="checkin-sub">
+                        <a href="{% url 'logistica:client_select' %}">Iniciar Check-in</a>
+                        <a href="{% url 'logistica:client_consult' %}">Consulta de Clientes</a>
+                        <a href="{% url 'logistica:product_create' %}">Consulta de Produtos</a>
+                    </div>
+                    {% endif %}
                 
                 <h5 class="submenu-toggle" data-target="lastmile-sub">Lastmile (B2C)</h5>
                 <div class="sub-submenu" id="lastmile-sub">
@@ -136,9 +138,11 @@
                         <a href="{% url 'transportes:controle' %}">Controle</a>
                         <a href="{% url 'transportes:Dashboard' %}">Dashboard</a>
                     </div>
-                    <h5 class="submenu-toggle" data-target="Ferramentas">Ferramentas</h5>
-                    <div class="sub-submenu" id="Ferramentas">
+
+
+
                         {% if perms.transportes.CC_admin %}
+
                         <h5 class="submenu-toggle" data-target="Ferramentas1">Usuarios</h5>
                         <div class="sub-submenu" id="Ferramentas1">
                             <a href="{% url 'transportes:criar_usuario' %}">Criar Usuario</a>
@@ -148,17 +152,42 @@
                         {% if perms.transportes.controle_campo %}
                         <h5 class="submenu-toggle" data-target="Ferramentas2">Rotas</h5>
                         <div class="sub-submenu" id="Ferramentas2">
-                            <a href="{% url 'transportes:ordenar_rota' %}">Ordenar Rotas</a>
+                            <a href="{% url 'transportes:scripting' %}">Roteirização</a>
                             <a href="{% url 'transportes:mover_rota' %}">Mover Rotas</a>
+                           <a href="{% url 'transportes:ordenar_rota' %}">Ordenar Rotas</a>
                         </div>
                         {% endif %}
-                    </div>
+                    
+                </div>
+                {% endif %}
+
+
+
+            </div>
+
+
+
+        </div>
+        {% endif %}
+        <!-- BKO-->
+        {% if perms.backoffice.BKO %}
+        <!-- BKO -->
+        <div class="dropdown">
+            <button type="button" class="dropbtn itens-sidebar">
+                <i class="fa-solid fa-file-lines"></i>
+                <span class="texto-item">&nbsp;Backoffice</span>
+            </button>
+            <div class="dropdown-content">
+                {% if perms.backoffice.Importar %}
+                <!-- <a href="{% url 'transportes:gerar_etiquetas' %}">Gerar Etiquetas</a> -->
+                <h5 class="submenu-toggle" data-target="bko">Importar</h5>
+                <div class="sub-submenu" id="bko">
+                    <a href="{% url 'backoffice:importar_excel' %}"> Equipamentos</a>
                 </div>
                 {% endif %}
             </div>
         </div>
         {% endif %}
-
         <!-- Gerenciamento -->
         {% if perms.logistica.gestao_total %}
         <div class="dropdown">
@@ -189,5 +218,6 @@
         </div>
     </div>
 </div>
+
 
 <script src="{% static 'global/javascript/script.js' %}"></script>

@@ -16,6 +16,9 @@ def client_select(request):
     choices = []
 
     if request.method == "POST":
+        form = ClientSelectForm(request.POST, nome_form=titulo)
+
+        # client_name = form.cleaned_data
         client = request.POST.get("client", None)
         order = request.POST.get("order", None)
 
@@ -40,7 +43,7 @@ def client_select(request):
     request.session.pop("order", None)
 
     try:
-        url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=100"
+        url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=1000"
         res = RequestClient(url=url, method="GET", headers={"Accept": JSON_CT})
         result = res.send_api_request()
 
