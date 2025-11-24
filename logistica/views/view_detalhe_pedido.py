@@ -220,6 +220,12 @@ def order_detail(request, order: str):
     produto_campos = [bf(n) for n in form.GRUPO_2 if n in form.fields]
     adicionais_campos = [bf(n) for n in form.GRUPO_3 if n in form.fields]
     historico_tracking = view_order(request, order, 'history')
+    if isinstance(historico_tracking, list):
+        try:
+            historico_tracking.sort(
+                key=lambda x: x.get("id", 0), reverse=False)
+        except Exception:
+            pass
     request.session["result"] = result
 
     dict_botao_texto = {
