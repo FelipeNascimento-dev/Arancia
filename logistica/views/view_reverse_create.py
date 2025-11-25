@@ -174,8 +174,12 @@ def reverse_create(request):
             "volume_number": last_volume,
             "kit_number": last_kit,
             "created_by": request.user.username,
-            "extra_info": {}
         }
+
+        movement_extra_info = {}
+
+        if movement_extra_info:
+            payload["extra_info"] = movement_extra_info
 
         client = RequestClient(
             url=f"{STOCK_API_URL}/v1/movements/move-list-items",
