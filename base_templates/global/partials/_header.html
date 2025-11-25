@@ -47,7 +47,7 @@
                         <a href="{% url 'logistica:product_create' %}">Consulta de Produtos</a>
                     </div>
                     {% endif %}
-                    {% if perms.logistica.checkin_principal %}
+                    {% if perms.logistica.checkout_principal %}
                     <h5 class="submenu-toggle" data-target="checkout-sub">Check-Out Geral</h5>
                     <div class="sub-submenu" id="checkout-sub">
                         <a href="{% url 'logistica:client_select' 'OUT' %}">Iniciar Check-Out</a>

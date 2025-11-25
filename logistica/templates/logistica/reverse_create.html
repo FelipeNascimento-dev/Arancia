@@ -223,9 +223,15 @@
                     <button type="submit" class="dropdown-item" name="cancelar_rom" value="1">
                         Cancelar Romaneio
                     </button>
+                    {% if client == 'cielo' %}
                     <button type="submit" class="dropdown-item" name="enviar_cotacao" value="1">
                         Enviar Cotação
                     </button>
+                    {% else %}
+                    <button type="submit" class="dropdown-item" name="finalizar_rom" value="1">
+                        Finalizar Romaneio
+                    </button>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}

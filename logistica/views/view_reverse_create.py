@@ -15,6 +15,10 @@ def reverse_create(request):
     result = request.session.get('result', None)
     romaneio_in = request.session.get("romaneio_num", None)
 
+    client_data = request.session.get("selected_client", {})
+    client_code = client_data.get("client_code", "").lower()
+    client_name = client_data.get("client_name", "")
+
     last_rom = request.session.get("current_romaneio")
     if romaneio_in and last_rom != romaneio_in:
         request.session["volums"] = []
@@ -120,6 +124,75 @@ def reverse_create(request):
             request.session["result"] = result
             request.session.modified = True
             return redirect('logistica:detalhe_pedido', order=order)
+
+    if request.method == "POST" and form.is_valid() and "finalizar_rom" in request.POST:
+        from_location_id = int(form.cleaned_data.get("sales_channel"))
+        to_location_id = int(form.cleaned_data.get(
+            "group_aditional_information"))
+        if from_location_id == 0:
+            messages.error(request, "Selecione uma PA válida.")
+            return redirect("logistica:reverse_create")
+
+        result = request.session.get("result", {})
+        volums = result.get("volums", [])
+
+        client_data = request.session.get("selected_client", {})
+
+        items_list = []
+
+        for v in volums:
+            volume_number = v.get("volum_number") or v.get("volume_number")
+
+            for kit in v.get("kits", []):
+                kit_number = str(kit.get("kit_number"))
+
+                items_list.append({
+                    "product_id": 0,
+                    "serial": kit["serial"],
+                    "extra_info": {
+                        "volume_number": volume_number,
+                        "kit_number": str(kit_number),
+                    }
+                })
+
+        if not items_list:
+            messages.error(
+                request, "Nenhum item encontrado para finalizar o romaneio.")
+            return redirect("logistica:reverse_create")
+
+        last_volume = items_list[-1]["extra_info"]["volume_number"]
+        last_kit = items_list[-1]["extra_info"]["kit_number"]
+
+        payload = {
+            "item": items_list,
+            "client_name": client_code,
+            "movement_type": "RETURN",
+            "from_location_id": from_location_id,
+            "to_location_id": to_location_id,
+            "order_origin_id": 8,
+            "order_number": request.session.get("romaneio_num"),
+            "volume_number": last_volume,
+            "kit_number": last_kit,
+            "created_by": request.user.username,
+            "extra_info": {}
+        }
+
+        client = RequestClient(
+            url=f"{STOCK_API_URL}/v1/movements/move-list-items",
+            method="POST",
+            headers={"Accept": JSON_CT, "Content-Type": JSON_CT},
+            request_data=payload
+        )
+
+        response = client.send_api_request()
+
+        if isinstance(response, dict) and "detail" in response:
+            messages.error(request, response["detail"])
+            return redirect("logistica:reverse_create")
+
+        messages.success(request, "Romaneio finalizado com sucesso!")
+        return redirect("logistica:consultar_romaneio")
+
     if request.method == "POST" and "cancelar_rom" in request.POST:
         payload = {
             "status_rom": "CANCELADO",
@@ -159,6 +232,7 @@ def reverse_create(request):
         "result": result,
         "volums": volums,
         "last_kit_serial": last_kit_serial,
+        "client": client_code,
     }
     return render(request, "logistica/reverse_create.html", context)
 
