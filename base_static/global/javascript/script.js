@@ -333,6 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isHome) { macroGuia.innerHTML = ""; return; }
 
     const rotasMap = [
+      // ROADMAP DE LOGISTICA //
       { regex: /^\/consulta-id(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Consulta ID"] },
       { regex: /^\/pre-recebimento(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Pré-Recebimento"] },
       { regex: /^\/recebimento(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Recebimento"] },
