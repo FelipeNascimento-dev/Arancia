@@ -468,7 +468,16 @@ document.addEventListener("DOMContentLoaded", () => {
         regex: /^\/recebimento-remessa(?:\/|$)/i,
         macro: ["Logística", "Recebimento via Remessa"]
       },
-     ];
+      // GERENCIAMENTO //
+      {
+        regex: /^\/user-ger(?:\/|$)/i,
+        macro: ["Gerenciamento", "Gestão de Usuários"]
+      },
+      {
+        regex: /^\/skill-ger(?:\/|$)/i,
+        macro: ["Gerenciamento", "Gestão de Skills"]
+      },
+    ];
 
     const match = rotasMap.find(r => r.regex.test(relPath));
     macroGuia.innerHTML = match
