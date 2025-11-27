@@ -309,6 +309,7 @@ def _process_enviar_evento(
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def trackingIP(request: HttpRequest, code: str) -> HttpResponse:
     code_info = TrackingOriginalCode(code)
     titulo = f"IP - {code_info.description}"

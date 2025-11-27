@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.entrada_flfm', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def consulta_id_form(request):
     form = ConsultaForm()
     tabela_dados = None
@@ -41,6 +42,7 @@ def consulta_id_form(request):
 @login_required(login_url='logistica:login')
 @permission_required('logistica.usuario_de_TI', raise_exception=True)
 @permission_required('logistica.usuario_credenciado', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def consulta_id_table(request, id):
     tabela_dados = request.session.get('tabela_dados')
     exibir_formulario = False

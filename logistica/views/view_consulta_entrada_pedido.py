@@ -8,6 +8,7 @@ from django.contrib import messages
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def order_consult(request):
     form = OrderConsultForm(request.POST or None)
     titulo = 'Consultar Pedido Entrada'

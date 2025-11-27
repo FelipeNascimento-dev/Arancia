@@ -20,6 +20,7 @@ def _extract_next(result):
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def consult_rom(request):
     titulo = "Consultar Romaneio"
     proximo_disponivel = None

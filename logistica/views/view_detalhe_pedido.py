@@ -59,6 +59,7 @@ def view_order(request, order: str, ep_name: str):
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def order_detail(request, order: str):
     request_success = False
 

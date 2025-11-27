@@ -27,6 +27,7 @@ def buscar_dados(tp_reg: str, serial: str):
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def consulta_ma84(request):
     id_pre_recebido = request.session.get('id_pre_recebido')
     serial_inserido = request.session.get('serial_recebido', '')
@@ -133,6 +134,7 @@ def consulta_ma84(request):
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def btn_ma_voltar(request):
     tp_reg = (
         request.POST.get('tp_reg') or

@@ -11,6 +11,7 @@ JSON_CT = "application/json"
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def product_create(request):
     titulo = "Consultar Produtos"
     produtos = []

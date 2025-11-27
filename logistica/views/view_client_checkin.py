@@ -11,6 +11,7 @@ import json
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.checkin_principal', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def client_checkin(request):
     client_data = request.session.get("selected_client", {})
     client_name = client_data.get("client_name", "Cliente não selecionado")

@@ -39,6 +39,7 @@ def get_user_sales_channel(user):
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def consulta_pedidos(request):
     sales_channels = [sc for sc in get_user_sales_channel(request.user) if sc]
     choices = [(sc, sc) for sc in sales_channels]
