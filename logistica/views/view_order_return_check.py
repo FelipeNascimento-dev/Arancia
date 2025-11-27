@@ -45,6 +45,7 @@ def reserva_dedup_upper(values) -> list[str]:
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def order_return_check(request):
     user: User = request.user
     if request.method != 'POST':

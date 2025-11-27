@@ -6,10 +6,14 @@ from ..forms import ReverseCreateForm
 from utils.request import RequestClient
 from setup.local_settings import STOCK_API_URL
 from .view_send_quotes import send_quotes
+from django.contrib.auth.decorators import login_required, permission_required
 
 JSON_CT = "application/json"
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.lastmile_b2c', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def reverse_create(request):
     titulo = 'Reversa de Equipamento'
     result = request.session.get('result', None)

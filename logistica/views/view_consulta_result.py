@@ -23,6 +23,7 @@ def buscar_dados(request, tp_reg, id_pre_recebido, serial_inserido):
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('logistica.entrada_flfm', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def consulta_result(request):
     id_pre_recebido = request.session.get('id_pre_recebido')
     serial_inserido = request.session.get('serial_recebido')
@@ -90,6 +91,7 @@ def consulta_result(request):
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.entrada_flfm', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def btn_voltar(request):
     tp_reg = (
         request.POST.get('tp_reg') or

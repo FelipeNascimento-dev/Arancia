@@ -40,6 +40,7 @@ def _build_choices(rows):
 
 
 @login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 @permission_required('logistica.entrada_flfm', raise_exception=True)
 def pre_recebimento(request, tp_reg):
     titulo = 'SAP - Pré-Recebimento' if tp_reg == '13' else 'SAP - Estorno de Pré-Recebimento'
@@ -112,6 +113,7 @@ def pre_recebimento(request, tp_reg):
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.entrada_flfm', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def recebimento(request, tp_reg):
     titulo = 'SAP - Recebimento' if tp_reg == '15' else 'SAP - Estorno de Recebimento'
     try:

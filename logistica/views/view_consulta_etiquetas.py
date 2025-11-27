@@ -97,6 +97,7 @@ def _fill_urls_with_api(items: List[Dict[str, Any]], request: Optional[HttpReque
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
     pedido_sessao = (request.session.get("pedido") or "").strip()
 

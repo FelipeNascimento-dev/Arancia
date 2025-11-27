@@ -136,6 +136,7 @@ class PermissaoUsuarioDummy(models.Model):
         verbose_name = "--Personalizada--"
         verbose_name_plural = "--Personalizadas--"
         permissions = [
+            ("acesso_arancia", "Acesso Arancia"),
             ("ti_interno", "TI Interno"),
             ("logistica_perm", "Permissão Logistica"),
             ("lastmile_b2c", "LastMile (B2C)"),

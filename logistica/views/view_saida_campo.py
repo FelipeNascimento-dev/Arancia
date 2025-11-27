@@ -40,6 +40,7 @@ def saida_dedup_upper(values) -> list[str]:
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def saida_campo(request, tp_reg: str):
     titulo = 'SAP - Saida para Campo' if str(
         tp_reg) == '1' else 'SAP - Cancelamento de Saida para Campo'

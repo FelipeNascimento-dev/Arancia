@@ -41,6 +41,7 @@ def reserva_dedup_upper(values) -> list[str]:
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def reserva_equip(request, tp_reg):
     titulo = 'SAP - Reserva de Equipamento' if str(
         tp_reg) == '84' else 'SAP - Estorno Reserva de Equipamento'
