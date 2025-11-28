@@ -26,3 +26,4 @@ from .forms_client_checkin import ClientCheckInForm
 from .forms_client_consult import ClientConsultForm
 from .forms_order_select import OrderSelectForm
 from .forms_product_create import ProductCreateForm
+from .forms_gerenciamento_estoque import GerenciamentoEstoqueForm
