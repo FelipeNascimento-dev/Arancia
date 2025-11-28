@@ -11,6 +11,7 @@ JSON_CT = "application/json"
 
 def gerenciamento_estoque(request):
     titulo = "Gerenciamento de Estoque"
+    user = request.user
     try:
         url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=1000"
         res = RequestClient(url=url, method="GET", headers={"Accept": JSON_CT})
@@ -28,14 +29,26 @@ def gerenciamento_estoque(request):
         messages.error(request, f"Erro ao obter clientes: {e}")
         client_choices = []
 
-    cd_queryset = GroupAditionalInformation.objects.filter(
-        group__name__icontains="arancia_PA"
-    )
+    user_cd = getattr(user.designacao, "informacao_adicional", None)
 
-    cd_choices = [
-        (g.id, f"{g.cod_iata} - {g.nome}")
-        for g in cd_queryset
-    ]
+    if user.has_perm("logistica.gerente_estoque"):
+        cd_queryset = GroupAditionalInformation.objects.filter(
+            group__name__icontains="arancia_pa"
+        )
+
+        cd_choices = [
+            (g.id, f"{g.cod_iata} - {g.nome}")
+            for g in cd_queryset
+        ]
+
+    else:
+        cd_choices = []
+        if user_cd:
+            cd_choices = [
+                (user_cd.id, f"{user_cd.cod_iata} - {user_cd.nome}")
+            ]
+        else:
+            cd_choices = [("", "Sem designação configurada")]
 
     form = GerenciamentoEstoqueForm(
         nome_form=titulo,
