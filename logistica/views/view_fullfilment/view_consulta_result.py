@@ -1,4 +1,4 @@
-from ..forms.forms_consulta_result import ConsultaPreRecebimentoForm
+from ...forms.forms_fullfilment.forms_consulta_result import ConsultaPreRecebimentoForm
 from utils.request import RequestClient
 from django.shortcuts import render, redirect
 from django.contrib import messages

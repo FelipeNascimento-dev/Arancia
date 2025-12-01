@@ -1,4 +1,4 @@
-from ..forms import ConsultaForm
+from ...forms import ConsultaForm
 from django.shortcuts import render, redirect
 from utils.request import RequestClient
 from django.contrib.auth.decorators import login_required, permission_required
