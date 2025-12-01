@@ -28,9 +28,8 @@ from .view_consult_rom import consult_rom
 from .view_send_quotes import send_quotes
 from .toggle_db_view import toggle_db
 from .view_unsuccessful_insert import unsuccessful_insert
-from .view_client_select import client_select
-from .view_client_checkin import client_checkin
-from .view_order_select import order_select
-from .view_product_create import product_create
-from .view_client_consult import client_consult
+from .views_checkin_checkout.view_client_select import client_select
+from .views_checkin_checkout.view_client_checkin import client_checkin
+from .views_checkin_checkout.view_product_create import product_create
+from .views_checkin_checkout.view_client_consult import client_consult
 from .view_gerenciamento_estoque import gerenciamento_estoque

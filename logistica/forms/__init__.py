@@ -21,9 +21,8 @@ from .forms_skill_ger import CreateGAIForm
 from .forms_reverse_create import ReverseCreateForm
 from .forms_consult_rom import RomaneioConsultaForm
 from .forms_unsuccessful_insert import UnsuccessfulInsertForm
-from .forms_client_select import ClientSelectForm
-from .forms_client_checkin import ClientCheckInForm
-from .forms_client_consult import ClientConsultForm
-from .forms_order_select import OrderSelectForm
-from .forms_product_create import ProductCreateForm
+from .forms_checkin_checkout.forms_client_select import ClientSelectForm
+from .forms_checkin_checkout.forms_client_checkin import ClientCheckInForm
+from .forms_checkin_checkout.forms_client_consult import ClientConsultForm
+from .forms_checkin_checkout.forms_product_create import ProductCreateForm
 from .forms_gerenciamento_estoque import GerenciamentoEstoqueForm
