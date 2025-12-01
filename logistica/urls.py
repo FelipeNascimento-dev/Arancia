@@ -81,7 +81,6 @@ urls_Checkin = [
     path('check/<str:vetor>/selecao-clientes/',
          client_select, name='client_select'),
     path('check-in/cliente/consult/', client_consult, name='client_consult'),
-    path('check-in/order/select/', order_select, name='order_select'),
     path('check-in/registro/', client_checkin, name='client_checkin'),
     path('check-in/product/create/', product_create, name='product_create'),
 ]

@@ -1,9 +1,9 @@
-from ..forms import ClientCheckInForm
+from ...forms import ClientCheckInForm
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
-from ..models import GroupAditionalInformation, UserDesignation
+from ...models import GroupAditionalInformation, UserDesignation
 from utils.request import RequestClient
 from setup.local_settings import STOCK_API_URL
 import json

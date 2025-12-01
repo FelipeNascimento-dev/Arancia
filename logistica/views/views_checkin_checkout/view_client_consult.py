@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from utils.request import RequestClient
 from setup.local_settings import STOCK_API_URL
-from ..forms import ClientConsultForm
+from ...forms import ClientConsultForm
 import json
 
 JSON_CT = "application/json"
