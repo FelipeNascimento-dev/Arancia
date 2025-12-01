@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.contrib import messages
 from utils.request import RequestClient
 from setup.local_settings import STOCK_API_URL
+from django.contrib.auth.decorators import login_required, permission_required
 import json
 from ..models import GroupAditionalInformation
 from urllib.parse import quote
@@ -10,6 +11,8 @@ from urllib.parse import quote
 JSON_CT = "application/json"
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.gerente_estoque', raise_exception=True)
 def gerenciamento_estoque(request):
     titulo = "Gerenciamento de Estoque"
     user = request.user
@@ -72,10 +75,8 @@ def gerenciamento_estoque(request):
             url = (
                 f"{STOCK_API_URL}/v1/items/list/{client}"
                 f"?status={status}"
-                f"&sales_channels={sales_channel_encoded}"
+                f"&sales_channels%5B%5D={sales_channel_encoded}"
             )
-
-            print(">>> URL GERADA:", url)
 
             try:
                 req = RequestClient(url=url, method="GET",

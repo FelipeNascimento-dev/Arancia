@@ -1,12 +1,94 @@
 {% extends 'global/base.html' %}
-
 {% block content %}
 
 <style>
+    /* Form */
     .form-card-2col {
         height: auto;
-        margin-top: 65px;
+        margin-top: 70px;
+        margin-bottom: 10px;
     }
+
+    /* GRID dos cards */
+    .cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 12px;
+        margin-top: 10px;
+        padding: 0 10px;
+        margin-bottom: 30px;
+    }
+
+    /* CARD */
+    .card {
+        background: #fff;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        overflow: hidden;
+        border: 1px solid #e3e3e3;
+        padding: 0;
+    }
+
+    /* CABEÇALHO */
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        background: #f4f4f4;
+    }
+
+    .badge-num {
+        background: #4caf50;
+        color: #fff;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+
+    .card-title {
+        margin: 0;
+        color: #222;
+        font-size: 0.88rem;
+        font-weight: 600;
+        max-width: 170px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* CORPO DO CARD */
+    .card-body {
+        padding: 8px 10px;
+        font-size: 0.82rem;
+    }
+
+    .card-body p {
+        margin: 4px 0;
+        font-size: 0.82rem;
+        color: #444;
+    }
+
+    .card-body strong {
+        font-size: 0.84rem;
+        color: #111;
+    }
+
+    /* Data Vermelha */
+    .card--not-today {
+        border: 2px solid #e53935 !important;
+    }
+
+    .date--not-today {
+        color: #e53935 !important;
+        font-weight: bold;
+    }
+
 </style>
 
 <div class="form-container">
@@ -18,70 +100,67 @@
 </div>
 
 {% if resultado_itens %}
-
 <div class="cards-container">
+
     {% for item in resultado_itens %}
     <div class="card">
+
         <div class="card-header">
             <span class="badge-num">{{ forloop.counter }}</span>
-            <h3 class="card-title">
-                {{ item.serial }}
-            </h3>
+            <h3 class="card-title">{{ item.serial }}</h3>
         </div>
 
         <div class="card-body">
+
             <p>
-                <strong>Status:</strong> <br />
+                <strong>Status:</strong><br>
                 {% if item.status == "IN_TRANSIT" %}
-                <span style="color:#e53935; font-weight:700">{{ item.status }}</span>
+                    <span style="color:#d32f2f;font-weight:bold">{{ item.status }}</span>
                 {% else %}
-                {{ item.status }}
+                    {{ item.status }}
                 {% endif %}
             </p>
 
             <p>
-                <strong>Data:</strong> <br />
+                <strong>Data:</strong><br>
                 <time class="js-dt" datetime="{{ item.created_at|default:'' }}">
-                    {{ item.created_at|default:'-' }}
+                    {{ item.created_at|default:"-" }}
                 </time>
             </p>
 
             <p>
-                <strong>Localização (Location ID):</strong> <br />
+                <strong>Localização:</strong><br>
                 {{ item.location_id }}
             </p>
 
             <p>
-                <strong>Cliente:</strong> <br />
-                {{ item.client_id }}
+                <strong>Cliente:</strong><br>
+                {{ item.client }}
             </p>
 
             {% if item.product_id %}
             <p>
-                <strong>Produto:</strong> <br />
-                {{ item.product_id }}
+                <strong>Produto:</strong><br>{{ item.product_id }}
             </p>
             {% endif %}
 
             {% if item.last_in_movement_id %}
             <p>
-                <strong>Último Movimento (Entrada):</strong> <br />
-                {{ item.last_in_movement_id }}
+                <strong>Entrada:</strong><br>{{ item.last_in_movement_id }}
             </p>
             {% endif %}
 
             {% if item.last_out_movement_id %}
             <p>
-                <strong>Último Movimento (Saída):</strong> <br />
-                {{ item.last_out_movement_id }}
+                <strong>Saída:</strong><br>{{ item.last_out_movement_id }}
             </p>
             {% endif %}
 
         </div>
     </div>
     {% endfor %}
-</div>
 
+</div>
 {% endif %}
 
 {% endblock %}
