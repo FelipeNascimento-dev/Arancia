@@ -10,13 +10,78 @@
 </style>
 
 <div class="form-container">
-
     <div class="form-card-2col">
         <form method="POST">
             {% include 'global/partials/_form_2col.html' %}
         </form>
     </div>
-
 </div>
+
+{% if resultado_itens %}
+
+<div class="cards-container">
+    {% for item in resultado_itens %}
+    <div class="card">
+        <div class="card-header">
+            <span class="badge-num">{{ forloop.counter }}</span>
+            <h3 class="card-title">
+                {{ item.serial }}
+            </h3>
+        </div>
+
+        <div class="card-body">
+            <p>
+                <strong>Status:</strong> <br />
+                {% if item.status == "IN_TRANSIT" %}
+                <span style="color:#e53935; font-weight:700">{{ item.status }}</span>
+                {% else %}
+                {{ item.status }}
+                {% endif %}
+            </p>
+
+            <p>
+                <strong>Data:</strong> <br />
+                <time class="js-dt" datetime="{{ item.created_at|default:'' }}">
+                    {{ item.created_at|default:'-' }}
+                </time>
+            </p>
+
+            <p>
+                <strong>Localização (Location ID):</strong> <br />
+                {{ item.location_id }}
+            </p>
+
+            <p>
+                <strong>Cliente:</strong> <br />
+                {{ item.client_id }}
+            </p>
+
+            {% if item.product_id %}
+            <p>
+                <strong>Produto:</strong> <br />
+                {{ item.product_id }}
+            </p>
+            {% endif %}
+
+            {% if item.last_in_movement_id %}
+            <p>
+                <strong>Último Movimento (Entrada):</strong> <br />
+                {{ item.last_in_movement_id }}
+            </p>
+            {% endif %}
+
+            {% if item.last_out_movement_id %}
+            <p>
+                <strong>Último Movimento (Saída):</strong> <br />
+                {{ item.last_out_movement_id }}
+            </p>
+            {% endif %}
+
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endif %}
 
 {% endblock %}
