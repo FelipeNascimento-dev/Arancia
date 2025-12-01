@@ -5,8 +5,8 @@ from django.contrib import messages
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
 
-from ..models import GroupAditionalInformation
-from ..forms import ExtracaoForm
+from ...models import GroupAditionalInformation
+from ...forms import ExtracaoForm
 from utils.request import RequestClient
 from django.contrib.auth.models import User
 from setup.local_settings import API_URL

@@ -6,8 +6,8 @@ from django.urls import reverse
 
 from setup.local_settings import API_URL
 from utils.request import RequestClient
-from ..forms import ConsultaPedForm
-from ..models import GroupAditionalInformation
+from ...forms import ConsultaPedForm
+from ...models import GroupAditionalInformation
 
 PERM_GERENCIAR = "logistica.pode_gerenciar_filiais"
 JSON_CT = "application/json"

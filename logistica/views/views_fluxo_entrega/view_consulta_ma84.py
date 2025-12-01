@@ -1,4 +1,4 @@
-from ..forms import ConsultaResultMA84Form
+from ...forms import ConsultaResultMA84Form
 from utils.request import RequestClient
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_protect

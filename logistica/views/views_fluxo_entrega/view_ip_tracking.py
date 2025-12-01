@@ -4,7 +4,7 @@ from typing import Iterable, Tuple, Optional
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
-from ..forms import trackingIPForm
+from ...forms import trackingIPForm
 from utils.request import RequestClient
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required

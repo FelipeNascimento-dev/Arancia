@@ -1,4 +1,4 @@
-from ..forms import ReservaEquipamentosForm
+from ...forms import ReservaEquipamentosForm
 from utils.request import RequestClient
 from django.shortcuts import render, redirect
 from django.contrib import messages

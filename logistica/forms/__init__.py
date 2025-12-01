@@ -10,12 +10,12 @@ from .forms_consulta_result_ma84 import ConsultaResultMA84Form
 from .forms_consulta_result_ec01 import ConsultaResultEC01Form
 from .forms_trackingIP import trackingIPForm
 from .forms_extracao_pedidos import ExtracaoForm
-from .forms_consulta_etiqueta import EtiquetasForm
+from .forms_lastmile_consultas.forms_consulta_etiqueta import EtiquetasForm
 from .forms_configuracao_user import ConfiguracaoUserForm
-from .forms_consulta_pedidos import ConsultaPedForm
+from .forms_lastmile_consultas.forms_consulta_pedidos import ConsultaPedForm
 from .forms_recebimento_remessa import RecebimentoRemessaForm
 from .forms_consulta_entrada_pedido import OrderConsultForm
-from .forms_detalhes_pedidos import OrderDetailForm
+from .forms_lastmile_consultas.forms_detalhes_pedidos import OrderDetailForm
 from .forms_order_return_check import OrderReturnCheckForm
 from .forms_skill_ger import CreateGAIForm
 from .forms_reverse_create import ReverseCreateForm
