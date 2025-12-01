@@ -72,10 +72,8 @@ def gerenciamento_estoque(request):
             url = (
                 f"{STOCK_API_URL}/v1/items/list/{client}"
                 f"?status={status}"
-                f"&sales_channels={sales_channel_encoded}"
+                f"&sales_channels%5B%5D={sales_channel_encoded}"
             )
-
-            print(">>> URL GERADA:", url)
 
             try:
                 req = RequestClient(url=url, method="GET",
