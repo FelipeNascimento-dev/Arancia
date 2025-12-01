@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
-from ..forms import EtiquetasForm
+from ...forms import EtiquetasForm
 from utils.request import RequestClient
 from setup.local_settings import API_KEY_INTELIPOST, API_URL
 

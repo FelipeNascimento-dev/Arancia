@@ -4,12 +4,12 @@ from django.contrib import messages
 from logistica.views.view_button_desn import button_desn
 from setup.local_settings import API_URL
 from utils.request import RequestClient
-from ..forms import OrderDetailForm
-from ..viewsV2.view_tracking_simpl import (_send_tracking,
-                                           _build_request_data,
-                                           TRACKING_HEADERS,
-                                           TRACKING_URL,
-                                           TrackingOriginalCode)
+from ...forms import OrderDetailForm
+from ...viewsV2.view_tracking_simpl import (_send_tracking,
+                                            _build_request_data,
+                                            TRACKING_HEADERS,
+                                            TRACKING_URL,
+                                            TrackingOriginalCode)
 
 import json
 import re
