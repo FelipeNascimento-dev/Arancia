@@ -83,7 +83,7 @@ def consulta_pedidos(request):
         messages.info(
             request, "Nenhum sales_channel disponível para seus grupos.")
 
-    return render(request, "logistica/consulta_pedidos.html", {
+    return render(request, "logistica/templates_lastmile_consultas/consulta_pedidos.html", {
         "form": form,
         "form_action": reverse("logistica:consulta_pedidos"),
         "botao_texto": "Consultar",

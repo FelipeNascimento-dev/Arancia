@@ -53,7 +53,7 @@ def reserva_equip(request, tp_reg):
             if ped:
                 initial['pedido'] = ped
         form = ReservaEquipamentosForm(nome_form=titulo, initial=initial)
-        return render(request, 'logistica/reserva_equip.html', {
+        return render(request, 'logistica/templates_fluxo_entrega/reserva_equip.html', {
             'form': form,
             'etapa_ativa': 'reserva',
             'botao_texto': 'Enviar',
@@ -91,7 +91,7 @@ def reserva_equip(request, tp_reg):
             else:
                 messages.warning(request, "Serial já está na lista.")
         form = ReservaEquipamentosForm(nome_form=titulo, initial=initial)
-        return render(request, 'logistica/reserva_equip.html', {
+        return render(request, 'logistica/templates_fluxo_entrega/reserva_equip.html', {
             'form': form,
             'etapa_ativa': 'reserva',
             'botao_texto': 'Enviar',
@@ -111,7 +111,7 @@ def reserva_equip(request, tp_reg):
         except Exception:
             messages.error(request, "Não foi possível remover o serial.")
         form = ReservaEquipamentosForm(nome_form=titulo, initial=initial)
-        return render(request, 'logistica/reserva_equip.html', {
+        return render(request, 'logistica/templates_fluxo_entrega/reserva_equip.html', {
             'form': form,
             'etapa_ativa': 'reserva',
             'botao_texto': 'Enviar',
@@ -124,7 +124,7 @@ def reserva_equip(request, tp_reg):
         reserva_save_serials(request, [])
         messages.success(request, "Lista de seriais limpa.")
         form = ReservaEquipamentosForm(nome_form=titulo, initial=initial)
-        return render(request, 'logistica/reserva_equip.html', {
+        return render(request, 'logistica/templates_fluxo_entrega/reserva_equip.html', {
             'form': form,
             'etapa_ativa': 'reserva',
             'botao_texto': 'Enviar',
@@ -141,7 +141,7 @@ def reserva_equip(request, tp_reg):
             if not unico:
                 messages.warning(
                     request, "Adicione ao menos 1 serial antes de enviar.")
-                return render(request, 'logistica/reserva_equip.html', {
+                return render(request, 'logistica/templates_fluxo_entrega/reserva_equip.html', {
                     'form': form,
                     'etapa_ativa': 'reserva',
                     'botao_texto': 'Enviar',
@@ -185,7 +185,7 @@ def reserva_equip(request, tp_reg):
         except Exception as e:
             messages.error(request, f"Erro ao enviar requisição: {e}")
 
-        return render(request, 'logistica/reserva_equip.html', {
+        return render(request, 'logistica/templates_fluxo_entrega/reserva_equip.html', {
             'form': form,
             'etapa_ativa': 'reserva',
             'botao_texto': 'Enviar',
@@ -196,7 +196,7 @@ def reserva_equip(request, tp_reg):
     else:
         messages.warning(
             request, f"Corrija os erros do formulário: {form.errors.as_text()}")
-        return render(request, 'logistica/reserva_equip.html', {
+        return render(request, 'logistica/templates_fluxo_entrega/reserva_equip.html', {
             'form': form,
             'etapa_ativa': 'reserva',
             'botao_texto': 'Enviar',

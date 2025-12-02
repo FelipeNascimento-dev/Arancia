@@ -72,7 +72,7 @@ def saida_campo(request, tp_reg: str):
                 else:
                     messages.warning(request, "Serial já está na lista.")
             form = SaidaCampoForm(nome_form=titulo, initial=initial)
-            return render(request, 'logistica/saida_campo.html', {
+            return render(request, 'logistica/templates_fluxo_entrega/saida_campo.html', {
                 'form': form,
                 'etapa_ativa': 'saida_campo',
                 'botao_texto': 'Enviar',
@@ -92,7 +92,7 @@ def saida_campo(request, tp_reg: str):
             except Exception:
                 messages.error(request, "Não foi possível remover o serial.")
             form = SaidaCampoForm(nome_form=titulo, initial=initial)
-            return render(request, 'logistica/saida_campo.html', {
+            return render(request, 'logistica/templates_fluxo_entrega/saida_campo.html', {
                 'form': form,
                 'etapa_ativa': 'saida_campo',
                 'botao_texto': 'Enviar',
@@ -105,7 +105,7 @@ def saida_campo(request, tp_reg: str):
             saida_save_serials(request, [])
             messages.success(request, "Lista de seriais limpa.")
             form = SaidaCampoForm(nome_form=titulo, initial=initial)
-            return render(request, 'logistica/saida_campo.html', {
+            return render(request, 'logistica/templates_fluxo_entrega/saida_campo.html', {
                 'form': form,
                 'etapa_ativa': 'saida_campo',
                 'botao_texto': 'Enviar',
@@ -127,7 +127,7 @@ def saida_campo(request, tp_reg: str):
                 if not unico:
                     messages.warning(
                         request, "Adicione ao menos 1 serial antes de enviar.")
-                    return render(request, 'logistica/saida_campo.html', {
+                    return render(request, 'logistica/templates_fluxo_entrega/saida_campo.html', {
                         'form': form,
                         'etapa_ativa': 'saida_campo',
                         'botao_texto': 'Enviar',
@@ -189,7 +189,7 @@ def saida_campo(request, tp_reg: str):
 
         messages.error(
             request, f"Corrija os erros do formulário: {form.errors.as_text()}")
-        return render(request, 'logistica/saida_campo.html', {
+        return render(request, 'logistica/templates_fluxo_entrega/saida_campo.html', {
             'form': form,
             'etapa_ativa': 'saida_campo',
             'botao_texto': 'Enviar',
@@ -205,7 +205,7 @@ def saida_campo(request, tp_reg: str):
             initial['gtec'] = ped
 
     form = SaidaCampoForm(nome_form=titulo, initial=initial)
-    return render(request, 'logistica/saida_campo.html', {
+    return render(request, 'logistica/templates_fluxo_entrega/saida_campo.html', {
         'form': form,
         'etapa_ativa': 'saida_campo',
         'botao_texto': 'Enviar',

@@ -188,7 +188,7 @@ def unsuccessful_insert(request, order=None):
     if numero_pedido:
         form.fields['pedido'].widget.attrs['readonly'] = True
 
-    return render(request, 'logistica/unsuccessful_insert.html', {
+    return render(request, 'logistica/templates_fluxo_entrega/unsuccessful_insert.html', {
         'form': form,
         'serials': serials_display,
         'botao_texto': 'Registrar Insucesso',

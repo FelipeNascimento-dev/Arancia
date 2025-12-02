@@ -1,6 +1,6 @@
 from django import forms
 from django.db.models.functions import Lower
-from ..models import GroupAditionalInformation, Group
+from ...models import GroupAditionalInformation, Group
 
 
 class ReverseCreateForm(forms.Form):

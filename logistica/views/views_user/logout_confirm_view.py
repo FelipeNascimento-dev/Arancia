@@ -8,6 +8,6 @@ from django.contrib.auth.decorators import login_required, permission_required
 def logout_confirm_view(request):
     return render(
         request,
-        'logistica/logout_confirm.html',
+        'logistica/templates_user/logout_confirm.html',
         {"site_title": "Confirmar Logout"}
     )

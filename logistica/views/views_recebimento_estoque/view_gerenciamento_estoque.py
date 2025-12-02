@@ -99,7 +99,7 @@ def gerenciamento_estoque(request):
 
     return render(
         request,
-        "logistica/gerenciamento_estoque.html",
+        "logistica/templates_gerenciamento_estoque/gerenciamento_estoque.html",
         {
             "form": form,
             "resultado_itens": resultado_itens,

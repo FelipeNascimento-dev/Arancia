@@ -49,7 +49,7 @@ def consulta_ma84(request):
         if form.data.get('tp_reg') in ('84', '85') and not (form.data.get('serial') or '').strip():
             form.add_error(
                 'serial', 'O serial não pode ser vazio para essa mensagem.')
-            return render(request, 'logistica/consulta_result_ma.html', {
+            return render(request, 'logistica/templates_fluxo_entrega/consulta_result_ma.html', {
                 'form': form,
                 'tabela_dados': None,
                 'etapa_ativa': 'consulta_result_ma',
@@ -84,7 +84,7 @@ def consulta_ma84(request):
                 messages.error(request, "Erro ao enviar requisição")
                 dados = None
 
-            return render(request, 'logistica/consulta_result_ma.html', {
+            return render(request, 'logistica/templates_fluxo_entrega/consulta_result_ma.html', {
                 'form': form,
                 'tabela_dados': dados,
                 'etapa_ativa': 'consulta_result_ma',
@@ -93,7 +93,7 @@ def consulta_ma84(request):
                 'site_title': 'SAP - Consulta Resultados MA',
             })
 
-        return render(request, 'logistica/consulta_result_ma.html', {
+        return render(request, 'logistica/templates_fluxo_entrega/consulta_result_ma.html', {
             'form': form,
             'tabela_dados': None,
             'etapa_ativa': 'consulta_result_ma',
@@ -122,7 +122,7 @@ def consulta_ma84(request):
 
     form = ConsultaResultMA84Form(initial=initial_data)
 
-    return render(request, 'logistica/consulta_result_ma.html', {
+    return render(request, 'logistica/templates_fluxo_entrega/consulta_result_ma.html', {
         'form': form,
         'tabela_dados': None,
         'etapa_ativa': 'consulta_result_ma',

@@ -215,7 +215,7 @@ def _post_success_redirect(code_info: TrackingOriginalCode, numero_pedido: str) 
         "204": ("logistica:consulta_etiquetas", None),
     }
     view_name, next_code = redirect_map.get(
-        code_info.original_code, ("logistica:pcp_simpl", int(code_info.original_code) + 1))
+        code_info.original_code, ("logistica:pcp_simpl", int(code_info.original_code) + 1 if code_info.original_code != '205' else '201'))
     return redirect(view_name, code=next_code) if next_code else redirect(view_name)
 
 

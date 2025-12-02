@@ -135,7 +135,7 @@ def client_consult(request):
 
     return render(
         request,
-        "logistica/client_consult.html",
+        "logistica/templates_checkin_checkout/client_consult.html",
         {
             "form": form,
             "site_title": titulo,

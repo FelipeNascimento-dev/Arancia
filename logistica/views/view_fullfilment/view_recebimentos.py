@@ -179,7 +179,7 @@ def recebimento(request, tp_reg):
             depositos_by_centro=depositos_by_centro,
         )
 
-    return render(request, 'logistica/recebimento.html', {
+    return render(request, 'logistica/templates_fullfilment/recebimento.html', {
         'form': form,
         'botao_texto': 'Enviar',
         'depositos_map_json': json.dumps(depositos_by_centro),

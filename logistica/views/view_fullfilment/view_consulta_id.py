@@ -55,4 +55,4 @@ def consulta_id_table(request, id):
         'exibir_formulario': exibir_formulario,
     }
 
-    return render(request, 'logistica/consulta_id_table.html', context)
+    return render(request, 'logistica/templates_fullfilment/consulta_id_table.html', context)

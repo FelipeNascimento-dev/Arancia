@@ -242,7 +242,7 @@ def reverse_create(request):
         "last_kit_serial": last_kit_serial,
         "client": client_code,
     }
-    return render(request, "logistica/reverse_create.html", context)
+    return render(request, "logistica/templates_reverse/reverse_create.html", context)
 
 
 def delete_btn(request, serial):
@@ -327,7 +327,7 @@ def cancel_btn(request, id):
             romaneio_num=romaneio_in,
         )
 
-    return render(request, "logistica/reverse_create.html", {
+    return render(request, "logistica/templates_reverse/reverse_create.html", {
         "form": form,
         "botao_texto": "Inserir",
         "site_title": "Reversa",

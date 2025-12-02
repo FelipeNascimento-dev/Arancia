@@ -15,7 +15,7 @@ def registrar_usuario(request):
             messages.success(request, "Cadastro realizado com sucesso!")
             messages.info(request, f"Anote o username: {user.username}")
             form = CustomUserCreationForm()
-            return render(request, 'logistica/register.html', {
+            return render(request, 'logistica/templates_user/register.html', {
                 'form': form,
                 'site_title': 'Cadastro',
             })
@@ -27,7 +27,7 @@ def registrar_usuario(request):
 
     else:
         form = CustomUserCreationForm()
-    return render(request, 'logistica/register.html', {
+    return render(request, 'logistica/templates_user/register.html', {
         'form': form,
         'site_title': 'Cadastro',
     })
