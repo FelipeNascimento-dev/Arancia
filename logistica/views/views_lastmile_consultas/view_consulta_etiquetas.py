@@ -106,7 +106,7 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
             items = _add_item([], pedido_sessao, 1)
             _save_items(request, items)
             form = EtiquetasForm(initial={"pedido": pedido_sessao})
-            return render(request, "logistica/consulta_etiquetas.html", {
+            return render(request, "logistica/templates_lastmile_consultas/consulta_etiquetas.html", {
                 "form": form,
                 "botao_texto": "Consultar",
                 "rows": items,
@@ -115,7 +115,7 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
             })
 
         _save_items(request, [])
-        return render(request, "logistica/consulta_etiquetas.html", {
+        return render(request, "logistica/templates_lastmile_consultas/consulta_etiquetas.html", {
             "form": EtiquetasForm(),
             "botao_texto": "Consultar",
             "rows": [],
@@ -129,7 +129,7 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
         if not items:
             messages.info(
                 request, "Nenhum pedido na lista. Digite um pedido e tecle Enter.")
-            return render(request, "logistica/consulta_etiquetas.html", {
+            return render(request, "logistica/templates_lastmile_consultas/consulta_etiquetas.html", {
                 "form": EtiquetasForm(),
                 "botao_texto": "Consultar",
                 "rows": [],
@@ -138,7 +138,7 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
 
         items = _fill_urls_with_api(items, request)
         _save_items(request, items)
-        return render(request, "logistica/consulta_etiquetas.html", {
+        return render(request, "logistica/templates_lastmile_consultas/consulta_etiquetas.html", {
             "form": EtiquetasForm(),
             "botao_texto": "Consultar",
             "rows": items,
@@ -155,7 +155,7 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
         items = _add_item(items, pedido, volume)
         _save_items(request, items)
 
-    return render(request, "logistica/consulta_etiquetas.html", {
+    return render(request, "logistica/templates_lastmile_consultas/consulta_etiquetas.html", {
         "form": EtiquetasForm(),
         "botao_texto": "Consultar",
         "rows": items,

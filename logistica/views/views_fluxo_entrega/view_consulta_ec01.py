@@ -78,7 +78,7 @@ def consulta_ec01(request):
             if 'detail' in dados:
                 messages.error(request, dados['detail'])
 
-            return render(request, 'logistica/consulta_result_ec.html', {
+            return render(request, 'logistica/templates_fluxo_entrega/consulta_result_ec.html', {
                 'form': form,
                 'tabela_dados': dados,
                 'etapa_ativa': 'consulta_result_ec',
@@ -88,7 +88,7 @@ def consulta_ec01(request):
             })
 
         messages.warning(request, 'Corrija os erros do formulário.')
-        return render(request, 'logistica/consulta_result_ec.html', {
+        return render(request, 'logistica/templates_fluxo_entrega/consulta_result_ec.html', {
             'form': form,
             'tabela_dados': None,
             'etapa_ativa': 'consulta_result_ec',
@@ -113,7 +113,7 @@ def consulta_ec01(request):
 
     form = ConsultaResultEC01Form(initial=initial_data)
 
-    return render(request, 'logistica/consulta_result_ec.html', {
+    return render(request, 'logistica/templates_fluxo_entrega/consulta_result_ec.html', {
         'form': form,
         'tabela_dados': None,
         'etapa_ativa': 'consulta_result_ec',

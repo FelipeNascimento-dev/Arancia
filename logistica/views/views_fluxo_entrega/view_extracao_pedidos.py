@@ -39,7 +39,7 @@ def extracao_pedidos(request: HttpRequest) -> HttpResponse:
         if not sales_channel:
             messages.error(
                 request, 'Usuário não tem nenhum sales_channel atribuído')
-            return render(request, "logistica/extracao_pedidos.html", {
+            return render(request, "logistica/templates_fluxo_entrega/extracao_pedidos.html", {
                 "form": form,
                 "botao_texto": "Exportar",
             })
@@ -64,7 +64,7 @@ def extracao_pedidos(request: HttpRequest) -> HttpResponse:
                     request, "O servidor retornou um conteúdo inesperado.")
                 # form = ExtracaoForm(initial={"sales_channel": sales_channel})
                 form = ExtracaoForm()
-                return render(request, "logistica/extracao_pedidos.html", {
+                return render(request, "logistica/templates_fluxo_entrega/extracao_pedidos.html", {
                     "form": form,
                     "botao_texto": "Exportar",
                 })
@@ -79,7 +79,7 @@ def extracao_pedidos(request: HttpRequest) -> HttpResponse:
         messages.error(request, f"Erro ao baixar (status {status}).")
         # form = ExtracaoForm(initial={"sales_channel": sales_channel})
         form = ExtracaoForm()
-        return render(request, "logistica/extracao_pedidos.html", {
+        return render(request, "logistica/templates_fluxo_entrega/extracao_pedidos.html", {
             "form": form,
             "botao_texto": "Exportar",
         })
@@ -100,7 +100,7 @@ def extracao_pedidos(request: HttpRequest) -> HttpResponse:
 
     # form = ExtracaoForm(initial={"sales_channel": request.session.get("sales_channel")})
     form = ExtracaoForm()
-    return render(request, "logistica/extracao_pedidos.html", {
+    return render(request, "logistica/templates_fluxo_entrega/extracao_pedidos.html", {
         "form": form,
         "botao_texto": "Exportar",
         'site_title': 'Extração de Pedidos'

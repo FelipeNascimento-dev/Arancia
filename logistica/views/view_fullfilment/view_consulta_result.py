@@ -36,7 +36,7 @@ def consulta_result(request):
         if form.data.get('tp_reg') in ('15', '16') and form.data.get('serial') == '':
             form.add_error(
                 'serial', 'O serial não pode ser vazio para essa mensagem.')
-            return render(request, 'logistica/consulta_result.html', {
+            return render(request, 'logistica/templates_fullfilment/consulta_result.html', {
                 'form': form,
                 'tabela_dados': None,
                 'tp_reg': form.data.get('tp_reg', '')
@@ -80,7 +80,7 @@ def consulta_result(request):
         messages.error(request, "Erro ao enviar requisição")
         dados = None
 
-    return render(request, 'logistica/consulta_result.html', {
+    return render(request, 'logistica/templates_fullfilment/consulta_result.html', {
         'form': form,
         'tabela_dados': dados,
         'tp_reg': tp_reg,

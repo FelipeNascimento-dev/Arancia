@@ -72,7 +72,7 @@ def settings_view(request):
 
     return render(
         request,
-        "logistica/configuracao_user.html",
+        "logistica/templates_user/configuracao_user.html",
         {
             "form": form,
             "site_title": "Configurações",
@@ -82,7 +82,7 @@ def settings_view(request):
 
 
 class UserPasswordChangeView(PasswordChangeView):
-    template_name = "logistica/password_change.html"
+    template_name = "logistica/templates_user/password_change.html"
     success_url = reverse_lazy("logistica:settings")
 
     def form_valid(self, form):
