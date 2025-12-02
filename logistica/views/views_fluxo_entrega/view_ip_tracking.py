@@ -115,7 +115,7 @@ def _render_pcp(request: HttpRequest, form, code_info: TrackingOriginalCode, ser
     titulo = f"IP - {code_info.description}"
     return render(
         request,
-        "logistica/pcp.html",
+        "logistica/templates_fluxo_entrega/pcp.html",
         {
             "form": form,
             "etapa_ativa": code_info.etapa_ativa,

@@ -59,6 +59,9 @@ def view_order(request, order: str, ep_name: str):
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def order_detail(request, order: str):
+    request.session["pedido"] = str(order)
+    request.session.modified = True
+
     request_success = False
 
     if request.method == "POST":
@@ -81,7 +84,10 @@ def order_detail(request, order: str):
                 request.session["pedido"] = str(order)
                 request.session[CARRY_PEDIDO_KEY] = True
                 request.session.modified = True
-                return redirect("logistica:pcp", code=proxima_tracking)
+                if request.user.has_perm("logistica.inst_simplified"):
+                    return redirect("logistica:pcp_simpl", code=proxima_tracking)
+                else:
+                    return redirect("logistica:pcp", code=proxima_tracking)
             else:
                 tipo = 'NORMAL|INSUCESSO' if (
                     tipo == 'NORMAL' and volume_state == 'CLARIFY_DELIVERY_FAIL') else tipo
@@ -201,12 +207,15 @@ def order_detail(request, order: str):
     tipo = (form.fields['shipment_order_type'].initial or '').strip().upper()
     volume_state = (result.get("volume_state") or "").strip().upper()
     ultima_tracking = (result.get("ultima_tracking") or "").strip().upper()
-    tipo = 'NORMAL|INSUCESSO' if (
-        tipo == 'NORMAL' and volume_state == 'CLARIFY_DELIVERY_FAIL'
-        and ultima_tracking[:3] == '205') else tipo
-    tipo = 'RECEBIMENTO ESTOQUE' if (
-        tipo == 'RECEIPT' and volume_state == 'NEW'
-    ) else tipo
+    if tipo == 'NORMAL' and volume_state == 'CLARIFY_DELIVERY_FAIL' \
+            and ultima_tracking[:3] == '205':
+        tipo = 'NORMAL|INSUCESSO'
+    elif tipo == 'RECEIPT' and ultima_tracking[:3] == '208':
+        tipo = 'INICIAR CHECK-IN'
+    elif tipo == 'RECEIPT':
+        tipo = 'RECEBIMENTO ESTOQUE'
+    else:
+        tipo
     mostrar_acoes = (
         tipo == "REVERSE"
         and volume_state != "CANCELLED"
@@ -235,7 +244,8 @@ def order_detail(request, order: str):
         "REVERSE": "RECEBER REVERSA",
         "NORMAL": "PROXIMA TRACKING",
         "NORMAL|INSUCESSO": "RECEBER INSUCESSO",
-        "RECEBIMENTO ESTOQUE": "RECEBER ESTOQUE"
+        "RECEBIMENTO ESTOQUE": "RECEBER ESTOQUE",
+        "INICIAR CHECK-IN": "INICIAR CHECK-IN",
     }
     botao_texto = dict_botao_texto.get(tipo, "AÇÕES DISPONÍVEIS")
 

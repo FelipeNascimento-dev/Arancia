@@ -39,6 +39,10 @@
         <button type="button" class="submit-button-right" id="abrirModal">
             {{ botao_texto }}
         </button>
+        {% elif botao_texto == "INICIAR CHECK-IN" %}
+        <button type="button" class="submit-button-right" id="abrirModalCheckin">
+            {{ botao_texto }}
+        </button>
         {% elif botao_texto == "RECEBER REVERSA" %}
         <div class="actions-menu">
             <button type="button" class="btn-actions" onclick="toggleActionsMenu()">
@@ -73,7 +77,69 @@
 </form>
 
 
-<!--##### MODAL #####-->
+<!--##### MODAL CHECK-IN #####-->
+
+<div id="modalCheckin" class="modal">
+    <div class="modal-content">
+        <h3>Confirmação</h3>
+        <br>
+        <p>Tem certeza que deseja confirmar o check-in?</p>
+
+        <div class="modal-actions">
+            <button id="checkinConfirmar" class="submit-button-right"
+            data-url="{% url 'logistica:client_checkin' %}?client=cielo&pedido={{ request.session.order }}">
+                Sim, confirmar
+            </button>
+
+            <button id="checkinCancelar" class="submit-button-right">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const abrirModalCheckin = document.getElementById("abrirModalCheckin");
+        const modalCheckin = document.getElementById("modalCheckin");
+        const btnCancelar = document.getElementById("checkinCancelar");
+        const btnConfirmar = document.getElementById("checkinConfirmar");
+
+        // Abrir modal
+        if (abrirModalCheckin) {
+            abrirModalCheckin.addEventListener("click", () => {
+                modalCheckin.style.display = "flex";
+            });
+        }
+
+        // Fechar modal
+        if (btnCancelar) {
+            btnCancelar.addEventListener("click", () => {
+                modalCheckin.style.display = "none";
+            });
+        }
+
+        // Confirmar ação
+        if (btnConfirmar) {
+            btnConfirmar.addEventListener("click", () => {
+                const url = btnConfirmar.getAttribute("data-url");
+                window.location.href = url;
+            });
+        }
+
+        // Fechar ao clicar fora
+        modalCheckin.addEventListener("click", (e) => {
+            if (e.target === modalCheckin) {
+                modalCheckin.style.display = "none";
+            }
+        });
+    });
+</script>
+
+
+
+<!--##### MODAL ESTOQUE #####-->
 
 <div id="modalConfirm" class="modal">
     <div class="modal-content">
