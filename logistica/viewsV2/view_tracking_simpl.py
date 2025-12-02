@@ -96,7 +96,7 @@ def _dedup_upper(values: Iterable[str]) -> list[str]:
 def _render_pcp(request: HttpRequest, form, code_info: TrackingOriginalCode, serials: list[str]) -> HttpResponse:
     return render(
         request,
-        "logistica/pcp.html",
+        "logistica/templates_fluxo_entrega/pcp.html",
         {
             "form": form,
             "etapa_ativa": code_info.etapa_ativa,

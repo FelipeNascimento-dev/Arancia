@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from utils.request import RequestClient
-from ..forms import ReverseCreateForm
+from ...forms import ReverseCreateForm
 from setup.local_settings import API_URL
 
 JSON_CT = "application/json"

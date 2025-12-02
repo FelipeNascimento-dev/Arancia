@@ -13,11 +13,19 @@ import json
 @permission_required('logistica.checkin_principal', raise_exception=True)
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def client_checkin(request):
-    client_data = request.session.get("selected_client", {})
-    client_name = client_data.get("client_name", "Cliente não selecionado")
+    client_name = request.GET.get("client")
+
+    if not client_name:
+        client_name = request.session.get(
+            "selected_client", {}).get("client_name")
+
+    if not client_name:
+        client_name = "Cliente não selecionado"
+
     titulo = f"Check-In {client_name}"
 
-    pedido_atrelado = request.session.get("order", "")
+    pedido_atrelado = request.GET.get("pedido") or request.session.get(
+        "pedido") or request.session.get("order", "")
 
     product_choices = []
     try:
@@ -193,7 +201,7 @@ def client_checkin(request):
         initial_data = {
             "product": saved.get("product", ""),
             "from_location": saved.get("from_location", ""),
-            "pedido_atrelado": saved.get("pedido_atrelado", pedido_atrelado),
+            "pedido_atrelado": saved.get("pedido_atrelado") or pedido_atrelado,
             "pedido": saved.get("pedido", ""),
             "volume": saved.get("volume", "1"),
             "kit": saved.get("kit", "1"),
@@ -221,7 +229,7 @@ def client_checkin(request):
 
     return render(
         request,
-        "logistica/client_checkin.html",
+        "logistica/templates_checkin_checkout/client_checkin.html",
         {
             "form": form,
             "site_title": titulo,
