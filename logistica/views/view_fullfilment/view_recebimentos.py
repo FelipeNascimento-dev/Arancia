@@ -4,7 +4,7 @@ from collections import defaultdict
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from ..forms import PreRecebimentoForm, RecebimentoForm
+from ...forms import PreRecebimentoForm, RecebimentoForm
 from utils.request import RequestClient
 
 API_URL = "http://192.168.0.214/IntegrationXmlAPI/api/v2/centros_e_deps/O"

@@ -22,7 +22,7 @@ def order_consult(request):
 
     return render(
         request,
-        "logistica/consultar_pedido.html",
+        "logistica/templates_lastmile_consultas/consultar_pedido.html",
         {
             "form": form,
             "botao_texto": "Consultar",

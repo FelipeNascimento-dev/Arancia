@@ -1,11 +1,11 @@
-from ..forms import GerenciamentoEstoqueForm
+from ...forms import GerenciamentoEstoqueForm
 from django.shortcuts import render
 from django.contrib import messages
 from utils.request import RequestClient
 from setup.local_settings import STOCK_API_URL
 from django.contrib.auth.decorators import login_required, permission_required
 import json
-from ..models import GroupAditionalInformation
+from ...models import GroupAditionalInformation
 from urllib.parse import quote
 
 JSON_CT = "application/json"
