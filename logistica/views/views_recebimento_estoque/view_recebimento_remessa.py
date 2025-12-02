@@ -2,8 +2,8 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from setup.local_settings import API_URL
 from utils.request import RequestClient
-from ..models import GroupAditionalInformation, UserDesignation
-from ..forms import RecebimentoRemessaForm
+from ...models import GroupAditionalInformation, UserDesignation
+from ...forms import RecebimentoRemessaForm
 from django.contrib.auth.decorators import login_required, permission_required
 
 JSON_CT = "application/json"

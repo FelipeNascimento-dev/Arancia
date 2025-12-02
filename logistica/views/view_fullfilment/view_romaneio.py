@@ -1,8 +1,9 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-from ..models import Romaneio, ItemRomaneio
+from ...models import Romaneio, ItemRomaneio
 from django.contrib.auth.decorators import login_required, permission_required
+
 
 @csrf_exempt
 @login_required(login_url='logistica:login')

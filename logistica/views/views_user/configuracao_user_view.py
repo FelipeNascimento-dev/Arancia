@@ -5,8 +5,8 @@ from django.urls import reverse_lazy
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.auth import update_session_auth_hash
 from utils.request import RequestClient
-from ..forms import ConfiguracaoUserForm
-from ..models import UserProfile
+from ...forms import ConfiguracaoUserForm
+from ...models import UserProfile
 import httpx
 
 

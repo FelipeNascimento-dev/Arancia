@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from logistica.views.view_button_desn import button_desn
+from logistica.views.views_fluxo_entrega.view_button_desn import button_desn
 from setup.local_settings import API_URL
 from utils.request import RequestClient
 from ...forms import OrderDetailForm
@@ -19,7 +19,6 @@ JSON_CT = "application/json"
 
 
 def view_order(request, order: str, ep_name: str):
-    """Consulta o detalhe ou histórico de um pedido na API."""
     if ep_name == 'history':
         url = f"{API_URL}/api/v2/tracking-history/{order}"
     elif ep_name == 'detail':
@@ -42,7 +41,6 @@ def view_order(request, order: str, ep_name: str):
         messages.error(request, f"{result['detail']}")
         return None
 
-    # Serializa payloads e responses complexos
     if isinstance(result, list):
         for row in result:
             if isinstance(row, dict):
@@ -206,6 +204,9 @@ def order_detail(request, order: str):
     tipo = 'NORMAL|INSUCESSO' if (
         tipo == 'NORMAL' and volume_state == 'CLARIFY_DELIVERY_FAIL'
         and ultima_tracking[:3] == '205') else tipo
+    tipo = 'RECEBIMENTO ESTOQUE' if (
+        tipo == 'RECEIPT' and volume_state == 'NEW'
+    ) else tipo
     mostrar_acoes = (
         tipo == "REVERSE"
         and volume_state != "CANCELLED"
@@ -234,10 +235,11 @@ def order_detail(request, order: str):
         "REVERSE": "RECEBER REVERSA",
         "NORMAL": "PROXIMA TRACKING",
         "NORMAL|INSUCESSO": "RECEBER INSUCESSO",
+        "RECEBIMENTO ESTOQUE": "RECEBER ESTOQUE"
     }
     botao_texto = dict_botao_texto.get(tipo, "AÇÕES DISPONÍVEIS")
 
-    return render(request, "logistica/detalhe_pedidos.html", {
+    return render(request, "logistica/templates_lastmile_consultas/detalhe_pedidos.html", {
         "order": order,
         "request_success": request_success,
         "request_insucesso_success": request_insucesso_success,
