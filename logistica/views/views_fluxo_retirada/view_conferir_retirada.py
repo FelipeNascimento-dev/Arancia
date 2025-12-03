@@ -61,7 +61,7 @@ def order_return_check(request):
 
         form = OrderReturnCheckForm(
             name_form="Conferir Volume de Retirada", initial=initial)
-        return render(request, 'logistica/templates_fluxo_retirada/order_return_check.html', {
+        return render(request, 'logistica/templates_fluxo_retirada/conferir_retirada.html', {
             'form': form,
             'botao_texto': 'Enviar',
             'site_title': "Conferir Volume de Retirada",

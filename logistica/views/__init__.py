@@ -20,7 +20,7 @@ from .views_recebimento_estoque.view_recebimento_remessa import recebimento_reme
 from .views_lastmile_consultas.view_consulta_entrada_pedido import order_consult
 from .views_lastmile_consultas.view_detalhe_pedido import order_detail
 from .views_fluxo_entrega.view_button_desn import button_desn
-from .views_fluxo_retirada.view_order_return_check import order_return_check
+from .views_fluxo_retirada.view_conferir_retirada import order_return_check
 from .views_gerenciamento.view_user_ger import user_ger
 from .views_gerenciamento.view_skill_ger import skill_ger
 from .views_reverse.view_reverse_create import reverse_create, delete_btn, cancel_btn
