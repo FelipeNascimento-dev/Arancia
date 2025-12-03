@@ -64,7 +64,7 @@ def consult_rom(request):
 
                 messages.error(
                     request, f"Erro ao criar romaneio: {result}")
-                return render(request, "logistica/templates_reverse/consult_rom.html", {
+                return render(request, "logistica/templates_reverse/consulta_romaneio.html", {
                     "form": form,
                     "botao_texto": botao_texto,
                     "site_title": titulo,
@@ -98,7 +98,7 @@ def consult_rom(request):
                 )
                 botao_texto = "Consultar novamente"
 
-                return render(request, "logistica/templates_reverse/consult_rom.html", {
+                return render(request, "logistica/templates_reverse/consulta_romaneio.html", {
                     "form": form,
                     "botao_texto": botao_texto,
                     "site_title": titulo,
@@ -107,7 +107,7 @@ def consult_rom(request):
                 })
 
     form = RomaneioConsultaForm(nome_form=titulo)
-    return render(request, "logistica/templates_reverse/consult_rom.html", {
+    return render(request, "logistica/templates_reverse/consulta_romaneio.html", {
         "form": form,
         "botao_texto": botao_texto,
         "site_title": titulo,

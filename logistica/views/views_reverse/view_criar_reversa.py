@@ -5,7 +5,7 @@ from datetime import datetime
 from ...forms import ReverseCreateForm
 from utils.request import RequestClient
 from setup.local_settings import STOCK_API_URL
-from .view_send_quotes import send_quotes
+from .view_enviar_cotacao import send_quotes
 from django.contrib.auth.decorators import login_required, permission_required
 
 JSON_CT = "application/json"
@@ -242,7 +242,7 @@ def reverse_create(request):
         "last_kit_serial": last_kit_serial,
         "client": client_code,
     }
-    return render(request, "logistica/templates_reverse/reverse_create.html", context)
+    return render(request, "logistica/templates_reverse/criar_reversa.html", context)
 
 
 def delete_btn(request, serial):
@@ -327,7 +327,7 @@ def cancel_btn(request, id):
             romaneio_num=romaneio_in,
         )
 
-    return render(request, "logistica/templates_reverse/reverse_create.html", {
+    return render(request, "logistica/templates_reverse/criar_reversa.html", {
         "form": form,
         "botao_texto": "Inserir",
         "site_title": "Reversa",

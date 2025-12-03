@@ -126,7 +126,7 @@ def user_ger(request):
 
     return render(
         request,
-        "logistica/templates_gerenciamento/user_ger.html",
+        "logistica/templates_gerenciamento/gestao_usuarios.html",
         {
             "usuarios": usuarios,
             "user_q": user_q,
