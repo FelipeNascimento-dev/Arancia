@@ -88,4 +88,4 @@ def skill_ger(request):
         "form": form,
         "site_title": 'Gerenciamento de Informações Adicionais'
     }
-    return render(request, "logistica/templates_gerenciamento/skill_ger.html", context)
+    return render(request, "logistica/templates_gerenciamento/gestao_skills.html", context)

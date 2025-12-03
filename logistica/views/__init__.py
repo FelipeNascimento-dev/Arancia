@@ -21,13 +21,13 @@ from .views_lastmile_consultas.view_consulta_entrada_pedido import order_consult
 from .views_lastmile_consultas.view_detalhe_pedido import order_detail
 from .views_fluxo_entrega.view_button_desn import button_desn
 from .views_fluxo_retirada.view_conferir_retirada import order_return_check
-from .views_gerenciamento.view_user_ger import user_ger
-from .views_gerenciamento.view_skill_ger import skill_ger
-from .views_reverse.view_reverse_create import reverse_create, delete_btn, cancel_btn
-from .views_reverse.view_consult_rom import consult_rom
-from .views_reverse.view_send_quotes import send_quotes
+from .views_gerenciamento.view_gestao_usuarios import user_ger
+from .views_gerenciamento.view_gestao_skills import skill_ger
+from .views_reverse.view_criar_reversa import reverse_create, delete_btn, cancel_btn
+from .views_reverse.view_consulta_romaneio import consult_rom
+from .views_reverse.view_enviar_cotacao import send_quotes
 from .views_user.toggle_db_view import toggle_db
-from .views_fluxo_entrega.view_unsuccessful_insert import unsuccessful_insert
+from .views_fluxo_entrega.view_insucesso import unsuccessful_insert
 from .views_checkin_checkout.view_checkin_iniciar import client_select
 from .views_checkin_checkout.view_checkin_registrar import client_checkin
 from .views_checkin_checkout.view_consulta_produtos import product_create

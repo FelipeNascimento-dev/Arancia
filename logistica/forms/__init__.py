@@ -17,10 +17,10 @@ from .forms_recebimento_estoque.forms_recebimento_remessa import RecebimentoReme
 from .forms_lastmile_consultas.forms_consulta_entrada_pedido import OrderConsultForm
 from .forms_lastmile_consultas.forms_detalhes_pedidos import OrderDetailForm
 from .forms_fluxo_retirada.forms_conferir_retirada import OrderReturnCheckForm
-from .forms_gerenciamento.forms_skill_ger import CreateGAIForm
-from .forms_reverse.forms_reverse_create import ReverseCreateForm
-from .forms_reverse.forms_consult_rom import RomaneioConsultaForm
-from .forms_fluxo_entrega.forms_unsuccessful_insert import UnsuccessfulInsertForm
+from .forms_gerenciamento.forms_gestao_skills import CreateGAIForm
+from .forms_reverse.forms_criar_reversa import ReverseCreateForm
+from .forms_reverse.forms_consulta_romaneio import RomaneioConsultaForm
+from .forms_fluxo_entrega.forms_insucesso import UnsuccessfulInsertForm
 from .forms_checkin_checkout.forms_checkin_iniciar import ClientSelectForm
 from .forms_checkin_checkout.forms_checkin_registrar import ClientCheckInForm
 from .forms_checkin_checkout.forms_consulta_clientes import ClientConsultForm
