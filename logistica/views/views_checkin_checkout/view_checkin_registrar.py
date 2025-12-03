@@ -229,7 +229,7 @@ def client_checkin(request):
 
     return render(
         request,
-        "logistica/templates_checkin_checkout/client_checkin.html",
+        "logistica/templates_checkin_checkout/checkin_registrar.html",
         {
             "form": form,
             "site_title": titulo,

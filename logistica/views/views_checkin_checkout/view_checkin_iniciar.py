@@ -72,7 +72,7 @@ def client_select(request, vetor):
 
         return redirect("logistica:consultar_romaneio")
 
-    return render(request, "logistica/templates_checkin_checkout/client_select.html", {
+    return render(request, "logistica/templates_checkin_checkout/checkin_iniciar.html", {
         "form": form,
         "site_title": titulo,
         "botao_texto": "Selecionar Cliente",
