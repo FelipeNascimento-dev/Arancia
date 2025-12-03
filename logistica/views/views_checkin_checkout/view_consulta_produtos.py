@@ -189,7 +189,7 @@ def product_create(request):
 
     return render(
         request,
-        "logistica/templates_checkin_checkout/product_create.html",
+        "logistica/templates_checkin_checkout/consulta_produtos.html",
         {
             "form": form,
             "site_title": titulo,
