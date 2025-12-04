@@ -486,9 +486,11 @@
 {% if consultado and not produtos %}
 <div class="section-header">
   <h3 class="section-title">Produtos encontrados</h3>
+  {% if perms.logistica.products_management %}
   <button type="button" class="btn-create" id="openModalBtn">
     Criar novo produto
   </button>
+  {% endif %}
 </div>
 <p style="margin-left: 90px; color: #555; font-size: 1rem;">
   Nenhum produto encontrado.
