@@ -35,6 +35,241 @@
     </div>
 </div>
 
+{% if show_modal %}
+<div id="modeloModal" class="my-modal-overlay">
+    <div class="my-modal my-modal-animate">
+
+        <div class="my-modal-header">
+            <h3>Associar Modelo ao Serial</h3>
+            <button class="my-modal-close" onclick="fecharModal()">×</button>
+        </div>
+
+        <div class="my-modal-body">
+            <p class="my-label">Serial inserido:</p>
+            <h2 class="my-serial">{{ modal_serial }}</h2>
+
+            <form method="POST" class="my-modal-form">
+                {% csrf_token %}
+
+                <label class="my-label">Modelo:</label>
+                <select name="product_id" class="my-select" required>
+                    <option value="">Selecione o produto...</option>
+                    {% for value, text in product_choices %}
+                    <option value="{{ value }}">{{ text }}</option>
+                    {% endfor %}
+                </select>
+
+                <input type="hidden" name="serial" value="{{ modal_serial }}">
+                <input type="hidden" name="save_model" value="1">
+
+                <div class="my-modal-actions">
+                    <button type="submit" class="my-btn my-btn-primary">Salvar</button>
+                    <button type="button" class="my-btn my-btn-secondary" onclick="fecharModal()">Fechar</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .my-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .55);
+        backdrop-filter: blur(3px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+        z-index: 99999;
+    }
+
+    .my-modal {
+        background: #fff;
+        width: 450px;
+        max-width: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, .35);
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    .my-modal-animate {
+        animation: modalEnter .30s ease-out forwards;
+    }
+
+    @keyframes modalEnter {
+        from {
+            opacity: 0;
+            transform: translateY(-25px) scale(.97);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .my-modal-header {
+        background: #0053a6;
+        color: #fff;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .my-modal-header h3 {
+        margin: 0;
+        font-size: 20px;
+    }
+
+    .my-modal-close {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 26px;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .my-modal-close:hover {
+        opacity: .8;
+    }
+
+    .my-modal-body {
+        padding: 20px 25px;
+    }
+
+    .my-label {
+        font-size: 14px;
+        color: #444;
+        margin-bottom: 4px;
+    }
+
+    .my-serial {
+        color: #0053a6;
+        font-size: 26px;
+        margin: 0 0 20px 0;
+    }
+
+    .my-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #cfcfcf;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 15px;
+    }
+
+    .my-input:focus {
+        border-color: #0053a6;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0, 83, 166, 0.15);
+    }
+
+    .my-modal-actions {
+        text-align: right;
+        margin-top: 10px;
+    }
+
+    .my-btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+    .my-btn-primary {
+        background: #0053a6;
+        color: #fff;
+    }
+
+    .my-btn-primary:hover {
+        background: #003f82;
+    }
+
+    .my-btn-secondary {
+        background: #e4e4e4;
+        color: #333;
+        margin-right: 8px;
+    }
+
+    .my-btn-secondary:hover {
+        background: #d4d4d4;
+    }
+
+    .my-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #cfcfcf;
+        border-radius: 6px;
+        font-size: 15px;
+        margin-bottom: 20px;
+        background: #fff url("data:image/svg+xml;utf8,<svg fill='%230053a6' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat right 12px center;
+        background-size: 16px;
+        appearance: none;
+        cursor: pointer;
+        transition: 0.2s border-color, 0.2s box-shadow;
+    }
+
+    .my-select:hover {
+        border-color: #8fbce8;
+    }
+
+    .my-select:focus {
+        border-color: #0053a6;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0, 83, 166, .18);
+    }
+
+    /* Corrigir display da opção placeholder */
+    .my-select option[value=""] {
+        color: #777;
+    }
+</style>
+
+<script>
+    function fecharModal() {
+        document.getElementById('modeloModal').remove();
+    }
+</script>
+
+
+{% endif %}
+
+{% if request.resolver_match.url_name == 'order_return_check' %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const serialModelMap = {{ serial_model_map|safe }};
+    const productMap = {{ product_map|safe }};
+
+    document.querySelectorAll(".chip-text").forEach(function (el) {
+        const serial = el.textContent.trim().toUpperCase();
+
+        if (serialModelMap[serial]) {
+            const productId = serialModelMap[serial];
+            const model = productMap[productId];
+
+            if (model) {
+                // Exibe SKU ou descrição
+                el.textContent = `${serial} | MODELO ${model.sku}`;
+            } else {
+                el.textContent = `${serial} | SEM MODELO`;
+            }
+        } else {
+            el.textContent = `${serial} | SEM MODELO`;
+        }
+    });
+});
+</script>
+{% endif %}
+
+
+
 {% if request.resolver_match.url_name == 'order_return_check' %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
