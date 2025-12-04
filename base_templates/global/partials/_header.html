@@ -180,9 +180,11 @@
             <div class="dropdown-content">
                 {% if perms.backoffice.Importar %}
                 <!-- <a href="{% url 'transportes:gerar_etiquetas' %}">Gerar Etiquetas</a> -->
+                 <a href="{% url 'backoffice:equipamento_lista' %}">Lista de equipamentos</a>
                 <h5 class="submenu-toggle" data-target="bko">Importar</h5>
                 <div class="sub-submenu" id="bko">
                     <a href="{% url 'backoffice:importar_excel' %}"> Equipamentos</a>
+
                 </div>
                 {% endif %}
             </div>
