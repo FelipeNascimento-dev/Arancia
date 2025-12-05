@@ -138,7 +138,7 @@ def recebimento_remessa(request):
 
     return render(
         request,
-        "logistica/templates_gerenciamento_estoque/recebimento_remessa.html",
+        "logistica/templates_recebimento_estoque/recebimento_remessa.html",
         {
             "form": form,
             "serials": serials,

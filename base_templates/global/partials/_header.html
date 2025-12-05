@@ -39,21 +39,21 @@
             </button>
             <div class="dropdown-content">
                 {% if perms.logistica.lastmile_b2c %}
-                    {% if perms.logistica.checkin_principal %}
-                    <h5 class="submenu-toggle" data-target="checkin-sub">Check-In Geral</h5>
-                    <div class="sub-submenu" id="checkin-sub">
-                        <a href="{% url 'logistica:client_select' 'IN' %}">Iniciar Check-In</a>
-                        <a href="{% url 'logistica:client_consult' %}">Consulta de Clientes</a>
-                        <a href="{% url 'logistica:product_create' %}">Consulta de Produtos</a>
-                    </div>
-                    {% endif %}
-                    {% if perms.logistica.checkout_principal %}
-                    <h5 class="submenu-toggle" data-target="checkout-sub">Check-Out Geral</h5>
-                    <div class="sub-submenu" id="checkout-sub">
-                        <a href="{% url 'logistica:client_select' 'OUT' %}">Iniciar Check-Out</a>
-                    </div>
-                    {% endif %}
-                
+                {% if perms.logistica.checkin_principal %}
+                <h5 class="submenu-toggle" data-target="checkin-sub">Check-In Geral</h5>
+                <div class="sub-submenu" id="checkin-sub">
+                    <a href="{% url 'logistica:client_select' 'IN' %}">Iniciar Check-In</a>
+                    <a href="{% url 'logistica:client_consult' %}">Consulta de Clientes</a>
+                    <a href="{% url 'logistica:product_create' %}">Consulta de Produtos</a>
+                </div>
+                {% endif %}
+                {% if perms.logistica.checkout_principal %}
+                <h5 class="submenu-toggle" data-target="checkout-sub">Check-Out Geral</h5>
+                <div class="sub-submenu" id="checkout-sub">
+                    <a href="{% url 'logistica:client_select' 'OUT' %}">Iniciar Check-Out</a>
+                </div>
+                {% endif %}
+
                 <h5 class="submenu-toggle" data-target="lastmile-sub">Lastmile (B2C)</h5>
                 <div class="sub-submenu" id="lastmile-sub">
                     <h5 class="submenu-toggle" data-target="consulta-sub">Consultas</h5>
@@ -113,12 +113,11 @@
                         <a href="{% url 'logistica:consulta_etiquetas' %}">Consulta de Etiquetas</a>
                     </div>
                     {% endif %}
+                    <h5 class="submenu-toggle" data-target="recebimentos-sub">Recebimento de Estoque</h5>
+                    <div class="sub-submenu" id="recebimentos-sub">
+                        <a href="{% url 'logistica:recebimento_remessa' %}">Recebimento</a>
+                    </div>
                 </div>
-                <h5 class="submenu-toggle" data-target="recebimentos-sub">Recebimento via Remessa</h5>
-                <div class="sub-submenu" id="recebimentos-sub">
-                    <a href="{% url 'logistica:recebimento_remessa' %}">Recebimento</a>
-                </div>
-               
                 {% endif %}
             </div>
         </div>
@@ -147,23 +146,23 @@
 
 
 
-                        {% if perms.transportes.CC_admin %}
+                    {% if perms.transportes.CC_admin %}
 
-                        <h5 class="submenu-toggle" data-target="Ferramentas1">Usuarios</h5>
-                        <div class="sub-submenu" id="Ferramentas1">
-                            <a href="{% url 'transportes:criar_usuario' %}">Criar Usuario</a>
-                            <a href="{% url 'transportes:ver_usuario' %}">Editar Usuario</a>
-                        </div>
-                        {% endif %}
-                        {% if perms.transportes.controle_campo %}
-                        <h5 class="submenu-toggle" data-target="Ferramentas2">Rotas</h5>
-                        <div class="sub-submenu" id="Ferramentas2">
-                            <a href="{% url 'transportes:scripting' %}">Roteirização</a>
-                            <a href="{% url 'transportes:mover_rota' %}">Mover Rotas</a>
-                           <a href="{% url 'transportes:ordenar_rota' %}">Ordenar Rotas</a>
-                        </div>
-                        {% endif %}
-                    
+                    <h5 class="submenu-toggle" data-target="Ferramentas1">Usuarios</h5>
+                    <div class="sub-submenu" id="Ferramentas1">
+                        <a href="{% url 'transportes:criar_usuario' %}">Criar Usuario</a>
+                        <a href="{% url 'transportes:ver_usuario' %}">Editar Usuario</a>
+                    </div>
+                    {% endif %}
+                    {% if perms.transportes.controle_campo %}
+                    <h5 class="submenu-toggle" data-target="Ferramentas2">Rotas</h5>
+                    <div class="sub-submenu" id="Ferramentas2">
+                        <a href="{% url 'transportes:scripting' %}">Roteirização</a>
+                        <a href="{% url 'transportes:mover_rota' %}">Mover Rotas</a>
+                        <a href="{% url 'transportes:ordenar_rota' %}">Ordenar Rotas</a>
+                    </div>
+                    {% endif %}
+
                 </div>
                 {% endif %}
 
