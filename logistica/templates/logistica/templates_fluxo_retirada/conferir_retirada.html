@@ -59,6 +59,15 @@
                     {% endfor %}
                 </select>
 
+                <label class="my-label">Chip Number:</label>
+                <input 
+                    type="text" 
+                    name="chip_number" 
+                    class="my-input" 
+                    placeholder="Bipe o Chip Number"
+                    required
+                >
+
                 <input type="hidden" name="serial" value="{{ modal_serial }}">
                 <input type="hidden" name="save_model" value="1">
 
@@ -246,27 +255,37 @@
 document.addEventListener("DOMContentLoaded", function () {
     const serialModelMap = {{ serial_model_map|safe }};
     const productMap = {{ product_map|safe }};
+    const chipMap = {{ chip_map|safe }};
 
     document.querySelectorAll(".chip-text").forEach(function (el) {
         const serial = el.textContent.trim().toUpperCase();
 
+        let output = serial;
+
         if (serialModelMap[serial]) {
             const productId = serialModelMap[serial];
             const model = productMap[productId];
-
             if (model) {
-                // Exibe SKU ou descrição
-                el.textContent = `${serial} | MODELO ${model.sku}`;
+                output += ` | MODELO ${model.sku}`;
             } else {
-                el.textContent = `${serial} | SEM MODELO`;
+                output += ` | SEM MODELO`;
             }
         } else {
-            el.textContent = `${serial} | SEM MODELO`;
+            output += ` | SEM MODELO`;
         }
+
+        if (chipMap[serial]) {
+            output += ` | CHIP ${chipMap[serial]}`;
+        } else {
+            output += ` | SEM CHIP`;
+        }
+
+        el.textContent = output;
     });
 });
 </script>
 {% endif %}
+
 
 
 

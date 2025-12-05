@@ -33,6 +33,18 @@ def reserva_save_serials(request, serials: list[str]) -> None:
     request.session.modified = True
 
 
+SERIAL_CHIP_MAP = "serial_chip_map"
+
+
+def reserva_get_chip_map(request) -> dict:
+    return request.session.get(SERIAL_CHIP_MAP, {})
+
+
+def reserva_save_chip_map(request, data: dict):
+    request.session[SERIAL_CHIP_MAP] = data
+    request.session.modified = True
+
+
 SERIAL_MODEL_MAP = "serial_model_map"
 
 
@@ -85,6 +97,7 @@ def order_return_check(request):
             'serials': reserva_get_serials(request),
             'serial_model_map': reserva_get_serial_map(request),
             'product_map': reserva_get_product_map(request),
+            'chip_map': reserva_get_chip_map(request),
             'show_serial': True,
         })
 
@@ -182,10 +195,12 @@ def order_return_check(request):
             'botao_texto': 'Enviar',
             'site_title': "Conferir Volume de Retirada",
             'serials': reserva_get_serials(request),
+            'chip_map': reserva_get_chip_map(request),
             'show_serial': True,
             "show_modal": show_modal,
             "modal_serial": modal_serial,
             "product_choices": product_choices,
+
         })
 
     if 'remove_serial' in request.POST:
@@ -194,11 +209,9 @@ def order_return_check(request):
             serials = reserva_get_serials(request)
             serial_to_remove = serials[idx]
 
-            # remover serial da lista
             serials.pop(idx)
             reserva_save_serials(request, serials)
 
-            # remover da tabela serial-modelo
             serial_map = reserva_get_serial_map(request)
             serial_map.pop(serial_to_remove, None)
             reserva_save_serial_map(request, serial_map)
@@ -210,17 +223,23 @@ def order_return_check(request):
     if request.POST.get("save_model"):
         serial = request.POST.get("serial", "").strip().upper()
         product_id = request.POST.get("product_id", "").strip()
+        chip_number = request.POST.get("chip_number", "").strip()
 
-        if not serial or not product_id:
-            messages.error(request, "Selecione um modelo antes de salvar.")
+        if not serial or not product_id or not chip_number:
+            messages.error(
+                request, "Selecione um modelo e informe o chip number.")
             return redirect(request.path)
 
         serial_map = reserva_get_serial_map(request)
         serial_map[serial] = int(product_id)
         reserva_save_serial_map(request, serial_map)
 
-        messages.success(request, f"Modelo associado ao serial {serial}.")
+        chip_map = reserva_get_chip_map(request)
+        chip_map[serial] = chip_number
+        reserva_save_chip_map(request, chip_map)
 
+        messages.success(
+            request, f"Modelo e chip associados ao serial {serial}.")
         return redirect(request.path)
 
     if 'clear_serials' in request.POST:
@@ -266,7 +285,8 @@ def order_return_check(request):
             "bar_codes": [
                 {
                     "serial_number": s,
-                    "product_id": reserva_get_serial_map(request).get(s)
+                    "product_id": reserva_get_serial_map(request).get(s),
+                    "chip_number": reserva_get_chip_map(request).get(s)
                 }
                 for s in serials
             ],

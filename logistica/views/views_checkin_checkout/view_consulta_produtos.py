@@ -21,7 +21,6 @@ def product_create(request):
     form = None
     choices = []
 
-    # === BUSCA CLIENTES ===
     try:
         url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=1000"
         res = RequestClient(url=url, method="GET", headers={"Accept": JSON_CT})
@@ -55,7 +54,6 @@ def product_create(request):
         messages.error(request, f"Erro ao obter clientes: {e}")
         choices = [("", "Erro ao carregar clientes")]
 
-    # === CRIAR PRODUTO ===
     if request.method == "POST" and request.POST.get("criar_produto"):
         form = ProductCreateForm(nome_form=titulo, client_choices=choices)
         try:
@@ -95,7 +93,6 @@ def product_create(request):
         except Exception as e:
             messages.error(request, f"Erro ao criar produto: {e}")
 
-    # === EDITAR PRODUTO ===
     elif request.method == "POST" and request.POST.get("editar_produto"):
         form = ProductCreateForm(nome_form=titulo, client_choices=choices)
         try:
@@ -135,7 +132,6 @@ def product_create(request):
         except Exception as e:
             messages.error(request, f"Erro ao atualizar produto: {e}")
 
-    # === CONSULTAR PRODUTOS ===
     elif request.method == "GET" and request.GET.get("enviar_evento"):
         form = ProductCreateForm(
             request.GET, nome_form=titulo, client_choices=choices)
