@@ -104,51 +104,113 @@ def _render_pcp(request: HttpRequest, form, code_info: TrackingOriginalCode, ser
             "serials": serials if code_info.original_code == "202" else [],
             "show_serial": code_info.show_serial,
             "site_title": f"IP - {code_info.description}",
+            "chip_map": request.session.get("chip_map", {}),
         },
     )
 
 
+def _force_pedido(request):
+    # pega pedido do POST
+    ped = (request.POST.get("pedido") or "").strip()
+
+    # se vier no POST, salva na sessão
+    if ped:
+        request.session["pedido"] = ped
+        request.session.modified = True
+        return ped
+
+    # senão pega da sessão
+    return request.session.get("pedido", "")
+
+
 # ================= Serial Actions =================
 def _handle_add_serial(request, code_info, pedido_atual, form):
-    s = (request.POST.get("serial") or "").strip().upper()
-    if not pedido_atual:
-        messages.error(
-            request, "Informe o número do pedido antes de inserir seriais.")
-    elif not s:
+    pedido_atual = _force_pedido(request)   # <<< SEMPRE GARANTE O PEDIDO
+
+    serial = (request.POST.get("serial") or "").strip().upper()
+    show_modal = False
+    modal_serial = None
+
+    if not serial:
         messages.info(request, "Digite um serial.")
     else:
         serials = _get_serials_from_session(request, pedido_atual)
-        if s not in serials:
-            serials.append(s)
+
+        if serial not in serials:
+            serials.append(serial)
             _save_serials_to_session(request, pedido_atual, serials)
+
+            show_modal = True
+            modal_serial = serial
+
             messages.success(request, "Serial inserido.")
         else:
             messages.info(request, "Serial já está na lista.")
-    form = trackingIPForm(initial=_build_initial(form, request, pedido_atual, exclude=("serial",)),
-                          nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
-    return _render_pcp(request, form, code_info, _get_serials_from_session(request, pedido_atual))
+
+    initial = _build_initial(form, request, pedido_atual, exclude=("serial",))
+    initial["pedido"] = pedido_atual
+
+    form = trackingIPForm(
+        initial=initial,
+        nome_form=f"IP - {code_info.description}",
+        show_serial=code_info.show_serial
+    )
+
+    return render(request, "logistica/templates_fluxo_entrega/pcp.html", {
+        "form": form,
+        "etapa_ativa": code_info.etapa_ativa,
+        "botao_texto": "Enviar",
+        "serials": _get_serials_from_session(request, pedido_atual),
+        "show_serial": True,
+        "show_modal": show_modal,
+        "modal_serial": modal_serial,
+    })
 
 
 def _handle_remove_serial(request, code_info, pedido_atual, form):
     serials = _get_serials_from_session(request, pedido_atual)
+
     try:
         idx = int(request.POST.get("remove_serial"))
         if 0 <= idx < len(serials):
             removido = serials.pop(idx)
             messages.success(request, f"Removido: {removido}")
+
             _save_serials_to_session(request, pedido_atual, serials)
+
+            chip_map = request.session.get("chip_map", {})
+            chip_map.pop(removido, None)
+            request.session["chip_map"] = chip_map
+            request.session.modified = True
+
     except Exception:
         messages.error(request, "Não foi possível remover o serial.")
-    form = trackingIPForm(initial=_build_initial(form, request, pedido_atual),
-                          nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
+
+    form = trackingIPForm(
+        initial=_build_initial(form, request, pedido_atual),
+        nome_form=f"IP - {code_info.description}",
+        show_serial=code_info.show_serial
+    )
+
     return _render_pcp(request, form, code_info, serials)
 
 
 def _handle_clear_serials(request, code_info, pedido_atual, form):
     _save_serials_to_session(request, pedido_atual, [])
+    request.session["chip_map"] = {}
+    request.session.modified = True
+
     messages.success(request, "Lista de seriais limpa.")
-    form = trackingIPForm(initial=_build_initial(form, request, pedido_atual, exclude=("serial",)),
-                          nome_form=f"IP - {code_info.description}", show_serial=code_info.show_serial)
+
+    initial = _build_initial(form, request, pedido_atual, exclude=("serial",))
+    initial["pedido"] = pedido_atual or request.session.get("pedido", "")
+
+    form = trackingIPForm(
+        initial=initial,
+        nome_form=f"IP - {code_info.description}",
+        show_serial=code_info.show_serial
+    )
+
     return _render_pcp(request, form, code_info, [])
 
 
@@ -178,7 +240,6 @@ def _build_request_data(code_info: TrackingOriginalCode, numero_pedido: str, ser
 
     if code_info.original_code == "202" and seriais_concat:
         payload["bar_codes"] = seriais_concat.split("|")
-    # print(payload)
 
     return payload
 
@@ -215,7 +276,10 @@ def _post_success_redirect(code_info: TrackingOriginalCode, numero_pedido: str) 
         "204": ("logistica:consulta_etiquetas", None),
     }
     view_name, next_code = redirect_map.get(
-        code_info.original_code, ("logistica:pcp_simpl", int(code_info.original_code) + 1 if code_info.original_code != '205' else '201'))
+        code_info.original_code,
+        ("logistica:pcp_simpl", int(code_info.original_code) +
+         1 if code_info.original_code != "205" else "201")
+    )
     return redirect(view_name, code=next_code) if next_code else redirect(view_name)
 
 
@@ -225,7 +289,8 @@ def _process_enviar_evento(request, code_info, form, serials):
 
     if not form.is_valid():
         messages.warning(
-            request, f"Corrija os erros do formulário: {form.errors.as_text()}")
+            request, f"Corrija os erros do formulário: {form.errors.as_text()}"
+        )
         return _render_pcp(request, form, code_info, serials)
 
     numero_pedido = str(form.cleaned_data.get("pedido"))
@@ -236,25 +301,29 @@ def _process_enviar_evento(request, code_info, form, serials):
             _get_serials_from_session(request, numero_pedido))
         if not serials:
             messages.warning(
-                request, "Adicione ao menos 1 serial antes de enviar o Retorno do picking.")
+                request,
+                "Adicione ao menos 1 serial antes de enviar o Retorno do picking."
+            )
             return _render_pcp(request, form, code_info, serials)
         seriais_concat = "|".join(serials)
     else:
         seriais_concat = ""
 
     request_data = _build_request_data(
-        code_info, numero_pedido, seriais_concat, request)
+        code_info, numero_pedido, seriais_concat, request
+    )
 
     try:
         status, resp = _send_tracking(request_data)
 
-        resp_text = ""
-        if isinstance(resp, str):
-            resp_text = resp.lower()
-        elif isinstance(resp, dict):
-            resp_text = " ".join(str(v).lower() for v in resp.values())
+        resp_text = (
+            resp.lower()
+            if isinstance(resp, str)
+            else " ".join(str(v).lower() for v in resp.values())
+        )
 
         if "sucesso" in resp_text or "success" in resp_text:
+
             messages.success(
                 request,
                 resp.get(
@@ -262,8 +331,12 @@ def _process_enviar_evento(request, code_info, form, serials):
                 if isinstance(resp, dict)
                 else str(resp)
             )
+
             if code_info.original_code == "202":
                 _save_serials_to_session(request, numero_pedido, [])
+                request.session["chip_map"] = {}
+                request.session.modified = True
+
             _mark_carry_next(request)
             return _post_success_redirect(code_info, numero_pedido)
 
@@ -294,10 +367,24 @@ def trackingIPV2(request: HttpRequest, code: str) -> HttpResponse:
         request, pedido_atual) if code == "202" else []
 
     if request.method == "POST":
-        posted_pedido = (request.POST.get("pedido") or "").strip()
-        if posted_pedido:
-            _ensure_pedido_in_session(request, posted_pedido)
-            pedido_atual = posted_pedido
+        pedido_atual = _force_pedido(request)
+
+        # ------------------ SALVAR CHIP ------------------
+        if request.POST.get("save_chip"):
+            serial = request.POST.get("serial").strip().upper()
+            chip_number = request.POST.get("chip_number").strip()
+
+            chip_map = request.session.get("chip_map", {})
+            chip_map[serial] = chip_number
+
+            request.session["chip_map"] = chip_map
+            request.session.modified = True
+
+            messages.success(
+                request, f"Chip {chip_number} associado ao serial {serial}."
+            )
+            return redirect(request.path)
+        # --------------------------------------------------
 
         form = trackingIPForm(request.POST, nome_form=titulo,
                               show_serial=code_info.show_serial)

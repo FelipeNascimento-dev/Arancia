@@ -34,7 +34,7 @@
       {% for s in serials %}
       <button type="submit" name="remove_serial" value="{{ forloop.counter0 }}" class="chip" title="{{ s }}"
         formnovalidate>
-        <span class="chip-text">{{ s }}</span>
+        <span class="chip-text" data-serial="{{ s }}">{{ s }}</span>
         <span class="chip-x" aria-hidden="true">✕</span>
       </button>
       {% endfor %}
