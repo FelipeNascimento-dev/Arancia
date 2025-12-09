@@ -239,7 +239,18 @@ def _build_request_data(code_info: TrackingOriginalCode, numero_pedido: str, ser
     }
 
     if code_info.original_code == "202" and seriais_concat:
-        payload["bar_codes"] = seriais_concat.split("|")
+        serials = seriais_concat.split("|")
+        chip_map = request.session.get("chip_map", {})
+
+        payload["bar_codes_v2"] = [
+            {
+                "serial": s,
+                "chip_number": chip_map.get(s, "")
+            }
+            for s in serials
+        ]
+
+        print(payload)
 
     return payload
 

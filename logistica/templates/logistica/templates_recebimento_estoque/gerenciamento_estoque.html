@@ -2,102 +2,166 @@
 {% block content %}
 
 <style>
-    /* Form */
     .form-card-2col {
         height: auto;
         margin-top: 70px;
         margin-bottom: 10px;
     }
 
-    /* GRID dos cards */
+
+    .summary-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 18px;
+        margin: 25px 10px 35px;
+        margin-left: 65px;
+    }
+
+    .summary-card {
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 18px 20px;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+        border: 1px solid #ececec;
+        transition: 0.2s ease-in-out;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    }
+
+    .summary-title {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .summary-card p {
+        margin: 4px 0;
+        font-size: 0.9rem;
+        color: #333;
+    }
+
     .cards-container {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 12px;
-        margin-top: 10px;
-        padding: 0 10px;
-        margin-bottom: 30px;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 18px;
+        /* padding: 10px; */
+        margin-bottom: 40px;
     }
 
-    /* CARD */
     .card {
         background: #fff;
-        border-radius: 6px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        border-radius: 12px;
         overflow: hidden;
-        border: 1px solid #e3e3e3;
-        padding: 0;
+        border: 1px solid #e4e4e4;
+        box-shadow: 0px 4px 12px rgba(0,0,0,0.08);
+        transition: 0.25s ease-in-out;
     }
 
-    /* CABEÇALHO */
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0px 8px 20px rgba(0,0,0,0.12);
+    }
+
     .card-header {
+        background: #f7f7f7;
+        padding: 12px 15px;
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 8px 10px;
-        background: #f4f4f4;
+        gap: 10px;
     }
 
     .badge-num {
-        background: #4caf50;
+        background: linear-gradient(135deg, #007bff, #0056c1);
         color: #fff;
         border-radius: 50%;
-        width: 24px;
-        height: 24px;
-        font-size: 0.8rem;
+        width: 28px;
+        height: 28px;
         display: flex;
-        align-items: center;
         justify-content: center;
-        font-weight: bold;
+        align-items: center;
+        font-weight: 700;
+        font-size: 0.85rem;
     }
 
     .card-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #333;
         margin: 0;
-        color: #222;
-        font-size: 0.88rem;
-        font-weight: 600;
-        max-width: 170px;
-        white-space: nowrap;
+        max-width: 200px;
         overflow: hidden;
+        white-space: nowrap;
         text-overflow: ellipsis;
     }
 
-    /* CORPO DO CARD */
     .card-body {
-        padding: 8px 10px;
-        font-size: 0.82rem;
+        padding: 15px;
+        font-size: 0.9rem;
     }
 
     .card-body p {
-        margin: 4px 0;
-        font-size: 0.82rem;
+        margin: 6px 0;
         color: #444;
+        font-size: 0.92rem;
     }
 
     .card-body strong {
-        font-size: 0.84rem;
-        color: #111;
+        font-weight: 700;
+        color: #222;
     }
 
-    /* Data Vermelha */
-    .card--not-today {
-        border: 2px solid #e53935 !important;
-    }
-
-    .date--not-today {
-        color: #e53935 !important;
+    .status-red {
+        color: #d93025 !important;
         font-weight: bold;
     }
-
 </style>
+
 
 <div class="form-container">
     <div class="form-card-2col">
         <form method="POST">
             {% include 'global/partials/_form_2col.html' %}
+
+            <!-- <div class="form-group mt-2">
+                <label for="produto">Filtrar por Produto</label>
+                <select name="produto" class="form-control">
+                    <option value="">Todos</option>
+                    {% for p in produtos_unicos %}
+                    <option value="{{ p }}" {% if p|stringformat:"s" == request.POST.produto|stringformat:"s" %}selected{% endif %}>
+                        {{ p }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" name="filtros" class="btn btn-primary mt-2" style="margin-top: 20px;">
+                Aplicar Filtros
+            </button> -->
         </form>
     </div>
 </div>
+
+{% if totais.total_geral %}
+<div class="summary-container">
+
+    <div class="summary-card">
+        <div class="summary-title">Total Geral</div>
+        <p><strong>{{ totais.total_geral }}</strong> itens</p>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-title">Por Produto</div>
+        {% for prod, qtd in totais.por_produto.items %}
+            <p><strong>{{ prod }}</strong>: {{ qtd }}</p>
+        {% endfor %}
+    </div>
+
+</div>
+{% endif %}
 
 {% if resultado_itens %}
 <div class="cards-container">
@@ -115,7 +179,7 @@
             <p>
                 <strong>Status:</strong><br>
                 {% if item.status == "IN_TRANSIT" %}
-                    <span style="color:#d32f2f;font-weight:bold">{{ item.status }}</span>
+                    <span class="status-red">{{ item.status }}</span>
                 {% else %}
                     {{ item.status }}
                 {% endif %}
@@ -128,32 +192,19 @@
                 </time>
             </p>
 
-            <p>
-                <strong>Localização:</strong><br>
-                {{ item.location_id }}
-            </p>
-
-            <p>
-                <strong>Cliente:</strong><br>
-                {{ item.client }}
-            </p>
+            <p><strong>Localização:</strong><br>{{ item.location_id }}</p>
+            <p><strong>Cliente:</strong><br>{{ item.client }}</p>
 
             {% if item.product_id %}
-            <p>
-                <strong>Produto:</strong><br>{{ item.product_id }}
-            </p>
+            <p><strong>Produto:</strong><br>{{ item.product_id }}</p>
             {% endif %}
 
             {% if item.last_in_movement_id %}
-            <p>
-                <strong>Entrada:</strong><br>{{ item.last_in_movement_id }}
-            </p>
+            <p><strong>Entrada:</strong><br>{{ item.last_in_movement_id }}</p>
             {% endif %}
 
             {% if item.last_out_movement_id %}
-            <p>
-                <strong>Saída:</strong><br>{{ item.last_out_movement_id }}
-            </p>
+            <p><strong>Saída:</strong><br>{{ item.last_out_movement_id }}</p>
             {% endif %}
 
         </div>
