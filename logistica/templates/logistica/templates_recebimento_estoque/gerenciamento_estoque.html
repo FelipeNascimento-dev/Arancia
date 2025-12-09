@@ -126,26 +126,18 @@
         <form method="POST">
             {% include 'global/partials/_form_2col.html' %}
 
-            <!-- <div class="form-group mt-2">
-                <label for="produto">Filtrar por Produto</label>
-                <select name="produto" class="form-control">
-                    <option value="">Todos</option>
-                    {% for p in produtos_unicos %}
-                    <option value="{{ p }}" {% if p|stringformat:"s" == request.POST.produto|stringformat:"s" %}selected{% endif %}>
-                        {{ p }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
+            <button type="submit" name="resumo" class="btn btn-primary mt-2" style="margin-top: 20px;">
+                Visão Resumida
+            </button>
 
-            <button type="submit" name="filtros" class="btn btn-primary mt-2" style="margin-top: 20px;">
-                Aplicar Filtros
-            </button> -->
+            <button type="submit" name="detalhe" class="btn btn-primary mt-2" style="margin-top: 20px;">
+                Visão Detalhada
+            </button>
         </form>
     </div>
 </div>
 
-{% if totais.total_geral %}
+<!-- {% if totais.total_geral %}
 <div class="summary-container">
 
     <div class="summary-card">
@@ -161,7 +153,7 @@
     </div>
 
 </div>
-{% endif %}
+{% endif %} -->
 
 {% if resultado_itens %}
 <div class="cards-container">
@@ -176,14 +168,7 @@
 
         <div class="card-body">
 
-            <p>
-                <strong>Status:</strong><br>
-                {% if item.status == "IN_TRANSIT" %}
-                    <span class="status-red">{{ item.status }}</span>
-                {% else %}
-                    {{ item.status }}
-                {% endif %}
-            </p>
+            <p><strong>Status:</strong><br>{{ item.status }}</p>
 
             <p>
                 <strong>Data:</strong><br>
