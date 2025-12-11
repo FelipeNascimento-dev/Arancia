@@ -3,7 +3,11 @@ from django import forms
 
 class GerenciamentoEstoqueForm(forms.Form):
     client = forms.ChoiceField(label="Selecione o Cliente", choices=[])
-    cd_estoque = forms.ChoiceField(label="Selecione o CD", choices=[])
+    cd_estoque = forms.MultipleChoiceField(
+        label="Selecione os CDs (PAs)",
+        choices=[],
+        widget=forms.SelectMultiple(attrs={"size": 6})
+    )
 
     def __init__(self, *args, nome_form=None, client_choices=None, cd_choices=None, **kwargs):
         super().__init__(*args, **kwargs)
