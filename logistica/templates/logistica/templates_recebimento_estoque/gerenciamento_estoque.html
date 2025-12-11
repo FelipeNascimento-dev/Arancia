@@ -174,27 +174,35 @@
             {% if form.data.cd_estoque %}
             <div class="chips-wrap" style="margin:10px 0; display:flex; gap:6px; flex-wrap:wrap;">
                 {% for pa in pa_selecionadas %}
+                {% for id,label in form.fields.cd_estoque.choices %}
+                {% if id|stringformat:"s" == pa %}
                 <span class="chip" style="
-            padding:4px 10px;
-            background:#0056c1;
-            color:white;
-            border-radius:20px;
-            font-size:12px;
-            display:flex;
-            align-items:center;
-            gap:6px;">
-                    {{ pa }}
-                    <button name="remove_pa" value="{{ pa }}" style="
-                background:none;
-                border:none;
+                padding:4px 10px;
+                background:#0056c1;
                 color:white;
-                font-size:14px;
-                cursor:pointer;
-                padding:0;">
+                border-radius:20px;
+                font-size:12px;
+                display:flex;
+                align-items:center;
+                gap:6px;">
+
+                    {{ label }} {# ← AQUI MOSTRA O NOME #}
+
+                    <button name="remove_pa" value="{{ pa }}" style="
+                    background:none;
+                    border:none;
+                    color:white;
+                    font-size:14px;
+                    cursor:pointer;
+                    padding:0;">
                         ×
                     </button>
+
                 </span>
+                {% endif %}
                 {% endfor %}
+                {% endfor %}
+
             </div>
             {% endif %}
 
