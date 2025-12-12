@@ -77,10 +77,49 @@ def gerenciamento_estoque(request):
     form, client_choices, cd_choices, sales_channels_map = carregar_formulario(
         request)
 
+    remove_pa = request.POST.get("remove_pa")
+    if remove_pa:
+        pa_selecionadas = request.POST.getlist("cd_estoque")
+
+        pa_selecionadas = [pa for pa in pa_selecionadas if pa != remove_pa]
+
+        request.POST._mutable = True
+        request.POST.setlist("cd_estoque", pa_selecionadas)
+        request.POST._mutable = False
+
+        return render(
+            request,
+            "logistica/templates_recebimento_estoque/gerenciamento_estoque.html",
+            {
+                "form": form,
+                "resultado_itens": [],
+                "pa_selecionadas": pa_selecionadas,
+                "totais": {},
+                "produtos_unicos": [],
+                "visao": request.POST.get("visao", "detalhe"),
+                "titulo": titulo,
+                "limit": int(request.POST.get("limit", 50)),
+                "offset": 0,
+                "has_more": False,
+                "total_pages": 1,
+                "page_number": 1,
+                "next_offset": 0,
+                "prev_offset": 0,
+            }
+        )
+
     resultado_itens = []
     totais = {}
     produtos_unicos = []
     visao = "detalhe"
+
+    offset = 0
+    limit = 5
+    has_more = False
+    page_number = 1
+    total_pages = 1
+    prev_offset = 0
+    next_offset = limit
 
     if request.method == "POST":
         visao = request.POST.get("visao", "detalhe")
@@ -93,9 +132,16 @@ def gerenciamento_estoque(request):
                 )
 
             elif visao == "detalhe":
-                resultado_itens, totais, produtos_unicos = func_visao_detalhada(
-                    request, form, sales_channels_map
-                )
+                (
+                    resultado_itens,
+                    totais,
+                    produtos_unicos,
+                    limit,
+                    offset,
+                    has_more,
+                    total_pages,
+                    page_number
+                ) = func_visao_detalhada(request, form, sales_channels_map)
 
     pa_selecionadas = request.POST.getlist(
         "cd_estoque") if request.method == "POST" else []
@@ -112,6 +158,13 @@ def gerenciamento_estoque(request):
             "visao": visao,
             "titulo": titulo,
             "botao_texto": 'Consultar',
-            "site_title": titulo
+            "site_title": titulo,
+            "limit": limit,
+            "offset": offset,
+            "has_more": has_more,
+            "total_pages": total_pages,
+            "page_number": page_number,
+            "next_offset": offset + limit,
+            "prev_offset": max(offset - limit, 0),
         }
     )

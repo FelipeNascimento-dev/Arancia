@@ -147,28 +147,108 @@
         color: #fff;
         border-color: #00439a;
     }
+
+    .top-bar {
+        margin-top: 15px;
+        padding: 12px 20px;
+        background: #f7f9fc;
+        border: 1px solid #e1e5eb;
+        border-radius: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .limit-select {
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        font-size: 13px;
+        background: white;
+    }
+
+    .toggle-btn {
+        padding: 6px 14px;
+        border-radius: 8px;
+        background: #e5e7eb;
+        border: none;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        transition: 0.25s;
+    }
+
+    .toggle-btn:hover {
+        background: #d1d5db;
+    }
+
+    .toggle-btn.active {
+        background: #0056c1;
+        color: #fff;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .page-btn {
+        padding: 6px 12px;
+        background: #fff;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .page-btn:hover {
+        background: #f3f4f6;
+    }
+
+    .page-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .page-info {
+        font-size: 13px;
+        color: #555;
+        font-weight: 600;
+    }
 </style>
-
-
 <div class="form-container">
     <div class="form-card-2col">
         <form method="POST">
             {% include 'global/partials/_form_2colV2.html' %}
-
             {% csrf_token %}
 
             <input type="hidden" id="visao" name="visao" value="{{ visao|default:'detalhe' }}">
 
-            <div class="btn-container">
-                <button type="submit" id="btn-resumo" class="toggle-btn {% if visao == 'resumo' %}active{% endif %}"
-                    onclick="document.getElementById('visao').value='resumo'">
-                    Visão Resumida
-                </button>
+            <div class="top-bar">
+                <div>
+                    <label style="margin-right:6px;font-size:13px;font-weight:600;">Itens:</label>
+                    <select name="limit" class="limit-select" onchange="this.form.submit()">
+                        <option value="25" {% if limit == 25 %}selected{% endif %}>25</option>
+                        <option value="50" {% if limit == 50 %}selected{% endif %}>50</option>
+                        <option value="100" {% if limit == 100 %}selected{% endif %}>100</option>
+                        <option value="200" {% if limit == 200 %}selected{% endif %}>200</option>
+                    </select>
+                </div>
 
-                <button type="submit" id="btn-detalhe" class="toggle-btn {% if visao == 'detalhe' %}active{% endif %}"
-                    onclick="document.getElementById('visao').value='detalhe'">
-                    Visão Detalhada
-                </button>
+                <div>
+                    <button type="submit" onclick="document.getElementById('visao').value='resumo'"
+                        class="toggle-btn {% if visao == 'resumo' %}active{% endif %}">
+                        Visão Resumida
+                    </button>
+
+                    <button type="submit" onclick="document.getElementById('visao').value='detalhe'"
+                        class="toggle-btn {% if visao == 'detalhe' %}active{% endif %}">
+                        Visão Detalhada
+                    </button>
+                </div>
             </div>
 
             {% if form.data.cd_estoque %}
@@ -176,36 +256,17 @@
                 {% for pa in pa_selecionadas %}
                 {% for id,label in form.fields.cd_estoque.choices %}
                 {% if id|stringformat:"s" == pa %}
-                <span class="chip" style="
-                padding:4px 10px;
-                background:#0056c1;
-                color:white;
-                border-radius:20px;
-                font-size:12px;
-                display:flex;
-                align-items:center;
-                gap:6px;">
-
-                    {{ label }} {# ← AQUI MOSTRA O NOME #}
-
-                    <button name="remove_pa" value="{{ pa }}" style="
-                    background:none;
-                    border:none;
-                    color:white;
-                    font-size:14px;
-                    cursor:pointer;
-                    padding:0;">
-                        ×
-                    </button>
-
+                <span class="chip" style="padding:4px 10px;background:#0056c1;color:white;
+                    border-radius:20px;font-size:12px;display:flex;align-items:center;gap:6px;">
+                    {{ label }}
+                    <button name="remove_pa" value="{{ pa }}" style="background:none;border:none;color:white;
+                        font-size:14px;cursor:pointer;padding:0;">x</button>
                 </span>
                 {% endif %}
                 {% endfor %}
                 {% endfor %}
-
             </div>
             {% endif %}
-
         </form>
     </div>
 </div>
@@ -222,16 +283,12 @@
         </div>
 
         <div class="card-body">
-
             <p><strong>Status:</strong><br>{{ item.status }}</p>
-
-            <p>
-                <strong>Data:</strong><br>
+            <p><strong>Data:</strong><br>
                 <time class="js-dt" datetime="{{ item.created_at|default:'' }}">
                     {{ item.created_at|default:"-" }}
                 </time>
             </p>
-
             <p><strong>Localização:</strong><br>{{ item.location_id }}</p>
             <p><strong>Cliente:</strong><br>{{ item.client }}</p>
 
@@ -246,11 +303,39 @@
             {% if item.last_out_movement_id %}
             <p><strong>Saída:</strong><br>{{ item.last_out_movement_id }}</p>
             {% endif %}
-
         </div>
+
     </div>
     {% endfor %}
 
+</div>
+{% endif %}
+
+{% if resultado_itens %}
+<div style="width:100%;display:flex;justify-content:center;margin-top:25px;margin-bottom:30px;">
+    <form method="POST" style="display:flex;gap:10px;align-items:center;">
+        {% csrf_token %}
+        <input type="hidden" name="visao" value="{{ visao }}">
+        <input type="hidden" name="limit" value="{{ limit }}">
+        <input type="hidden" name="client" value="{{ form.data.client }}">
+        {% for pa in pa_selecionadas %}
+            <input type="hidden" name="cd_estoque" value="{{ pa }}">
+        {% endfor %}
+
+        {% if offset > 0 %}
+        <button class="page-btn" name="offset" value="{{ prev_offset }}">← Anterior</button>
+        {% else %}
+        <button class="page-btn disabled" disabled>← Anterior</button>
+        {% endif %}
+
+        <span class="page-info">Página {{ page_number }} / {{ total_pages }}</span>
+
+        {% if has_more %}
+        <button class="page-btn" name="offset" value="{{ next_offset }}">Próxima →</button>
+        {% else %}
+        <button class="page-btn disabled" disabled>Próxima →</button>
+        {% endif %}
+    </form>
 </div>
 {% endif %}
 

@@ -11,13 +11,13 @@ JSON_CT = "application/json"
 def func_visao_detalhada(request, form, sales_channels_map):
 
     client = form.cleaned_data["client"]
-    pa_ids = form.cleaned_data["cd_estoque"]
-    pa_ids = [int(i) for i in pa_ids]
+    pa_ids = [int(i) for i in form.cleaned_data["cd_estoque"]]
 
     status = request.POST.get("status", "IN_DEPOT")
 
-    offset = 0
-    limit = 50
+    limit = int(request.POST.get("limit", 5))
+
+    offset = int(request.POST.get("offset", 0))
 
     query_params = [
         ("status", status),
@@ -43,6 +43,10 @@ def func_visao_detalhada(request, form, sales_channels_map):
 
     itens = resultado if isinstance(resultado, list) else []
 
+    has_more = len(itens) == limit
+    page_number = (offset // limit) + 1
+    total_pages = page_number + 1 if has_more else page_number
+
     totais = {
         "total_geral": len(itens),
         "por_status": Counter(i.get("status") for i in itens),
@@ -55,4 +59,13 @@ def func_visao_detalhada(request, form, sales_channels_map):
         if i.get("product_sku")
     })
 
-    return itens, totais, produtos_unicos
+    return (
+        itens,
+        totais,
+        produtos_unicos,
+        limit,
+        offset,
+        has_more,
+        total_pages,
+        page_number,
+    )
