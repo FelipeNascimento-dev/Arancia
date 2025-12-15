@@ -1,7 +1,7 @@
 import json
 from collections import Counter
 from urllib.parse import urlencode
-
+from datetime import datetime, timedelta
 from utils.request import RequestClient
 from setup.local_settings import STOCK_API_URL
 
@@ -14,9 +14,7 @@ def func_visao_detalhada(request, form, sales_channels_map):
     pa_ids = [int(i) for i in form.cleaned_data["cd_estoque"]]
 
     status = request.POST.get("status", "IN_DEPOT")
-
-    limit = int(request.POST.get("limit", 5))
-
+    limit = int(request.POST.get("limit", 25))
     offset = int(request.POST.get("offset", 0))
 
     query_params = [
@@ -29,11 +27,13 @@ def func_visao_detalhada(request, form, sales_channels_map):
         query_params.append(("locations_ids", pa))
 
     qs = urlencode(query_params, doseq=True)
-
     url = f"{STOCK_API_URL}/v1/items/list-byid/{client}?{qs}"
 
-    resultado = RequestClient(url=url, method="GET",
-                              headers={"Accept": JSON_CT}).send_api_request()
+    resultado = RequestClient(
+        url=url,
+        method="GET",
+        headers={"Accept": JSON_CT}
+    ).send_api_request()
 
     if isinstance(resultado, str):
         try:
@@ -59,6 +59,47 @@ def func_visao_detalhada(request, form, sales_channels_map):
         if i.get("product_sku")
     })
 
+    def parse_dt(dt):
+        try:
+            return datetime.fromisoformat(dt.replace("Z", ""))
+        except:
+            return datetime.min
+
+    for item in itens:
+        dt = parse_dt(item.get("last_movement_in_date"))
+        item["dias_no_estoque"] = (datetime.now() - dt).days if dt else None
+
+    itens = sorted(
+        itens,
+        key=lambda x: parse_dt(x.get("last_movement_in_date", "")),
+        reverse=False
+    )
+
+    agora = datetime.now()
+    limite = agora - timedelta(days=30)
+
+    for i in itens:
+        try:
+            dt = datetime.fromisoformat(
+                i.get("last_movement_in_date", "").replace("Z", ""))
+        except:
+            dt = None
+        i["alerta"] = (dt is not None and dt < limite)
+
+    url_produtos = f"{STOCK_API_URL}/v1/products/{client}"
+
+    produtos_api = RequestClient(
+        url=url_produtos,
+        method="GET",
+        headers={"Accept": JSON_CT}
+    ).send_api_request()
+
+    if isinstance(produtos_api, str):
+        try:
+            produtos_api = json.loads(produtos_api)
+        except:
+            produtos_api = []
+
     return (
         itens,
         totais,
@@ -68,4 +109,5 @@ def func_visao_detalhada(request, form, sales_channels_map):
         has_more,
         total_pages,
         page_number,
+        produtos_api,
     )
