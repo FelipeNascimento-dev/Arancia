@@ -1,19 +1,13 @@
 from datetime import datetime
 from collections import Counter
-from urllib.parse import quote
 import json
-
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-
 from utils.request import RequestClient
 from setup.local_settings import STOCK_API_URL
-
 from ...forms import GerenciamentoEstoqueForm
 from ...models import GroupAditionalInformation
-
-# IMPORTA AS DUAS FUNÇÕES (ARQUIVOS SEPARADOS)
 from .func_visao_resumida import func_visao_resumida
 from .func_visao_detalhada import func_visao_detalhada
 
@@ -41,8 +35,8 @@ def carregar_formulario(request):
     user = request.user
     user_cd = getattr(user.designacao, "informacao_adicional", None)
 
-    sales_channels_map = {}
     cd_choices = []
+    sales_channels_map = {}
 
     if user.has_perm("logistica.gerente_estoque"):
         queryset = GroupAditionalInformation.objects.filter(
@@ -74,74 +68,84 @@ def carregar_formulario(request):
 def gerenciamento_estoque(request):
     titulo = "Gerenciamento de Estoque"
 
+    if request.method == "POST" and "item_id" in request.POST:
+
+        item_id = request.POST["item_id"]
+        novo_produto = request.POST["novo_produto"]
+
+        payload = {"product_id": int(novo_produto)}
+        url = f"{STOCK_API_URL}/v1/items/{item_id}"
+
+        api = RequestClient(
+            url=url,
+            method="PUT",
+            headers={"Content-Type": "application/json",
+                     "Accept": "application/json"},
+            request_data=payload
+        )
+
+        resp = api.send_api_request()
+
+        if isinstance(resp, dict) and resp.get("detail") is None:
+            messages.success(request, "Produto atualizado com sucesso!")
+        else:
+            messages.error(request, f"Erro ao atualizar produto: {resp}")
+
+        filtros = request.session.get("estoque_filtros")
+
+        if filtros:
+            new_post = request.POST.copy()
+            new_post["client"] = filtros["client"]
+            new_post["visao"] = filtros["visao"]
+            new_post["limit"] = filtros["limit"]
+            new_post["offset"] = filtros["offset"]
+            new_post["status"] = filtros["status"]
+            new_post.setlist("cd_estoque", filtros["cd_estoque"])
+            request.POST = new_post
+        else:
+            return redirect(request.path)
+
     form, client_choices, cd_choices, sales_channels_map = carregar_formulario(
         request)
 
-    remove_pa = request.POST.get("remove_pa")
-    if remove_pa:
-        pa_selecionadas = request.POST.getlist("cd_estoque")
-
-        pa_selecionadas = [pa for pa in pa_selecionadas if pa != remove_pa]
-
-        request.POST._mutable = True
-        request.POST.setlist("cd_estoque", pa_selecionadas)
-        request.POST._mutable = False
-
-        return render(
-            request,
-            "logistica/templates_recebimento_estoque/gerenciamento_estoque.html",
-            {
-                "form": form,
-                "resultado_itens": [],
-                "pa_selecionadas": pa_selecionadas,
-                "totais": {},
-                "produtos_unicos": [],
-                "visao": request.POST.get("visao", "detalhe"),
-                "titulo": titulo,
-                "limit": int(request.POST.get("limit", 50)),
-                "offset": 0,
-                "has_more": False,
-                "total_pages": 1,
-                "page_number": 1,
-                "next_offset": 0,
-                "prev_offset": 0,
-            }
-        )
-
+    produtos_api = []
     resultado_itens = []
     totais = {}
     produtos_unicos = []
-    visao = "detalhe"
-
-    offset = 0
-    limit = 5
+    visao = request.POST.get("visao", "detalhe")
+    limit = int(request.POST.get("limit", 25))
+    offset = int(request.POST.get("offset", 0))
     has_more = False
     page_number = 1
     total_pages = 1
-    prev_offset = 0
-    next_offset = limit
 
-    if request.method == "POST":
-        visao = request.POST.get("visao", "detalhe")
+    if request.method == "POST" and form.is_valid():
 
-        if form.is_valid():
+        if visao == "resumo":
+            resultado_itens, totais, produtos_unicos = func_visao_resumida(
+                request, form, sales_channels_map
+            )
+        else:
+            (
+                resultado_itens,
+                totais,
+                produtos_unicos,
+                limit,
+                offset,
+                has_more,
+                total_pages,
+                page_number,
+                produtos_api,
+            ) = func_visao_detalhada(request, form, sales_channels_map)
 
-            if visao == "resumo":
-                resultado_itens, totais, produtos_unicos = func_visao_resumida(
-                    request, form, sales_channels_map
-                )
-
-            elif visao == "detalhe":
-                (
-                    resultado_itens,
-                    totais,
-                    produtos_unicos,
-                    limit,
-                    offset,
-                    has_more,
-                    total_pages,
-                    page_number
-                ) = func_visao_detalhada(request, form, sales_channels_map)
+        request.session["estoque_filtros"] = {
+            "client": form.cleaned_data["client"],
+            "cd_estoque": form.cleaned_data["cd_estoque"],
+            "limit": limit,
+            "offset": offset,
+            "visao": visao,
+            "status": request.POST.get("status", "IN_DEPOT"),
+        }
 
     pa_selecionadas = request.POST.getlist(
         "cd_estoque") if request.method == "POST" else []
@@ -157,8 +161,6 @@ def gerenciamento_estoque(request):
             "produtos_unicos": produtos_unicos,
             "visao": visao,
             "titulo": titulo,
-            "botao_texto": 'Consultar',
-            "site_title": titulo,
             "limit": limit,
             "offset": offset,
             "has_more": has_more,
@@ -166,5 +168,6 @@ def gerenciamento_estoque(request):
             "page_number": page_number,
             "next_offset": offset + limit,
             "prev_offset": max(offset - limit, 0),
+            "produtos_api": produtos_api,
         }
     )

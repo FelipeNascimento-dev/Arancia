@@ -70,24 +70,38 @@
     }
 
     .card-header {
-        background: #f7f7f7;
-        padding: 12px 15px;
-        display: flex;
+        display: grid;
+        grid-template-columns: 30px 1fr 30px;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
+    }
+
+    .edit-btn {
+        background: #0056c1;
+        color: white;
+        border: none;
+        padding: 6px 6px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+    }
+
+    .edit-btn:hover {
+        background: #003d91;
     }
 
     .badge-num {
         background: linear-gradient(135deg, #007bff, #0056c1);
         color: #fff;
         border-radius: 50%;
-        width: 28px;
-        height: 28px;
         display: flex;
         justify-content: center;
         align-items: center;
         font-weight: 700;
         font-size: 0.85rem;
+        padding: 4px;
+        white-space: nowrap;
+        width: auto;
     }
 
     .card-title {
@@ -218,7 +232,60 @@
         color: #555;
         font-weight: 600;
     }
+
+    .card-alerta {
+        border: 2px solid red !important;
+    }
+
+    .date-alerta {
+        color: red !important;
+        font-weight: bold;
+    }
+
+    .badge-alerta {
+        background: #d93025 !important;
+        color: #fff !important;
+    }
+
+    .modal {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.4);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 20px;
+        width: 350px;
+        border-radius: 10px;
+    }
+
+    .input {
+        width: 100%;
+        padding: 6px 8px;
+        margin-bottom: 10px;
+    }
+
+    .btn-save {
+        background: #0056c1;
+        color: white;
+        padding: 6px 14px;
+        border-radius: 6px;
+    }
+
+    .btn-close {
+        background: #aaa;
+        color: white;
+        margin-left: 10px;
+        padding: 6px 14px;
+        border-radius: 6px;
+    }
 </style>
+
 <div class="form-container">
     <div class="form-card-2col">
         <form method="POST">
@@ -275,36 +342,45 @@
 <div class="cards-container">
 
     {% for item in resultado_itens %}
-    <div class="card">
+    <div class="card {% if item.alerta %}card-alerta{% endif %}">
 
         <div class="card-header">
-            <span class="badge-num">{{ forloop.counter }}</span>
-            <h3 class="card-title">{{ item.serial }}</h3>
+            <span class="badge-num {% if item.alerta %}badge-alerta{% endif %}">
+                {{ item.dias_no_estoque }}
+            </span>
+            <h3 class="card-title">
+                {{ item.serial }}
+            </h3>
+            <button class="edit-btn"
+                    onclick="openEditModal({{ item.id }}, '{{ item.product_sku }}')">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </button>
         </div>
 
         <div class="card-body">
+
             <p><strong>Status:</strong><br>{{ item.status }}</p>
-            <p><strong>Data:</strong><br>
-                <time class="js-dt" datetime="{{ item.created_at|default:'' }}">
-                    {{ item.created_at|default:"-" }}
-                </time>
+
+            <p>
+                <strong>Último Movimento:</strong><br>
+                <span class="{% if item.alerta %}date-alerta{% endif %}">
+                    {{ item.last_movement_in_date|default:"-" }}
+                </span>
             </p>
-            <p><strong>Localização:</strong><br>{{ item.location_id }}</p>
-            <p><strong>Cliente:</strong><br>{{ item.client }}</p>
 
-            {% if item.product_id %}
-            <p><strong>Produto:</strong><br>{{ item.product_id }}</p>
-            {% endif %}
+            <p><strong>Dias no estoque:</strong><br>
+                {% if item.dias_no_estoque is not None %}
+                    {{ item.dias_no_estoque }} dia(s)
+                {% else %}
+                    -
+                {% endif %}
+            </p>
 
-            {% if item.last_in_movement_id %}
-            <p><strong>Entrada:</strong><br>{{ item.last_in_movement_id }}</p>
-            {% endif %}
+            <p><strong>Localização:</strong><br>{{ item.location_name }}</p>
+            <p><strong>SKU:</strong><br>{{ item.product_sku }}</p>
+            <p><strong>Descrição:</strong><br>{{ item.product_description }}</p>
 
-            {% if item.last_out_movement_id %}
-            <p><strong>Saída:</strong><br>{{ item.last_out_movement_id }}</p>
-            {% endif %}
         </div>
-
     </div>
     {% endfor %}
 
@@ -319,7 +395,7 @@
         <input type="hidden" name="limit" value="{{ limit }}">
         <input type="hidden" name="client" value="{{ form.data.client }}">
         {% for pa in pa_selecionadas %}
-            <input type="hidden" name="cd_estoque" value="{{ pa }}">
+        <input type="hidden" name="cd_estoque" value="{{ pa }}">
         {% endfor %}
 
         {% if offset > 0 %}
@@ -339,6 +415,29 @@
 </div>
 {% endif %}
 
+<!-- EDIÇÃO DE MODAL -->
+<div id="editModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <h3>Editar Produto</h3>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <input type="hidden" name="item_id" id="modal_item_id">
+
+            <label>Produto:</label>
+            <select name="novo_produto" id="modal_produto" class="input">
+                {% for p in produtos_api %}
+                    <option value="{{ p.id }}">{{ p.sku }} — {{ p.description }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn-save">Salvar</button>
+            <button type="button" class="btn-close" onclick="closeEditModal()">Cancelar</button>
+        </form>
+    </div>
+</div>
+
+
 <script>
     function setVisao(tipo) {
         document.getElementById("visao").value = tipo;
@@ -354,6 +453,28 @@
             btnResumo.classList.remove("active");
         }
     }
+</script>
+
+<script>
+function openEditModal(itemId, skuAtual) {
+
+    document.getElementById("editModal").style.display = "flex";
+
+    // Marca o produto correto no select
+    let select = document.getElementById("modal_produto");
+    for (let opt of select.options) {
+        if (opt.text.includes(skuAtual)) {
+            opt.selected = true;
+        }
+    }
+
+    // Guarda o ID do item no hidden
+    document.getElementById("modal_item_id").value = itemId;
+}
+
+function closeEditModal() {
+    document.getElementById("editModal").style.display = "none";
+}
 </script>
 
 
