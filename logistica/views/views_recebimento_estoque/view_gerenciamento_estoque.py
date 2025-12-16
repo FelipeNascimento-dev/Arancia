@@ -91,11 +91,19 @@ def gerenciamento_estoque(request):
 
         pa_ids = [int(i) for i in form.cleaned_data["cd_estoque"]]
 
+        stock_type = request.POST.get("stock_type")
+
+        if stock_type:
+            stock_type = stock_type.strip()
+
         query_params = [
             ("status", status),
             ("offset", 0),
             ("limit", 1000),
         ]
+
+        if stock_type:
+            query_params.append(("stock_type", stock_type))
 
         for pa in pa_ids:
             query_params.append(("locations_ids", pa))
@@ -190,6 +198,30 @@ def gerenciamento_estoque(request):
     pa_selecionadas = request.POST.getlist(
         "cd_estoque") if request.method == "POST" else []
 
+    stock_types = []
+
+    client_post = request.POST.get("client")
+    if client_post:
+        try:
+            url = f"{STOCK_API_URL}/v1/origins/{client_post}"
+            resp = RequestClient(
+                url=url,
+                method="GET",
+                headers={"Accept": JSON_CT}
+            ).send_api_request()
+
+            if isinstance(resp, str):
+                resp = json.loads(resp)
+
+            stock_types = [
+                i.get("stock_type")
+                for i in resp
+                if i.get("stock_type")
+            ]
+
+        except Exception:
+            stock_types = []
+
     return render(
         request,
         "logistica/templates_recebimento_estoque/gerenciamento_estoque.html",
@@ -210,5 +242,6 @@ def gerenciamento_estoque(request):
             "next_offset": offset + limit,
             "prev_offset": max(offset - limit, 0),
             "produtos_api": produtos_api,
+            "stock_types": stock_types,
         }
     )

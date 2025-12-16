@@ -17,11 +17,18 @@ def func_visao_detalhada(request, form, sales_channels_map):
     limit = int(request.POST.get("limit", 25))
     offset = int(request.POST.get("offset", 0))
 
+    stock_type = request.POST.get("stock_type")
+    if stock_type:
+        stock_type = stock_type.strip()
+
     query_params = [
         ("status", status),
         ("offset", offset),
         ("limit", limit),
     ]
+
+    if stock_type:
+        query_params.append(("stock_type", stock_type))
 
     for pa in pa_ids:
         query_params.append(("locations_ids", pa))
@@ -42,6 +49,16 @@ def func_visao_detalhada(request, form, sales_channels_map):
             resultado = []
 
     itens = resultado if isinstance(resultado, list) else []
+
+    stock_type = request.POST.get("stock_type")
+
+    if stock_type:
+        stock_type = stock_type.strip()
+
+        itens = [
+            i for i in itens
+            if i.get("stock_type", "").strip() == stock_type
+        ]
 
     has_more = len(itens) == limit
     page_number = (offset // limit) + 1
