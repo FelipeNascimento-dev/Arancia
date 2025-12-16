@@ -10,6 +10,7 @@ from ...forms import GerenciamentoEstoqueForm
 from ...models import GroupAditionalInformation
 from .func_visao_resumida import func_visao_resumida
 from .func_visao_detalhada import func_visao_detalhada
+from urllib.parse import urlencode
 
 
 JSON_CT = "application/json"
@@ -64,9 +65,48 @@ def carregar_formulario(request):
 
 
 @login_required(login_url='logistica:login')
-@permission_required('logistica.gerente_estoque', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def gerenciamento_estoque(request):
     titulo = "Gerenciamento de Estoque"
+
+    if request.method == "POST" and "exportar" in request.POST:
+
+        form, _, _, sales_channels_map = carregar_formulario(request)
+
+        if not form.is_valid():
+            messages.error(request, "Filtros inválidos para exportação.")
+            return redirect(request.path)
+
+        client = form.cleaned_data["client"]
+        cds = form.cleaned_data["cd_estoque"]
+        status = request.POST.get("status", "IN_DEPOT")
+
+        if not client:
+            messages.error(request, "Selecione um cliente.")
+            return redirect(request.path)
+
+        if not cds:
+            messages.error(request, "Selecione ao menos um CD.")
+            return redirect(request.path)
+
+        pa_ids = [int(i) for i in form.cleaned_data["cd_estoque"]]
+
+        query_params = [
+            ("status", status),
+            ("offset", 0),
+            ("limit", 1000),
+        ]
+
+        for pa in pa_ids:
+            query_params.append(("locations_ids", pa))
+
+        qs = urlencode(query_params, doseq=True)
+
+        export_url = (
+            f"{STOCK_API_URL}/v1/items/list-byid/export/{client}?{qs}"
+        )
+
+        return redirect(export_url)
 
     if request.method == "POST" and "item_id" in request.POST:
 
@@ -161,6 +201,7 @@ def gerenciamento_estoque(request):
             "produtos_unicos": produtos_unicos,
             "visao": visao,
             "titulo": titulo,
+            "site_title": titulo,
             "limit": limit,
             "offset": offset,
             "has_more": has_more,

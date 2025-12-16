@@ -284,39 +284,196 @@
         padding: 6px 14px;
         border-radius: 6px;
     }
+
+    .extract-button {
+        background: linear-gradient(135deg, #00a86b, #008f5a);
+        color: white;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.25s ease-in-out;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+        letter-spacing: 0.3px;
+        margin-left: 10px;
+    }
+
+    .extract-button:hover {
+        background: linear-gradient(135deg, #00bf78, #009b63);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+    }
+
+    .extract-button:active {
+        transform: translateY(0px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    }
+
+.top-bar-balanced {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+}
+
+/* Blocos */
+.top-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Textos */
+.top-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #374151;
+}
+
+.top-hint {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* Select */
+.limit-balanced {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    font-size: 13px;
+}
+
+/* Botões de visão */
+.view-balanced {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.view-balanced:hover {
+    background: #f3f4f6;
+}
+
+.view-balanced.active {
+    background: #0056c1;
+    border-color: #0056c1;
+    color: #ffffff;
+}
+
+/* Ação principal */
+.extract-balanced {
+    background: #0f9d58;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
+}
+
+.extract-balanced:hover {
+    background: #0c7c45;
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+    .top-bar-balanced {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .top-action {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+    }
+}
+
+
 </style>
 
 <div class="form-container">
     <div class="form-card-2col">
         <form method="POST">
             {% include 'global/partials/_form_2colV2.html' %}
+            <div style="display: flex; justify-content: flex-end; width: 100%; margin-bottom: 10px;">
+                <button type="button"
+                        onclick="selectAllPAs()"
+                        style="background:#0056c1;color:white;border:none;padding:6px 12px;
+                            border-radius:6px;font-size:12px;cursor:pointer;">
+                    Selecionar Todos os CDs
+                </button>
+            </div>
             {% csrf_token %}
 
             <input type="hidden" id="visao" name="visao" value="{{ visao|default:'detalhe' }}">
 
-            <div class="top-bar">
-                <div>
-                    <label style="margin-right:6px;font-size:13px;font-weight:600;">Itens:</label>
-                    <select name="limit" class="limit-select" onchange="this.form.submit()">
+            <div class="top-bar-balanced">
+
+                <!-- Filtros -->
+                <div class="top-group">
+                    <span class="top-label">Exibir</span>
+
+                    <select name="limit" class="limit-balanced" onchange="this.form.submit()">
                         <option value="25" {% if limit == 25 %}selected{% endif %}>25</option>
                         <option value="50" {% if limit == 50 %}selected{% endif %}>50</option>
                         <option value="100" {% if limit == 100 %}selected{% endif %}>100</option>
                         <option value="200" {% if limit == 200 %}selected{% endif %}>200</option>
                     </select>
+
+                    <span class="top-hint">itens por página</span>
                 </div>
 
-                <div>
-                    <button type="submit" onclick="document.getElementById('visao').value='resumo'"
-                        class="toggle-btn {% if visao == 'resumo' %}active{% endif %}">
-                        Visão Resumida
-                    </button>
-
-                    <button type="submit" onclick="document.getElementById('visao').value='detalhe'"
-                        class="toggle-btn {% if visao == 'detalhe' %}active{% endif %}">
-                        Visão Detalhada
+                <!-- Ação principal -->
+                <div class="top-action">
+                    <button type="submit"
+                            name="exportar"
+                            value="1"
+                            class="extract-balanced">
+                        <i class="fa-solid fa-download"></i>
+                        Extrair estoque
                     </button>
                 </div>
+
+                <!-- Visão -->
+                <div class="top-group">
+                    <span class="top-label">Visualização</span>
+
+                    <button type="submit"
+                            onclick="document.getElementById('visao').value='resumo'"
+                            class="view-balanced {% if visao == 'resumo' %}active{% endif %}">
+                        Resumida
+                    </button>
+
+                    <button type="submit"
+                            onclick="document.getElementById('visao').value='detalhe'"
+                            class="view-balanced {% if visao == 'detalhe' %}active{% endif %}">
+                        Detalhada
+                    </button>
+                </div>
+
             </div>
+
+
+
 
             {% if form.data.cd_estoque %}
             <div class="chips-wrap" style="margin:10px 0; display:flex; gap:6px; flex-wrap:wrap;">
@@ -351,10 +508,12 @@
             <h3 class="card-title">
                 {{ item.serial }}
             </h3>
+            {% if perms.logistica.gerente_estoque %}
             <button class="edit-btn"
                     onclick="openEditModal({{ item.id }}, '{{ item.product_sku }}')">
                 <i class="fa-solid fa-pen-to-square"></i>
             </button>
+            {% endif %}
         </div>
 
         <div class="card-body">
@@ -376,6 +535,7 @@
                 {% endif %}
             </p>
 
+            <p><strong>Tipo de Estoque:</strong><br>{{ item.stock_type }}</p>
             <p><strong>Localização:</strong><br>{{ item.location_name }}</p>
             <p><strong>SKU:</strong><br>{{ item.product_sku }}</p>
             <p><strong>Descrição:</strong><br>{{ item.product_description }}</p>
@@ -460,7 +620,6 @@ function openEditModal(itemId, skuAtual) {
 
     document.getElementById("editModal").style.display = "flex";
 
-    // Marca o produto correto no select
     let select = document.getElementById("modal_produto");
     for (let opt of select.options) {
         if (opt.text.includes(skuAtual)) {
@@ -468,12 +627,26 @@ function openEditModal(itemId, skuAtual) {
         }
     }
 
-    // Guarda o ID do item no hidden
     document.getElementById("modal_item_id").value = itemId;
 }
 
 function closeEditModal() {
     document.getElementById("editModal").style.display = "none";
+}
+</script>
+
+<script>
+function selectAllPAs() {
+    let select = document.getElementById("id_cd_estoque");
+
+    if (!select) {
+        alert("Campo de CDs não encontrado.");
+        return;
+    }
+
+    for (let i = 0; i < select.options.length; i++) {
+        select.options[i].selected = true;
+    }
 }
 </script>
 
