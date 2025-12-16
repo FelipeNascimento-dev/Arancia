@@ -64,7 +64,7 @@ def carregar_formulario(request):
 
 
 @login_required(login_url='logistica:login')
-@permission_required('logistica.gerente_estoque', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def gerenciamento_estoque(request):
     titulo = "Gerenciamento de Estoque"
 
@@ -161,6 +161,7 @@ def gerenciamento_estoque(request):
             "produtos_unicos": produtos_unicos,
             "visao": visao,
             "titulo": titulo,
+            "site_title": titulo,
             "limit": limit,
             "offset": offset,
             "has_more": has_more,

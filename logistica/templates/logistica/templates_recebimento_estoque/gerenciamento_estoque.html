@@ -284,12 +284,46 @@
         padding: 6px 14px;
         border-radius: 6px;
     }
+
+    .extract-button {
+        background: linear-gradient(135deg, #00a86b, #008f5a);
+        color: white;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.25s ease-in-out;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+        letter-spacing: 0.3px;
+        margin-left: 10px;
+    }
+
+    .extract-button:hover {
+        background: linear-gradient(135deg, #00bf78, #009b63);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+    }
+
+    .extract-button:active {
+        transform: translateY(0px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    }
 </style>
 
 <div class="form-container">
     <div class="form-card-2col">
         <form method="POST">
             {% include 'global/partials/_form_2colV2.html' %}
+            <div style="display: flex; justify-content: flex-end; width: 100%; margin-bottom: 10px;">
+                <button type="button"
+                        onclick="selectAllPAs()"
+                        style="background:#0056c1;color:white;border:none;padding:6px 12px;
+                            border-radius:6px;font-size:12px;cursor:pointer;">
+                    Selecionar Todos os CDs
+                </button>
+            </div>
             {% csrf_token %}
 
             <input type="hidden" id="visao" name="visao" value="{{ visao|default:'detalhe' }}">
@@ -303,6 +337,9 @@
                         <option value="100" {% if limit == 100 %}selected{% endif %}>100</option>
                         <option value="200" {% if limit == 200 %}selected{% endif %}>200</option>
                     </select>
+                    <button type="button" class="extract-button">
+                        Extrair Estoque
+                    </button>
                 </div>
 
                 <div>
@@ -314,7 +351,7 @@
                     <button type="submit" onclick="document.getElementById('visao').value='detalhe'"
                         class="toggle-btn {% if visao == 'detalhe' %}active{% endif %}">
                         Visão Detalhada
-                    </button>
+                    </button> 
                 </div>
             </div>
 
@@ -351,10 +388,12 @@
             <h3 class="card-title">
                 {{ item.serial }}
             </h3>
+            {% if perms.logistica.gerente_estoque %}
             <button class="edit-btn"
                     onclick="openEditModal({{ item.id }}, '{{ item.product_sku }}')">
                 <i class="fa-solid fa-pen-to-square"></i>
             </button>
+            {% endif %}
         </div>
 
         <div class="card-body">
@@ -376,6 +415,7 @@
                 {% endif %}
             </p>
 
+            <p><strong>Tipo de Estoque:</strong><br>{{ item.stock_type }}</p>
             <p><strong>Localização:</strong><br>{{ item.location_name }}</p>
             <p><strong>SKU:</strong><br>{{ item.product_sku }}</p>
             <p><strong>Descrição:</strong><br>{{ item.product_description }}</p>
@@ -460,7 +500,6 @@ function openEditModal(itemId, skuAtual) {
 
     document.getElementById("editModal").style.display = "flex";
 
-    // Marca o produto correto no select
     let select = document.getElementById("modal_produto");
     for (let opt of select.options) {
         if (opt.text.includes(skuAtual)) {
@@ -468,12 +507,26 @@ function openEditModal(itemId, skuAtual) {
         }
     }
 
-    // Guarda o ID do item no hidden
     document.getElementById("modal_item_id").value = itemId;
 }
 
 function closeEditModal() {
     document.getElementById("editModal").style.display = "none";
+}
+</script>
+
+<script>
+function selectAllPAs() {
+    let select = document.getElementById("id_cd_estoque");
+
+    if (!select) {
+        alert("Campo de CDs não encontrado.");
+        return;
+    }
+
+    for (let i = 0; i < select.options.length; i++) {
+        select.options[i].selected = true;
+    }
 }
 </script>
 
