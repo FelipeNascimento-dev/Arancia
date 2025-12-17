@@ -70,6 +70,7 @@ urls_LastmileB2C = [
          unsuccessful_insert, name='unsuccessful_insert'),
     path('gerenciamento-estoque/', gerenciamento_estoque,
          name='gerenciamento_estoque'),
+    path('gerenciamento-kits/', gerenciamento_kits, name='gerenciamento_kits'),
 ]
 
 urls_Gerenciamento = [

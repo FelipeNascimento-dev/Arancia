@@ -26,3 +26,4 @@ from .forms_checkin_checkout.forms_checkin_registrar import ClientCheckInForm
 from .forms_checkin_checkout.forms_consulta_clientes import ClientConsultForm
 from .forms_checkin_checkout.forms_consulta_produtos import ProductCreateForm
 from .forms_recebimento_estoque.forms_gerenciamento_estoque import GerenciamentoEstoqueForm
+from .forms_recebimento_estoque.forms_gerenciamento_kits import GerenciamentoKitsForm
