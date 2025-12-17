@@ -33,3 +33,4 @@ from .views_checkin_checkout.view_checkin_registrar import client_checkin
 from .views_checkin_checkout.view_consulta_produtos import product_create
 from .views_checkin_checkout.view_consulta_clientes import client_consult
 from .views_recebimento_estoque.view_gerenciamento_estoque import gerenciamento_estoque
+from .views_recebimento_estoque.view_gerenciamento_kits import gerenciamento_kits

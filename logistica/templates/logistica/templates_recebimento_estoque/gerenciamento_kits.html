@@ -1,0 +1,64 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+    .form-card-2col {
+        height: auto;
+        margin-top: 65px;
+    }
+
+    .kits-table {
+        margin-left: 65px;
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 30px;
+    }
+
+    .kits-table th, .kits-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .kits-table th {
+        background: #f5f5f5;
+        font-weight: 600;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST">
+            {% csrf_token %}
+            {% include 'global/partials/_form_2col.html' %}
+        </form>
+    </div>
+</div>
+
+{% if kits %}
+    <div class="form-container">
+        <table class="kits-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Pedido</th>
+                    <th>Serial</th>
+                    <th>Chip</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for kit in kits %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ kit.pedido }}</td>
+                    <td>{{ kit.serial }}</td>
+                    <td>{{ kit.chip }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+{% endblock content %}
