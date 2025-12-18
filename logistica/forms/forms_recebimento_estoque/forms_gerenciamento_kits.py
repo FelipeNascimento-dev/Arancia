@@ -2,13 +2,13 @@ from django import forms
 
 
 class GerenciamentoKitsForm(forms.Form):
-    pedido = forms.CharField(
-        label='Pedido',
+    serial_number = forms.CharField(
+        label='Serial',
         max_length=100,
         required=True
     )
-    serial_number = forms.CharField(
-        label='Serial',
+    pedido = forms.CharField(
+        label='Pedido',
         max_length=100,
         required=True
     )
