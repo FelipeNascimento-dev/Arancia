@@ -7,11 +7,6 @@ class GerenciamentoKitsForm(forms.Form):
         max_length=100,
         required=True
     )
-    pedido = forms.CharField(
-        label='Pedido',
-        max_length=100,
-        required=True
-    )
     chip_number = forms.CharField(
         label='Chip',
         max_length=100,

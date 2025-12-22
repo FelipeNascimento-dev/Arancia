@@ -135,7 +135,7 @@ def unsuccessful_insert(request, order=None):
 
                     for s in serials_good:
                         print(
-                            f"GOOD → Pedido {pedido} | Serial {s} | Material {material}")
+                            f"GOOD -> Pedido {pedido} | Serial {s} | Material {material}")
 
                 if serials_bad:
                     payload_bad = {
@@ -168,7 +168,7 @@ def unsuccessful_insert(request, order=None):
 
                     for s in serials_bad:
                         print(
-                            f"BAD → Pedido {pedido} | Serial {s} | Material {material}")
+                            f"BAD -> Pedido {pedido} | Serial {s} | Material {material}")
 
                 request.session[key_good] = []
                 request.session[key_bad] = []
