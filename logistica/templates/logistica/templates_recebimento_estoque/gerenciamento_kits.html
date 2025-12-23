@@ -41,8 +41,7 @@
         <table class="kits-table">
             <thead>
                 <tr>
-                    <th>#</th>
-                    <th>Pedido</th>
+                    <th>Kit</th>
                     <th>Serial</th>
                     <th>Chip</th>
                 </tr>
@@ -51,7 +50,6 @@
                 {% for kit in kits %}
                 <tr>
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ kit.pedido }}</td>
                     <td>{{ kit.serial }}</td>
                     <td>{{ kit.chip }}</td>
                 </tr>
