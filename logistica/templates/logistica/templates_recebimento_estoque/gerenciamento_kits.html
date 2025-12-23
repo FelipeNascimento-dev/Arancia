@@ -3,27 +3,135 @@
 {% block content %}
 
 <style>
+    :root {
+        --card-bg: #ffffff;
+        --border-soft: #eaeaea;
+        --text-main: #2f2f2f;
+        --text-muted: #6f6f6f;
+        --primary: #2563eb;
+        --danger: #dc2626;
+        --radius: 14px;
+    }
+
     .form-card-2col {
         height: auto;
         margin-top: 65px;
     }
 
-    .kits-table {
+    /* ===== GRID ===== */
+    .kits-container {
         margin-left: 65px;
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 30px;
+        margin-top: 35px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 22px;
     }
 
-    .kits-table th, .kits-table td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: center;
+    /* ===== CARD ===== */
+    .kit-card {
+        background: var(--card-bg);
+        border-radius: var(--radius);
+        padding: 18px 20px;
+        border: 1px solid var(--border-soft);
+        transition: all .2s ease;
     }
 
-    .kits-table th {
-        background: #f5f5f5;
+    .kit-card:hover {
+        box-shadow: 0 10px 28px rgba(0,0,0,0.06);
+        transform: translateY(-2px);
+    }
+
+    /* ===== HEADER ===== */
+    .kit-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+    }
+
+    .kit-title {
+        font-size: 14px;
         font-weight: 600;
+        color: var(--text-main);
+    }
+
+    .kit-badge {
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        background: #f1f5f9;
+        color: #475569;
+        font-weight: 500;
+    }
+
+    /* ===== INFO ===== */
+    .kit-info {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .kit-row {
+        display: flex;
+        flex-direction: column;
+        font-size: 13px;
+    }
+
+    .kit-label {
+        color: var(--text-muted);
+        font-size: 11px;
+        margin-bottom: 2px;
+        letter-spacing: .3px;
+        text-transform: uppercase;
+    }
+
+    .kit-value {
+        color: var(--text-main);
+        font-weight: 500;
+        word-break: break-all;
+    }
+
+    /* ===== ACTIONS ===== */
+    .kit-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 18px;
+        opacity: 0;
+        transition: opacity .2s ease;
+    }
+
+    .kit-card:hover .kit-actions {
+        opacity: 1;
+    }
+
+    .btn-icon {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 13px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: background .2s ease;
+    }
+
+    .btn-edit {
+        color: var(--primary);
+    }
+
+    .btn-edit:hover {
+        background: rgba(37, 99, 235, 0.08);
+    }
+
+    .btn-delete {
+        color: var(--danger);
+    }
+
+    .btn-delete:hover {
+        background: rgba(220, 38, 38, 0.08);
     }
 </style>
 
@@ -37,25 +145,47 @@
 </div>
 
 {% if kits %}
-    <div class="form-container">
-        <table class="kits-table">
-            <thead>
-                <tr>
-                    <th>Kit</th>
-                    <th>Serial</th>
-                    <th>Chip</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for kit in kits %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ kit.serial }}</td>
-                    <td>{{ kit.chip }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="kits-container">
+        {% for kit in kits %}
+            <div class="kit-card">
+
+                <div class="kit-header">
+                    <span class="kit-title">Kit {{ forloop.counter }}</span>
+                    <span class="kit-badge">Ativo</span>
+                </div>
+
+                <div class="kit-info">
+                    <div class="kit-row">
+                        <span class="kit-label">Serial</span>
+                        <span class="kit-value">{{ kit.serial }}</span>
+                    </div>
+
+                    <div class="kit-row">
+                        <span class="kit-label">Chip</span>
+                        <span class="kit-value">{{ kit.chip }}</span>
+                    </div>
+                </div>
+
+                <div class="kit-actions">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="edit_index" value="{{ forloop.counter0 }}">
+                        <button class="btn-icon btn-edit">
+                            ✏️ Editar
+                        </button>
+                    </form>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="delete_index" value="{{ forloop.counter0 }}">
+                        <button class="btn-icon btn-delete">
+                            🗑️ Deletar
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        {% endfor %}
     </div>
 {% endif %}
 
