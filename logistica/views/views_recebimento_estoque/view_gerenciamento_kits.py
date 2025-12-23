@@ -14,7 +14,6 @@ def gerenciamento_kits(request):
         form = GerenciamentoKitsForm(request.POST, nome_form=titulo)
         if form.is_valid():
             kit = {
-                "pedido": form.cleaned_data['pedido'],
                 "serial": form.cleaned_data['serial_number'],
                 "chip": form.cleaned_data['chip_number'],
             }
