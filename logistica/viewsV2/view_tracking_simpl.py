@@ -94,6 +94,7 @@ def _dedup_upper(values: Iterable[str]) -> list[str]:
 
 # ================= Render =================
 def _render_pcp(request: HttpRequest, form, code_info: TrackingOriginalCode, serials: list[str]) -> HttpResponse:
+    kit_labels = dict(_get_mock_kits())
     return render(
         request,
         "logistica/templates_fluxo_entrega/pcp.html",
@@ -105,6 +106,7 @@ def _render_pcp(request: HttpRequest, form, code_info: TrackingOriginalCode, ser
             "show_serial": code_info.show_serial,
             "site_title": f"IP - {code_info.description}",
             "chip_map": request.session.get("chip_map", {}),
+            "kit_labels": kit_labels,
         },
     )
 
@@ -126,6 +128,25 @@ def _force_pedido(request):
 # ================= Serial Actions =================
 def _handle_add_serial(request, code_info, pedido_atual, form):
     pedido_atual = _force_pedido(request)   # <<< SEMPRE GARANTE O PEDIDO
+    modo = request.session.get("retorno_picking_modo")
+
+    if modo == "kit":
+        kit_id = request.POST.get("kit_id")
+
+        if not kit_id:
+            messages.warning(request, "Selecione um kit.")
+            return redirect(request.path)
+
+        serials = _get_serials_from_session(request, pedido_atual)
+
+        # evita duplicar o mesmo kit
+        if kit_id not in serials:
+            serials.append(kit_id)
+            _save_serials_to_session(request, pedido_atual, serials)
+            messages.success(request, "Kit adicionado.")
+        else:
+            messages.info(request, "Kit já está na lista.")
+        return redirect(request.path)
 
     serial = (request.POST.get("serial") or "").strip().upper()
     show_modal = False
@@ -217,12 +238,27 @@ def _handle_clear_serials(request, code_info, pedido_atual, form):
 def _dispatch_serial_actions_if_any(request, code_info, pedido_atual, form):
     if code_info.original_code != "202":
         return None
+
+    modo = request.session.get("retorno_picking_modo")
+
+    if not modo:
+        messages.warning(request, "Escolha primeiro o modo de inserção.")
+        return redirect(request.path)
+
+    if modo == "kit":
+        if "add_serial" in request.POST:
+            return _handle_add_serial(request, code_info, pedido_atual, form)
+        return None
+
     if "add_serial" in request.POST:
-        return _handle_add_serial(request, code_info, _get_pedido_atual(request), form)
+        return _handle_add_serial(request, code_info, pedido_atual, form)
+
     if "remove_serial" in request.POST:
-        return _handle_remove_serial(request, code_info, _get_pedido_atual(request), form)
+        return _handle_remove_serial(request, code_info, pedido_atual, form)
+
     if "clear_serials" in request.POST:
-        return _handle_clear_serials(request, code_info, _get_pedido_atual(request), form)
+        return _handle_clear_serials(request, code_info, pedido_atual, form)
+
     return None
 
 
@@ -308,6 +344,18 @@ def _process_enviar_evento(request, code_info, form, serials):
     _ensure_pedido_in_session(request, numero_pedido)
 
     if code_info.original_code == "202":
+        modo = request.session.get("retorno_picking_modo")
+        serials = _get_serials_from_session(request, numero_pedido)
+
+        if modo == "kit" and not serials:
+            messages.warning(request, "Adicione ao menos um kit.")
+            return _render_pcp(request, form, code_info, serials)
+
+        if modo == "bipagem" and not serials:
+            messages.warning(request, "Adicione ao menos um serial.")
+            return _render_pcp(request, form, code_info, serials)
+
+    if code_info.original_code == "202":
         serials = _dedup_upper(
             _get_serials_from_session(request, numero_pedido))
         if not serials:
@@ -365,6 +413,14 @@ def _process_enviar_evento(request, code_info, form, serials):
         return _render_pcp(request, form, code_info, serials)
 
 
+def _get_mock_kits():
+    return [
+        ("KIT_POS", "Kit POS Básico"),
+        ("KIT_MODEM", "Kit Modem"),
+        ("KIT_FULL", "Kit Completo"),
+    ]
+
+
 # ================= View Principal =================
 @csrf_protect
 @login_required(login_url='logistica:login')
@@ -374,10 +430,39 @@ def trackingIPV2(request: HttpRequest, code: str) -> HttpResponse:
     titulo = f"IP - {code_info.description}"
 
     pedido_atual = _get_pedido_atual(request)
+    modo = request.session.get("retorno_picking_modo")
+    pedido_modo = request.session.get("retorno_picking_pedido")
+
+    if modo and pedido_atual and pedido_modo != pedido_atual:
+        request.session.pop("retorno_picking_modo", None)
+        request.session.pop("retorno_picking_pedido", None)
+        request.session.modified = True
+
     serials = _get_serials_from_session(
         request, pedido_atual) if code == "202" else []
 
+    modo_insercao = request.session.get("retorno_picking_modo")
+    kits_choices = []
+
+    if code_info.original_code == "202" and modo_insercao == "kit":
+        kits_choices = _get_mock_kits()
+
     if request.method == "POST":
+
+        if request.POST.get("definir_modo_retorno"):
+            modo = request.POST.get("modo_insercao")
+
+            if modo not in ("bipagem", "kit"):
+                messages.error(request, "Escolha uma forma de inserção.")
+                return redirect(request.path)
+
+            request.session["retorno_picking_modo"] = modo
+            request.session["retorno_picking_pedido"] = request.session.get(
+                "pedido")
+            request.session.modified = True
+
+            return redirect(request.path)
+
         pedido_atual = _force_pedido(request)
 
         # ------------------ SALVAR CHIP ------------------
@@ -397,8 +482,13 @@ def trackingIPV2(request: HttpRequest, code: str) -> HttpResponse:
             return redirect(request.path)
         # --------------------------------------------------
 
-        form = trackingIPForm(request.POST, nome_form=titulo,
-                              show_serial=code_info.show_serial)
+        form = trackingIPForm(
+            request.POST,
+            nome_form=titulo,
+            show_serial=code_info.show_serial,
+            modo_insercao=modo_insercao,
+            kits_choices=kits_choices
+        )
 
         resp = _dispatch_serial_actions_if_any(
             request, code_info, pedido_atual, form)
@@ -417,6 +507,10 @@ def trackingIPV2(request: HttpRequest, code: str) -> HttpResponse:
         if ped:
             initial["pedido"] = ped
 
-    form = trackingIPForm(initial=initial, nome_form=titulo,
-                          show_serial=code_info.show_serial)
+    form = trackingIPForm(initial=initial,
+                          nome_form=titulo,
+                          show_serial=code_info.show_serial,
+                          modo_insercao=modo_insercao,
+                          kits_choices=kits_choices
+                          )
     return _render_pcp(request, form, code_info, serials)
