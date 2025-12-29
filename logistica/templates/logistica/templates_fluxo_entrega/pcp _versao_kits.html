@@ -263,23 +263,23 @@ function fecharModal() {
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const chipMap = {{ chip_map|safe }};
+    const kitLabels = {{ kit_labels|default:"{}"|safe }};
 
     document.querySelectorAll(".chip-text").forEach(function (el) {
         const serial = el.dataset.serial;
-        let out = serial;
+        if (!serial) return;
 
-        if (chipMap[serial]) {
-            out += " | CHIP " + chipMap[serial];
+        if (kitLabels && kitLabels[serial]) {
+            el.textContent = "KIT: " + kitLabels[serial];
+        } else if (chipMap && chipMap[serial]) {
+            el.textContent = serial + " | CHIP " + chipMap[serial];
         } else {
-            out += " | SEM CHIP";
+            el.textContent = serial;
         }
-
-        el.textContent = out;
     });
 });
+
 </script>
-
-
 
 <script>
     (function () {
@@ -411,5 +411,166 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     })();
 </script>
+
+<script>
+(function () {
+    if ("{{ etapa_ativa }}" !== "retorno_picking") return;
+
+    const kitSelect = document.querySelector('select[name="kit_id"]');
+    if (!kitSelect) return;
+
+    const form = kitSelect.closest('form');
+    if (!form) return;
+
+    function submitKit() {
+        if (!kitSelect.value) return;
+
+        let hidden = form.querySelector('input[name="add_serial"]');
+        if (!hidden) {
+            hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'add_serial';
+            form.appendChild(hidden);
+        }
+        hidden.value = '1';
+        form.noValidate = true;
+        form.submit();
+    }
+
+    // ENTER adiciona o kit
+    kitSelect.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            submitKit();
+        }
+    });
+
+    // (opcional) trocar seleção e apertar ENTER rápido
+    kitSelect.addEventListener('change', function () {
+        kitSelect.focus();
+    });
+})();
+</script>
+
+
+<!-- ESCOLHA DE KIT OU BIPAR MANUAL -->
+{% if etapa_ativa == 'retorno_picking' and not request.session.retorno_picking_modo %}
+<div class="my-modal-overlay">
+  <div class="my-modal my-modal-animate">
+
+    <div class="my-modal-header">
+      <h3>Como deseja inserir os seriais?</h3>
+    </div>
+
+    <div class="my-modal-body">
+      <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="definir_modo_retorno" value="1">
+
+        <label class="my-label">
+          <input type="radio" name="modo_insercao" value="bipagem" required>
+          Inserir por bipagem (manual)
+        </label>
+
+        <br><br>
+
+        <label class="my-label">
+          <input type="radio" name="modo_insercao" value="kit" required>
+          Escolher kit pré-definido
+        </label>
+
+        <div class="my-modal-actions">
+          <button type="submit" class="my-btn my-btn-primary">
+            Continuar
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endif %}
+
+<!-- MODAL PARA INSERIR O NUMERO DO KIT -->
+<div id="kitModal" class="my-modal-overlay"
+     style="display:{% if busca_kit %}flex{% else %}none{% endif %};">
+  <div class="my-modal my-modal-animate">
+
+    <div class="my-modal-header">
+      <h3>Inserir Kit</h3>
+      <button type="button" class="my-modal-close" onclick="fecharKitModal()">×</button>
+    </div>
+
+    <div class="my-modal-body">
+      <form method="POST" novalidate>
+        {% csrf_token %}
+
+        <label class="my-label">Número do Kit:</label>
+        <input
+          type="text"
+          name="kit_number"
+          class="my-input"
+          placeholder="Digite o número do kit"
+          value="{{ busca_kit|default:'' }}"
+          required
+        >
+
+        {% if not itens_kit %}
+          <div class="my-modal-actions">
+            <button type="submit"
+                    name="buscar_kit"
+                    value="1"
+                    class="my-btn my-btn-primary">
+              Buscar Kit
+            </button>
+          </div>
+        {% else %}
+          <p class="my-label" style="margin-top: 15px;">
+            Resultados para o kit "<strong>{{ busca_kit }}</strong>":
+          </p>
+
+          <ul>
+            {% for item in itens_kit %}
+                Serial: {{ item.serial }} | Chip: {{ item.chip }}
+            {% endfor %}
+          </ul>
+
+          <div class="my-modal-actions">
+            <button type="submit"
+                    name="confirmar_kit"
+                    value="1"
+                    class="my-btn my-btn-primary">
+              Inserir Kit
+            </button>
+          </div>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<script>
+function abrirKitModal() {
+    const modal = document.getElementById("kitModal");
+    if (!modal) return;
+
+    modal.style.display = "flex";
+
+    const input = modal.querySelector('input[name="kit_number"]');
+    if (input) {
+        setTimeout(() => input.focus(), 50);
+    }
+}
+
+function fecharKitModal() {
+    const modal = document.getElementById("kitModal");
+    if (!modal) return;
+
+    modal.style.display = "none";
+}
+</script>
+
+
 
 {% endblock content %}
