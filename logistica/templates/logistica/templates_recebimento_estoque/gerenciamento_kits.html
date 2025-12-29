@@ -148,7 +148,6 @@
     <div class="kits-container">
         {% for kit in kits %}
             <div class="kit-card">
-
                 <div class="kit-header">
                     <span class="kit-title">Kit {{ forloop.counter }}</span>
                     <span class="kit-badge">Ativo</span>
@@ -171,7 +170,7 @@
                         {% csrf_token %}
                         <input type="hidden" name="edit_index" value="{{ forloop.counter0 }}">
                         <button class="btn-icon btn-edit">
-                            ✏️ Editar
+                            <i class="fa-solid fa-pencil" style="color: #000;"></i>
                         </button>
                     </form>
 
@@ -179,11 +178,10 @@
                         {% csrf_token %}
                         <input type="hidden" name="delete_index" value="{{ forloop.counter0 }}">
                         <button class="btn-icon btn-delete">
-                            🗑️ Deletar
+                            <i class="fa-solid fa-x" style="color: #ff0000;"></i>
                         </button>
                     </form>
                 </div>
-
             </div>
         {% endfor %}
     </div>
