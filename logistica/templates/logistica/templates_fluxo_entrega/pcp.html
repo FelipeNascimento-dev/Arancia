@@ -489,5 +489,86 @@ document.addEventListener("DOMContentLoaded", function () {
 </div>
 {% endif %}
 
+<!-- MODAL PARA INSERIR O NUMERO DO KIT -->
+<div id="kitModal" class="my-modal-overlay"
+     style="display:{% if busca_kit %}flex{% else %}none{% endif %};">
+  <div class="my-modal my-modal-animate">
+
+    <div class="my-modal-header">
+      <h3>Inserir Kit</h3>
+      <button type="button" class="my-modal-close" onclick="fecharKitModal()">×</button>
+    </div>
+
+    <div class="my-modal-body">
+      <form method="POST" novalidate>
+        {% csrf_token %}
+
+        <label class="my-label">Número do Kit:</label>
+        <input
+          type="text"
+          name="kit_number"
+          class="my-input"
+          placeholder="Digite o número do kit"
+          value="{{ busca_kit|default:'' }}"
+          required
+        >
+
+        {% if not itens_kit %}
+          <div class="my-modal-actions">
+            <button type="submit"
+                    name="buscar_kit"
+                    value="1"
+                    class="my-btn my-btn-primary">
+              Buscar Kit
+            </button>
+          </div>
+        {% else %}
+          <p class="my-label" style="margin-top: 15px;">
+            Resultados para o kit "<strong>{{ busca_kit }}</strong>":
+          </p>
+
+          <ul>
+            {% for item in itens_kit %}
+                Serial: {{ item.serial }} | Chip: {{ item.chip }}
+            {% endfor %}
+          </ul>
+
+          <div class="my-modal-actions">
+            <button type="submit"
+                    name="confirmar_kit"
+                    value="1"
+                    class="my-btn my-btn-primary">
+              Inserir Kit
+            </button>
+          </div>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<script>
+function abrirKitModal() {
+    const modal = document.getElementById("kitModal");
+    if (!modal) return;
+
+    modal.style.display = "flex";
+
+    const input = modal.querySelector('input[name="kit_number"]');
+    if (input) {
+        setTimeout(() => input.focus(), 50);
+    }
+}
+
+function fecharKitModal() {
+    const modal = document.getElementById("kitModal");
+    if (!modal) return;
+
+    modal.style.display = "none";
+}
+</script>
+
+
 
 {% endblock content %}

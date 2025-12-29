@@ -26,6 +26,18 @@
     </div>
     {% endif %}
     {% endfor %}
+    {% if etapa_ativa == 'retorno_picking' and request.session.retorno_picking_modo == 'kit' %}
+      <div class="form-group">
+        <label>&nbsp;</label>
+        <button
+          type="button"
+          class="my-btn my-btn-primary"
+          style="width:100%; height: 42px;"
+          onclick="abrirKitModal()">
+          Inserir Kit
+        </button>
+      </div>
+    {% endif %}
   </div>
 
   {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' or request.resolver_match.url_name == 'recebimento_remessa' or request.resolver_match.url_name == 'order_return_check' or request.resolver_match.url_name == 'unsuccessful_insert' %}

@@ -15,19 +15,12 @@ class trackingIPForm(forms.Form):
         widget=forms.TextInput(attrs={'autocomplete': 'off'})
     )
 
-    kit_id = forms.ChoiceField(
-        label='Kit pré-definido',
-        required=False,
-        choices=[]
-    )
-
     def __init__(
         self,
         *args,
         nome_form=None,
         show_serial=True,
         modo_insercao=None,
-        kits_choices=None,
         **kwargs
     ):
         super().__init__(*args, **kwargs)
@@ -36,12 +29,6 @@ class trackingIPForm(forms.Form):
 
         if modo_insercao == "kit":
             self.fields.pop("serial", None)
-            self.fields["kit_id"].choices = kits_choices or []
-            self.fields["kit_id"].widget.attrs.update({
-                "class": "my-select"
-            })
-        else:
-            self.fields.pop("kit_id", None)
 
         if not show_serial:
             self.fields.pop("serial", None)
