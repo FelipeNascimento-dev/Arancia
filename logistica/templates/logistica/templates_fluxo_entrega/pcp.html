@@ -263,20 +263,22 @@ function fecharModal() {
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const chipMap = {{ chip_map|safe }};
-    const kitLabels = {{ kit_labels|safe }};
+    const kitLabels = {{ kit_labels|default:"{}"|safe }};
 
     document.querySelectorAll(".chip-text").forEach(function (el) {
         const serial = el.dataset.serial;
+        if (!serial) return;
 
-        if (kitLabels[serial]) {
+        if (kitLabels && kitLabels[serial]) {
             el.textContent = "KIT: " + kitLabels[serial];
-        } else if (chipMap[serial]) {
+        } else if (chipMap && chipMap[serial]) {
             el.textContent = serial + " | CHIP " + chipMap[serial];
         } else {
             el.textContent = serial;
         }
     });
 });
+
 </script>
 
 <script>
