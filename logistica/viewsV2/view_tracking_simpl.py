@@ -244,7 +244,8 @@ def _build_request_data(code_info: TrackingOriginalCode, numero_pedido: str, ser
 
         payload["bar_codes_v2"] = [
             {
-                "serial": s,
+                "serial_number": s,
+                "product_id": 0,
                 "chip_number": chip_map.get(s, "")
             }
             for s in serials
