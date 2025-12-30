@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from ...forms import ProductCreateForm
@@ -81,12 +81,14 @@ def product_create(request):
             )
             api_response = res.send_api_request()
 
-            if isinstance(api_response, (dict, list)):
-                messages.success(request, f"Produto {sku} criado com sucesso!")
-            else:
-                messages.warning(
-                    request, f"Resposta inesperada da API: {api_response}"
-                )
+            if isinstance(api_response, dict) and api_response.get("status") == "error":
+                messages.error(request, api_response.get(
+                    "detail", "Erro ao criar produto."))
+                return redirect(request.path)
+
+            messages.success(
+                request, f"Produto {payload['sku']} criado com sucesso!")
+            return redirect(request.path)
 
         except json.JSONDecodeError:
             messages.error(request, "Formato inválido no campo extra_info.")
