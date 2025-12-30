@@ -46,7 +46,7 @@ def view_order(request, order: str, ep_name: str):
             if isinstance(row, dict):
                 for key in ("payload", "response", "bar_codes"):
                     if key in row and not isinstance(row[key], str):
-                        row[key] = json.dumps(row[key], ensure_ascii=True)
+                        row[key] = json.dumps(row[key], ensure_ascii=False)
     elif isinstance(result, dict):
         for key in ("payload", "response", "bar_codes"):
             if key in result and not isinstance(result[key], str):
