@@ -113,9 +113,12 @@
                         <a href="{% url 'logistica:consulta_etiquetas' %}">Consulta de Etiquetas</a>
                     </div>
                     {% endif %}
-                    <h5 class="submenu-toggle" data-target="recebimentos-sub">Recebimento de Estoque</h5>
+                    <h5 class="submenu-toggle" data-target="recebimentos-sub">Estoque</h5>
                     <div class="sub-submenu" id="recebimentos-sub">
                         <a href="{% url 'logistica:recebimento_remessa' %}">Recebimento</a>
+                        {% if perms.logistica.gerente_estoque %}
+                            <a href="{% url 'logistica:gerenciamento_estoque' %}">Gestão de Estoque</a>
+                        {% endif %}
                     </div>
                 </div>
                 {% endif %}
