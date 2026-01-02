@@ -6,16 +6,16 @@ from django.views.decorators.csrf import csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('backoffice.Importar', raise_exception=True)
 def baixar_duplicados_view(request):
-    duplicados = request.session.get("duplicados")
+    ignorados = request.session.get("ignorados")
 
-    if not duplicados:
-        return HttpResponse("Nenhum dado de duplicados encontrado.", status=400)
+    if not ignorados:
+        return HttpResponse("Nenhum dado de ignorados encontrado.", status=400)
 
-    output = gerar_excel_retorno(duplicados)
+    output = gerar_excel_retorno(ignorados)
 
     response_excel = HttpResponse(
         output.getvalue(),
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    response_excel['Content-Disposition'] = 'attachment; filename="duplicados.xlsx"'
+    response_excel['Content-Disposition'] = 'attachment; filename="ignorados.xlsx"'
     return response_excel

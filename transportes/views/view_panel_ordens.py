@@ -9,7 +9,10 @@ def build_ordens(request, projeto, cod_base, headers, hoje_str, tecnicos):
     limit = int(request.GET.get("limit", 20000))
     params_ordens = {"date": hoje_str, "skip": skip, "limit": limit}
 
-    # --- técnicos ---
+    # --- técnicos ---# The line `dados_tecnicos = get_api_data(f"tecnicos_{cod_base}", url_tec, {},
+    # headers)` is calling a function named `get_api_data` with specific parameters
+    # to retrieve technical data from an API endpoint.
+    
     dados_tecnicos = get_api_data(f"tecnicos_{cod_base}", url_tec, {}, headers)
     if not isinstance(dados_tecnicos, list):
         dados_tecnicos = []

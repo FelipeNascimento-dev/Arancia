@@ -52,18 +52,18 @@
 <br>
 
 <br>
-  {% if duplicados %}
-    <h3>Registros Duplicados</h3><br>
+  {% if ignorados %}
+    <h3>Registros ignorados</h3><br>
     <table class="styled-table dark table-sd">
       <thead>
         <tr>
-          {% for coluna in duplicados.0.keys %}
+          {% for coluna in ignorados.0.keys %}
             <th>{{ coluna }}</th>
           {% endfor %}
         </tr>
       </thead>
       <tbody>
-        {% for linha in duplicados %}
+        {% for linha in ignorados %}
           <tr>
             {% for valor in linha.values %}
               <td>{{ valor }}</td>
@@ -74,7 +74,7 @@
     </table>
     <br>
     <a href="{% url 'backoffice:baixar_duplicados' %}">
-      <button type="button"  class="btn btn-primary">Baixar Duplicados em Excel</button>
+      <button type="button"  class="btn btn-primary">Baixar ignorados em Excel</button>
     </a>
   {% endif %}
 
