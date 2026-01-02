@@ -47,10 +47,7 @@ DATABASES = {
 }
 
 
-
-
-
-#CONTROLE DE CAMPO
+# CONTROLE DE CAMPO
 
 API_BASE = "http://192.168.0.214/RetencaoAPI/api"
 TOKEN = "K90nIR4PK90nIR4PBKIy0rPZ6uwSqKCDX"
@@ -70,4 +67,3 @@ status_colors = {
     "atrasado": "bg-red-600",
     "sem_horario_definido": "bg-gray-500"
 }
-
