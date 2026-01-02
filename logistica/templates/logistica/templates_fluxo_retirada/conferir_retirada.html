@@ -1,0 +1,436 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+    .form-card-2col {
+        height: auto;
+        margin-top: 65px;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST">
+            {% include 'global/partials/_form_2col.html' %}
+        </form>
+
+        {% if request.resolver_match.url_name == 'order_return_check' %}
+        <div class="confirm-clear" id="confirm-clear" aria-hidden="true" role="dialog" aria-modal="true"
+            aria-labelledby="cc-title" aria-describedby="cc-desc">
+            <div class="confirm-clear__backdrop" data-close="1"></div>
+            <div class="confirm-clear__dialog">
+                <h3 id="cc-title">Limpar seriais?</h3>
+                <p id="cc-desc">Todos os seriais bipados serão descartados.<br>
+                    Esta ação NÃO pode ser desfeita!
+                </p>
+
+                <div class="confirm-clear__actions">
+                    <button type="button" class="submit-button-right cc-no" data-close="1">Cancelar</button>
+                    <button type="button" class="submit-button-right" id="cc-yes">Sim, limpar</button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if show_modal %}
+<div id="modeloModal" class="my-modal-overlay">
+    <div class="my-modal my-modal-animate">
+
+        <div class="my-modal-header">
+            <h3>Associar Modelo ao Serial</h3>
+            <button class="my-modal-close" onclick="fecharModal()">×</button>
+        </div>
+
+        <div class="my-modal-body">
+            <p class="my-label">Serial inserido:</p>
+            <h2 class="my-serial">{{ modal_serial }}</h2>
+
+            <form method="POST" class="my-modal-form">
+                {% csrf_token %}
+
+                <label class="my-label">Modelo:</label>
+                <select name="product_id" class="my-select" required>
+                    <option value="">Selecione o produto...</option>
+                    {% for value, text in product_choices %}
+                    <option value="{{ value }}">{{ text }}</option>
+                    {% endfor %}
+                </select>
+
+                <input type="hidden" name="serial" value="{{ modal_serial }}">
+                <input type="hidden" name="save_model" value="1">
+
+                <div class="my-modal-actions">
+                    <button type="submit" class="my-btn my-btn-primary">Salvar</button>
+                    <button type="button" class="my-btn my-btn-secondary" onclick="fecharModal()">Fechar</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .my-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .55);
+        backdrop-filter: blur(3px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+        z-index: 99999;
+    }
+
+    .my-modal {
+        background: #fff;
+        width: 450px;
+        max-width: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, .35);
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    .my-modal-animate {
+        animation: modalEnter .30s ease-out forwards;
+    }
+
+    @keyframes modalEnter {
+        from {
+            opacity: 0;
+            transform: translateY(-25px) scale(.97);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .my-modal-header {
+        background: #0053a6;
+        color: #fff;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .my-modal-header h3 {
+        margin: 0;
+        font-size: 20px;
+    }
+
+    .my-modal-close {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 26px;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .my-modal-close:hover {
+        opacity: .8;
+    }
+
+    .my-modal-body {
+        padding: 20px 25px;
+    }
+
+    .my-label {
+        font-size: 14px;
+        color: #444;
+        margin-bottom: 4px;
+    }
+
+    .my-serial {
+        color: #0053a6;
+        font-size: 26px;
+        margin: 0 0 20px 0;
+    }
+
+    .my-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #cfcfcf;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 15px;
+    }
+
+    .my-input:focus {
+        border-color: #0053a6;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0, 83, 166, 0.15);
+    }
+
+    .my-modal-actions {
+        text-align: right;
+        margin-top: 10px;
+    }
+
+    .my-btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+    .my-btn-primary {
+        background: #0053a6;
+        color: #fff;
+    }
+
+    .my-btn-primary:hover {
+        background: #003f82;
+    }
+
+    .my-btn-secondary {
+        background: #e4e4e4;
+        color: #333;
+        margin-right: 8px;
+    }
+
+    .my-btn-secondary:hover {
+        background: #d4d4d4;
+    }
+
+    .my-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #cfcfcf;
+        border-radius: 6px;
+        font-size: 15px;
+        margin-bottom: 20px;
+        background: #fff url("data:image/svg+xml;utf8,<svg fill='%230053a6' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat right 12px center;
+        background-size: 16px;
+        appearance: none;
+        cursor: pointer;
+        transition: 0.2s border-color, 0.2s box-shadow;
+    }
+
+    .my-select:hover {
+        border-color: #8fbce8;
+    }
+
+    .my-select:focus {
+        border-color: #0053a6;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0, 83, 166, .18);
+    }
+
+    /* Corrigir display da opção placeholder */
+    .my-select option[value=""] {
+        color: #777;
+    }
+</style>
+
+<script>
+    function fecharModal() {
+        document.getElementById('modeloModal').remove();
+    }
+</script>
+
+
+{% endif %}
+
+{% if request.resolver_match.url_name == 'order_return_check' %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const serialModelMap = {{ serial_model_map|safe }};
+    const productMap = {{ product_map|safe }};
+
+    document.querySelectorAll(".chip-text").forEach(function (el) {
+        const serial = el.textContent.trim().toUpperCase();
+
+        if (serialModelMap[serial]) {
+            const productId = serialModelMap[serial];
+            const model = productMap[productId];
+
+            if (model) {
+                // Exibe SKU ou descrição
+                el.textContent = `${serial} | MODELO ${model.sku}`;
+            } else {
+                el.textContent = `${serial} | SEM MODELO`;
+            }
+        } else {
+            el.textContent = `${serial} | SEM MODELO`;
+        }
+    });
+});
+</script>
+{% endif %}
+
+
+
+{% if request.resolver_match.url_name == 'order_return_check' %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var si = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
+        if (si) si.value = '';
+    });
+    (function () {
+        function focusSerial() {
+            var el = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
+            if (!el || el.disabled || el.offsetParent === null) return;
+            el.focus({ preventScroll: true });
+            try { el.setSelectionRange(el.value.length, el.value.length); } catch (_) { }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function () {
+                var si = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
+                if (si) si.value = '';
+                focusSerial();
+            });
+        } else {
+            var si = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
+            if (si) si.value = '';
+            focusSerial();
+        }
+
+        var input = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
+        if (!input) return;
+        var form = input.closest('form');
+        if (!form) return;
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                var v = (input.value || '').trim();
+                if (!v) return;
+
+                var pedido = form.querySelector('#id_pedido') || form.querySelector('input[name="pedido"]');
+                if (pedido && pedido.disabled) pedido.disabled = false;
+
+                var hidden = form.querySelector('input[name="add_serial"]');
+                if (!hidden) {
+                    hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = 'add_serial';
+                    form.appendChild(hidden);
+                }
+                hidden.value = '1';
+                form.noValidate = true;
+
+                form.submit();
+
+                setTimeout(function () {
+                    input.value = '';
+                }, 0);
+            }
+        });
+    })();
+</script>
+
+<script>
+    (function () {
+        const modal = document.getElementById('confirm-clear');
+        const openBtn = document.querySelector('button[name="clear_serials"]');
+        const yesBtn = document.getElementById('cc-yes');
+        const form = modal?.closest('.form-card-2col')?.querySelector('form') || document.querySelector('form');
+
+        if (!modal || !yesBtn || !form) return;
+
+        let lastFocused = null;
+
+        function trapFocus(enable) {
+            if (!enable) return;
+            const focusables = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+
+            function handleTab(e) {
+                if (e.key !== 'Tab' || focusables.length === 0) return;
+                if (e.shiftKey) {
+                    if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+                } else {
+                    if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+                }
+            }
+            modal.addEventListener('keydown', handleTab);
+
+            const obs = new MutationObserver(() => {
+                if (!modal.classList.contains('open')) {
+                    modal.removeEventListener('keydown', handleTab);
+                    obs.disconnect();
+                }
+            });
+            obs.observe(modal, { attributes: true, attributeFilter: ['class'] });
+        }
+
+        function openModal(e) {
+            if (e) e.preventDefault();
+            lastFocused = document.activeElement;
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            yesBtn.focus({ preventScroll: true });
+            trapFocus(true);
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            if (lastFocused && typeof lastFocused.focus === 'function') {
+                lastFocused.focus({ preventScroll: true });
+            }
+        }
+
+        if (openBtn) openBtn.addEventListener('click', openModal);
+
+        yesBtn.addEventListener('click', function () {
+            var pedido = form.querySelector('#id_pedido') || form.querySelector('input[name="pedido"]');
+            if (pedido && pedido.disabled) pedido.disabled = false;
+
+            let hidden = form.querySelector('input[name="clear_serials"][type="hidden"]');
+            if (!hidden) {
+                hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'clear_serials';
+                form.appendChild(hidden);
+            }
+            hidden.value = '1';
+            form.noValidate = true;
+            form.submit();
+        });
+
+        modal.addEventListener('click', function (e) {
+            if (e.target.dataset.close === '1') closeModal();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            const isOpen = modal.classList.contains('open') && modal.getAttribute('aria-hidden') === 'false';
+            if (!isOpen) return;
+
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeModal();
+                return;
+            }
+
+            if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.altKey) {
+                const ae = document.activeElement;
+                if (ae && (ae.classList.contains('cc-no') || ae.getAttribute('data-close') === '1')) {
+                    ae.click();
+                    return;
+                }
+                e.preventDefault();
+                yesBtn.click();
+            }
+        });
+    })();
+</script>
+{% endif %}
+
+
+
+{% endblock content %}

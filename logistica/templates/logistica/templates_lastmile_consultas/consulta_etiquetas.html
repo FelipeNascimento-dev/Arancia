@@ -1,0 +1,106 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+{% if perms.logistica.inst_simplified %}
+    {% include 'global/partials/_nav_chevron_simpl.html' %}
+{% else %}
+    {% include 'global/partials/_nav_chevron.html' %}
+{% endif %}
+<style>
+    .form-card-2col {
+        height: auto;
+        margin-top: 70px;
+    }
+
+    table.table-like {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+    }
+
+    table.table-like th,
+    table.table-like td {
+        border: 1px solid #ccc;
+        padding: 8px;
+    }
+
+    table.table-like th {
+        background: #f5f5f5;
+    }
+
+    em.muted {
+        color: #666;
+        font-style: italic;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST">
+            {% csrf_token %}
+            {% include 'global/partials/_form_2col.html' %}
+        </form>
+
+        {% if rows %}
+        <table class="table-like">
+            <thead>
+                <tr>
+                    <th>Pedido:</th>
+                    <th>Volume</th>
+                    <th>Link etiqueta:</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in rows %}
+                <tr>
+                    <td>{{ r.pedido }}</td>
+                    <td>{{ r.volume }}</td>
+                    <td>
+                        {% if "detail" in r.url %}
+                            <em class="muted" style="color:#b00;">{{ r.url.detail }}</em>
+                        {% elif r.url %}
+                            <a href="{{ r.url }}" target="_blank" rel="noopener">Clique aqui para abrir a etiqueta</a>
+                        {% else %}
+                            <em class="muted">Clique em consultar para gerar o link</em>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const field = document.getElementById('id_pedidos') || document.getElementById('id_pedido');
+        if (field) {
+            field.focus({ preventScroll: true });
+
+            const v = field.value;
+            field.value = '';
+            field.value = v;
+        }
+
+        window.addEventListener('pageshow', () => {
+            const el = document.getElementById('id_pedidos') || document.getElementById('id_pedido');
+            if (el) el.focus({ preventScroll: true });
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const pedidoField = document.getElementById("id_pedido");
+        if (pedidoField) {
+            pedidoField.focus({ preventScroll: true });
+
+            pedidoField.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    this.form.requestSubmit();
+                }
+            });
+        }
+    });
+</script>
+{% endblock content %}

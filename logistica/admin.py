@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django import forms
-from .models import PontoAtendimentoInfo, GroupAditionalInformation, UserDesignation
+from .models import PontoAtendimentoInfo, GroupAditionalInformation, UserDesignation, GroupAditionalInformationLegacy
+
 
 class PontoAtendimentoInfoAdminForm(forms.ModelForm):
     limite_opcoes = [
@@ -11,11 +12,13 @@ class PontoAtendimentoInfoAdminForm(forms.ModelForm):
         (500, "500 bipagens"),
         (1000, "1000 bipagens"),
     ]
-    limite = forms.ChoiceField(choices=limite_opcoes, label="Limite de bipagens")
+    limite = forms.ChoiceField(
+        choices=limite_opcoes, label="Limite de bipagens")
 
     class Meta:
         model = PontoAtendimentoInfo
         fields = '__all__'
+
 
 @admin.register(PontoAtendimentoInfo)
 class PontoAtendimentoInfoAdmin(admin.ModelAdmin):
@@ -24,13 +27,21 @@ class PontoAtendimentoInfoAdmin(admin.ModelAdmin):
     list_editable = ('liberado',)
     search_fields = ('group__name', 'endereco')
 
+
 @admin.register(GroupAditionalInformation)
 class GroupAditionalInformationAdmin(admin.ModelAdmin):
     list_display = ('group', 'nome', 'cidade', 'estado', 'email', 'telefone1')
     search_fields = ('group__name', 'cidade', 'estado', 'email', 'responsavel')
+
 
 @admin.register(UserDesignation)
 class UserDesignationAdmin(admin.ModelAdmin):
     list_display = ('user', 'informacao_adicional')
     search_fields = ('user__username', 'informacao_adicional__nome')
     autocomplete_fields = ('user', 'informacao_adicional')
+
+
+@admin.register(GroupAditionalInformationLegacy)
+class GroupAditionalInformationLegacyAdmin(admin.ModelAdmin):
+    list_display = ('gaiid', 'cod_contato')
+    search_fields = ('gaiid__nome', 'cod_contato')

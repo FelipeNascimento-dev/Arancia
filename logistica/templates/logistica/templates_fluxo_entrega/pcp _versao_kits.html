@@ -1,0 +1,576 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+{% if perms.logistica.inst_simplified %}
+    {% include 'global/partials/_nav_chevron_simpl.html' %}
+{% else %}
+    {% include 'global/partials/_nav_chevron.html' %}
+{% endif %}
+
+<style>
+    .form-card-2col {
+        height: auto;
+    }
+
+    .form-actions .push-left {
+        margin-right: auto;
+    }
+
+    .chips-wrap {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin-top: 15px;
+    }
+
+    .chip {
+        width: 100%;
+        background: #f1f1f1;
+        border-radius: 8px;
+        padding: 8px 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #ddd;
+    }
+</style>
+
+<style>
+    .my-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .55);
+        backdrop-filter: blur(3px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+        z-index: 99999;
+    }
+
+    .my-modal {
+        background: #fff;
+        width: 450px;
+        max-width: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, .35);
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    .my-modal-animate {
+        animation: modalEnter .30s ease-out forwards;
+    }
+
+    @keyframes modalEnter {
+        from {
+            opacity: 0;
+            transform: translateY(-25px) scale(.97);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .my-modal-header {
+        background: #0053a6;
+        color: #fff;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .my-modal-header h3 {
+        margin: 0;
+        font-size: 20px;
+    }
+
+    .my-modal-close {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 26px;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .my-modal-close:hover {
+        opacity: .8;
+    }
+
+    .my-modal-body {
+        padding: 20px 25px;
+    }
+
+    .my-label {
+        font-size: 14px;
+        color: #444;
+        margin-bottom: 4px;
+    }
+
+    .my-serial {
+        color: #0053a6;
+        font-size: 26px;
+        margin: 0 0 20px 0;
+    }
+
+    .my-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #cfcfcf;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 15px;
+    }
+
+    .my-input:focus {
+        border-color: #0053a6;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0, 83, 166, 0.15);
+    }
+
+    .my-modal-actions {
+        text-align: right;
+        margin-top: 10px;
+    }
+
+    .my-btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+    .my-btn-primary {
+        background: #0053a6;
+        color: #fff;
+    }
+
+    .my-btn-primary:hover {
+        background: #003f82;
+    }
+
+    .my-btn-secondary {
+        background: #e4e4e4;
+        color: #333;
+        margin-right: 8px;
+    }
+
+    .my-btn-secondary:hover {
+        background: #d4d4d4;
+    }
+
+    .my-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #cfcfcf;
+        border-radius: 6px;
+        font-size: 15px;
+        margin-bottom: 20px;
+        background: #fff url("data:image/svg+xml;utf8,<svg fill='%230053a6' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat right 12px center;
+        background-size: 16px;
+        appearance: none;
+        cursor: pointer;
+        transition: 0.2s border-color, 0.2s box-shadow;
+    }
+
+    .my-select:hover {
+        border-color: #8fbce8;
+    }
+
+    .my-select:focus {
+        border-color: #0053a6;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0, 83, 166, .18);
+    }
+
+    /* Corrigir display da opção placeholder */
+    .my-select option[value=""] {
+        color: #777;
+    }
+</style>
+
+<div class="page-center">
+    <div class="form-container">
+        <div class="form-card-2col">
+            <form method="POST">
+                {% include 'global/partials/_form_2col.html' %}
+                <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    const pedido = "{{ request.session.pedido|default:'' }}";
+                    const input = document.querySelector("input[name='pedido']");
+                    if (input && pedido !== "") {
+                        input.value = pedido;
+                    }
+                });
+                </script>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if show_modal %}
+<div id="chipModal" class="my-modal-overlay">
+    <div class="my-modal my-modal-animate">
+
+        <div class="my-modal-header">
+            <h3>Associar Chip ao Serial</h3>
+            <button class="my-modal-close" onclick="fecharModal()">×</button>
+        </div>
+
+        <div class="my-modal-body">
+            <p class="my-label">Serial inserido:</p>
+            <h2 class="my-serial">{{ modal_serial }}</h2>
+
+            <form method="POST" class="my-modal-form">
+                {% csrf_token %}
+
+                <label class="my-label">Chip Number:</label>
+                <input 
+                    type="text"
+                    name="chip_number"
+                    class="my-input"
+                    placeholder="Chip Number"
+                    required
+                >
+
+                <input type="hidden" name="serial" value="{{ modal_serial }}">
+                <input type="hidden" name="save_chip" value="1">
+
+                <div class="my-modal-actions">
+                    <button type="submit" class="my-btn my-btn-primary">Salvar</button>
+                    <button type="button" class="my-btn my-btn-secondary" onclick="fecharModal()">Fechar</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+function fecharModal() {
+    document.getElementById('chipModal').remove();
+}
+</script>
+{% endif %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const chipMap = {{ chip_map|safe }};
+    const kitLabels = {{ kit_labels|default:"{}"|safe }};
+
+    document.querySelectorAll(".chip-text").forEach(function (el) {
+        const serial = el.dataset.serial;
+        if (!serial) return;
+
+        if (kitLabels && kitLabels[serial]) {
+            el.textContent = "KIT: " + kitLabels[serial];
+        } else if (chipMap && chipMap[serial]) {
+            el.textContent = serial + " | CHIP " + chipMap[serial];
+        } else {
+            el.textContent = serial;
+        }
+    });
+});
+
+</script>
+
+<script>
+    (function () {
+        if ("{{ etapa_ativa }}" !== "retorno_picking") return;
+
+        function focusSerial() {
+            var el = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
+            if (!el || el.disabled || el.offsetParent === null) return;
+            el.focus({ preventScroll: true });
+            try { el.setSelectionRange(el.value.length, el.value.length); } catch (_) { }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', focusSerial);
+        } else {
+            focusSerial();
+        }
+
+        var input = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
+        if (!input) return;
+        var form = input.closest('form');
+        if (!form) return;
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                var v = (input.value || '').trim();
+                if (!v) return;
+                var hidden = form.querySelector('input[name="add_serial"]');
+                if (!hidden) {
+                    hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = 'add_serial';
+                    form.appendChild(hidden);
+                }
+                hidden.value = '1';
+                form.noValidate = true;
+
+                form.submit();
+            }
+        });
+    })();
+</script>
+
+<script>
+    (function () {
+        if ("{{ etapa_ativa }}" !== "retorno_picking") return;
+
+        const modal = document.getElementById('confirm-clear');
+        const openBtn = document.querySelector('button[name="clear_serials"]');
+        const yesBtn = document.getElementById('cc-yes');
+
+        const form = modal?.closest('.form-card-2col')?.querySelector('form') || document.querySelector('form');
+
+        if (!modal || !openBtn || !yesBtn || !form) return;
+
+        let lastFocused = null;
+
+        function openModal(e) {
+            if (e) e.preventDefault();
+
+            lastFocused = document.activeElement;
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            yesBtn.focus({ preventScroll: true });
+            trapFocus(true);
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            trapFocus(false);
+            if (lastFocused && typeof lastFocused.focus === 'function') {
+                lastFocused.focus({ preventScroll: true });
+            }
+        }
+        openBtn.addEventListener('click', openModal);
+
+        yesBtn.addEventListener('click', function () {
+            let hidden = form.querySelector('input[name="clear_serials"][type="hidden"]');
+            if (!hidden) {
+                hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'clear_serials';
+                form.appendChild(hidden);
+            }
+            hidden.value = '1';
+            form.noValidate = true;
+            form.submit();
+        });
+
+        modal.addEventListener('click', function (e) {
+            if (e.target.dataset.close === '1') closeModal();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (modal.classList.contains('open') && e.key === 'Escape') {
+                e.preventDefault();
+                closeModal();
+            }
+        });
+
+        let focusables = [];
+        function trapFocus(enable) {
+            if (!enable) return;
+            focusables = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+
+            function handleTab(e) {
+                if (e.key !== 'Tab' || focusables.length === 0) return;
+                if (e.shiftKey) {
+                    if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+                } else {
+                    if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+                }
+            }
+            modal.addEventListener('keydown', handleTab);
+
+            const obs = new MutationObserver(() => {
+                if (!modal.classList.contains('open')) {
+                    modal.removeEventListener('keydown', handleTab);
+                    obs.disconnect();
+                }
+            });
+            obs.observe(modal, { attributes: true, attributeFilter: ['class'] });
+        }
+    })();
+</script>
+
+<script>
+(function () {
+    if ("{{ etapa_ativa }}" !== "retorno_picking") return;
+
+    const kitSelect = document.querySelector('select[name="kit_id"]');
+    if (!kitSelect) return;
+
+    const form = kitSelect.closest('form');
+    if (!form) return;
+
+    function submitKit() {
+        if (!kitSelect.value) return;
+
+        let hidden = form.querySelector('input[name="add_serial"]');
+        if (!hidden) {
+            hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'add_serial';
+            form.appendChild(hidden);
+        }
+        hidden.value = '1';
+        form.noValidate = true;
+        form.submit();
+    }
+
+    // ENTER adiciona o kit
+    kitSelect.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            submitKit();
+        }
+    });
+
+    // (opcional) trocar seleção e apertar ENTER rápido
+    kitSelect.addEventListener('change', function () {
+        kitSelect.focus();
+    });
+})();
+</script>
+
+
+<!-- ESCOLHA DE KIT OU BIPAR MANUAL -->
+{% if etapa_ativa == 'retorno_picking' and not request.session.retorno_picking_modo %}
+<div class="my-modal-overlay">
+  <div class="my-modal my-modal-animate">
+
+    <div class="my-modal-header">
+      <h3>Como deseja inserir os seriais?</h3>
+    </div>
+
+    <div class="my-modal-body">
+      <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="definir_modo_retorno" value="1">
+
+        <label class="my-label">
+          <input type="radio" name="modo_insercao" value="bipagem" required>
+          Inserir por bipagem (manual)
+        </label>
+
+        <br><br>
+
+        <label class="my-label">
+          <input type="radio" name="modo_insercao" value="kit" required>
+          Escolher kit pré-definido
+        </label>
+
+        <div class="my-modal-actions">
+          <button type="submit" class="my-btn my-btn-primary">
+            Continuar
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endif %}
+
+<!-- MODAL PARA INSERIR O NUMERO DO KIT -->
+<div id="kitModal" class="my-modal-overlay"
+     style="display:{% if busca_kit %}flex{% else %}none{% endif %};">
+  <div class="my-modal my-modal-animate">
+
+    <div class="my-modal-header">
+      <h3>Inserir Kit</h3>
+      <button type="button" class="my-modal-close" onclick="fecharKitModal()">×</button>
+    </div>
+
+    <div class="my-modal-body">
+      <form method="POST" novalidate>
+        {% csrf_token %}
+
+        <label class="my-label">Número do Kit:</label>
+        <input
+          type="text"
+          name="kit_number"
+          class="my-input"
+          placeholder="Digite o número do kit"
+          value="{{ busca_kit|default:'' }}"
+          required
+        >
+
+        {% if not itens_kit %}
+          <div class="my-modal-actions">
+            <button type="submit"
+                    name="buscar_kit"
+                    value="1"
+                    class="my-btn my-btn-primary">
+              Buscar Kit
+            </button>
+          </div>
+        {% else %}
+          <p class="my-label" style="margin-top: 15px;">
+            Resultados para o kit "<strong>{{ busca_kit }}</strong>":
+          </p>
+
+          <ul>
+            {% for item in itens_kit %}
+                Serial: {{ item.serial }} | Chip: {{ item.chip }}
+            {% endfor %}
+          </ul>
+
+          <div class="my-modal-actions">
+            <button type="submit"
+                    name="confirmar_kit"
+                    value="1"
+                    class="my-btn my-btn-primary">
+              Inserir Kit
+            </button>
+          </div>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<script>
+function abrirKitModal() {
+    const modal = document.getElementById("kitModal");
+    if (!modal) return;
+
+    modal.style.display = "flex";
+
+    const input = modal.querySelector('input[name="kit_number"]');
+    if (input) {
+        setTimeout(() => input.focus(), 50);
+    }
+}
+
+function fecharKitModal() {
+    const modal = document.getElementById("kitModal");
+    if (!modal) return;
+
+    modal.style.display = "none";
+}
+</script>
+
+
+
+{% endblock content %}

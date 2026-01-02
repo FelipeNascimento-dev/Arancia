@@ -279,7 +279,6 @@ document.addEventListener("DOMContentLoaded", function () {
       toggleBtn.classList.replace("fa-angles-right", "fa-angles-left");
     }
   });
-  
   document.addEventListener("click", function (e) {
     if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
       if (!sidebar.classList.contains("colapsada")) {
@@ -333,42 +332,68 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isHome) { macroGuia.innerHTML = ""; return; }
 
     const rotasMap = [
+      // ROADMAP DE LOGISTICA //
       { regex: /^\/consulta-id(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Consulta ID"] },
       { regex: /^\/pre-recebimento(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Pré-Recebimento"] },
       { regex: /^\/recebimento(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Recebimento"] },
       { regex: /^\/consulta\/resultados\/[^/]+(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Consulta Resultados"] },
       { regex: /^\/estorno(?:\/|$)/i, macro: ["Transporte", "Entrada-Fulfillment", "Estornos"] },
+      // FLUXO DE CHECK-IN //
       {
-        regex: /^(?:\/consulta-ec|\/consulta\/ec|\/consulta-saida|\/saida-campo\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Saída para Campo", "Consulta Saída"]
+        regex: /^\/check\/[^/]+\/selecao-clientes(?:\/|$)/i,
+        macro: ["Logística", "Check-In Geral", "Seleção de Clientes"]
       },
       {
-        regex: /^\/cancelamento\/saida-campo(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Estornos", "Estorno Saída para Campo"]
+        regex: /^\/check-in\/cliente\/consult(?:\/|$)/i,
+        macro: ["Logística", "Check-In Geral", "Consulta de Clientes"]
       },
       {
-        regex: /^\/saida-campo(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Saída para Campo", "Saída"]
+        regex: /^\/check-in\/registro(?:\/|$)/i,
+        macro: ["Logística", "Check-In Geral", "Registro"]
       },
       {
-        regex: /^(?:\/consulta-ma|\/consulta\/reserva|\/consulta-reserva|\/reserva-equip\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Reserva de equipamento", "Consulta Reserva"]
+        regex: /^\/check-in\/product\/create(?:\/|$)/i,
+        macro: ["Logística", "Check-In Geral", "Consulta de Produto"]
+      },
+      // FLUXO DE CHECK-OUT //
+      {
+        regex: /^\/check\/[^/]+\/selecao-clientes(?:\/|$)/i,
+        macro: ["Logística", "Check-Out Geral", "Seleção de Clientes"]
+      },
+      // FLUXO LASTMILE B2C //
+      // CONSULTAS E EXTRAÇÕES //
+      {
+        regex: /^\/extracao-pedidos(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP", "Extração de Pedidos"]
+      },
+      {
+        regex: /^\/consulta-etiquetas(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP", "Consulta de Etiquetas"]
+      },
+      {
+        regex: /^\/consulta-pedidos(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP", "Consulta de Pedidos"]
+      },
+      {
+        regex: /^\/consultar-pedido\/[^/]+(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP", "Detalhes do Pedido"]
+      },
+      {
+        regex: /^\/consultar-pedido(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP", "Consultar Pedido"]
+      },
+      // FLUXO DE ENTREGA //
+      {
+        regex: /^\/ip\/201(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP", "PCP"]
       },
       {
         regex: /^\/reserva-equip(?:\/|$)/i,
         macro: ["Logística", "Lastmile (B2C)", "Reserva de equipamento", "Reserva"]
       },
       {
-        regex: /^\/estorno\/reserva-equip(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "Estornos", "Estorno Reserva de Equipamento"]
-      },
-      {
-        regex: /^\/ip\/200(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "IP", "Recebido para Picking"]
-      },
-      {
-        regex: /^\/ip\/201(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "IP", "PCP"]
+        regex: /^(?:\/consulta-ma|\/consulta\/reserva|\/consulta-reserva|\/reserva-equip\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Reserva de equipamento", "Consulta Reserva"]
       },
       {
         regex: /^\/ip\/202(?:\/|$)/i,
@@ -379,6 +404,14 @@ document.addEventListener("DOMContentLoaded", () => {
         macro: ["Logística", "Lastmile (B2C)", "IP", "Consolidação"]
       },
       {
+        regex: /^\/saida-campo(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Saída para Campo", "Saída"]
+      },
+      {
+        regex: /^(?:\/consulta-ec|\/consulta\/ec|\/consulta-saida|\/saida-campo\/consulta)(?:\/[^/]+)?(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Saída para Campo", "Consulta Saída"]
+      },
+      {
         regex: /^\/ip\/204(?:\/|$)/i,
         macro: ["Logística", "Lastmile (B2C)", "IP", "Expedição"]
       },
@@ -386,14 +419,64 @@ document.addEventListener("DOMContentLoaded", () => {
         regex: /^\/ip\/205(?:\/|$)/i,
         macro: ["Logística", "Lastmile (B2C)", "IP", "Troca de Custódia"]
       },
+      // ESTORNOS //
       {
-        regex: /^\/extracao-pedidos(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "IP", "Extração de Pedidos"]
+        regex: /^\/estorno\/reserva-equip(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Estornos", "Estorno Reserva de Equipamento"]
       },
       {
-        regex: /^\/consulta-etiquetas(?:\/|$)/i,
-        macro: ["Logística", "Lastmile (B2C)", "IP", "Consulta de Etiquetas"]
-      }
+        regex: /^\/cancelamento\/saida-campo(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Estornos", "Estorno Saída para Campo"]
+      },
+      // FLUXO DE ENTREGA SIMPLIFICAÇÃO //
+      {
+        regex: /^\/ip-spl\/201(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP - Simplificação", "PCP"]
+      },
+      {
+        regex: /^\/ip-spl\/202(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP - Simplificação", "Retorno do Picking"]
+      },
+      {
+        regex: /^\/ip-spl\/203(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP - Simplificação", "Consolidação"]
+      },
+      {
+        regex: /^\/ip-spl\/204(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP - Simplificação", "Expedição"]
+      },
+      {
+        regex: /^\/ip-spl\/205(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "IP - Simplificação", "Troca de Custódia"]
+      },
+      // FLUXO DE RETIRADA //
+      {
+        regex: /^\/conferir-retirada(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Retirada", "Conferir Retirada"]
+      },
+      // REVERSA //
+      {
+        regex: /^\/reverse\/consulta(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Reversa", "Consulta de Romaneio"]
+      },
+      {
+        regex: /^\/reverse(?:\/|$)/i,
+        macro: ["Logística", "Lastmile (B2C)", "Reversa", "Criar Romaneio"]
+      },
+      // FLUXO DE RECEBIMENTO VIA REMESSA //
+      {
+        regex: /^\/recebimento-remessa(?:\/|$)/i,
+        macro: ["Logística", "Recebimento via Remessa"]
+      },
+      // GERENCIAMENTO //
+      {
+        regex: /^\/user-ger(?:\/|$)/i,
+        macro: ["Gerenciamento", "Gestão de Usuários"]
+      },
+      {
+        regex: /^\/skill-ger(?:\/|$)/i,
+        macro: ["Gerenciamento", "Gestão de Skills"]
+      },
     ];
 
     const match = rotasMap.find(r => r.regex.test(relPath));
@@ -416,152 +499,152 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 // trasnportes filtro geral
-function gera_cor(qtd=1){
-    var bg_color = []
-    var border_color = []
-    for(let i = 0; i < qtd; i++){
-        let r = Math.random() * 255;
-        let g = Math.random() * 255;
-        let b = Math.random() * 255;
-        bg_color.push(`rgba(${r}, ${g}, ${b}, ${0.2})`)
-        border_color.push(`rgba(${r}, ${g}, ${b}, ${1})`)
-    }
-    
-    return [bg_color, border_color];
-    
-}
+function gera_cor(qtd = 1) {
+  var bg_color = []
+  var border_color = []
+  for (let i = 0; i < qtd; i++) {
+    let r = Math.random() * 255;
+    let g = Math.random() * 255;
+    let b = Math.random() * 255;
+    bg_color.push(`rgba(${r}, ${g}, ${b}, ${0.2})`)
+    border_color.push(`rgba(${r}, ${g}, ${b}, ${1})`)
+  }
 
-function renderiza_total_vendido(url){  
-    fetch(url, {
-        method: 'get',
-    }).then(function(result){
-        return result.json()
-    }).then(function(data){
-        document.getElementById('faturamento_total').innerHTML = data.total
-    })
+  return [bg_color, border_color];
 
 }
 
-
-
-function renderiza_faturamento_mensal(url){
-
-    fetch(url, {
-        method: 'get',
-    }).then(function(result){
-        return result.json()
-    }).then(function(data){
-
-        const ctx = document.getElementById('faturamento_mensal').getContext('2d');
-        var cores_faturamento_mensal = gera_cor(qtd=12)
-        const myChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-                datasets: [{
-                    label: data.labels,
-                    data: data.data,
-                    backgroundColor: cores_faturamento_mensal[0],
-                    borderColor: cores_faturamento_mensal[1],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-
-    })
-
-
-    
+function renderiza_total_vendido(url) {
+  fetch(url, {
+    method: 'get',
+  }).then(function (result) {
+    return result.json()
+  }).then(function (data) {
+    document.getElementById('faturamento_total').innerHTML = data.total
+  })
 
 }
 
 
 
-function renderiza_despesas_mensal(){
-    const ctx = document.getElementById('despesas_mensal').getContext('2d');
-    var cores_despesas_mensal = gera_cor(qtd=12)
+function renderiza_faturamento_mensal(url) {
+
+  fetch(url, {
+    method: 'get',
+  }).then(function (result) {
+    return result.json()
+  }).then(function (data) {
+
+    const ctx = document.getElementById('faturamento_mensal').getContext('2d');
+    var cores_faturamento_mensal = gera_cor(qtd = 12)
     const myChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-            datasets: [{
-                label: 'Despesas',
-                data: [12, 19, 3, 5, 2, 3, 12, 19, 3, 5, 2, 3],
-                backgroundColor: "#CB1EA8",
-                borderColor: "#FFFFFF",
-                borderWidth: 0.2
-            }]
-        },
-        
+      type: 'bar',
+      data: {
+        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+        datasets: [{
+          label: data.labels,
+          data: data.data,
+          backgroundColor: cores_faturamento_mensal[0],
+          borderColor: cores_faturamento_mensal[1],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
     });
+
+
+  })
+
+
+
+
 }
 
-function renderiza_produtos_mais_vendidos(url){
-
-    fetch(url, {
-        method: 'get',
-    }).then(function(result){
-        return result.json()
-    }).then(function(data){
-        
-        const ctx = document.getElementById('produtos_mais_vendidos').getContext('2d');
-        var cores_produtos_mais_vendidos = gera_cor(qtd=4)
-        const myChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: data.labels,
-                datasets: [{
-                    label: 'Despesas',
-                    data: data.data,
-                    backgroundColor: cores_produtos_mais_vendidos[0],
-                    borderColor: cores_produtos_mais_vendidos[1],
-                    borderWidth: 1
-                }]
-            },
-            
-        });
 
 
-    })
-  
+function renderiza_despesas_mensal() {
+  const ctx = document.getElementById('despesas_mensal').getContext('2d');
+  var cores_despesas_mensal = gera_cor(qtd = 12)
+  const myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+      datasets: [{
+        label: 'Despesas',
+        data: [12, 19, 3, 5, 2, 3, 12, 19, 3, 5, 2, 3],
+        backgroundColor: "#CB1EA8",
+        borderColor: "#FFFFFF",
+        borderWidth: 0.2
+      }]
+    },
+
+  });
 }
 
-function renderiza_funcionario_mes(url){
+function renderiza_produtos_mais_vendidos(url) {
+
+  fetch(url, {
+    method: 'get',
+  }).then(function (result) {
+    return result.json()
+  }).then(function (data) {
+
+    const ctx = document.getElementById('produtos_mais_vendidos').getContext('2d');
+    var cores_produtos_mais_vendidos = gera_cor(qtd = 4)
+    const myChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: data.labels,
+        datasets: [{
+          label: 'Despesas',
+          data: data.data,
+          backgroundColor: cores_produtos_mais_vendidos[0],
+          borderColor: cores_produtos_mais_vendidos[1],
+          borderWidth: 1
+        }]
+      },
+
+    });
+
+
+  })
+
+}
+
+function renderiza_funcionario_mes(url) {
 
 
 
-    fetch(url, {
-        method: 'get',
-    }).then(function(result){
-        return result.json()
-    }).then(function(data){
-        
-        const ctx = document.getElementById('funcionarios_do_mes').getContext('2d');
-        var cores_funcionarios_do_mes = gera_cor(qtd=4)
-        const myChart = new Chart(ctx, {
-            type: 'polarArea',
-            data: {
-                labels: data.labels,
-                datasets: [{
-                    data: data.data,
-                    backgroundColor: cores_funcionarios_do_mes[0],
-                    borderColor: cores_funcionarios_do_mes[1],
-                    borderWidth: 1
-                }]
-            },
-            
-        });
+  fetch(url, {
+    method: 'get',
+  }).then(function (result) {
+    return result.json()
+  }).then(function (data) {
+
+    const ctx = document.getElementById('funcionarios_do_mes').getContext('2d');
+    var cores_funcionarios_do_mes = gera_cor(qtd = 4)
+    const myChart = new Chart(ctx, {
+      type: 'polarArea',
+      data: {
+        labels: data.labels,
+        datasets: [{
+          data: data.data,
+          backgroundColor: cores_funcionarios_do_mes[0],
+          borderColor: cores_funcionarios_do_mes[1],
+          borderWidth: 1
+        }]
+      },
+
+    });
 
 
-    })
+  })
 
 }
 

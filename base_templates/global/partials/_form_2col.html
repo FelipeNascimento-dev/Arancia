@@ -26,24 +26,36 @@
     </div>
     {% endif %}
     {% endfor %}
+    <!-- {% if etapa_ativa == 'retorno_picking' and request.session.retorno_picking_modo == 'kit' %}
+      <div class="form-group">
+        <label>&nbsp;</label>
+        <button
+          type="button"
+          class="my-btn my-btn-primary"
+          style="width:100%; height: 42px;"
+          onclick="abrirKitModal()">
+          Inserir Kit
+        </button>
+      </div>
+    {% endif %} -->
   </div>
 
-  {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' or request.resolver_match.url_name == 'recebimento_remessa' or request.resolver_match.url_name == 'order_return_check' %}
-  {% if serials %}
-  <div class="chips-wrap" aria-label="Seriais adicionados">
-    {% for s in serials %}
-    <button type="submit" name="remove_serial" value="{{ forloop.counter0 }}" class="chip" title="{{ s }}"
-      formnovalidate>
-      <span class="chip-text">{{ s }}</span>
-      <span class="chip-x" aria-hidden="true">✕</span>
-    </button>
-    {% endfor %}
-  </div>
-  {% endif %}
+  {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' or request.resolver_match.url_name == 'recebimento_remessa' or request.resolver_match.url_name == 'order_return_check' or request.resolver_match.url_name == 'unsuccessful_insert' %}
+    {% if serials %}
+    <div class="chips-wrap" aria-label="Seriais adicionados">
+      {% for s in serials %}
+      <button type="submit" name="remove_serial" value="{{ forloop.counter0 }}" class="chip" title="{{ s }}"
+        formnovalidate>
+        <span class="chip-text" data-serial="{{ s }}">{{ s }}</span>
+        <span class="chip-x" aria-hidden="true">✕</span>
+      </button>
+      {% endfor %}
+    </div>
+    {% endif %}
   {% endif %}
 
   <div class="form-actions">
-    {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' or request.resolver_match.url_name == 'recebimento_remessa' or request.resolver_match.url_name == 'order_return_check'%}
+    {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' or request.resolver_match.url_name == 'recebimento_remessa' or request.resolver_match.url_name == 'order_return_check' or request.resolver_match.url_name == 'unsuccessful_insert'%}
     <button type="submit" class="submit-button-right push-left" name="clear_serials" value="1" formnovalidate>
       Limpar
     </button>

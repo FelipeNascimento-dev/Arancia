@@ -15,14 +15,26 @@
                 {% for key, value in row.items %}
                 <td
                     class="{% if key == 'status_code' %}{% if value == 200 %}status-ok{% else %}status-error{% endif %}{% endif %}">
+
                     {% if key == "payload" or key == "response" %}
-                    <button class="btn-json" data-json='{{ value|safe }}' data-key="{{ key|capfirst }}"
+                    <button class="btn-json" data-json="{{ value|escapejs }}" data-key="{{ key|capfirst }}"
                         onclick="showJsonModal(this)">
                         <i class="fa-solid fa-file-import"></i>
                     </button>
+
+                    {% elif key == "bar_codes" and value != "null" and value != "[]" %}
+                    <button class="btn-json" data-json="{{ value|escapejs }}" data-key="{{ key|capfirst }}"
+                        onclick="showJsonModal(this)">
+                        <i class="fa-solid fa-file-import"></i>
+                    </button>
+
+                    {% elif key == "bar_codes" %}
+
+
                     {% else %}
                     {{ value }}
                     {% endif %}
+
                 </td>
                 {% endfor %}
             </tr>

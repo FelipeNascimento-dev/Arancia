@@ -1,0 +1,688 @@
+{% extends 'global/base.html' %} {% block content %}
+<style>
+  .form-card-2col {
+    height: auto;
+    margin-top: 65px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 40px;
+    margin-left: 90px;
+    margin-right: 25px;
+    margin-bottom: 40px;
+  }
+
+  .section-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-color, #333);
+    border-bottom: 2px solid var(--primary-color, #c41e3a);
+    display: inline-block;
+    padding-bottom: 4px;
+  }
+
+  .btn-create {
+    background: var(--primary-color, #c41e3a);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+
+  .btn-create:active {
+    transform: scale(0.97);
+  }
+
+  .product-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-left: 65px;
+    margin-bottom: 20px;
+    padding: 14px 22px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .product-card:hover {
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.15);
+    border-color: #007bff30;
+    transform: translateY(-1px);
+  }
+
+  .product-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .product-header > div:first-child {
+    flex: 1;
+    min-width: 220px;
+  }
+
+  .product-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .product-header p {
+    margin: 4px 0 0;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .expand-icon {
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: #007bff;
+    transition: transform 0.3s ease, color 0.3s ease;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .product-card:hover .expand-icon {
+    color: #0056b3;
+  }
+
+  .expanded .expand-icon {
+    transform: rotate(45deg);
+  }
+
+  .card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .btn-edit {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.25s ease, transform 0.15s ease;
+  }
+
+  .btn-edit:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+  }
+
+  .btn-edit:active {
+    transform: scale(0.97);
+  }
+
+  /* Detalhes do produto */
+  .product-details {
+    display: none;
+    margin-top: 14px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 14px 18px;
+    border: 1px solid #e4e4e4;
+    animation: fadeIn 0.25s ease-in;
+  }
+
+  .expanded .product-details {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .responsive-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    border-radius: 8px;
+    overflow-x: auto;
+    background: var(--table-bg, #fff);
+  }
+
+  .responsive-table th,
+  .responsive-table td {
+    border: 1px solid var(--border-color, #e0e0e0);
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .responsive-table th {
+    background: var(--primary-light, #f6f6f6);
+    color: var(--text-color, #222);
+    font-weight: 600;
+  }
+
+  .responsive-table tr:nth-child(even) td {
+    background: var(--table-zebra, #fdfdfd);
+  }
+
+  .info-title {
+    font-weight: 600;
+    color: var(--primary-color, #c41e3a);
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    text-transform: capitalize;
+  }
+
+  @media (max-width: 768px) {
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+      margin-left: 20px;
+      margin-right: 20px;
+    }
+
+    .btn-create {
+      margin-top: 12px;
+    }
+
+    .product-card {
+      margin-left: 0;
+      padding: 16px;
+    }
+
+    .responsive-table {
+      font-size: 0.8rem;
+      overflow-x: auto;
+      display: block;
+      white-space: nowrap;
+    }
+  }
+
+  /* === MODAL === */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .modal-content {
+    background: #fff;
+    padding: 28px;
+    border-radius: 14px;
+    width: 550px;
+    max-width: 95%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+    animation: slideDown 0.3s ease-out;
+    position: relative;
+    scrollbar-width: thin;
+    scrollbar-color: #007bff #f1f1f1;
+  }
+
+  .modal-content::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .modal-content::-webkit-scrollbar-thumb {
+    background: #007bff;
+    border-radius: 8px;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    position: sticky;
+    background: #fff;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eaeaea;
+    z-index: 10;
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    color: #007bff;
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #777;
+    transition: color 0.3s ease, transform 0.2s ease;
+  }
+
+  .close-btn:hover {
+    color: #007bff;
+    transform: scale(1.1);
+  }
+
+  /* === CAMPOS E FORM === */
+  .modal-body form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .modal-body input,
+  .modal-body select {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .modal-body input:focus,
+  .modal-body select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+  }
+
+  /* === BOTÕES === */
+  .btn-create,
+  .btn-save {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .btn-create:hover,
+  .btn-save:hover {
+    background: #0056b3;
+    box-shadow: 0 3px 6px rgba(0, 123, 255, 0.35);
+  }
+
+  .btn-create:active,
+  .btn-save:active {
+    transform: scale(0.97);
+  }
+
+  .btn-row {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+    border-top: 1px solid #eaeaea;
+    padding-top: 14px;
+  }
+
+  /* === CAMPOS DINÂMICOS === */
+  .group-container {
+    background: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 16px 14px;
+    margin-bottom: 16px;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .group-container:hover {
+    border-color: #007bff;
+    box-shadow: 0 0 6px rgba(0, 123, 255, 0.15);
+  }
+
+  .group-name {
+    width: 100%;
+    font-weight: 600;
+    margin-bottom: 12px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+
+  .field-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .key,
+  .val {
+    margin: 6px 0;
+    width: calc(50% - 10px);
+  }
+
+  .group-container .btn-create {
+    margin-top: 8px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .group-container .btn-create + .btn-create {
+    margin-left: 8px;
+  }
+
+  .group-container .remove-btn {
+    margin-left: 8px;
+    margin-top: 8px;
+  }
+
+  .remove-btn {
+    background: none;
+    border: none;
+    color: #007bff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+  }
+
+  .remove-btn:hover {
+    color: #0056b3;
+    transform: scale(1.1);
+  }
+
+  /* === RESPONSIVIDADE === */
+  @media (max-width: 768px) {
+    .modal-content {
+      width: 90%;
+      padding: 20px;
+      max-height: 80vh;
+    }
+
+    .modal-header h3 {
+      font-size: 1rem;
+    }
+
+    .group-container {
+      padding: 12px;
+    }
+
+    .btn-create,
+    .btn-save {
+      width: 100%;
+      font-size: 0.9rem;
+      padding: 10px;
+    }
+
+    .btn-row {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+
+  .btn-edit {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.25s ease, transform 0.15s ease;
+  }
+
+  .btn-edit:hover {
+    background: #0056b3;
+  }
+
+  .btn-edit:active {
+    transform: scale(0.97);
+  }
+</style>
+
+<div class="form-container">
+  <div class="form-card-2col">
+    <form method="get">
+      {% csrf_token %}
+      {% include 'global/partials/_form_2colV2.html' %}
+    </form>
+  </div>
+</div>
+
+<!-- QUANDO NÃO TEM EQUIPAMENTOS -->
+{% if os_consultada and not equipamentos %}
+<div class="section-header">
+  <h3 class="section-title">Equipamentos da OS</h3>
+  <button type="button" class="btn-create" id="openSerialModalBtn">
+    Cadastrar Serial
+  </button>
+</div>
+
+<p style="margin-left: 90px">Nenhum equipamento encontrado para esta OS.</p>
+{% endif %}
+
+<!-- QUANDO EXISTEM EQUIPAMENTOS -->
+{% if equipamentos %}
+<div class="section-header">
+  <h3 class="section-title">Equipamentos da OS {{ os_consultada }}</h3>
+
+  <button type="button" class="btn-create" id="openSerialModalBtn">
+    Cadastrar Serial
+  </button>
+</div>
+
+{% for p in equipamentos %}
+<div class="product-card" id="card-{{ forloop.counter }}">
+  <div class="product-header" onclick="toggleCard('{{ forloop.counter }}')">
+    <div>
+      <h4>{{ p.serial_number }}</h4>
+      <p><strong>Modelo:</strong> {{ p.product_model }}</p>
+    </div>
+    <span class="expand-icon">+</span>
+  </div>
+
+  <div class="product-details">
+    <p><strong>Tipo de Produto:</strong> {{ p.product_type }}</p>
+    <p><strong>Serviço:</strong> {{ p.service_type }}</p>
+    <p><strong>Origem:</strong> {{ p.order_origin }}</p>
+    <p>
+      <strong>Prazo:</strong><br />
+      <p>{{ p.service_deadline_fmt }}</p>
+      <p>
+        <!-- EXTRA INFORMATION -->
+        {% if p.extra_information %}
+      </p>
+
+      <div class="info-title">Extra Information</div>
+    </p>
+
+    <table class="responsive-table">
+      <thead>
+        <tr>
+          {% for key, value in p.extra_information.items %}
+          <th>{{ key|title }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          {% for key, value in p.extra_information.items %}
+          <td>
+            {% if value.items %}
+            <table class="responsive-table">
+              <thead>
+                <tr>
+                  {% for k2, v2 in value.items %}
+                  <th>{{ k2|title }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {% for k2, v2 in value.items %}
+                  <td>{{ v2 }}</td>
+                  {% endfor %}
+                </tr>
+              </tbody>
+            </table>
+            {% else %} {{ value }} {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+</div>
+{% endfor %} {% endif %}
+
+<!-- MODAL PARA CADASTRAR NOVA SERIAL -->
+<div id="serialModal" class="my-modal-overlay" style="display: none">
+  <div class="my-modal">
+    <h3>Cadastrar Serial</h3>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="cadastrar_serial" value="1" />
+      <input type="hidden" name="order_number" value="{{ os_consultada }}" />
+
+      <label>Serial</label>
+      <input type="text" name="serial_number" required />
+
+      <label>Modelo</label>
+      <input type="text" name="product_model" required />
+
+      <label>Origem</label>
+      <input type="text" name="order_origin" required />
+
+      <label>Tipo de Produto</label>
+      <input type="text" name="product_type" required />
+
+      <label>Tipo de Serviço</label>
+      <input type="text" name="service_type" required />
+
+      <label>Informações Extras (JSON opcional)</label>
+      <textarea name="extra_information" rows="3"></textarea>
+
+      <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Cadastrar</button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          id="closeSerialModalBtn"
+        >
+          Fechar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- JS DO CARD -->
+<script>
+  function toggleCard(id) {
+    const card = document.getElementById("card-" + id);
+    card.classList.toggle("expanded");
+  }
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const modal = document.getElementById("serialModal");
+  const openBtn = document.getElementById("openSerialModalBtn");
+  const closeBtn = document.getElementById("closeSerialModalBtn");
+  const form = document.getElementById("serialForm");
+  const extraContainer = document.getElementById("extraContainer");
+  const addExtraBtn = document.getElementById("addExtraField");
+
+  // === ABRIR MODAL ===
+  if (openBtn) {
+    openBtn.onclick = () => {
+      modal.style.display = "flex";
+    };
+  }
+
+  // === FECHAR MODAL ===
+  function closeModal() {
+    modal.style.display = "none";
+    form.reset();
+    extraContainer.innerHTML = "";
+  }
+
+  if (closeBtn) {
+    closeBtn.onclick = closeModal;
+  }
+
+  window.onclick = (e) => {
+    if (e.target === modal) closeModal();
+  };
+
+  // === ADICIONAR LINHAS DE EXTRA_INFORMATION ===
+  addExtraBtn.onclick = () => {
+    const row = document.createElement("div");
+
+    row.classList.add("extra-row");
+    row.innerHTML = `
+      <div style="display:flex; gap:10px; margin:6px 0;">
+        <input type="text" placeholder="Chave" class="extra-key" style="flex:1;">
+        <input type="text" placeholder="Valor" class="extra-value" style="flex:1;">
+        <button type="button" class="remove-btn">🗑</button>
+      </div>
+    `;
+
+    row.querySelector(".remove-btn").onclick = () => row.remove();
+
+    extraContainer.appendChild(row);
+  };
+
+  // === GERAR JSON ANTES DO SUBMIT ===
+  form.addEventListener("submit", () => {
+    const data = {};
+
+    document.querySelectorAll(".extra-row").forEach((row) => {
+      const key = row.querySelector(".extra-key").value.trim();
+      const value = row.querySelector(".extra-value").value.trim();
+
+      if (key) {
+        data[key] = value; // sempre string, simples e seguro
+      }
+    });
+
+    document.getElementById("extra_information").value = JSON.stringify(data);
+  });
+});
+</script>
+{% endblock %}

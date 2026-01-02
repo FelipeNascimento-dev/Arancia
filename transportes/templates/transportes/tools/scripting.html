@@ -1,0 +1,95 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+{% load query_filters %}
+<style>
+  .file-upload {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+  }
+
+  .file-upload input[type="file"] {
+    display: none;
+  }
+
+  .file-label {
+    padding: 8px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .file-name {
+    font-style: italic;
+    color: #ccc;
+  }
+
+  .mensagem { background: #e0ffe0; padding: 10px; border-radius: 5px; }
+  .erro { background: #ffe0e0; padding: 10px; border-radius: 5px; }
+</style>
+
+<div class="form-card-2col" style="margin-top: 95px">
+  <h2>Roteirizar</h2>
+  <br>
+
+  <form method="post" enctype="multipart/form-data" class="form-grid-2col">
+    {% csrf_token %}
+
+    <div class="file-upload">
+      <label for="id_arquivo" class="file-label submit-button-right" style="color: white;">
+        Escolher arquivo Excel
+      </label>
+
+      <span id="file-name" class="file-name">Nenhum arquivo selecionado</span>
+
+      <input type="file"
+             id="id_arquivo"
+             name="arquivo"
+             accept=".xls,.xlsx">     </div>
+
+    <div>    
+    <button type="submit"  style="margin-s" class="submit-button-right">Enviar Arquivo</button>
+   
+     <strong><a  style="margin-left:8px; color: #37a1e7ff;"href="https://storage.googleapis.com/appandroidios-38136.appspot.com/Template_importacao_d28fb51f-5453-484f-8024-c7f1e8fdc3c0.xlsx" download>Baixar Template</a></strong>
+
+  </div>  
+  </form>
+
+  <br>
+  <br>
+
+  <br>
+  {% if mensagem %}
+    <div class="mensagem">{{ mensagem }}</div>
+  {% endif %}
+
+  {% if erro %}
+    <div class="erro">{{ erro }}</div>
+  {% endif %}
+
+
+  {% if download_ready %}
+    <a 
+        download="{{ filename }}"
+        href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{{ file_base64 }}"
+        class="submit-button-right"
+        style="margin-top:20px;text-decoration:none;"
+    >
+      Baixar Arquivo Processado
+    </a>
+
+  {% endif %}
+
+</div>
+
+<script>
+  const input = document.getElementById('id_arquivo');
+  const fileName = document.getElementById('file-name');
+
+  input.addEventListener('change', function() {
+    fileName.textContent = this.files.length ? this.files[0].name : 'Nenhum arquivo selecionado';
+  });
+</script>
+
+{% endblock %}

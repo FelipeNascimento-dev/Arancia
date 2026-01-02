@@ -1,0 +1,3 @@
+from .importar_view import  importar_excel_view
+from .baixar_ignorados_view import baixar_duplicados_view
+from .cadastro_equipamento_view import  Create_equipament_view

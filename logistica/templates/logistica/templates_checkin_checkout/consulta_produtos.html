@@ -1,0 +1,809 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+<style>
+  .form-card-2col {
+    height: auto;
+    margin-top: 65px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 40px;
+    margin-left: 90px;
+    margin-right: 25px;
+    margin-bottom: 40px;
+  }
+
+  .section-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-color, #333);
+    border-bottom: 2px solid var(--primary-color, #c41e3a);
+    display: inline-block;
+    padding-bottom: 4px;
+  }
+
+  .btn-create {
+    background: var(--primary-color, #c41e3a);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+
+  .btn-create:active {
+    transform: scale(0.97);
+  }
+
+  .product-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-left: 65px;
+    margin-bottom: 20px;
+    padding: 14px 22px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .product-card:hover {
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.15);
+    border-color: #007bff30;
+    transform: translateY(-1px);
+  }
+
+  .product-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .product-header>div:first-child {
+    flex: 1;
+    min-width: 220px;
+  }
+
+  .product-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .product-header p {
+    margin: 4px 0 0;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .expand-icon {
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: #007bff;
+    transition: transform 0.3s ease, color 0.3s ease;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .product-card:hover .expand-icon {
+    color: #0056b3;
+  }
+
+  .expanded .expand-icon {
+    transform: rotate(45deg);
+  }
+
+  .card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .btn-edit {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.25s ease, transform 0.15s ease;
+  }
+
+  .btn-edit:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+  }
+
+  .btn-edit:active {
+    transform: scale(0.97);
+  }
+
+  /* Detalhes do produto */
+  .product-details {
+    display: none;
+    margin-top: 14px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 14px 18px;
+    border: 1px solid #e4e4e4;
+    animation: fadeIn 0.25s ease-in;
+  }
+
+  .expanded .product-details {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .responsive-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    border-radius: 8px;
+    overflow-x: auto;
+    background: var(--table-bg, #fff);
+  }
+
+  .responsive-table th,
+  .responsive-table td {
+    border: 1px solid var(--border-color, #e0e0e0);
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .responsive-table th {
+    background: var(--primary-light, #f6f6f6);
+    color: var(--text-color, #222);
+    font-weight: 600;
+  }
+
+  .responsive-table tr:nth-child(even) td {
+    background: var(--table-zebra, #fdfdfd);
+  }
+
+  .info-title {
+    font-weight: 600;
+    color: var(--primary-color, #c41e3a);
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    text-transform: capitalize;
+  }
+
+  @media (max-width: 768px) {
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+      margin-left: 20px;
+      margin-right: 20px;
+    }
+
+    .btn-create {
+      margin-top: 12px;
+    }
+
+    .product-card {
+      margin-left: 0;
+      padding: 16px;
+    }
+
+    .responsive-table {
+      font-size: 0.8rem;
+      overflow-x: auto;
+      display: block;
+      white-space: nowrap;
+    }
+  }
+
+  /* === MODAL === */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .modal-content {
+    background: #fff;
+    padding: 28px;
+    border-radius: 14px;
+    width: 550px;
+    max-width: 95%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+    animation: slideDown 0.3s ease-out;
+    position: relative;
+    scrollbar-width: thin;
+    scrollbar-color: #007bff #f1f1f1;
+  }
+
+  .modal-content::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .modal-content::-webkit-scrollbar-thumb {
+    background: #007bff;
+    border-radius: 8px;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    position: sticky;
+    background: #fff;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eaeaea;
+    z-index: 10;
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    color: #007bff;
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #777;
+    transition: color 0.3s ease, transform 0.2s ease;
+  }
+
+  .close-btn:hover {
+    color: #007bff;
+    transform: scale(1.1);
+  }
+
+  /* === CAMPOS E FORM === */
+  .modal-body form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .modal-body input,
+  .modal-body select {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .modal-body input:focus,
+  .modal-body select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+  }
+
+  /* === BOTÕES === */
+  .btn-create,
+  .btn-save {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .btn-create:hover,
+  .btn-save:hover {
+    background: #0056b3;
+    box-shadow: 0 3px 6px rgba(0, 123, 255, 0.35);
+  }
+
+  .btn-create:active,
+  .btn-save:active {
+    transform: scale(0.97);
+  }
+
+  .btn-row {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+    border-top: 1px solid #eaeaea;
+    padding-top: 14px;
+  }
+
+  /* === CAMPOS DINÂMICOS === */
+  .group-container {
+    background: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 16px 14px;
+    margin-bottom: 16px;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .group-container:hover {
+    border-color: #007bff;
+    box-shadow: 0 0 6px rgba(0, 123, 255, 0.15);
+  }
+
+  .group-name {
+    width: 100%;
+    font-weight: 600;
+    margin-bottom: 12px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+
+  .field-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .key,
+  .val {
+    margin: 6px 0;
+    width: calc(50% - 10px);
+  }
+
+  .group-container .btn-create {
+    margin-top: 8px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .group-container .btn-create+.btn-create {
+    margin-left: 8px;
+  }
+
+  .group-container .remove-btn {
+    margin-left: 8px;
+    margin-top: 8px;
+  }
+
+  .remove-btn {
+    background: none;
+    border: none;
+    color: #007bff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+  }
+
+  .remove-btn:hover {
+    color: #0056b3;
+    transform: scale(1.1);
+  }
+
+  /* === RESPONSIVIDADE === */
+  @media (max-width: 768px) {
+    .modal-content {
+      width: 90%;
+      padding: 20px;
+      max-height: 80vh;
+    }
+
+    .modal-header h3 {
+      font-size: 1rem;
+    }
+
+    .group-container {
+      padding: 12px;
+    }
+
+    .btn-create,
+    .btn-save {
+      width: 100%;
+      font-size: 0.9rem;
+      padding: 10px;
+    }
+
+    .btn-row {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+
+  .btn-edit {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.25s ease, transform 0.15s ease;
+  }
+
+  .btn-edit:hover {
+    background: #0056b3;
+  }
+
+  .btn-edit:active {
+    transform: scale(0.97);
+  }
+</style>
+
+<div class="form-container">
+  <div class="form-card-2col">
+    <form method="get">
+      {% csrf_token %}
+      {% include 'global/partials/_form_2colV2.html' %}
+    </form>
+  </div>
+</div>
+
+{% if consultado and not produtos %}
+<div class="section-header">
+  <h3 class="section-title">Produtos encontrados</h3>
+  {% if perms.logistica.products_management %}
+  <button type="button" class="btn-create" id="openModalBtn">
+    Criar novo produto
+  </button>
+  {% endif %}
+</div>
+<p style="margin-left: 90px; color: #555; font-size: 1rem;">
+  Nenhum produto encontrado.
+</p>
+{% endif %}
+
+{% if produtos %}
+<div class="section-header">
+  <h3 class="section-title">Produtos encontrados</h3>
+  {% if perms.logistica.products_management %}
+  <button type="button" class="btn-create" id="openModalBtn">
+    Criar novo produto
+  </button>
+  {% endif %}
+</div>
+
+{% for p in produtos %}
+<div class="product-card" id="card-{{ forloop.counter }}">
+  <div class="product-header" onclick="toggleCard('{{ forloop.counter }}')">
+    <div>
+      <h4>{{ p.sku }} - {{ p.description }}</h4>
+      <p><strong>Categoria:</strong> {{ p.category }}</p>
+    </div>
+    <span class="expand-icon">+</span>
+    {% if perms.logistica.products_management %}
+    <div class="card-actions">
+      <button type="button" class="btn-edit"
+        onclick="openEditModal('{{ p.id }}', '{{ p.sku }}', '{{ p.description }}', '{{ p.category }}', '{{ p.extra_info_json|escapejs }}')">
+        Editar
+      </button>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="product-details">
+    {% if p.extra_info %}
+    <div class="info-title">extra_info</div>
+    {% with extra=p.extra_info %}
+    <table class="responsive-table">
+      <thead>
+        <tr>
+          {% for key, value in extra.items %}
+          <th>{{ key|title }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          {% for key, value in extra.items %}
+          <td>
+            {% if value.items %}
+            <table class="responsive-table">
+              <thead>
+                <tr>
+                  {% for k2, v2 in value.items %}
+                  <th>{{ k2|title }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {% for k2, v2 in value.items %}
+                  <td>{{ v2 }}</td>
+                  {% endfor %}
+                </tr>
+              </tbody>
+            </table>
+            {% else %}
+            {{ value }}
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+    {% endwith %}
+    {% endif %}
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- === MODAL === -->
+<div id="createProductModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Criar novo produto</h3>
+      <button class="close-btn" id="closeModalBtn">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <form id="createProductForm" method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="criar_produto" id="criar_produto" value="1">
+        <input type="hidden" name="editar_produto" id="editar_produto" value="">
+        <input type="hidden" name="product_id" id="product_id" value="">
+
+        <input type="text" name="sku" placeholder="SKU" required>
+        <input type="text" name="description" placeholder="Descrição" required>
+        <input type="text" name="category" placeholder="Categoria" required>
+        <input type="hidden" name="client_id" value="{{ cliente_id_para_modal|default:'' }}">
+
+        <hr>
+        <h4>Extra Info</h4>
+        <div id="extraInfoContainer"></div>
+        <button type="button" class="btn-create" id="addGroup">+ Adicionar Grupo</button>
+
+        <input type="hidden" name="extra_info_json" id="extra_info_json">
+
+        <hr>
+        <button type="submit" class="btn-create">Salvar Produto</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleCard(id) {
+    const card = document.getElementById('card-' + id);
+    card.classList.toggle('expanded');
+  }
+
+  const modal = document.getElementById("createProductModal");
+  const openBtn = document.getElementById("openModalBtn");
+  const closeBtn = document.getElementById("closeModalBtn");
+  const form = document.getElementById("createProductForm");
+  const extraContainer = document.getElementById("extraInfoContainer");
+
+  let isEditing = false;
+  let editingProductId = null;
+
+  openBtn.onclick = () => modal.style.display = "flex";
+
+function createGroup(parentDiv, level = 0) {
+  const group = document.createElement("div");
+  group.classList.add("group-container");
+  group.style.marginLeft = `${level * 20}px`;
+
+  const nameInput = document.createElement("input");
+  nameInput.placeholder = level === 0 ? "Nome do grupo (ex: medidas)" : "Nome do subgrupo";
+  nameInput.classList.add("group-name");
+
+  const fieldArea = document.createElement("div");
+
+  const addFieldBtn = document.createElement("button");
+  addFieldBtn.type = "button";
+  addFieldBtn.textContent = "+ Campo";
+  addFieldBtn.classList.add("btn-create");
+  addFieldBtn.onclick = () => {
+    const f = document.createElement("div");
+    f.classList.add("field-row");
+    f.innerHTML = `
+      <input type="text" class="key" placeholder="Chave">
+      <input type="text" class="val" placeholder="Valor">
+      <button type="button" class="remove-btn">🗑</button>
+    `;
+    f.querySelector(".remove-btn").onclick = () => f.remove();
+    fieldArea.appendChild(f);
+  };
+
+  const addSubGroup = document.createElement("button");
+  addSubGroup.type = "button";
+  addSubGroup.textContent = "+ Subgrupo";
+  addSubGroup.classList.add("btn-create");
+  addSubGroup.onclick = () => {
+    const maxSubGroups = 2;
+    const currentSubGroups = fieldArea.querySelectorAll(":scope > .group-container").length;
+
+    if (currentSubGroups >= maxSubGroups) {
+      alert(`⚠️ Este grupo já possui o máximo de ${maxSubGroups} subgrupos.`);
+      return;
+    }
+
+    if (level >= 1) {
+      alert("⚠️ Subgrupos não podem conter outros subgrupos.");
+      return;
+    }
+
+    createGroup(fieldArea, level + 1);
+  };
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.textContent = "🗑";
+  removeBtn.classList.add("remove-btn");
+  removeBtn.onclick = () => group.remove();
+
+  group.append(nameInput, addFieldBtn, addSubGroup, removeBtn, fieldArea);
+  parentDiv.appendChild(group);
+}
+
+  document.getElementById("addGroup").onclick = () => {
+    const maxGroups = 2;
+    const currentGroups = extraContainer.querySelectorAll(":scope > .group-container").length;
+
+    if (currentGroups >= maxGroups) {
+      alert(`⚠️ Você só pode adicionar até ${maxGroups} grupos.`);
+      return;
+    }
+
+    createGroup(extraContainer);
+  };
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const jsonData = parseContainer(extraContainer);
+    document.getElementById("extra_info_json").value = JSON.stringify(jsonData);
+    e.target.submit();
+  });
+
+  function parseContainer(container) {
+    const data = {};
+    container.querySelectorAll(":scope > .group-container").forEach(group => {
+      const name = group.querySelector(".group-name")?.value.trim();
+      const inner = {};
+      group.querySelectorAll(".key").forEach(k => {
+        const key = k.value.trim();
+        const val = k.parentElement.querySelector(".val").value.trim();
+        if (key) inner[key] = val !== "" && !isNaN(val) ? parseFloat(val) : val;
+      });
+      const subGroups = group.querySelectorAll(":scope > div > .group-container");
+      subGroups.forEach(sub => {
+        const subName = sub.querySelector(".group-name")?.value.trim();
+        const subData = parseContainer(sub.parentElement);
+        if (subName && Object.keys(subData).length) inner[subName] = subData[subName];
+      });
+      if (name) data[name] = inner;
+    });
+    return data;
+  }
+
+  function openEditModal(id, sku, description, category, extraInfo) {
+    modal.style.display = "flex";
+    isEditing = true;
+    editingProductId = id;
+
+    document.getElementById("editar_produto").value = "1";
+    document.getElementById("criar_produto").value = "";
+    document.getElementById("product_id").value = id;
+
+    document.querySelector(".modal-header h3").textContent = "Editar produto";
+    const saveBtn = form.querySelector('button[type="submit"]');
+    saveBtn.textContent = "Salvar Alterações";
+    saveBtn.classList.add("btn-save");
+
+    form.querySelector('input[name="sku"]').value = sku;
+    form.querySelector('input[name="description"]').value = description;
+    form.querySelector('input[name="category"]').value = category;
+
+    extraContainer.innerHTML = "";
+    try {
+      const info = JSON.parse(extraInfo);
+      buildExtraInfoFields(extraContainer, info);
+    } catch (err) {
+      console.warn("Erro ao carregar extra_info:", err);
+    }
+  }
+
+  function buildExtraInfoFields(container, data) {
+    Object.entries(data).forEach(([groupName, groupValues]) => {
+      const groupDiv = document.createElement("div");
+      groupDiv.classList.add("group-container");
+      const groupInput = document.createElement("input");
+      groupInput.classList.add("group-name");
+      groupInput.value = groupName;
+      groupDiv.appendChild(groupInput);
+      const fieldArea = document.createElement("div");
+
+      Object.entries(groupValues).forEach(([key, val]) => {
+        if (typeof val === "object" && val !== null) {
+          const subContainer = document.createElement("div");
+          subContainer.classList.add("group-container");
+          buildExtraInfoFields(subContainer, val);
+          fieldArea.appendChild(subContainer);
+        } else {
+          const row = document.createElement("div");
+          row.classList.add("field-row");
+          row.style.display = "flex";
+          row.style.gap = "8px";
+          row.style.marginTop = "6px";
+          row.innerHTML = `
+            <input type="text" class="key" value="${key}">
+            <input type="text" class="val" value="${val}">
+            <button type="button" class="remove-btn">🗑</button>
+          `;
+          row.querySelector(".remove-btn").onclick = () => row.remove();
+          fieldArea.appendChild(row);
+        }
+      });
+      groupDiv.appendChild(fieldArea);
+      container.appendChild(groupDiv);
+    });
+  }
+
+  closeBtn.onclick = () => resetModal();
+  window.onclick = e => { if (e.target === modal) resetModal(); };
+
+  function resetModal() {
+    modal.style.display = "none";
+    isEditing = false;
+    editingProductId = null;
+
+    form.reset();
+    extraContainer.innerHTML = "";
+    document.querySelector(".modal-header h3").textContent = "Criar novo produto";
+    const saveBtn = form.querySelector('button[type="submit"]');
+    saveBtn.textContent = "Salvar Produto";
+    saveBtn.classList.remove("btn-save");
+
+    document.getElementById("editar_produto").value = "";
+    document.getElementById("criar_produto").value = "1";
+    document.getElementById("product_id").value = "";
+  }
+</script>
+
+{% endblock %}

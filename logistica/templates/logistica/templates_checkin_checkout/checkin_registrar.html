@@ -1,0 +1,46 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+  .form-card-2col {
+    height: auto;
+    margin-top: 65px;
+  }
+
+  .back-detail {
+    color: var(--form-titulo);
+    border: 1px solid var(--form-titulo);
+    padding: 4px 8px;
+    border-radius: 8px;
+    margin: 0;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+  }
+
+  .back-link {
+    text-decoration: none;
+    color: var(--form-titulo);
+    font-size: 12px;
+  }
+</style>
+
+
+<div class="form-container">
+  <div class="form-card-2col">
+    <div class="back-detail">
+      <a href="javascript:history.back()" class="back-link" style="cursor:pointer;">
+        <i class="fa-solid fa-arrow-left"></i>
+        Voltar
+      </a>
+    </div>
+    <form method="POST">
+      {% include 'global/partials/_form_2col.html' %}
+    </form>
+  </div>
+</div>
+
+{% endblock %}

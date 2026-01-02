@@ -97,7 +97,7 @@
     .chip-text {
         font-weight: 600;
         white-space: nowrap;
-        max-width: 300px;
+        max-width: auto;
         overflow: hidden;
         text-overflow: ellipsis;
     }

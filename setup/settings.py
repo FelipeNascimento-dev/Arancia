@@ -26,7 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'logistica',
-    'transportes',
+    'transportes', 'backoffice',
 ]
 
 MIDDLEWARE = [
@@ -37,6 +37,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'setup.middleware.auto_logout.AutoLogoutMiddleware',
 ]
 
 ROOT_URLCONF = 'setup.urls'
@@ -128,11 +129,21 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
 
 
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # ou RabbitMQ, se preferir
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+# Configuração de agendamento
+CELERY_BEAT_SCHEDULE = {
+    'desativar_usuarios_inativos_diariamente': {
+        'task': 'usuarios.tasks.deactivate_inactive_users',
+        'schedule': 86400.0,  # a cada 24h (em segundos)
+    },
+}
+
 try:
     from setup.local_settings import *
 except ImportError:
     ...
-
 
 
 def db_host_context(request):

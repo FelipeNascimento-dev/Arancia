@@ -1,4 +1,5 @@
 from .forms_create_user import CustomUserCreationForm
+<<<<<<< HEAD
 from .forms_consulta import ConsultaForm
 from .forms_pre_recebimento import PreRecebimentoForm
 from .forms_recebimento import RecebimentoForm
@@ -24,3 +25,33 @@ from .forms_unsuccessful_insert import UnsuccessfulInsertForm
 from .forms_client_select import ClientSelectForm
 from .forms_client_checkin import ClientCheckInForm
 from .forms_order_select import OrderSelectForm
+=======
+from .forms_fullfilment.forms_consulta import ConsultaForm
+from .forms_fullfilment.forms_pre_recebimento import PreRecebimentoForm
+from .forms_fullfilment.forms_recebimento import RecebimentoForm
+from .forms_fullfilment.forms_consulta_result import ConsultaPreRecebimentoForm
+from .forms_fullfilment.forms_estorno import EstornoForm
+from .forms_fluxo_entrega.forms_reserva_equip import ReservaEquipamentosForm
+from .forms_fluxo_entrega.forms_saida_campo import SaidaCampoForm
+from .forms_fluxo_entrega.forms_consulta_result_ma84 import ConsultaResultMA84Form
+from .forms_fluxo_entrega.forms_consulta_result_ec01 import ConsultaResultEC01Form
+from .forms_fluxo_entrega.forms_trackingIP import trackingIPForm
+from .forms_lastmile_consultas.forms_extracao_pedidos import ExtracaoForm
+from .forms_lastmile_consultas.forms_consulta_etiqueta import EtiquetasForm
+from .forms_user.forms_configuracao_user import ConfiguracaoUserForm
+from .forms_lastmile_consultas.forms_consulta_pedidos import ConsultaPedForm
+from .forms_recebimento_estoque.forms_recebimento_remessa import RecebimentoRemessaForm
+from .forms_lastmile_consultas.forms_consulta_entrada_pedido import OrderConsultForm
+from .forms_lastmile_consultas.forms_detalhes_pedidos import OrderDetailForm
+from .forms_fluxo_retirada.forms_conferir_retirada import OrderReturnCheckForm
+from .forms_gerenciamento.forms_gestao_skills import CreateGAIForm
+from .forms_reverse.forms_criar_reversa import ReverseCreateForm
+from .forms_reverse.forms_consulta_romaneio import RomaneioConsultaForm
+from .forms_fluxo_entrega.forms_insucesso import UnsuccessfulInsertForm
+from .forms_checkin_checkout.forms_checkin_iniciar import ClientSelectForm
+from .forms_checkin_checkout.forms_checkin_registrar import ClientCheckInForm
+from .forms_checkin_checkout.forms_consulta_clientes import ClientConsultForm
+from .forms_checkin_checkout.forms_consulta_produtos import ProductCreateForm
+from .forms_recebimento_estoque.forms_gerenciamento_estoque import GerenciamentoEstoqueForm
+from .forms_recebimento_estoque.forms_gerenciamento_kits import GerenciamentoKitsForm
+>>>>>>> release7-MERGE
