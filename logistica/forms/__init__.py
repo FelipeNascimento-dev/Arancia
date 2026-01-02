@@ -1,31 +1,4 @@
 from .forms_create_user import CustomUserCreationForm
-<<<<<<< HEAD
-from .forms_consulta import ConsultaForm
-from .forms_pre_recebimento import PreRecebimentoForm
-from .forms_recebimento import RecebimentoForm
-from .forms_consulta_result import ConsultaPreRecebimentoForm
-from .forms_estorno import EstornoForm
-from .forms_reserva_equip import ReservaEquipamentosForm
-from .forms_saida_campo import SaidaCampoForm
-from .forms_consulta_result_ma84 import ConsultaResultMA84Form
-from .forms_consulta_result_ec01 import ConsultaResultEC01Form
-from .forms_trackingIP import trackingIPForm
-from .forms_extracao_pedidos import ExtracaoForm
-from .forms_consulta_etiqueta import EtiquetasForm
-from .forms_configuracao_user import ConfiguracaoUserForm
-from .forms_consulta_pedidos import ConsultaPedForm
-from .forms_recebimento_remessa import RecebimentoRemessaForm
-from .forms_consulta_entrada_pedido import OrderConsultForm
-from .forms_detalhes_pedidos import OrderDetailForm
-from .forms_order_return_check import OrderReturnCheckForm
-from .forms_skill_ger import CreateGAIForm
-from .forms_reverse_create import ReverseCreateForm
-from .forms_consult_rom import RomaneioConsultaForm
-from .forms_unsuccessful_insert import UnsuccessfulInsertForm
-from .forms_client_select import ClientSelectForm
-from .forms_client_checkin import ClientCheckInForm
-from .forms_order_select import OrderSelectForm
-=======
 from .forms_fullfilment.forms_consulta import ConsultaForm
 from .forms_fullfilment.forms_pre_recebimento import PreRecebimentoForm
 from .forms_fullfilment.forms_recebimento import RecebimentoForm
@@ -54,4 +27,3 @@ from .forms_checkin_checkout.forms_consulta_clientes import ClientConsultForm
 from .forms_checkin_checkout.forms_consulta_produtos import ProductCreateForm
 from .forms_recebimento_estoque.forms_gerenciamento_estoque import GerenciamentoEstoqueForm
 from .forms_recebimento_estoque.forms_gerenciamento_kits import GerenciamentoKitsForm
->>>>>>> release7-MERGE

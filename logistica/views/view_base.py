@@ -1,14 +1,5 @@
 from django.shortcuts import render
 from django.contrib import messages
-<<<<<<< HEAD
-from django.contrib.auth.decorators import login_required
-
-@login_required(login_url='logistica:login')
-def index(request):
-    return render(request, 'global/base.html',{
-        'site_title': 'Home'
-    })
-=======
 from django.contrib.auth.decorators import login_required, permission_required
 
 
@@ -18,4 +9,3 @@ def index(request):
     return render(request, 'global/base.html', {
         'site_title': 'Home'
     })
->>>>>>> release7-MERGE
