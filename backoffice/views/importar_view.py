@@ -9,7 +9,7 @@ from backoffice.utils.excel_export import gerar_excel_retorno
 from setup.local_settings import API_BASE_BKO
 
 
-API_MOVER = f"{API_BASE_BKO}v1/import_equipaments/create"
+API_MOVER = f"{API_BASE_BKO}v1/import/create/import"
 
 
 @csrf_protect
@@ -36,20 +36,20 @@ def importar_excel_view(request):
 
             result = response.json()
 
-            if "detalhes_duplicados" in result and result["detalhes_duplicados"]:
-                request.session["duplicados"] = result["detalhes_duplicados"]
+            if "ignorados" in result and result["ignorados"]:
+                request.session["ignorados"] = result["ignorados"]
                 messages.warning(
                     request,
-                    f"Foram encontrados {len(result['detalhes_duplicados'])} registros duplicados. "
+                    f"Foram encontrados {len(result['ignorados'])} registros ignorados. "
                     "Eles estão listados abaixo."
                 )
-                contexto["duplicados"] = result["detalhes_duplicados"]
+                contexto["ignorados"] = result["ignorados"]
             else:
                 messages.success(
                     request,
                     f" Importação concluída com sucesso: {result.get('registros_inseridos', 0)} inseridos, "
-                    f"{result.get('registros_duplicados_ignorados', 0)} ignorados."
+                    f"{result.get('registros_ignorados', 0)} ignorados."
                 )
-                contexto["duplicados"] = None
+                contexto["ignorados"] = None
 
     return render(request, "backoffice/importacao.html", contexto)

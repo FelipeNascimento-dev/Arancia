@@ -279,7 +279,6 @@ document.addEventListener("DOMContentLoaded", function () {
       toggleBtn.classList.replace("fa-angles-right", "fa-angles-left");
     }
   });
-
   document.addEventListener("click", function (e) {
     if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
       if (!sidebar.classList.contains("colapsada")) {

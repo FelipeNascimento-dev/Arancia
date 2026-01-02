@@ -52,7 +52,6 @@ urls_LastmileB2C = [
     path('ip/<str:code>/', trackingIP, name='consolidacao'),
     path('ip/<str:code>/', trackingIP, name='expedicao'),
     path('ip/<str:code>/', trackingIP, name='troca_custodia'),
-
     path('extracao-pedidos/', extracao_pedidos, name='extracao_pedidos'),
     path('consulta-etiquetas/', consulta_etiquetas, name='consulta_etiquetas'),
     path('consulta-pedidos/', consulta_pedidos, name='consulta_pedidos'),

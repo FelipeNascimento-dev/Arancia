@@ -1,0 +1,40 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+{% if tabela_dados %}
+<div class="cards-container">
+    {% for item in tabela_dados %}
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ item.serge }}</h3>
+            <span class="badge">{{ item.ztipo }}</span>
+        </div>
+        <div class="card-body">
+            <p><strong>matnr:</strong> {{ item.matnr }}</p>
+            <p><strong>gernr:</strong> {{ item.gernr }}</p>
+            <p><strong>zver_ap:</strong> {{ item.zver_ap }}</p>
+            <p><strong>zsta_eq:</strong> {{ item.zsta_eq }}</p>
+            <p><strong>id_lote:</strong> {{ item.id_lote }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="buttons-container">
+    <a href="{% url 'logistica:consulta_id_form' %}">
+        <button class="btn-voltar" onclick="history.back()">Limpar</button>
+    </a>
+    {% include 'global/partials/_pagination.html' %}
+    <div class="buttons_id">
+        <a href="{% url 'logistica:pre_recebimento' 13 %}">
+            <button class="btn-p-rec">Pré-recebimento</button>
+        </a>
+        <a href="{% url 'logistica:recebimento' 15 %}">
+            <button class="btn-rec">Recebimento</button>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+{% endblock content %}

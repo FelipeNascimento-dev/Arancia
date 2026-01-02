@@ -1,13 +1,13 @@
 SECRET_KEY = ']s5n/RoBy<&r;f91C2C|1F"{SDJ!dr!("[)DvU#jzC6Gu.y">LozaG"{>A.te'
-LOCAL_DEBUG = True
+LOCAL_DEBUG = False
 if LOCAL_DEBUG:
     API_KEY_INTELIPOST = '2c7b1f95-9dfc-2e5e-d844-ece50622eb54eacv'
     API_URL = 'http://192.168.0.216/homo-fulfillment'
     STOCK_API_URL = 'http://192.168.0.214/hg-stock/api'
-    DB_HOST = '192.168.0.219'
+    DB_HOST = '192.168.0.220'
 else:
     API_KEY_INTELIPOST = 'e92231bc-18a9-033b-738d-2039f9452e12etyu'
-    DB_HOST = '192.168.0.219'
+    DB_HOST = '192.168.0.220'
     API_URL = 'http://192.168.0.216/fulfillment'
     STOCK_API_URL = 'http://192.168.0.214/stock/api'
 
@@ -47,14 +47,11 @@ DATABASES = {
 }
 
 
-
-
-
-#CONTROLE DE CAMPO
+# CONTROLE DE CAMPO
 
 API_BASE = "http://192.168.0.214/RetencaoAPI/api"
 TOKEN = "K90nIR4PK90nIR4PBKIy0rPZ6uwSqKCDX"
-API_BASE_BKO ="http://192.168.0.214/api-importacao/api/"
+API_BASE_BKO = "http://192.168.0.214/api-equipamentos/api/"
 # Mapas
 status_labels = {
     "concluido": "Concluído",
@@ -70,4 +67,3 @@ status_colors = {
     "atrasado": "bg-red-600",
     "sem_horario_definido": "bg-gray-500"
 }
-
