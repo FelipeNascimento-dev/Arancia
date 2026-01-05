@@ -70,6 +70,7 @@ urls_LastmileB2C = [
     path('gerenciamento-estoque/', gerenciamento_estoque,
          name='gerenciamento_estoque'),
     path('gerenciamento-kits/', gerenciamento_kits, name='gerenciamento_kits'),
+    path('transp/', transp_view, name='transp_view'),
 ]
 
 urls_Gerenciamento = [
