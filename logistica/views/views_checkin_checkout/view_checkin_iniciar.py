@@ -56,13 +56,13 @@ def client_select(request, vetor):
         }
 
         if client.lower() == "cielo":
-            if not order:
-                messages.error(
-                    request, "O campo 'Order' é obrigatório para Cielo.")
-                return redirect("logistica:client_select", vetor=vetor)
+            # if not order:
+            #     messages.error(
+            #         request, "O campo 'Order' é obrigatório para Cielo.")
+            #     return redirect("logistica:client_select", vetor=vetor)
 
             if vetor.upper() == "IN":
-                return redirect("logistica:detalhe_pedido", order=order)
+                return redirect("logistica:client_checkin", order=order)
 
             if vetor.upper() == "OUT":
                 return redirect("logistica:consultar_romaneio")
