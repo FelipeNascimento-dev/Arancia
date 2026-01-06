@@ -14,6 +14,11 @@ import json
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def client_checkin(request):
     client_name = request.GET.get("client")
+    selected_client = request.session.get("selected_client", {})
+
+    client_code = selected_client.get("client_code")
+    client_name = request.GET.get(
+        "client") or selected_client.get("client_name")
 
     if not client_name:
         client_name = request.session.get(
@@ -30,7 +35,7 @@ def client_checkin(request):
     product_choices = []
     try:
         if client_name:
-            url_products = f"{STOCK_API_URL}/v1/products/{client_name.lower()}"
+            url_products = f"{STOCK_API_URL}/v1/products/{client_code.lower()}"
             res = RequestClient(
                 url=url_products,
                 method="GET",

@@ -1,196 +1,149 @@
 {% load static %}
 
+<link rel="stylesheet" href="{% static 'css/transport.css' %}">
 
-<div class="transport-module">
+<div class="transport-wrapper">
 
-    <div class="tm-header">
-        <h2>Teste Transportes</h2>
+  <!-- HEADER -->
+  <div class="transport-header">
+    <h2>
+      Pedido {{ service_order.order_number }}
+      <span class="status-pill">
+        {{ service_order.order_state.description }}
+      </span>
+    </h2>
+    <small>
+      Tipo: {{ service_order.order_type.description }} |
+      Criado por: {{ service_order.created_by }}
+    </small>
+  </div>
+
+  <!-- GRID PRINCIPAL -->
+  <div class="grid-4">
+
+    <!-- CARD GRANDE – PEDIDO + INFO GERAL -->
+    <div class="box span-4">
+      <h4>Informações do Pedido</h4>
+
+      <div class="inner-grid-4">
+        <div><strong>OS:</strong><br>{{ service_order.order_number }}</div>
+        <div><strong>Tipo:</strong><br>{{ service_order.order_type.description }}</div>
+        <div><strong>Status:</strong><br>{{ service_order.order_state.description }}</div>
+        <div><strong>Valor:</strong><br>R$ {{ service_order.price_charged }}</div>
+      </div>
+
+      <hr style="margin:8px 0">
+
+      <div class="inner-grid-4">
+        <div>
+          <strong>Cliente</strong><br>
+          {{ client.nome }}<br>
+          {{ client.cidade }}/{{ client.estado }}
+        </div>
+
+        <div>
+          <strong>Origem</strong><br>
+          {{ origin.nome }} ({{ origin.cod_iata }})<br>
+          {{ origin.cidade }}/{{ origin.estado }}
+        </div>
+
+        <div>
+          <strong>Destino</strong><br>
+          {{ destination.nome }} ({{ destination.cod_iata }})<br>
+          {{ destination.cidade }}/{{ destination.estado }}
+        </div>
+
+        <div>
+          <strong>Email</strong><br>
+          {{ destination.email }}
+        </div>
+      </div>
     </div>
 
-    <div class="tm-section">
-        <div class="tm-section-header">
-            <h3>Cotações de Transporte</h3>
-            <button type="button" class="tm-toggle" data-target="cotacao">
-                +
-            </button>
-        </div>
-
-        <div class="tm-section-body" id="section-cotacao">
-            <div class="tm-grid">
-
-                <div class="tm-grid-layout">
-
-                    <div class="tm-card card-main-left">
-                        <h4>Dados da Cotação</h4>
-
-                        <p><strong>OS:</strong> {{ service_order.order_number }}</p>
-                        <p><strong>Tipo:</strong> {{ service_order.order_type.description }}</p>
-                        <p><strong>Status:</strong> {{ service_order.order_state.description }}</p>
-                        <p><strong>Criado por:</strong> {{ service_order.created_by }}</p>
-                    </div>
-
-                    <div class="tm-card card-bottom-left">
-                        <h4>Dados Complementares</h4>
-
-                        <p><strong>Cliente:</strong> {{ client.nome }}</p>
-                        <p><strong>Origem:</strong> {{ origin.nome }} ({{ origin.cod_iata }})</p>
-                        <p><strong>Destino:</strong> {{ destination.nome }} ({{ destination.cod_iata }})</p>
-                    </div>
-
-                    <div class="tm-sidebar">
-
-                        <div class="tm-info-card">
-                            <div class="tm-info-header">
-                                <span>Resumo Financeiro</span>
-                                <button type="button" class="tm-info-toggle">+</button>
-                            </div>
-                            <div class="tm-info-body">
-                                {% if quote %}
-                                    <p><strong>Valor estimado:</strong> R$ {{ quote.estimated_price }}</p>
-                                    <p><strong>Peso total:</strong> {{ quote.total_weight }} kg</p>
-                                    <p><strong>Volume:</strong> {{ quote.total_volume }}</p>
-                                {% else %}
-                                    <p>Sem cotação disponível</p>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <div class="tm-info-card">
-                            <div class="tm-info-header">
-                                <span>Prazos</span>
-                                <button type="button" class="tm-info-toggle">+</button>
-                            </div>
-                            <div class="tm-info-body">
-                                {% if quote %}
-                                    <p><strong>Prazo estimado:</strong> {{ quote.estimated_deadline }} dias</p>
-                                {% else %}
-                                    <p>Prazo não informado</p>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <div class="tm-info-card">
-                            <div class="tm-info-header">
-                                <span>Riscos / Observações</span>
-                                <button type="button" class="tm-info-toggle">+</button>
-                            </div>
-                            <div class="tm-info-body">...</div>
-                        </div>
-
-                        <div class="tm-card">
-                            <h4>Histórico</h4>
-
-                            {% for h in historico %}
-                                <p>
-                                    • <strong>[{{ h.tipo }}]</strong>
-                                    {{ h.descricao }}
-                                    ({{ h.created_by }})
-                                </p>
-                            {% empty %}
-                                <p>Sem histórico</p>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- CARDS PEQUENOS -->
+    <div class="box soft">
+      <h4>Resumo Financeiro</h4>
+      {% if quote %}
+        <p>Valor: R$ {{ quote.estimated_price }}</p>
+        <p>Peso: {{ quote.total_weight }} kg</p>
+        <p>Volume: {{ quote.total_volume }}</p>
+      {% else %}
+        <p>Sem cotação</p>
+      {% endif %}
     </div>
 
-    <div class="tm-section">
-        <div class="tm-section-header">
-            <h3>Informações da Carga</h3>
-            <button type="button" class="tm-toggle" data-target="carga">+</button>
-        </div>
-
-        <div class="tm-section-body" id="section-carga">
-            <div class="tm-grid">
-
-                <div class="tm-card">
-                    <h4>Dados da Carga</h4>
-                    {{ carga_form.as_p }}
-                </div>
-
-                <div class="tm-card info">
-                    <h4>Detalhes</h4>
-                    <p>Peso total: <strong>{{ carga.peso_total }}</strong></p>
-                    <p>Volumes: <strong>{{ carga.volumes }}</strong></p>
-                    <p>Tipo: <strong>{{ carga.tipo }}</strong></p>
-                </div>
-
-            </div>
-        </div>
+    <div class="box soft">
+      <h4>Prazos</h4>
+      {% if quote %}
+        <p>{{ quote.estimated_deadline }} dias</p>
+      {% else %}
+        <p>Não informado</p>
+      {% endif %}
     </div>
 
-    <div class="tm-section">
-        <div class="tm-section-header">
-            <h3>Transportadoras</h3>
-            <button type="button" class="tm-toggle" data-target="transportadora">+</button>
-        </div>
-
-        <div class="tm-section-body" id="section-transportadora">
-            <div class="tm-grid">
-
-                {% for transportadora in transportadoras %}
-                <div class="tm-card clickable">
-                    <h4>{{ transportadora.nome }}</h4>
-                    <p>Prazo médio: {{ transportadora.prazo }} dias</p>
-                    <p>Rating: ⭐ {{ transportadora.rating }}</p>
-                </div>
-                {% empty %}
-                <p class="tm-empty">Nenhuma transportadora disponível</p>
-                {% endfor %}
-
-            </div>
-        </div>
+    <div class="box soft">
+      <h4>Transportes</h4>
+      <p>{{ travels|length }} viagem(ns)</p>
     </div>
 
-    <div class="tm-section">
-        <div class="tm-section-header">
-            <h3>Status & Histórico</h3>
-            <button type="button" class="tm-toggle" data-target="status">+</button>
-        </div>
-
-        <div class="tm-section-body" id="section-status">
-            <div class="tm-grid">
-
-                {% for event in historico %}
-                <div class="tm-card timeline">
-                    <span class="tm-date">{{ event.data }}</span>
-                    <p>{{ event.descricao }}</p>
-                </div>
-                {% empty %}
-                <p class="tm-empty">Sem histórico disponível</p>
-                {% endfor %}
-
-            </div>
-        </div>
+    <div class="box soft">
+      <h4>Volumes</h4>
+      <p>{{ items|length }} item(ns)</p>
     </div>
 
+    <!-- VOLUMES -->
+    <div class="box span-4">
+      <h4>Volumes / Itens</h4>
+
+      {% for item in items %}
+        <div class="volume-card">
+
+          <div class="volume-header">
+            <strong>Volume {{ forloop.counter }}</strong>
+            <!-- <div>
+              <button class="btn-outline">Ver etiqueta</button>
+              <button class="btn-outline">Editar</button>
+              <button class="btn-primary">Enviar</button>
+            </div> -->
+          </div>
+
+          <div class="volume-grid">
+            <div><strong>Série:</strong><br>{{ item.serial_number }}</div>
+            <div><strong>Modelo:</strong><br>{{ item.product_model }}</div>
+            <div><strong>Tipo:</strong><br>{{ item.product_type }}</div>
+            <div><strong>Prazo:</strong><br>{{ item.service_deadline|date:"d/m/Y" }}</div>
+          </div>
+
+          <div class="timeline">
+            {% for ev in item.item_events %}
+              <div class="timeline-item">
+                <span class="dot"></span>
+                {{ ev.description }} — {{ ev.created_by }}
+              </div>
+            {% endfor %}
+          </div>
+
+        </div>
+      {% empty %}
+        <p class="empty">Nenhum item</p>
+      {% endfor %}
+    </div>
+
+    <!-- HISTÓRICO GERAL -->
+    <div class="box span-4">
+      <h4>Histórico Geral</h4>
+
+      <div class="timeline">
+        {% for h in historico %}
+          <div class="timeline-item">
+            <span class="dot"></span>
+            {{ h.descricao }} — {{ h.created_by }}
+          </div>
+        {% empty %}
+          <p class="empty">Sem histórico</p>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
 </div>
-
-
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        document.querySelectorAll(".tm-toggle").forEach(btn => {
-            btn.addEventListener("click", () => {
-                const target = btn.dataset.target;
-                const section = document.getElementById(`section-${target}`);
-
-                section.classList.toggle("hidden");
-                btn.textContent = section.classList.contains("hidden") ? "+" : "x";
-            });
-        });
-    });
-
-</script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        document.querySelectorAll(".tm-info-header").forEach(header => {
-            header.addEventListener("click", () => {
-                const card = header.closest(".tm-info-card");
-                card.classList.toggle("active");
-            });
-        });
-    });
-</script>
