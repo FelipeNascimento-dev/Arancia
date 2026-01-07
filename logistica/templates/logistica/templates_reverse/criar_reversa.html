@@ -313,11 +313,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     serialInput.addEventListener("keydown", function (e) {
         if (e.key === "Enter") {
-            e.preventDefault(); // 🚨 BLOQUEIA SUBMIT DUPLO
+            e.preventDefault();
 
             if (!serialInput.value.trim()) return;
 
-            // cria submit invisível com o name correto
             const hiddenSubmit = document.createElement("button");
             hiddenSubmit.type = "submit";
             hiddenSubmit.name = "enviar_evento";
@@ -327,7 +326,6 @@ document.addEventListener("DOMContentLoaded", function () {
             form.appendChild(hiddenSubmit);
             hiddenSubmit.click();
 
-            // limpa imediatamente
             serialInput.value = "";
             serialInput.focus();
         }

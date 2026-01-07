@@ -62,6 +62,7 @@
         border: 1px solid #e4e4e4;
         box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
         transition: 0.25s ease-in-out;
+        height: 430px;
     }
 
     .card:hover {
@@ -249,9 +250,11 @@
 
     .modal {
         position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0,0,0,0.4);
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -400,6 +403,125 @@
             justify-content: flex-end;
         }
     }
+
+        .modal-json {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+    }
+
+    .json-modal-content {
+        background: #fff;
+        margin: 4% auto;
+        padding: 20px;
+        border-radius: 10px;
+        width: 85%;
+        max-width: 900px;
+        max-height: 85%;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .json-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .json-modal-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #333;
+    }
+
+    .json-modal-content pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 15px;
+        border-radius: 6px;
+        overflow-x: auto;
+        white-space: pre;
+        text-align: left;
+        font-family: "Courier New", monospace;
+        font-size: 0.9rem;
+        flex-grow: 1;
+    }
+
+    .json-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 10px;
+        gap: 10px;
+    }
+
+    .close {
+        font-size: 26px;
+        cursor: pointer;
+        color: #666;
+    }
+
+    .close:hover {
+        color: #000;
+    }
+
+    .btn-json {
+        padding: 6px 10px;
+        font-size: 18px;
+        border: none;
+        border-radius: 5px;
+        background: transparent;
+        color: #095ab1;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .btn-json:hover {
+        background: #dbdbdb;
+    }
+
+    .btn-copy,
+    .btn-close,
+    .btn-download {
+        padding: 6px 14px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .btn-copy {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-copy:hover {
+        background: #1e7e34;
+    }
+
+    .btn-download {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .btn-download:hover {
+        background: #117a8b;
+    }
+
+    .btn-close {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-close:hover {
+        background: #5a6268;
+    }
 </style>
 
 <div class="form-container">
@@ -407,9 +529,7 @@
         <form method="POST">
             {% include 'global/partials/_form_2colV2.html' %}
             <div style="display: flex; justify-content: flex-end; width: 100%; margin-bottom: 10px;">
-                <button type="button"
-                        onclick="selectAllPAs()"
-                        style="background:#0056c1;color:white;border:none;padding:6px 12px;
+                <button type="button" onclick="selectAllPAs()" style="background:#0056c1;color:white;border:none;padding:6px 12px;
                             border-radius:6px;font-size:12px;cursor:pointer;">
                     Selecionar Todos os CDs
                 </button>
@@ -435,25 +555,19 @@
 
                     <span class="top-hint">Tipo de estoque:</span>
 
-                    <select name="stock_type"
-                            class="limit-balanced"
-                            onchange="this.form.submit()">
+                    <select name="stock_type" class="limit-balanced" onchange="this.form.submit()">
                         <option value="">Todos os tipos</option>
 
                         {% for st in stock_types %}
-                            <option value="{{ st }}"
-                                {% if request.POST.stock_type == st %}selected{% endif %}>
-                                {{ st }}
-                            </option>
+                        <option value="{{ st }}" {% if request.POST.stock_type == st %}selected{% endif %}>
+                            {{ st }}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
 
                 <div class="top-action">
-                    <button type="submit"
-                            name="exportar"
-                            value="1"
-                            class="extract-balanced">
+                    <button type="submit" name="exportar" value="1" class="extract-balanced">
                         <i class="fa-solid fa-download"></i>
                         Extrair estoque
                     </button>
@@ -462,15 +576,13 @@
                 <div class="top-group">
                     <span class="top-label">Visualização</span>
 
-                    <button type="submit"
-                            onclick="document.getElementById('visao').value='resumo'"
-                            class="view-balanced {% if visao == 'resumo' %}active{% endif %}">
+                    <button type="submit" onclick="document.getElementById('visao').value='resumo'"
+                        class="view-balanced {% if visao == 'resumo' %}active{% endif %}">
                         Resumida
                     </button>
 
-                    <button type="submit"
-                            onclick="document.getElementById('visao').value='detalhe'"
-                            class="view-balanced {% if visao == 'detalhe' %}active{% endif %}">
+                    <button type="submit" onclick="document.getElementById('visao').value='detalhe'"
+                        class="view-balanced {% if visao == 'detalhe' %}active{% endif %}">
                         Detalhada
                     </button>
                 </div>
@@ -514,8 +626,7 @@
                 {{ item.serial }}
             </h3>
             {% if perms.logistica.gerente_estoque %}
-            <button class="edit-btn"
-                    onclick="openEditModal({{ item.id }}, '{{ item.product_sku }}')">
+            <button class="edit-btn" onclick="openEditModal({{ item.id }}, '{{ item.product_sku }}')">
                 <i class="fa-solid fa-pen-to-square"></i>
             </button>
             {% endif %}
@@ -534,9 +645,9 @@
 
             <p><strong>Dias no estoque:</strong><br>
                 {% if item.dias_no_estoque is not None %}
-                    {{ item.dias_no_estoque }} dia(s)
+                {{ item.dias_no_estoque }} dia(s)
                 {% else %}
-                    -
+                -
                 {% endif %}
             </p>
 
@@ -544,7 +655,18 @@
             <p><strong>Localização:</strong><br>{{ item.location_name }}</p>
             <p><strong>SKU:</strong><br>{{ item.product_sku }}</p>
             <p><strong>Descrição:</strong><br>{{ item.product_description }}</p>
-
+            <p><strong>Informações Adicionais:</strong><br>
+                {% if item.extra_info %}
+                    <button class="btn-json"
+                        data-json='{{ item.extra_info|safe|escapejs }}'
+                        data-key="Extra Info"
+                        onclick="showJsonModal(this)">
+                        +
+                    </button>
+                {% else %}
+                    -
+                {% endif %}
+            </p>
         </div>
     </div>
     {% endfor %}
@@ -593,7 +715,7 @@
             <label>Produto:</label>
             <select name="novo_produto" id="modal_produto" class="input">
                 {% for p in produtos_api %}
-                    <option value="{{ p.id }}">{{ p.sku }} — {{ p.description }}</option>
+                <option value="{{ p.id }}">{{ p.sku }} — {{ p.description }}</option>
                 {% endfor %}
             </select>
             <button type="submit" class="btn-save">Salvar</button>
@@ -601,6 +723,87 @@
         </form>
     </div>
 </div>
+
+<!-- MODAL PARA PAYLOAD -->
+<div id="jsonModal" class="modal-json">
+    <div class="json-modal-content">
+        <div class="json-modal-header">
+            <h3 id="jsonModalTitle">JSON</h3>
+            <span class="close" onclick="closeJsonModal()">&times;</span>
+        </div>
+        <pre id="jsonContent"></pre>
+        <div class="json-modal-footer">
+            <button class="btn-copy" onclick="copyJson()">Copiar</button>
+            <button class="btn-download" onclick="downloadJson()">Download</button>
+            <button class="btn-close" onclick="closeJsonModal()">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let lastJsonText = "";
+    let lastJsonTitle = "JSON";
+
+    function normalizePythonDictString(raw) {
+        if (!raw || typeof raw !== "string") return raw;
+
+        // Converte \u0027 → '
+        let fixed = raw.replace(/\\u0027/g, "'");
+
+        // Converte aspas simples para aspas duplas (JSON)
+        // Apenas quando parecem chaves/valores
+        fixed = fixed
+            .replace(/'([^']*)'\s*:/g, '"$1":')   // keys
+            .replace(/:\s*'([^']*)'/g, ':"$1"');  // values
+
+        return fixed;
+    }
+
+    function showJsonModal(btn) {
+        let raw = btn.getAttribute("data-json");
+
+        raw = normalizePythonDictString(raw);
+
+        let pretty;
+        try {
+            const parsed = JSON.parse(raw);
+            pretty = JSON.stringify(parsed, null, 2);
+        } catch (e) {
+            // Fallback: exibe mesmo assim
+            pretty = raw;
+        }
+
+        lastJsonTitle = btn.getAttribute("data-key") || "JSON";
+        lastJsonText = pretty;
+
+        document.getElementById("jsonModalTitle").innerText = lastJsonTitle;
+        document.getElementById("jsonContent").textContent = pretty;
+        document.getElementById("jsonModal").style.display = "block";
+    }
+
+    function closeJsonModal() {
+        document.getElementById("jsonModal").style.display = "none";
+    }
+
+    function copyJson() {
+        navigator.clipboard.writeText(lastJsonText).then(() => {
+            alert("JSON copiado!");
+        });
+    }
+
+    function downloadJson() {
+        const blob = new Blob([lastJsonText], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${lastJsonTitle.replace(/\s+/g, "_").toLowerCase()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+</script>
+
 
 
 <script>
@@ -621,38 +824,38 @@
 </script>
 
 <script>
-function openEditModal(itemId, skuAtual) {
+    function openEditModal(itemId, skuAtual) {
 
-    document.getElementById("editModal").style.display = "flex";
+        document.getElementById("editModal").style.display = "flex";
 
-    let select = document.getElementById("modal_produto");
-    for (let opt of select.options) {
-        if (opt.text.includes(skuAtual)) {
-            opt.selected = true;
+        let select = document.getElementById("modal_produto");
+        for (let opt of select.options) {
+            if (opt.text.includes(skuAtual)) {
+                opt.selected = true;
+            }
         }
+
+        document.getElementById("modal_item_id").value = itemId;
     }
 
-    document.getElementById("modal_item_id").value = itemId;
-}
-
-function closeEditModal() {
-    document.getElementById("editModal").style.display = "none";
-}
+    function closeEditModal() {
+        document.getElementById("editModal").style.display = "none";
+    }
 </script>
 
 <script>
-function selectAllPAs() {
-    let select = document.getElementById("id_cd_estoque");
+    function selectAllPAs() {
+        let select = document.getElementById("id_cd_estoque");
 
-    if (!select) {
-        alert("Campo de CDs não encontrado.");
-        return;
-    }
+        if (!select) {
+            alert("Campo de CDs não encontrado.");
+            return;
+        }
 
-    for (let i = 0; i < select.options.length; i++) {
-        select.options[i].selected = true;
+        for (let i = 0; i < select.options.length; i++) {
+            select.options[i].selected = true;
+        }
     }
-}
 </script>
 
 
