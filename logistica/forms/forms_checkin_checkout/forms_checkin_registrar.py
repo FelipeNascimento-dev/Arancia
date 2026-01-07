@@ -55,7 +55,8 @@ class ClientCheckInForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         if from_choices:
-            self.fields['from_location'].choices = from_choices
+            self.fields['from_location'].choices = [
+                ("", "Selecione a origem")] + from_choices
 
         if product_choices:
             self.fields['product'].choices = product_choices

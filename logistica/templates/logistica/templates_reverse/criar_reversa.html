@@ -305,13 +305,37 @@
 </script>
 
 <script>
-    document.getElementById("romaneioForm").addEventListener("keydown", function (e) {
+document.addEventListener("DOMContentLoaded", function () {
+    const serialInput = document.getElementById("id_serial");
+    const form = document.getElementById("romaneioForm");
+
+    if (!serialInput || !form) return;
+
+    serialInput.addEventListener("keydown", function (e) {
         if (e.key === "Enter") {
-            e.preventDefault();
-            return false;
+            e.preventDefault(); // 🚨 BLOQUEIA SUBMIT DUPLO
+
+            if (!serialInput.value.trim()) return;
+
+            // cria submit invisível com o name correto
+            const hiddenSubmit = document.createElement("button");
+            hiddenSubmit.type = "submit";
+            hiddenSubmit.name = "enviar_evento";
+            hiddenSubmit.value = "1";
+            hiddenSubmit.style.display = "none";
+
+            form.appendChild(hiddenSubmit);
+            hiddenSubmit.click();
+
+            // limpa imediatamente
+            serialInput.value = "";
+            serialInput.focus();
         }
     });
+});
 </script>
+
+
 
 <script>
     function toggleActionsMenu() {

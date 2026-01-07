@@ -118,6 +118,7 @@ def reverse_create(request):
                     kits = (last_volume.get("kits", []))
                     last_kit_serial = kits[0]["serial"]
                     last_volume["kits"] = kits
+                return redirect("logistica:reverse_create")
 
     if request.method == "POST" and form.is_valid() and "enviar_cotacao" in request.POST:
         _result = send_quotes(request)
@@ -265,7 +266,7 @@ def delete_btn(request, serial):
             request, f"Erro ao deletar na API: {delete_result['detail']}")
     else:
         messages.success(
-            request, f"Serial {serial} removido com sucesso na API!")
+            request, f"Serial {serial} removido com sucesso!")
 
     volums = delete_result.get("volums", [])
     for v in volums:
