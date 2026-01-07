@@ -2,6 +2,7 @@ import json
 from collections import Counter
 from urllib.parse import urlencode
 from datetime import datetime, timedelta, date
+from zoneinfo import ZoneInfo
 from utils.request import RequestClient
 from setup.local_settings import STOCK_API_URL
 
@@ -76,11 +77,22 @@ def func_visao_detalhada(request, form, sales_channels_map):
         if i.get("product_sku")
     })
 
+    TZ_UTC = ZoneInfo("UTC")
+    TZ_BR = ZoneInfo("America/Sao_Paulo")
+
     def parse_dt(dt):
+        if not dt:
+            return None
+
         try:
-            return datetime.fromisoformat(dt.replace("Z", ""))
-        except:
-            return datetime.min
+            dt_utc = datetime.fromisoformat(
+                dt.replace("Z", "+00:00")
+            ).astimezone(TZ_UTC)
+
+            return dt_utc.astimezone(TZ_BR)
+
+        except Exception:
+            return None
 
     for item in itens:
         dt = parse_dt(item.get("last_movement_in_date"))
@@ -95,10 +107,11 @@ def func_visao_detalhada(request, form, sales_channels_map):
         dias = (hoje - data_mov).days + 1
 
         item["dias_no_estoque"] = max(dias, 1)
+        item["last_movement_in_date"] = dt.strftime("%d/%m/%Y %H:%M:%S")
 
     itens = sorted(
         itens,
-        key=lambda x: parse_dt(x.get("last_movement_in_date", "")),
+        key=lambda x: parse_dt(x.get("last_movement_in_date")) or datetime.min,
         reverse=False
     )
 
