@@ -1,7 +1,7 @@
 import json
 from collections import Counter
 from urllib.parse import urlencode
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from utils.request import RequestClient
 from setup.local_settings import STOCK_API_URL
 
@@ -84,7 +84,17 @@ def func_visao_detalhada(request, form, sales_channels_map):
 
     for item in itens:
         dt = parse_dt(item.get("last_movement_in_date"))
-        item["dias_no_estoque"] = (datetime.now() - dt).days if dt else None
+
+        if not dt or dt == datetime.min:
+            item["dias_no_estoque"] = None
+            continue
+
+        hoje = date.today()
+        data_mov = dt.date()
+
+        dias = (hoje - data_mov).days + 1
+
+        item["dias_no_estoque"] = max(dias, 1)
 
     itens = sorted(
         itens,
