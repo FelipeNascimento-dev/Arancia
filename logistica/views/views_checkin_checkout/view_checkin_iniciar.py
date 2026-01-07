@@ -41,9 +41,9 @@ def client_select(request, vetor):
 
     if request.method == "POST" and form.is_valid():
         client = form.cleaned_data["client"]
-        order = form.cleaned_data["order"]
+        # order = form.cleaned_data["order"]
 
-        request.session["order"] = order
+        # request.session["order"] = order
 
         client_name_real = next(
             (name for code, name in choices if code == client),
@@ -62,7 +62,7 @@ def client_select(request, vetor):
             #     return redirect("logistica:client_select", vetor=vetor)
 
             if vetor.upper() == "IN":
-                return redirect("logistica:client_checkin", order=order)
+                return redirect("logistica:client_checkin")
 
             if vetor.upper() == "OUT":
                 return redirect("logistica:consultar_romaneio")
