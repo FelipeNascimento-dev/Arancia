@@ -26,6 +26,26 @@
     color: var(--form-titulo);
     font-size: 12px;
   }
+
+  .signature {
+    position: absolute;
+    top: 30px;
+    right: 20px;
+    font-weight: bold;
+    color: var(--form-titulo);
+    margin: 0;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 8 ;
+    background-color: #fff;
+  }
+
+  #id_sales_channel {
+    background-color: transparent !important;
+    border: none !important;
+  }
 </style>
 
 
@@ -38,6 +58,12 @@
       </a>
     </div>
     <form method="POST">
+      {% csrf_token %}
+      <div class="signature">
+        <button type="submit" class="btn btn-primary" name="ilg_insert" value="1">
+          Serial Provisorio
+        </button>
+      </div>
       {% include 'global/partials/_form_2col.html' %}
     </form>
   </div>
