@@ -682,19 +682,58 @@
     let lastJsonText = "";
     let lastJsonTitle = "JSON";
 
+    function htmlDecode(input) {
+        const txt = document.createElement("textarea");
+        txt.innerHTML = input;
+        return txt.value;
+    }
+
+    function decodeUnicode(str) {
+        try {
+            return JSON.parse(`"${str.replace(/"/g, '\\"')}"`);
+        } catch {
+            return str;
+        }
+    }
+
+    function normalizeJsonString(raw) {
+        if (!raw || typeof raw !== "string") return raw;
+
+        // 1️⃣ Decode HTML entities do Django
+        let fixed = htmlDecode(raw);
+
+        // 2️⃣ Decode Unicode (\u0022, \u003D, etc)
+        fixed = decodeUnicode(fixed);
+
+        // 3️⃣ Normaliza valores Python (caso existam)
+        fixed = fixed
+            .replace(/\bNone\b/g, "null")
+            .replace(/\bTrue\b/g, "true")
+            .replace(/\bFalse\b/g, "false");
+
+        return fixed;
+    }
+
     function showJsonModal(btn) {
-        const raw = btn.getAttribute("data-json");
+        let raw = btn.getAttribute("data-json");
+        if (!raw) return;
+
+        raw = normalizeJsonString(raw);
+
         let pretty;
         try {
-            pretty = JSON.stringify(JSON.parse(raw), null, 2);
+            const parsed = JSON.parse(raw);
+            pretty = JSON.stringify(parsed, null, 2);
         } catch (e) {
+            // fallback visual
             pretty = raw;
         }
+
         lastJsonTitle = btn.getAttribute("data-key") || "JSON";
         lastJsonText = pretty;
 
         document.getElementById("jsonModalTitle").innerText = lastJsonTitle;
-        document.getElementById("jsonContent").innerText = pretty;
+        document.getElementById("jsonContent").textContent = pretty;
         document.getElementById("jsonModal").style.display = "block";
     }
 
@@ -725,8 +764,9 @@
         if (event.target === modal) {
             modal.style.display = "none";
         }
-    }
+    };
 </script>
+
 
 <script>
         (function () {
