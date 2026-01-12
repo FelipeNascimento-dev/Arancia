@@ -48,7 +48,8 @@ class RequestClient:
                     data = {"detail": response.text or "Erro interno do servidor"}
 
                 if response.status_code == 500:
-                    return {"detail": "Erro interno do Servidor"}
+                    data = {"detail": response.text or "Erro interno do servidor"}
+                    return data
 
                 log_request_result('request_error', self.url,
                                    self.method, data, response)
