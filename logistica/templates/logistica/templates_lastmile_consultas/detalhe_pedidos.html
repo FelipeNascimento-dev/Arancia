@@ -699,13 +699,10 @@
     function normalizeJsonString(raw) {
         if (!raw || typeof raw !== "string") return raw;
 
-        // 1️⃣ Decode HTML entities do Django
         let fixed = htmlDecode(raw);
 
-        // 2️⃣ Decode Unicode (\u0022, \u003D, etc)
         fixed = decodeUnicode(fixed);
 
-        // 3️⃣ Normaliza valores Python (caso existam)
         fixed = fixed
             .replace(/\bNone\b/g, "null")
             .replace(/\bTrue\b/g, "true")
@@ -725,7 +722,6 @@
             const parsed = JSON.parse(raw);
             pretty = JSON.stringify(parsed, null, 2);
         } catch (e) {
-            // fallback visual
             pretty = raw;
         }
 

@@ -50,6 +50,7 @@ def reverse_create(request):
         nome_form=titulo,
         user_sales_channel=user_sales_channel,
         romaneio_num=romaneio_in,
+        user=request.user
     )
 
     volums = result.get("volums", [])
