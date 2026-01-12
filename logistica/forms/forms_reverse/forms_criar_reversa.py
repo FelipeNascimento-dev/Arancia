@@ -72,7 +72,7 @@ class ReverseCreateForm(forms.Form):
 
         destino_choices = [("", "")]
 
-        if self.user and self.user.has_perm("logistica.acesso_arancia_destino"):
+        if self.user and self.user.has_perm("logistica.gestao_total"):
             grupos = Group.objects.filter(
                 name__in=["arancia_PA", "arancia_CD"]
             )

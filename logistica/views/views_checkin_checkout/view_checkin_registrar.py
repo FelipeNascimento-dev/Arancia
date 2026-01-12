@@ -100,34 +100,46 @@ def client_checkin(request):
         messages.error(request, f"Erro ao carregar grupos: {e}")
         from_choices = [("", "Erro ao carregar origens")]
 
-    to_location_value = ""
-    try:
-        user_designacao = UserDesignation.objects.filter(user=request.user).select_related(
-            "informacao_adicional", "informacao_adicional__group"
-        ).first()
+    to_location_choices = []
+    to_location_initial = None
+    to_location_disabled = False
 
-        if user_designacao and user_designacao.informacao_adicional:
-            group_info = user_designacao.informacao_adicional
-            group = group_info.group
-            if group:
-                to_location_value = {
-                    "id": group.id,
-                    "label": f"{group.name} - {group_info.nome or group_info.razao_social or 'Sem nome'}"
-                }
-    except Exception as e:
-        messages.error(request, f"Erro ao identificar destino do usuário: {e}")
+    try:
+        if request.user.has_perm('logistica.gestao_total'):
+            destinos = (
+                GroupAditionalInformation.objects
+                .select_related("group")
+                .filter(group__name__iregex=r"arancia_(PA|CD)")
+                .order_by("group__name", "nome")
+            )
+
+            for gi in destinos:
+                prefix = "[PA]" if gi.group.name == "arancia_PA" else "[CD]"
+                label = f"{prefix} {gi.nome or gi.razao_social or 'Sem nome'}"
+
+                to_location_choices.append((str(gi.id), label))
+
+        else:
+            user_designacao = (
+                UserDesignation.objects
+                .select_related("informacao_adicional", "informacao_adicional__group")
+                .filter(user=request.user)
+                .first()
+            )
+
+            if user_designacao and user_designacao.informacao_adicional:
+                gi = user_designacao.informacao_adicional
+                prefix = "[PA]" if gi.group.name == "arancia_PA" else "[CD]"
+                label = f"{prefix} {gi.nome or gi.razao_social or 'Sem nome'}"
+
+                to_location_choices = [(str(gi.id), label)]
+                to_location_initial = str(gi.id)
+                to_location_disabled = True
 
     except Exception as e:
         messages.error(request, f"Erro ao identificar destino do usuário: {e}")
 
     if request.method == "POST":
-        to_location_id = str(request.session.get("to_location_id", ""))
-        to_location_label = ""
-        if isinstance(to_location_value, dict):
-            to_location_label = to_location_value.get("label", "")
-        elif to_location_id:
-            to_location_label = f"Destino {to_location_id}"
-
         form = ClientCheckInForm(
             request.POST,
             nome_form=titulo,
@@ -135,10 +147,9 @@ def client_checkin(request):
             product_choices=product_choices,
         )
 
-        form.fields["to_location"].choices = [
-            (to_location_id, to_location_label)
-        ]
-        form.fields["to_location"].initial = to_location_id
+        form.fields["to_location"].choices = [("", "")] + to_location_choices
+        form.fields["to_location"].initial = to_location_initial
+        form.fields["to_location"].disabled = to_location_disabled
 
         if form.is_valid():
             request.session["checkin_form_data"] = {
@@ -151,17 +162,18 @@ def client_checkin(request):
             }
 
             try:
-                product_id = int(form.cleaned_data.get("product"))
+                product_id = int(form.cleaned_data["product"])
                 from_location_id = int(
                     form.cleaned_data.get("from_location") or 0)
-                to_location_id = group_info.id
+                to_location_id = int(form.cleaned_data["to_location"])
 
                 order_number = form.cleaned_data.get("pedido_atrelado")
-
                 romaneio_number = form.cleaned_data.get("pedido")
 
-                extra_info_root = {
-                    "romaneio_number": romaneio_number} if romaneio_number else {}
+                extra_info_root = (
+                    {"romaneio_number": romaneio_number}
+                    if romaneio_number else {}
+                )
 
                 payload = {
                     "item": {
@@ -181,12 +193,13 @@ def client_checkin(request):
                     "created_by": request.user.username.upper(),
                 }
 
-                url_mov = f"{STOCK_API_URL}/v1/movements/"
                 res = RequestClient(
-                    url=url_mov,
+                    url=f"{STOCK_API_URL}/v1/movements/",
                     method="POST",
-                    headers={"Accept": "application/json",
-                             "Content-Type": "application/json"},
+                    headers={
+                        "Accept": "application/json",
+                        "Content-Type": "application/json"
+                    },
                     request_data=payload
                 ).send_api_request()
 
@@ -200,6 +213,7 @@ def client_checkin(request):
 
             except Exception as e:
                 messages.error(request, f"Erro ao enviar movimento: {e}")
+
     else:
         saved = request.session.pop("checkin_form_data", {})
 
@@ -211,7 +225,7 @@ def client_checkin(request):
             "volume": saved.get("volume", "1"),
             "kit": saved.get("kit", "1"),
             "serial": "",
-            "to_location": to_location_value.get("label", "") if isinstance(to_location_value, dict) else "",
+            "to_location": to_location_initial,
         }
 
         form = ClientCheckInForm(
@@ -221,16 +235,9 @@ def client_checkin(request):
             product_choices=product_choices,
         )
 
-        if isinstance(to_location_value, dict):
-            form.fields["to_location"].choices = [
-                (str(to_location_value["id"]), to_location_value["label"])
-            ]
-            form.fields["to_location"].initial = str(to_location_value["id"])
-            request.session["to_location_id"] = to_location_value["id"]
-        else:
-            form.fields["to_location"].choices = [
-                ("", "Destino não identificado")]
-            request.session["to_location_id"] = 0
+        form.fields["to_location"].choices = [("", "")] + to_location_choices
+        form.fields["to_location"].initial = to_location_initial
+        form.fields["to_location"].disabled = to_location_disabled
 
     return render(
         request,
