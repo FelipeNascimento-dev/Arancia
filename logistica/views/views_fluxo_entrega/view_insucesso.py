@@ -142,7 +142,7 @@ def unsuccessful_insert(request, order=None):
                         "order_number": pedido,
                         "volume_number": 1,
                         "order_type": "FAILURE",
-                        "tracking_code": "207",
+                        "tracking_code": "211",
                         "created_by": str(request.user),
                         "bar_codes": serials_bad,
                         "from_location_id": location_id,

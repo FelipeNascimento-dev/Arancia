@@ -73,7 +73,7 @@ def order_detail(request, order: str):
         ultima_tracking = (result.get("ultima_tracking") or "").strip().upper()
 
         if tipo == "NORMAL":
-            if ultima_tracking[:3] != '205' and volume_state != "CLARIFY_DELIVERY_FAIL":
+            if ultima_tracking[:3] != '205' and volume_state not in ["CLARIFY_DELIVERY_FAIL", "DELIVERY_FAILED"]:
                 try:
                     tracking_atual = int(
                         (result.get("ultima_tracking") or "200").split(" ")[0])
@@ -90,7 +90,7 @@ def order_detail(request, order: str):
                     return redirect("logistica:pcp", code=proxima_tracking)
             else:
                 tipo = 'NORMAL|INSUCESSO' if (
-                    tipo == 'NORMAL' and volume_state == 'CLARIFY_DELIVERY_FAIL') else tipo
+                    tipo == 'NORMAL' and volume_state in ["CLARIFY_DELIVERY_FAIL", "DELIVERY_FAILED"]) else tipo
                 payload = {
                     "order_number": result.get("order_number"),
                     "volume_number": result.get("volume_number") or 1,
@@ -207,7 +207,7 @@ def order_detail(request, order: str):
     tipo = (form.fields['shipment_order_type'].initial or '').strip().upper()
     volume_state = (result.get("volume_state") or "").strip().upper()
     ultima_tracking = (result.get("ultima_tracking") or "").strip().upper()
-    if tipo == 'NORMAL' and volume_state == 'CLARIFY_DELIVERY_FAIL' \
+    if tipo == 'NORMAL' and volume_state in ["CLARIFY_DELIVERY_FAIL", "DELIVERY_FAILED"] \
             and ultima_tracking[:3] == '205':
         tipo = 'NORMAL|INSUCESSO'
     elif tipo == 'RECEIPT' and ultima_tracking[:3] == '208':
