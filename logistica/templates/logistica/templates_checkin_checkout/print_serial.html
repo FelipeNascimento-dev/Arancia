@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Imprimir Serial</title>
+
+  <style>
+    @page {
+      size: 90mm 29mm;
+      margin: 0;
+    }
+
+    html,
+    body {
+      width: 90mm;
+      height: 29mm;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: white;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+    }
+
+    .label {
+      width: 90mm;
+      height: 29mm;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      transform-origin: center;
+    }
+
+    svg {
+      width: 85mm;
+      height: 18mm;
+      shape-rendering: crispEdges;
+    }
+
+    .serial-text {
+      margin-top: 2mm;
+      font-size: 9px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      white-space: nowrap;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="label">
+    <svg id="barcode"></svg>
+    <div class="serial-text">{{ serial }}</div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script>
+    JsBarcode("#barcode", "{{ serial }}", {
+      format: "CODE128",
+      lineColor: "#000",
+
+      width: 0.9,
+      height: 55,
+
+      displayValue: false,
+
+      margin: 2,
+      marginTop: 0,
+      marginBottom: 0,
+      marginLeft: 4,
+      marginRight: 4,
+
+      background: "#fff"
+    });
+    window.onload = () => window.print();
+  </script>
+
+</body>
+
+</html>

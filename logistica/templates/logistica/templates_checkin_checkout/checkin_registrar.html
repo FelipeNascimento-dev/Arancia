@@ -38,13 +38,152 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    z-index: 8 ;
+    z-index: 8;
     background-color: #fff;
   }
 
   #id_sales_channel {
     background-color: transparent !important;
     border: none !important;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-overlay.active {
+    display: flex;
+  }
+
+  .modal-box {
+    background: #ffffff;
+    width: 460px;
+    max-width: 92%;
+    border-radius: 14px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, .25);
+    animation: modalFade .25s ease;
+    font-family: inherit;
+  }
+
+  .modal-header {
+    padding: 18px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 14px 14px 0 0;
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .modal-close {
+    cursor: pointer;
+    font-size: 20px;
+    color: #6b7280;
+    transition: color .2s;
+  }
+
+  .modal-close:hover {
+    color: #111827;
+  }
+
+  .modal-body {
+    padding: 22px;
+  }
+
+  .modal-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #374151;
+  }
+
+  .modal-input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+    transition: border .2s, box-shadow .2s;
+  }
+
+  .modal-input::placeholder {
+    color: #9ca3af;
+  }
+
+  .modal-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .15);
+  }
+
+  .modal-footer {
+    padding: 16px 22px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .btn-primary {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+  }
+
+  .btn-primary:hover {
+    background: #1e40af;
+  }
+
+  .btn-primary:active {
+    transform: scale(.97);
+  }
+
+  .btn-secondary {
+    background: #f3f4f6;
+    color: #111827;
+    border: 1px solid #d1d5db;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+
+  .btn-secondary:hover {
+    background: #e5e7eb;
+  }
+
+  @keyframes modalFade {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(.96);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
 </style>
 
@@ -59,13 +198,76 @@
     <form method="POST">
       {% csrf_token %}
       <div class="signature">
-        <button type="submit" class="btn btn-primary" name="ilg_insert" value="1">
-          Serial Provisorio
+        <button type="button" class="btn btn-primary" id="btnSerialProvisorio">
+          Serial Provisório
         </button>
       </div>
-      {% include 'global/partials/_form_2col.html' %}
+      {% include 'global/partials/_form_2colV2.html' %}
+      <div id="modalSerial" class="modal-overlay">
+        <div class="modal-box">
+
+          <div class="modal-header">
+            <h3>Gerar Serial Provisório</h3>
+            <span id="closeModal" class="modal-close">✕</span>
+          </div>
+
+          <div class="modal-body">
+            <label class="modal-label">Serial Antigo (opcional)</label>
+            <input type="text" name="old_serial" class="modal-input" placeholder="Informe o serial antigo">
+          </div>
+
+          <div class="modal-body">
+            <label class="modal-label">Razão (opcional)</label>
+            <input type="text" name="reason" class="modal-input"
+              placeholder="Informe a razão da criação do serial provisório">
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" id="cancelModal" class="btn-secondary">
+              Cancelar
+            </button>
+
+            <button type="button" id="btnGerarSerial" class="btn-primary">
+              Gerar
+            </button>
+
+            <input type="hidden" name="gerar_serial_provisorio" value="1">
+          </div>
+        </div>
+      </div>
     </form>
   </div>
 </div>
+
+<!-- MODAL PARA SERIAL PROVISORIO -->
+<script>
+  const btnOpen = document.getElementById("btnSerialProvisorio");
+  const modal = document.getElementById("modalSerial");
+  const btnClose = document.getElementById("closeModal");
+  const btnCancel = document.getElementById("cancelModal");
+  const btnGerar = document.getElementById("btnGerarSerial");
+  const form = btnGerar.closest("form");
+
+  btnOpen.onclick = () => modal.classList.add("active");
+  btnClose.onclick = () => modal.classList.remove("active");
+  btnCancel.onclick = () => modal.classList.remove("active");
+
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      modal.classList.remove("active");
+    }
+  };
+
+  btnGerar.onclick = () => {
+    form.submit();
+  };
+</script>
+
+
+{% if print_serial_url %}
+<script>
+  window.open("{{ print_serial_url }}", "_blank");
+</script>
+{% endif %}
 
 {% endblock %}

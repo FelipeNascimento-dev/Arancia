@@ -35,3 +35,4 @@ from .views_checkin_checkout.view_consulta_clientes import client_consult
 from .views_recebimento_estoque.view_gerenciamento_estoque import gerenciamento_estoque
 from .views_recebimento_estoque.view_gerenciamento_kits import gerenciamento_kits
 from .transp import transp_view
+from .views_checkin_checkout.print_serial import print_serial
