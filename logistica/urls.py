@@ -84,6 +84,8 @@ urls_Checkin = [
     path('check-in/cliente/consult/', client_consult, name='client_consult'),
     path('check-in/registro/', client_checkin, name='client_checkin'),
     path('check-in/product/create/', product_create, name='product_create'),
+    path("print-serial/<str:serial>/", print_serial, name="print_serial"),
+
 ]
 
 urlpatterns = urls_User + urls_LastmileB2C + urls_Gerenciamento + urls_Checkin + \

@@ -139,7 +139,84 @@ def client_checkin(request):
     except Exception as e:
         messages.error(request, f"Erro ao identificar destino do usuário: {e}")
 
-    if request.method == "POST":
+    if request.method == "POST" and "gerar_serial_provisorio" in request.POST:
+        form = ClientCheckInForm(
+            request.POST,
+            nome_form=titulo,
+            from_choices=from_choices,
+            product_choices=product_choices,
+        )
+
+        old_serial = request.POST.get("old_serial")
+        reason = request.POST.get("reason")
+
+        payload = {
+            "old_serial_number": old_serial if old_serial else None,
+            "reason": reason if reason else "Não Informado",
+            "created_by": request.user.username,
+        }
+
+        try:
+            res = RequestClient(
+                url=f"{STOCK_API_URL}/v1/item/provisional/",
+                method="POST",
+                headers={
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                request_data=payload
+            )
+            api_result = res.send_api_request()
+
+            new_serial = (
+                api_result.get("serial")
+                or api_result.get("new_serial_number")
+                or ""
+            )
+            print(new_serial)
+
+            messages.success(
+                request,
+                f"Serial provisório gerado com sucesso: {new_serial}"
+            )
+
+            form = ClientCheckInForm(
+                nome_form=titulo,
+                from_choices=from_choices,
+                product_choices=product_choices,
+                initial={
+                    "serial": new_serial
+                }
+            )
+
+            form.fields["to_location"].choices = [
+                ("", "")] + to_location_choices
+            form.fields["to_location"].initial = to_location_initial
+            form.fields["to_location"].disabled = to_location_disabled
+
+            print_url = reverse(
+                "logistica:print_serial",
+                args=[new_serial]
+            )
+
+            request.session["print_serial_url"] = print_url
+
+            return render(
+                request,
+                "logistica/templates_checkin_checkout/checkin_registrar.html",
+                {
+                    "form": form,
+                    "site_title": titulo,
+                    "botao_texto": "Registrar Check-In",
+                    "print_serial_url": print_url,
+                },
+            )
+
+        except Exception as e:
+            messages.error(request, f"Erro ao gerar serial provisório: {e}")
+            api_result = None
+
+    elif request.method == "POST":
         form = ClientCheckInForm(
             request.POST,
             nome_form=titulo,
