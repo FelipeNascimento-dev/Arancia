@@ -7,6 +7,93 @@
         height: auto;
         margin-top: 65px;
     }
+
+    .cc-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .cc-modal.open {
+        display: flex;
+    }
+
+    .cc-modal-content {
+        background: #ffffff;
+        width: 360px;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+        animation: modalFadeIn 0.18s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+        from {
+            transform: translateY(8px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .cc-modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .cc-modal-header p {
+        margin: 4px 0 16px;
+        font-size: 13px;
+        color: #666;
+    }
+
+    .cc-modal-body {
+        margin-bottom: 20px;
+    }
+
+    .cc-modal-body label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .cc-select {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 14px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        background-color: #fafafa;
+        cursor: pointer;
+    }
+
+    .cc-select:focus {
+        outline: none;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.15);
+    }
+
+    .cc-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .cc-actions .btn {
+        min-width: 96px;
+        padding: 8px 14px;
+        font-size: 14px;
+        border-radius: 8px;
+    }
 </style>
 
 <div class="form-container">
@@ -16,6 +103,109 @@
         </form>
     </div>
 </div>
+
+<!-- MODAL PARA ESCOLHA DE GOOD OU BAD -->
+
+<div id="status-modal" class="cc-modal" aria-hidden="true">
+    <div class="cc-modal-content">
+        <div class="cc-modal-header">
+            <h3>Status do Material</h3>
+            <p>Escolha como o serial será classificado</p>
+        </div>
+
+        <div class="cc-modal-body">
+            <label for="modal-material">Classificação</label>
+            <select id="modal-material" class="cc-select">
+                <option value="EC21" selected>GOOD</option>
+                <option value="EC22">BAD</option>
+            </select>
+        </div>
+
+        <div class="cc-actions">
+            <button type="button" data-close="1" class="btn btn-secondary">
+                Cancelar
+            </button>
+            <button type="button" id="sm-confirm" class="btn btn-primary">
+                Confirmar
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    (function () {
+        const input = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
+        if (!input) return;
+
+        const form = input.closest('form');
+        const modal = document.getElementById('status-modal');
+        const confirmBtn = document.getElementById('sm-confirm');
+        const selectMaterial = document.getElementById('modal-material');
+
+        function openModal() {
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            selectMaterial.focus();
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            input.focus();
+        }
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const v = (input.value || '').trim();
+                if (!v) return;
+                openModal();
+            }
+        });
+
+        confirmBtn.addEventListener('click', function () {
+            let materialField = form.querySelector('#id_material');
+            if (materialField) {
+                materialField.value = selectMaterial.value;
+            }
+
+            const pedido = form.querySelector('#id_pedido');
+            if (pedido && pedido.disabled) pedido.disabled = false;
+
+            let hidden = form.querySelector('input[name="add_serial"]');
+            if (!hidden) {
+                hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'add_serial';
+                form.appendChild(hidden);
+            }
+            hidden.value = '1';
+
+            form.noValidate = true;
+            closeModal();
+            form.submit();
+
+            setTimeout(() => input.value = '', 0);
+        });
+
+        modal.addEventListener('click', function (e) {
+            if (e.target.dataset.close === '1') closeModal();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (modal.classList.contains('open') && e.key === 'Escape') {
+                e.preventDefault();
+                closeModal();
+            }
+        });
+    })();
+</script>
+
+
+<!-- FIM DO MODAL -->
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -46,33 +236,6 @@
         if (!input) return;
         var form = input.closest('form');
         if (!form) return;
-
-        input.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                var v = (input.value || '').trim();
-                if (!v) return;
-
-                var pedido = form.querySelector('#id_pedido') || form.querySelector('input[name="pedido"]');
-                if (pedido && pedido.disabled) pedido.disabled = false;
-
-                var hidden = form.querySelector('input[name="add_serial"]');
-                if (!hidden) {
-                    hidden = document.createElement('input');
-                    hidden.type = 'hidden';
-                    hidden.name = 'add_serial';
-                    form.appendChild(hidden);
-                }
-                hidden.value = '1';
-                form.noValidate = true;
-
-                form.submit();
-
-                setTimeout(function () {
-                    input.value = '';
-                }, 0);
-            }
-        });
     })();
 </script>
 

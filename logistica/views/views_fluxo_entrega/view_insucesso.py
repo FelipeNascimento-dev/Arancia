@@ -142,7 +142,7 @@ def unsuccessful_insert(request, order=None):
                         "order_number": pedido,
                         "volume_number": 1,
                         "order_type": "FAILURE",
-                        "tracking_code": "207",
+                        "tracking_code": "211",
                         "created_by": str(request.user),
                         "bar_codes": serials_bad,
                         "from_location_id": location_id,
@@ -191,6 +191,9 @@ def unsuccessful_insert(request, order=None):
     return render(request, 'logistica/templates_fluxo_entrega/insucesso.html', {
         'form': form,
         'serials': serials_display,
+        'serials_good': serials_good,
+        'serials_bad': serials_bad,
+        'show_material_status': True,
         'botao_texto': 'Registrar Insucesso',
         'site_title': titulo,
         'etapa_ativa': 'unsuccessful_insert',

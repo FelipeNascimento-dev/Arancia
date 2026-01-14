@@ -160,7 +160,7 @@ def gerenciamento_estoque(request):
     resultado_itens = []
     totais = {}
     produtos_unicos = []
-    visao = request.POST.get("visao", "detalhe")
+    visao = request.POST.get("visao")
     limit = int(request.POST.get("limit", 25))
     offset = int(request.POST.get("offset", 0))
     has_more = False
