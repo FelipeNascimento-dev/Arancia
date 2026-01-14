@@ -4,7 +4,7 @@ from django import forms
 class GerenciamentoEstoqueForm(forms.Form):
     client = forms.ChoiceField(label="Selecione o Cliente", choices=[])
     cd_estoque = forms.MultipleChoiceField(
-        label="Selecione os CDs (PAs)",
+        label="Selecione as localidades",
         choices=[],
         widget=forms.SelectMultiple(attrs={"size": 6})
     )

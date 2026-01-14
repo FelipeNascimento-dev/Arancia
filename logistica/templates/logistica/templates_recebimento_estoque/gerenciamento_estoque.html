@@ -522,75 +522,171 @@
     .btn-close:hover {
         background: #5a6268;
     }
+
+    .data-table {
+        width: 1300px;
+        border-collapse: collapse;
+        font-size: 13px;
+        background: white;
+        margin-left: 65px
+    }
+
+    .data-table th {
+        background: #f3f4f6;
+        text-align: left;
+        padding: 10px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .data-table td {
+        padding: 9px 10px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .data-table tr:hover {
+        background: #f9fafb;
+    }
+
+    .dropdown {
+    position: relative;
+}
+
+.dropdown-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dropdown-btn:hover {
+    background: #f3f4f6;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 110%;
+    left: 0;
+    min-width: 220px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,.12);
+    padding: 8px;
+    z-index: 999;
+}
+
+.dropdown.open .dropdown-menu {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 6px 8px;
+    font-size: 13px;
+}
+
+.dropdown-item + .dropdown-item {
+    margin-top: 6px;
+}
+
+.dropdown-item label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #374151;
+    display: block;
+    margin-bottom: 4px;
+}
 </style>
 
 <div class="form-container">
     <div class="form-card-2col">
         <form method="POST">
             {% include 'global/partials/_form_2colV2.html' %}
-            <div style="display: flex; justify-content: flex-end; width: 100%; margin-bottom: 10px;">
-                <button type="button" onclick="selectAllPAs()" style="background:#0056c1;color:white;border:none;padding:6px 12px;
-                            border-radius:6px;font-size:12px;cursor:pointer;">
-                    Selecionar Todos os CDs
-                </button>
-            </div>
             {% csrf_token %}
-
             <input type="hidden" id="visao" name="visao" value="{{ visao|default:'detalhe' }}">
-
             <div class="top-bar-balanced">
-
-                <!-- Filtros -->
-                <div class="top-group">
-                    <span class="top-label">Exibir</span>
-
-                    <select name="limit" class="limit-balanced" onchange="this.form.submit()">
-                        <option value="25" {% if limit == 25 %}selected{% endif %}>25</option>
-                        <option value="50" {% if limit == 50 %}selected{% endif %}>50</option>
-                        <option value="100" {% if limit == 100 %}selected{% endif %}>100</option>
-                        <option value="200" {% if limit == 200 %}selected{% endif %}>200</option>
-                    </select>
-
-                    <span class="top-hint">itens por página</span>
-
-                    <span class="top-hint">Tipo de estoque:</span>
-
-                    <select name="stock_type" class="limit-balanced" onchange="this.form.submit()">
-                        <option value="">Todos os tipos</option>
-
-                        {% for st in stock_types %}
-                        <option value="{{ st }}" {% if request.POST.stock_type == st %}selected{% endif %}>
-                            {{ st }}
-                        </option>
-                        {% endfor %}
-                    </select>
+                <div class="dropdown">
+                    <button type="button" class="dropdown-btn">
+                        <i class="fa-solid fa-sliders"></i> Configurações
+                    </button>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-item">
+                            <label>Itens por página</label>
+                            <select name="limit" class="limit-balanced" onchange="this.form.submit()">
+                                <option value="25" {% if limit == 25 %}selected{% endif %}>25</option>
+                                <option value="50" {% if limit == 50 %}selected{% endif %}>50</option>
+                                <option value="100" {% if limit == 100 %}selected{% endif %}>100</option>
+                                <option value="200" {% if limit == 200 %}selected{% endif %}>200</option>
+                            </select>
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Tipo de estoque</label>
+                            <select name="stock_type" class="limit-balanced" onchange="this.form.submit()">
+                                <option value="">Todos</option>
+                                {% for st in stock_types %}
+                                <option value="{{ st }}" {% if request.POST.stock_type == st %}selected{% endif %}>
+                                    {{ st }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="top-action">
-                    <button type="submit" name="exportar" value="1" class="extract-balanced">
-                        <i class="fa-solid fa-download"></i>
-                        Extrair estoque
+                <div class="dropdown">
+                    <button type="button" class="dropdown-btn">
+                        <i class="fa-solid fa-eye"></i> Visualização
                     </button>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-item">
+                            <button type="submit"
+                                    onclick="document.getElementById('visao').value='detalhe'"
+                                    class="view-balanced active" id="btn-cards">
+                                Cards
+                            </button>
+                            <button type="button" class="view-balanced" id="btn-table">
+                                Tabela
+                            </button>
+                        </div>
+
+                        <div class="dropdown-item">
+                            <button type="submit"
+                                    onclick="document.getElementById('visao').value='resumo'"
+                                    class="view-balanced {% if visao == 'resumo' %}active{% endif %}">
+                                Resumida
+                            </button>
+                            <button type="submit" onclick="document.getElementById('visao').value='detalhe'"
+                                class="view-balanced {% if visao == 'detalhe' %}active{% endif %}">
+                                Detalhada
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="top-group">
-                    <span class="top-label">Visualização</span>
-
-                    <button type="submit" onclick="document.getElementById('visao').value='resumo'"
-                        class="view-balanced {% if visao == 'resumo' %}active{% endif %}">
-                        Resumida
+                <div class="dropdown">
+                    <button type="button" class="dropdown-btn">
+                        <i class="fa-solid fa-bolt"></i> Ações
                     </button>
-
-                    <button type="submit" onclick="document.getElementById('visao').value='detalhe'"
-                        class="view-balanced {% if visao == 'detalhe' %}active{% endif %}">
-                        Detalhada
-                    </button>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-item">
+                            <button type="submit" name="exportar" value="1" class="extract-balanced">
+                                <i class="fa-solid fa-download"></i> Exportar estoque
+                            </button>
+                        </div>
+                        <div class="dropdown-item">
+                            <button type="button" onclick="selectAllPAs()" class="view-balanced">
+                                Selecionar todos os CDs
+                            </button>
+                        </div>
+                    </div>
                 </div>
-
             </div>
-
-
-
 
             {% if form.data.cd_estoque %}
             <div class="chips-wrap" style="margin:10px 0; display:flex; gap:6px; flex-wrap:wrap;">
@@ -616,7 +712,16 @@
 <div class="cards-container">
 
     {% for item in resultado_itens %}
-    <div class="card {% if item.alerta %}card-alerta{% endif %}">
+    <div class="card {% if item.alerta %}card-alerta{% endif %}"
+     data-serial="{{ item.serial }}"
+     data-status="{{ item.status }}"
+     data-dias="{{ item.dias_no_estoque }}"
+     data-local="{{ item.location_name }}"
+     data-sku="{{ item.product_sku }}"
+     data-desc="{{ item.product_description }}"
+     data-data="{{ item.last_movement_in_date|default:'-' }}"
+     data-extra='{{ item.extra_info|default:""|safe|escapejs }}'
+     data-extra-key="Extra Info">
 
         <div class="card-header">
             <span class="badge-num {% if item.alerta %}badge-alerta{% endif %}">
@@ -633,16 +738,13 @@
         </div>
 
         <div class="card-body">
-
             <p><strong>Status:</strong><br>{{ item.status }}</p>
-
             <p>
                 <strong>Último Movimento:</strong><br>
                 <span class="{% if item.alerta %}date-alerta{% endif %}">
                     {{ item.last_movement_in_date|default:"-" }}
                 </span>
             </p>
-
             <p><strong>Dias no estoque:</strong><br>
                 {% if item.dias_no_estoque is not None %}
                 {{ item.dias_no_estoque }} dia(s)
@@ -650,8 +752,6 @@
                 -
                 {% endif %}
             </p>
-
-            <p><strong>Tipo de Estoque:</strong><br>{{ item.stock_type }}</p>
             <p><strong>Localização:</strong><br>{{ item.location_name }}</p>
             <p><strong>SKU:</strong><br>{{ item.product_sku }}</p>
             <p><strong>Descrição:</strong><br>{{ item.product_description }}</p>
@@ -670,8 +770,87 @@
         </div>
     </div>
     {% endfor %}
-
 </div>
+
+<div id="table-container" style="display:none; margin: 0 20px 40px;">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Serial</th>
+                <th>Status</th>
+                <th>Dias</th>
+                <th>Localização</th>
+                <th>SKU</th>
+                <th>Descrição</th>
+                <th>Último Movimento</th>
+                <th>Informações Adicionais</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+(function () {
+    const btnCards = document.getElementById("btn-cards");
+    const btnTable = document.getElementById("btn-table");
+    const cardsContainer = document.querySelector(".cards-container");
+    const tableContainer = document.getElementById("table-container");
+    const tbody = tableContainer.querySelector("tbody");
+
+    function buildTable() {
+        const tbody = document.querySelector("#table-container tbody");
+        if (!tbody) return;
+
+        tbody.innerHTML = "";
+
+        document.querySelectorAll(".card").forEach(card => {
+            const extra = card.dataset.extra;
+            const extraKey = card.dataset.extraKey || "Extra Info";
+
+            const extraBtn = extra
+                ? `<button class="btn-json"
+                        data-json='${extra}'
+                        data-key="${extraKey}"
+                        onclick="showJsonModal(this)">+</button>`
+                : "-";
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${card.dataset.serial}</td>
+                <td>${card.dataset.status}</td>
+                <td>${card.dataset.dias || "-"}</td>
+                <td>${card.dataset.local}</td>
+                <td>${card.dataset.sku}</td>
+                <td>${card.dataset.desc}</td>
+                <td>${card.dataset.data}</td>
+                <td style="text-align:center;">${extraBtn}</td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+    }
+
+    btnTable.addEventListener("click", () => {
+        btnTable.classList.add("active");
+        btnCards.classList.remove("active");
+
+        cardsContainer.style.display = "none";
+        tableContainer.style.display = "block";
+
+        buildTable();
+    });
+
+    btnCards.addEventListener("click", () => {
+        btnCards.classList.add("active");
+        btnTable.classList.remove("active");
+
+        tableContainer.style.display = "none";
+        cardsContainer.style.display = "grid";
+    });
+})();
+</script>
+
 {% endif %}
 
 {% if resultado_itens %}
@@ -706,12 +885,9 @@
 <div id="editModal" class="modal" style="display:none;">
     <div class="modal-content">
         <h3>Editar Produto</h3>
-
         <form method="POST">
             {% csrf_token %}
-
             <input type="hidden" name="item_id" id="modal_item_id">
-
             <label>Produto:</label>
             <select name="novo_produto" id="modal_produto" class="input">
                 {% for p in produtos_api %}
@@ -856,6 +1032,30 @@
             select.options[i].selected = true;
         }
     }
+</script>
+
+<!-- TOP BAR -->
+ <script>
+document.addEventListener("click", function (e) {
+    document.querySelectorAll(".dropdown").forEach(d => {
+        if (!d.contains(e.target)) d.classList.remove("open");
+    });
+
+    const btn = e.target.closest(".dropdown-btn");
+    if (btn) {
+        btn.parentElement.classList.toggle("open");
+    }
+});
+
+function showTableView() {
+    const cards = document.querySelector(".cards-container");
+    const table = document.getElementById("table-container");
+
+    cards.style.display = "none";
+    table.style.display = "block";
+
+    if (typeof buildTable === "function") buildTable();
+}
 </script>
 
 
