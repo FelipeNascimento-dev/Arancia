@@ -610,6 +610,7 @@
             {% include 'global/partials/_form_2colV2.html' %}
             {% csrf_token %}
             <input type="hidden" id="visao" name="visao" value="{{ visao|default:'' }}">
+            <input type="hidden" name="modo_exibicao" id="modo_exibicao" value="{{ modo_exibicao|default:'' }}">
             <div class="top-bar-balanced">
                 <div class="dropdown">
                     <button type="button" class="dropdown-btn">
@@ -646,11 +647,14 @@
                     <div class="dropdown-menu">
                         <div class="dropdown-item">
                             <button type="submit"
-                                    onclick="document.getElementById('visao').value='detalhe'"
-                                    class="view-balanced active" id="btn-cards">
+                                    onclick="document.getElementById('modo_exibicao').value='cards'"
+                                    class="view-balanced {% if modo_exibicao == 'cards' %}active{% endif %}">
                                 Cards
                             </button>
-                            <button type="button" class="view-balanced" id="btn-table">
+
+                            <button type="submit"
+                                    onclick="document.getElementById('modo_exibicao').value='tabela'"
+                                    class="view-balanced {% if modo_exibicao == 'tabela' %}active{% endif %}">
                                 Tabela
                             </button>
                         </div>
@@ -711,148 +715,11 @@
 </div>
 
 {% if resultado_itens %}
-<div class="cards-container">
-
-    {% for item in resultado_itens %}
-    <div class="card {% if item.alerta %}card-alerta{% endif %}"
-     data-serial="{{ item.serial }}"
-     data-status="{{ item.status }}"
-     data-dias="{{ item.dias_no_estoque }}"
-     data-local="{{ item.location_name }}"
-     data-sku="{{ item.product_sku }}"
-     data-desc="{{ item.product_description }}"
-     data-data="{{ item.last_movement_in_date|default:'-' }}"
-     data-extra='{{ item.extra_info|default:""|safe|escapejs }}'
-     data-extra-key="Extra Info">
-
-        <div class="card-header">
-            <span class="badge-num {% if item.alerta %}badge-alerta{% endif %}">
-                {{ item.dias_no_estoque }}
-            </span>
-            <h3 class="card-title">
-                {{ item.serial }}
-            </h3>
-            {% if perms.logistica.gerente_estoque %}
-            <button class="edit-btn" onclick="openEditModal({{ item.id }}, '{{ item.product_sku }}')">
-                <i class="fa-solid fa-pen-to-square"></i>
-            </button>
-            {% endif %}
-        </div>
-
-        <div class="card-body">
-            <p><strong>Status:</strong><br>{{ item.status }}</p>
-            <p>
-                <strong>Último Movimento:</strong><br>
-                <span class="{% if item.alerta %}date-alerta{% endif %}">
-                    {{ item.last_movement_in_date|default:"-" }}
-                </span>
-            </p>
-            <p><strong>Dias no estoque:</strong><br>
-                {% if item.dias_no_estoque is not None %}
-                {{ item.dias_no_estoque }} dia(s)
-                {% else %}
-                -
-                {% endif %}
-            </p>
-            <p><strong>Localização:</strong><br>{{ item.location_name }}</p>
-            <p><strong>SKU:</strong><br>{{ item.product_sku }}</p>
-            <p><strong>Descrição:</strong><br>{{ item.product_description }}</p>
-            <p><strong>Informações Adicionais:</strong><br>
-                {% if item.extra_info %}
-                    <button class="btn-json"
-                        data-json='{{ item.extra_info|safe|escapejs }}'
-                        data-key="Extra Info"
-                        onclick="showJsonModal(this)">
-                        +
-                    </button>
-                {% else %}
-                    -
-                {% endif %}
-            </p>
-        </div>
-    </div>
-    {% endfor %}
-</div>
-
-<div id="table-container" style="display:none; margin: 0 20px 40px;">
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Serial</th>
-                <th>Status</th>
-                <th>Dias</th>
-                <th>Localização</th>
-                <th>SKU</th>
-                <th>Descrição</th>
-                <th>Último Movimento</th>
-                <th>Informações Adicionais</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-</div>
-
-<script>
-(function () {
-    const btnCards = document.getElementById("btn-cards");
-    const btnTable = document.getElementById("btn-table");
-    const cardsContainer = document.querySelector(".cards-container");
-    const tableContainer = document.getElementById("table-container");
-    const tbody = tableContainer.querySelector("tbody");
-
-    function buildTable() {
-        const tbody = document.querySelector("#table-container tbody");
-        if (!tbody) return;
-
-        tbody.innerHTML = "";
-
-        document.querySelectorAll(".card").forEach(card => {
-            const extra = card.dataset.extra;
-            const extraKey = card.dataset.extraKey || "Extra Info";
-
-            const extraBtn = extra
-                ? `<button class="btn-json"
-                        data-json='${extra}'
-                        data-key="${extraKey}"
-                        onclick="showJsonModal(this)">+</button>`
-                : "-";
-
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${card.dataset.serial}</td>
-                <td>${card.dataset.status}</td>
-                <td>${card.dataset.dias || "-"}</td>
-                <td>${card.dataset.local}</td>
-                <td>${card.dataset.sku}</td>
-                <td>${card.dataset.desc}</td>
-                <td>${card.dataset.data}</td>
-                <td style="text-align:center;">${extraBtn}</td>
-            `;
-
-            tbody.appendChild(tr);
-        });
-    }
-
-    btnTable.addEventListener("click", () => {
-        btnTable.classList.add("active");
-        btnCards.classList.remove("active");
-
-        cardsContainer.style.display = "none";
-        tableContainer.style.display = "block";
-
-        buildTable();
-    });
-
-    btnCards.addEventListener("click", () => {
-        btnCards.classList.add("active");
-        btnTable.classList.remove("active");
-
-        tableContainer.style.display = "none";
-        cardsContainer.style.display = "grid";
-    });
-})();
-</script>
-
+    {% if visao == "detalhe" %}
+        {% include 'global/partials/_visao_detalhada.html' %}
+    {% elif visao == "resumo" %}
+        {% include 'global/partials/_visao_resumida.html' %}
+    {% endif %}
 {% endif %}
 
 {% if resultado_itens %}
@@ -860,24 +727,40 @@
     <form method="POST" style="display:flex;gap:10px;align-items:center;">
         {% csrf_token %}
         <input type="hidden" name="visao" value="{{ visao }}">
+        <input type="hidden" name="modo_exibicao" value="{{ modo_exibicao }}">
         <input type="hidden" name="limit" value="{{ limit }}">
         <input type="hidden" name="client" value="{{ form.data.client }}">
+
+        {% if form.data.stock_type %}
+            <input type="hidden" name="stock_type" value="{{ form.data.stock_type }}">
+        {% endif %}
+
         {% for pa in pa_selecionadas %}
-        <input type="hidden" name="cd_estoque" value="{{ pa }}">
+            <input type="hidden" name="cd_estoque" value="{{ pa }}">
         {% endfor %}
 
         {% if offset > 0 %}
-        <button class="page-btn" name="offset" value="{{ prev_offset }}">← Anterior</button>
+            <button class="page-btn" name="offset" value="{{ prev_offset }}">
+                ← Anterior
+            </button>
         {% else %}
-        <button class="page-btn disabled" disabled>← Anterior</button>
+            <button class="page-btn disabled" disabled>
+                ← Anterior
+            </button>
         {% endif %}
 
-        <span class="page-info">Página {{ page_number }} / {{ total_pages }}</span>
+        <span class="page-info">
+            Página {{ page_number }} / {{ total_pages }}
+        </span>
 
         {% if has_more %}
-        <button class="page-btn" name="offset" value="{{ next_offset }}">Próxima →</button>
+            <button class="page-btn" name="offset" value="{{ next_offset }}">
+                Próxima →
+            </button>
         {% else %}
-        <button class="page-btn disabled" disabled>Próxima →</button>
+            <button class="page-btn disabled" disabled>
+                Próxima →
+            </button>
         {% endif %}
     </form>
 </div>
@@ -982,25 +865,6 @@
     }
 </script>
 
-
-
-<script>
-    function setVisao(tipo) {
-        document.getElementById("visao").value = tipo;
-
-        const btnResumo = document.getElementById("btn-resumo");
-        const btnDetalhe = document.getElementById("btn-detalhe");
-
-        if (tipo === "resumo") {
-            btnResumo.classList.add("active");
-            btnDetalhe.classList.remove("active");
-        } else {
-            btnDetalhe.classList.add("active");
-            btnResumo.classList.remove("active");
-        }
-    }
-</script>
-
 <script>
     function openEditModal(itemId, skuAtual) {
 
@@ -1037,7 +901,7 @@
 </script>
 
 <!-- TOP BAR -->
- <script>
+<script>
 document.addEventListener("click", function (e) {
     document.querySelectorAll(".dropdown").forEach(d => {
         if (!d.contains(e.target)) d.classList.remove("open");
@@ -1048,16 +912,6 @@ document.addEventListener("click", function (e) {
         btn.parentElement.classList.toggle("open");
     }
 });
-
-function showTableView() {
-    const cards = document.querySelector(".cards-container");
-    const table = document.getElementById("table-container");
-
-    cards.style.display = "none";
-    table.style.display = "block";
-
-    if (typeof buildTable === "function") buildTable();
-}
 </script>
 
 

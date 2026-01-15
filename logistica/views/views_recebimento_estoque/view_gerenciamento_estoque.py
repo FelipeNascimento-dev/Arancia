@@ -69,6 +69,20 @@ def carregar_formulario(request):
 def gerenciamento_estoque(request):
     titulo = "Gerenciamento de Estoque"
 
+    if request.method == "POST" and "remove_pa" in request.POST:
+        remove_pa = request.POST.get("remove_pa")
+
+        new_post = request.POST.copy()
+        cds = new_post.getlist("cd_estoque")
+
+        cds = [pa for pa in cds if pa != remove_pa]
+
+        new_post.setlist("cd_estoque", cds)
+
+        new_post["offset"] = 0
+
+        request.POST = new_post
+
     if request.method == "POST" and "exportar" in request.POST:
 
         form, _, _, sales_channels_map = carregar_formulario(request)
@@ -161,6 +175,7 @@ def gerenciamento_estoque(request):
     totais = {}
     produtos_unicos = []
     visao = request.POST.get("visao")
+    modo_exibicao = request.POST.get("modo_exibicao")
     limit = int(request.POST.get("limit", 25))
     offset = int(request.POST.get("offset", 0))
     has_more = False
@@ -232,6 +247,7 @@ def gerenciamento_estoque(request):
             "totais": totais,
             "produtos_unicos": produtos_unicos,
             "visao": visao,
+            "modo_exibicao": modo_exibicao,
             "titulo": titulo,
             "site_title": titulo,
             "limit": limit,
