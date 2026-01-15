@@ -1,0 +1,119 @@
+<div class="cards-container">
+
+{% if tipo == "detalhe" %}
+    {% for item in itens %}
+    <div class="card {% if item.alerta %}card-alerta{% endif %}"
+         data-serial="{{ item.serial }}"
+         data-status="{{ item.status }}"
+         data-dias="{{ item.dias_no_estoque }}"
+         data-local="{{ item.location_name }}"
+         data-sku="{{ item.product_sku }}"
+         data-desc="{{ item.product_description }}"
+         data-data="{{ item.last_movement_in_date|default:'-' }}"
+         data-extra='{{ item.extra_info|default:""|safe|escapejs }}'
+         data-extra-key="Extra Info">
+
+        <div class="card-header">
+            <span class="badge-num {% if item.alerta %}badge-alerta{% endif %}">
+                {{ item.dias_no_estoque }}
+            </span>
+
+            <h3 class="card-title">
+                {{ item.serial }}
+            </h3>
+
+            {% if perms.logistica.gerente_estoque %}
+            <button class="edit-btn"
+                onclick="openEditModal({{ item.id }}, '{{ item.product_sku }}')">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            {% endif %}
+        </div>
+
+        <div class="card-body">
+            <p><strong>Status:</strong><br>{{ item.status }}</p>
+
+            <p>
+                <strong>Último Movimento:</strong><br>
+                <span class="{% if item.alerta %}date-alerta{% endif %}">
+                    {{ item.last_movement_in_date|default:"-" }}
+                </span>
+            </p>
+
+            <p>
+                <strong>Dias no estoque:</strong><br>
+                {% if item.dias_no_estoque is not None %}
+                    {{ item.dias_no_estoque }} dia(s)
+                {% else %}
+                    -
+                {% endif %}
+            </p>
+
+            <p><strong>Localização:</strong><br>{{ item.location_name }}</p>
+            <p><strong>SKU:</strong><br>{{ item.product_sku }}</p>
+            <p><strong>Descrição:</strong><br>{{ item.product_description }}</p>
+
+            <p>
+                <strong>Informações Adicionais:</strong><br>
+                {% if item.extra_info %}
+                    <button class="btn-json"
+                        data-json='{{ item.extra_info|safe|escapejs }}'
+                        data-key="Extra Info"
+                        onclick="showJsonModal(this)">
+                        +
+                    </button>
+                {% else %}
+                    -
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+
+
+{% if tipo == "resumo" %}
+    {% for pa in itens %}
+        {% for st in pa.stock_types %}
+        <div class="card">
+            <div class="card-header">
+                <span class="badge-num">
+                    {{ st.total }}
+                </span>
+                <h3 class="card-title">
+                    PA {{ pa.pa }}
+                </h3>
+            </div>
+
+            <div class="card-body">
+                <p>
+                    <strong>Tipo de estoque:</strong><br>
+                    {{ st.type }}
+                </p>
+
+                <p><strong>Produtos:</strong></p>
+                <ul style="padding-left:18px;margin-bottom:12px;">
+                    {% for produto, qtd in st.qtd_por_produto.items %}
+                        <li>
+                            {{ produto }}
+                            <strong style="float:right;">{{ qtd }}</strong>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <p><strong>ZTIPO:</strong></p>
+                <ul style="padding-left:18px;">
+                    {% for ztipo, qtd in st.qtd_por_ztipo.items %}
+                        <li>
+                            {{ ztipo }}
+                            <strong style="float:right;">{{ qtd }}</strong>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endfor %}
+    {% endfor %}
+{% endif %}
+
+</div>

@@ -1,0 +1,5 @@
+{% if modo_exibicao == "cards" %}
+    {% include 'global/partials/_visao_cards.html' with itens=resultado_itens tipo="resumo" %}
+{% elif modo_exibicao == "tabela" %}
+    {% include 'global/partials/_visao_tabela.html' with tipo="resumo" itens=resultado_itens%}
+{% endif %}

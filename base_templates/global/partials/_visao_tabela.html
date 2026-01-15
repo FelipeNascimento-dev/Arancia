@@ -1,0 +1,84 @@
+<table class="data-table">
+
+    {% if tipo == "detalhe" %}
+    <thead>
+        <tr>
+            <th>Serial</th>
+            <th>Status</th>
+            <th>Dias</th>
+            <th>Localização</th>
+            <th>SKU</th>
+            <th>Descrição</th>
+            <th>Último Movimento</th>
+            <th>Informações Adicionais</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for item in itens %}
+        <tr>
+            <td>{{ item.serial }}</td>
+            <td>{{ item.status }}</td>
+            <td>{{ item.dias_no_estoque|default:"-" }}</td>
+            <td>{{ item.location_name }}</td>
+            <td>{{ item.product_sku }}</td>
+            <td>{{ item.product_description }}</td>
+            <td>{{ item.last_movement_in_date|default:"-" }}</td>
+
+            <td style="text-align:center;">
+                {% if item.extra_info %}
+                <button class="btn-json" data-json='{{ item.extra_info|safe|escapejs }}' data-key="Extra Info"
+                    onclick="showJsonModal(this)">
+                    +
+                </button>
+                {% else %}
+                -
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    {% endif %}
+
+    {% if tipo == "resumo" %}
+    <thead>
+        <tr>
+            <th>PA</th>
+            <th>Tipo de estoque</th>
+            <th>Produto</th>
+            <th>ZTIPO</th>
+            <th>Quantidade</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for pa in itens %}
+        {% for st in pa.stock_types %}
+
+        {% for produto, qtd in st.qtd_por_produto.items %}
+        <tr>
+            <td>{{ pa.pa }}</td>
+            <td>{{ st.type }}</td>
+            <td>{{ produto }}</td>
+            <td>-</td>
+            <td><strong>{{ qtd }}</strong></td>
+        </tr>
+        {% endfor %}
+
+        {% for ztipo, qtd in st.qtd_por_ztipo.items %}
+        <tr>
+            <td>{{ pa.pa }}</td>
+            <td>{{ st.type }}</td>
+            <td>-</td>
+            <td>{{ ztipo }}</td>
+            <td><strong>{{ qtd }}</strong></td>
+        </tr>
+        {% endfor %}
+
+        {% endfor %}
+        {% endfor %}
+    </tbody>
+    {% endif %}
+
+
+</table>
