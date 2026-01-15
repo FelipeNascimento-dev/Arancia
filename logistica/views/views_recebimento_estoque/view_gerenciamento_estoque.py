@@ -237,6 +237,11 @@ def gerenciamento_estoque(request):
         except Exception:
             stock_types = []
 
+    client_post = request.POST.get("client")
+    exibe_ztipo = False
+    if client_post:
+        exibe_ztipo = client_post.lower() == "cielo"
+
     return render(
         request,
         "logistica/templates_recebimento_estoque/gerenciamento_estoque.html",
@@ -248,6 +253,7 @@ def gerenciamento_estoque(request):
             "produtos_unicos": produtos_unicos,
             "visao": visao,
             "modo_exibicao": modo_exibicao,
+            "exibe_ztipo": exibe_ztipo,
             "titulo": titulo,
             "site_title": titulo,
             "limit": limit,

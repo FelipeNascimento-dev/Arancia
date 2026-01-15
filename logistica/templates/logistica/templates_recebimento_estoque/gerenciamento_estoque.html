@@ -722,7 +722,7 @@
     {% endif %}
 {% endif %}
 
-{% if resultado_itens %}
+{% if resultado_itens and visao == "detalhe" %}
 <div style="width:100%;display:flex;justify-content:center;margin-top:25px;margin-bottom:30px;">
     <form method="POST" style="display:flex;gap:10px;align-items:center;">
         {% csrf_token %}
