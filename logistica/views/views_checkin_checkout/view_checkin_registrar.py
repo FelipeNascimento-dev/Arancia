@@ -192,7 +192,6 @@ def client_checkin(request):
                 or api_result.get("new_serial_number")
                 or ""
             )
-            print(new_serial)
 
             messages.success(
                 request,
