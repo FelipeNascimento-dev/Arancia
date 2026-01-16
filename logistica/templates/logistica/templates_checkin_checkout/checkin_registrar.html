@@ -236,17 +236,17 @@
       <h4 style="margin-bottom:12px;">Checklist de Equipamentos (CLARO)</h4>
 
       <div class="claro-checklist">
-        {% for item in checklist_claro %}
-        <div class="check-item">
-          <input
-            type="number"
-            name="claro_checklist[{{ item }}]"
-            min="0"
-            value="0"
-            class="input-qty"
-          >
-          <label>{{ item }}</label>
-        </div>
+        {% for key, label in checklist_claro.items %}
+          <div class="check-item">
+            <input
+              type="number"
+              name="claro_checklist[{{ key }}]"
+              min="0"
+              value="0"
+              class="input-qty"
+            >
+            <label>{{ label }}</label>
+          </div>
         {% endfor %}
       </div>
       {% endif %}
@@ -275,11 +275,9 @@
               Cancelar
             </button>
 
-            <button type="button" id="btnGerarSerial" class="btn-primary">
+            <button type="submit" name="gerar_serial_provisorio" formnovalidate value="1" class="btn-primary">
               Gerar
             </button>
-
-            <input type="hidden" name="gerar_serial_provisorio" value="1">
           </div>
         </div>
       </div>
@@ -293,8 +291,6 @@
   const modal = document.getElementById("modalSerial");
   const btnClose = document.getElementById("closeModal");
   const btnCancel = document.getElementById("cancelModal");
-  const btnGerar = document.getElementById("btnGerarSerial");
-  const form = btnGerar.closest("form");
 
   btnOpen.onclick = () => modal.classList.add("active");
   btnClose.onclick = () => modal.classList.remove("active");
@@ -304,10 +300,6 @@
     if (e.target === modal) {
       modal.classList.remove("active");
     }
-  };
-
-  btnGerar.onclick = () => {
-    form.submit();
   };
 </script>
 
