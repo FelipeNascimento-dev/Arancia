@@ -13,22 +13,22 @@ import json
 @permission_required('logistica.checkin_principal', raise_exception=True)
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def client_checkin(request):
-    CHECKLIST_CLARO = [
-        "CONTROLE",
-        "CABO HDMI",
-        "CABO A/V",
-        "CABO DE REDE",
-        "CABO DE FORÇA",
-        "FONTE",
-        "FONTE PADRÃO",
-        "MINI ISOLADOR",
-        "HD DIGITAL",
-        "DEC DIGITAL",
-        "DEC PHILIPS",
-        "EMTA/MODEM",
-        "MESH",
-        "BOX",
-    ]
+    checklist_claro = {
+        "controle": "CONTROLE",
+        "cabo_hdmi": "CABO HDMI",
+        "cabo_av": "CABO A/V",
+        "cabo_de_rede": "CABO DE REDE",
+        "cabo_de_forca": "CABO DE FORÇA",
+        "fonte": "FONTE",
+        "fonte_padrao": "FONTE PADRÃO",
+        "mini_isolador": "MINI ISOLADOR",
+        "hd_digital": "HD DIGITAL",
+        "dec_digital": "DEC DIGITAL",
+        "dec_philips": "DEC PHILIPS",
+        "emta_modem": "EMTA / MODEM",
+        "mesh": "MESH",
+        "box": "BOX",
+    }
 
     client_name = request.GET.get("client")
     selected_client = request.session.get("selected_client", {})
@@ -199,13 +199,14 @@ def client_checkin(request):
                 f"Serial provisório gerado com sucesso: {new_serial}"
             )
 
+            post_data = request.POST.copy()
+            post_data["serial"] = new_serial
+
             form = ClientCheckInForm(
+                post_data,
                 nome_form=titulo,
                 from_choices=from_choices,
                 product_choices=product_choices,
-                initial={
-                    "serial": new_serial
-                }
             )
 
             form.fields["to_location"].choices = [
@@ -228,7 +229,7 @@ def client_checkin(request):
                     "site_title": titulo,
                     "botao_texto": "Registrar Check-In",
                     "is_claro": is_claro,
-                    "checklist_claro": CHECKLIST_CLARO,
+                    "checklist_claro": checklist_claro,
                     "print_serial_url": print_url,
                 },
             )
@@ -237,7 +238,7 @@ def client_checkin(request):
             messages.error(request, f"Erro ao gerar serial provisório: {e}")
             api_result = None
 
-    elif request.method == "POST":
+    elif request.method == "POST" and "enviar_evento" in request.POST:
         form = ClientCheckInForm(
             request.POST,
             nome_form=titulo,
@@ -248,6 +249,19 @@ def client_checkin(request):
         form.fields["to_location"].choices = [("", "")] + to_location_choices
         form.fields["to_location"].initial = to_location_initial
         form.fields["to_location"].disabled = to_location_disabled
+
+        claro_checklist = {}
+
+        for key, value in request.POST.items():
+            if key.startswith("claro_checklist["):
+                item = key.replace("claro_checklist[", "").replace("]", "")
+                try:
+                    qty = int(value)
+                except ValueError:
+                    qty = 0
+
+                if qty > 0:
+                    claro_checklist[item] = qty
 
         if form.is_valid():
             request.session["checkin_form_data"] = {
@@ -273,6 +287,9 @@ def client_checkin(request):
                     if romaneio_number else {}
                 )
 
+                if client_code == 'claro' and claro_checklist:
+                    extra_info_root["checklist_claro"] = claro_checklist
+
                 payload = {
                     "item": {
                         "product_id": product_id,
@@ -290,6 +307,8 @@ def client_checkin(request):
                     "extra_info": extra_info_root,
                     "created_by": request.user.username.upper(),
                 }
+
+                print(payload)
 
                 res = RequestClient(
                     url=f"{STOCK_API_URL}/v1/movements/",
@@ -344,7 +363,7 @@ def client_checkin(request):
             "form": form,
             "site_title": titulo,
             "is_claro": is_claro,
-            "checklist_claro": CHECKLIST_CLARO,
+            "checklist_claro": checklist_claro,
             "botao_texto": "Registrar Check-In",
         },
     )
