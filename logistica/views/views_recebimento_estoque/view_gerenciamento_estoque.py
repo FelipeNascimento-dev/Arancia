@@ -228,14 +228,19 @@ def gerenciamento_estoque(request):
             if isinstance(resp, str):
                 resp = json.loads(resp)
 
-            stock_types = [
+            stock_types = list(dict.fromkeys(
                 i.get("stock_type")
                 for i in resp
                 if i.get("stock_type")
-            ]
+            ))
 
         except Exception:
             stock_types = []
+
+    client_post = request.POST.get("client")
+    exibe_ztipo = False
+    if client_post:
+        exibe_ztipo = client_post.lower() == "cielo"
 
     return render(
         request,
@@ -248,6 +253,7 @@ def gerenciamento_estoque(request):
             "produtos_unicos": produtos_unicos,
             "visao": visao,
             "modo_exibicao": modo_exibicao,
+            "exibe_ztipo": exibe_ztipo,
             "titulo": titulo,
             "site_title": titulo,
             "limit": limit,
