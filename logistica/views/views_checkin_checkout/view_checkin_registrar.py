@@ -13,6 +13,23 @@ import json
 @permission_required('logistica.checkin_principal', raise_exception=True)
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def client_checkin(request):
+    CHECKLIST_CLARO = [
+        "CONTROLE",
+        "CABO HDMI",
+        "CABO A/V",
+        "CABO DE REDE",
+        "CABO DE FORÇA",
+        "FONTE",
+        "FONTE PADRÃO",
+        "MINI ISOLADOR",
+        "HD DIGITAL",
+        "DEC DIGITAL",
+        "DEC PHILIPS",
+        "EMTA/MODEM",
+        "MESH",
+        "BOX",
+    ]
+
     client_name = request.GET.get("client")
     selected_client = request.session.get("selected_client", {})
 
@@ -31,6 +48,8 @@ def client_checkin(request):
 
     pedido_atrelado = request.GET.get("pedido") or request.session.get(
         "pedido") or request.session.get("order", "")
+
+    is_claro = client_code == "claro"
 
     product_choices = []
     try:
@@ -208,6 +227,8 @@ def client_checkin(request):
                     "form": form,
                     "site_title": titulo,
                     "botao_texto": "Registrar Check-In",
+                    "is_claro": is_claro,
+                    "checklist_claro": CHECKLIST_CLARO,
                     "print_serial_url": print_url,
                 },
             )
@@ -322,6 +343,8 @@ def client_checkin(request):
         {
             "form": form,
             "site_title": titulo,
+            "is_claro": is_claro,
+            "checklist_claro": CHECKLIST_CLARO,
             "botao_texto": "Registrar Check-In",
         },
     )

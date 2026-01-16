@@ -228,11 +228,11 @@ def gerenciamento_estoque(request):
             if isinstance(resp, str):
                 resp = json.loads(resp)
 
-            stock_types = [
+            stock_types = list(dict.fromkeys(
                 i.get("stock_type")
                 for i in resp
                 if i.get("stock_type")
-            ]
+            ))
 
         except Exception:
             stock_types = []

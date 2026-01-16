@@ -6,6 +6,7 @@
   .form-card-2col {
     height: auto;
     margin-top: 65px;
+    margin-bottom: 30px;
   }
 
   .back-detail {
@@ -185,6 +186,32 @@
       transform: translateY(0) scale(1);
     }
   }
+
+  .claro-checklist {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px 20px;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+  }
+
+  .check-item label {
+    font-size: 13px;
+    font-weight: 500;
+    margin-left: 10px;
+  }
+
+  .input-qty {
+    width: 80px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+  }
+
 </style>
 
 <div class="form-container">
@@ -203,6 +230,27 @@
         </button>
       </div>
       {% include 'global/partials/_form_2colV2.html' %}
+      {% if is_claro %}
+      <hr style="margin: 24px 0;">
+
+      <h4 style="margin-bottom:12px;">Checklist de Equipamentos (CLARO)</h4>
+
+      <div class="claro-checklist">
+        {% for item in checklist_claro %}
+        <div class="check-item">
+          <input
+            type="number"
+            name="claro_checklist[{{ item }}]"
+            min="0"
+            value="0"
+            class="input-qty"
+          >
+          <label>{{ item }}</label>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
       <div id="modalSerial" class="modal-overlay">
         <div class="modal-box">
 
