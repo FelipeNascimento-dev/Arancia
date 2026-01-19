@@ -146,6 +146,7 @@ class PermissaoUsuarioDummy(models.Model):
             ("inst_simplified", "Instalação Simplificada"),
             ("entrega_com_sap", "Entrega com SAP"),
             ("checkin_principal", "Check-in Principal"),
+            ("checkout_principal", "Check-out Principal"),
             ("products_management", "Gerenciamento de Produtos"),
             ("gerente_estoque", "Gerente de Estoque"),
         ]

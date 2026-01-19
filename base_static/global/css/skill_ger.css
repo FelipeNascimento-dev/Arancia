@@ -437,9 +437,8 @@
     }
 }
 
-/* FOOTER DIVIDIDO (mensagem esquerda + ações direita) */
 .modal-footer.modal-footer-split {
-    justify-content: space-between; /* sobrescreve só aqui */
+    justify-content: space-between;
     align-items: center;
 }
 
