@@ -475,7 +475,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       {
         regex: /^\/skill-ger(?:\/|$)/i,
-        macro: ["Gerenciamento", "Gestão de Skills"]
+        macro: ["Gerenciamento", "Gestão de GAI"]
       },
     ];
 

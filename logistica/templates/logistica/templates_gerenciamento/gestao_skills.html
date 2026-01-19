@@ -1,15 +1,15 @@
 {% extends "global/base.html" %}
 {% block content %}
 
-<h2 class="title-skill-ger"><i class="fa-solid fa-layer-group"></i> Gestão de Informações Adicionais</h2>
+<h2 class="title-skill-ger"><i class="fa-solid fa-layer-group"></i> Gestão de GAI</h2>
 
 <div class="grid-container">
 
     <div class="box" id="box-group">
         <div class="box-header">
-            <h3>Grupos Existentes</h3>
+            <h3>GAIs Existentes</h3>
             <button type="button" class="btn btn-primary btn-sm" onclick="openCreateGroupModal()">
-                <i class="fa-solid fa-plus"></i> Novo Grupo
+                <i class="fa-solid fa-plus"></i> Novo GAI
             </button>
         </div>
 
@@ -28,7 +28,7 @@
     </div>
 
     <div class="box" id="box-group2">
-        <h3>Editar grupo - {{ selected_group.nome }}</h3>
+        <h3>Editar GAI - {{ selected_group.nome }}</h3>
 
         <div class="tab-header">
             <button class="tab-btn active" data-tab="tab1">Informações Principais</button>
