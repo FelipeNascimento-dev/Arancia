@@ -6,7 +6,7 @@
             <button class="modal-close" onclick="closeCreateGroupModal()">&times;</button>
         </div>
 
-        <form method="post">
+        <form method="post" id="formCreateGroup">
             {% csrf_token %}
             <input type="hidden" name="create_group" value="1">
 
@@ -23,10 +23,26 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeCreateGroupModal()">Fechar</button>
-                <button type="submit" class="btn btn-primary">Salvar</button>
+                <button type="button" class="btn btn-warning" onclick="resetCreateGroupForm()">
+                    Limpar campos
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeCreateGroupModal()">
+                    Fechar
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    Salvar
+                </button>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+function resetCreateGroupForm() {
+    const form = document.getElementById("formCreateGroup");
+    if (form) {
+        form.reset();
+    }
+}
+</script>
 {% endblock %}
