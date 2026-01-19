@@ -22,27 +22,34 @@
                 {% endfor %}
             </div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-warning" onclick="resetCreateGroupForm()">
-                    Limpar campos
-                </button>
-                <button type="button" class="btn btn-secondary" onclick="closeCreateGroupModal()">
-                    Fechar
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    Salvar
-                </button>
+            <div class="modal-footer modal-footer-split">
+                <div class="footer-left">
+                    {% include "global/partials/_required_fields.html" %}
+                </div>
+
+                <div class="footer-right">
+                    <button type="button" class="btn btn-warning" onclick="resetCreateGroupForm()">
+                        Limpar campos
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeCreateGroupModal()">
+                        Fechar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Salvar
+                    </button>
+                </div>
             </div>
+
         </form>
     </div>
 </div>
 
 <script>
-function resetCreateGroupForm() {
-    const form = document.getElementById("formCreateGroup");
-    if (form) {
-        form.reset();
+    function resetCreateGroupForm() {
+        const form = document.getElementById("formCreateGroup");
+        if (form) {
+            form.reset();
+        }
     }
-}
 </script>
 {% endblock %}

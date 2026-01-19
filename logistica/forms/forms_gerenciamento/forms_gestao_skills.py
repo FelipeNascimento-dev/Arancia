@@ -3,12 +3,12 @@ from django import forms
 
 class CreateGAIForm(forms.Form):
     razao_social = forms.CharField(
-        label="Razão Social", max_length=100, required=False)
+        label="Razão Social", max_length=100, required=True)
     nome = forms.CharField(label="Nome", max_length=100, required=True)
     responsavel = forms.CharField(
-        label="Responsável", max_length=100, required=False)
+        label="Responsável", max_length=100, required=True)
     cod_iata = forms.CharField(
-        label="Código IATA", max_length=10, required=False)
+        label="Código IATA", max_length=10, required=True)
     sales_channel = forms.CharField(
         label="Canal de Vendas", max_length=100, required=False)
     cod_center = forms.CharField(
@@ -38,3 +38,7 @@ class CreateGAIForm(forms.Form):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs.update({"class": "form-control"})
+
+            if field.required:
+                field.label = f"{field.label} (*)"
+                field.widget.attrs["required"] = "required"

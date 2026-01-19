@@ -1,0 +1,28 @@
+{% load static %}
+{% block content %}
+
+<style>
+    .required-fields-info {
+        margin-bottom: 12px;
+        font-size: 0.85rem;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 6px;
+        text-align: left;
+    }
+
+    .required-fields-info .asterisk {
+        color: #dc3545;
+        font-weight: bold;
+    }
+</style>
+
+
+<div class="required-fields-info">
+    <span class="asterisk">*</span>
+    Campos marcados com asterisco são obrigatórios
+</div>
+
+{% endblock %}

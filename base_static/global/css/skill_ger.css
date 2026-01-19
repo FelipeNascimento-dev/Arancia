@@ -436,3 +436,20 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* FOOTER DIVIDIDO (mensagem esquerda + ações direita) */
+.modal-footer.modal-footer-split {
+    justify-content: space-between; /* sobrescreve só aqui */
+    align-items: center;
+}
+
+.modal-footer.modal-footer-split .footer-left {
+    text-align: left;
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.modal-footer.modal-footer-split .footer-right {
+    display: flex;
+    gap: 10px;
+}
