@@ -271,19 +271,13 @@
 
                         {% if result.status == 'ABERTO' %}
                         <td>
-                            {% if kit.serial == last_kit_serial %}
                             <form method="post" action="{% url 'logistica:delete_btn' kit.serial %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn-action" name="delete_item_rom"
+                                <button type="submit" class="btn-action"
                                     onclick="return confirm('Deseja realmente excluir esse serial?')">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </form>
-                            {% else %}
-                            <button class="btn-action" disabled title="Só é possível excluir o último kit">
-                                <i class="fa-solid fa-ban"></i>
-                            </button>
-                            {% endif %}
                         </td>
                         {% endif %}
                     </tr>

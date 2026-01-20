@@ -452,3 +452,14 @@
     display: flex;
     gap: 10px;
 }
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: #fff;
+    border: none;
+    text-decoration: none;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
