@@ -141,5 +141,8 @@ def client_consult(request):
             "site_title": titulo,
             "botao_texto": "Consultar Clientes",
             "clientes": data,
+            "current_parent_menu": "logistica",
+            "current_menu": "checkin",
+            "current_submenu": "consulta_clientes",
         },
     )

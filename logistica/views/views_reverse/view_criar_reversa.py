@@ -243,6 +243,10 @@ def reverse_create(request):
         "volums": volums,
         "last_kit_serial": last_kit_serial,
         "client": client_code,
+        "current_parent_menu": "logistica",
+        "current_menu": "lastmile",
+        "current_submenu": "reverse",
+        "current_subsubmenu": "consultar_romaneio"
     }
     return render(request, "logistica/templates_reverse/criar_reversa.html", context)
 
@@ -334,4 +338,8 @@ def cancel_btn(request, id):
         "botao_texto": "Inserir",
         "site_title": "Reversa",
         "result": request.session.get("result", None),
+        "current_parent_menu": "logistica",
+        "current_menu": "lastmile",
+        "current_submenu": "reverse",
+        "current_subsubmenu": "consultar_romaneio"
     })

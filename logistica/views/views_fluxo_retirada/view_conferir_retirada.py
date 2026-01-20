@@ -86,6 +86,10 @@ def order_return_check(request):
             'serial_model_map': reserva_get_serial_map(request),
             'product_map': reserva_get_product_map(request),
             'show_serial': True,
+            "current_parent_menu": "logistica",
+            "current_menu": "lastmile",
+            "current_submenu": "retirada",
+            "current_subsubmenu": "conferir_retirada"
         })
 
     serials = reserva_get_serials(request)

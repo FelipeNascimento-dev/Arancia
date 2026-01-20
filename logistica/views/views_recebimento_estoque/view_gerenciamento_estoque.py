@@ -265,5 +265,9 @@ def gerenciamento_estoque(request):
             "prev_offset": max(offset - limit, 0),
             "produtos_api": produtos_api,
             "stock_types": stock_types,
+            "current_parent_menu": "logistica",
+            "current_menu": "lastmile",
+            "current_submenu": "estoque",
+            "current_subsubmenu": "gerenciamento"
         }
     )
