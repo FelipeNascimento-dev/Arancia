@@ -124,8 +124,14 @@
                 </div>
             </div>
 
-            <div style="margin-top: 20px;">
-                <button type="submit" class="btn btn-primary">Salvar</button>
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar
+                </button>
+
+                <a href="{% url 'logistica:skill_ger' %}" class="btn btn-secondary">
+                    <i class="fa-solid fa-xmark"></i> Cancelar
+                </a>
             </div>
         </form>
     </div>
