@@ -10,16 +10,18 @@ from transportes.utils.utils import get_multiple_api_data
 from .view_panel_technical import build_tecnicos
 from .view_panel_ordens import build_ordens
 from .view_cards import build_cards
+
+
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('transportes.controle_campo', raise_exception=True)
 def dashboard_view(request):
 
     headers = {"accept": "application/json", "access_token": "123"}
-  
+
     hoje = localtime(now()).date() - timedelta(days=0)
     hoje_str = hoje.strftime("%Y-%m-%d")
-    
+
     cod_base = request.session.get("COD_BASE")
     projeto = request.session.get("PROJETO")
     if not cod_base:
@@ -32,12 +34,15 @@ def dashboard_view(request):
     filtro_msg = request.GET.get("mensagem")
     ver_rota_uid = request.GET.get("ver_rota")
     search = request.GET.get("search") or ""
-    ocultar_sem_nome = request.GET.get("ocultar_sem_nome") == "1"  # ?ocultar_sem_nome=1
-   
+    ocultar_sem_nome = request.GET.get(
+        "ocultar_sem_nome") == "1"  # ?ocultar_sem_nome=1
+
     # --- buscar APIs em paralelo ---
     urls = [
-        (f"status_{hoje_str}", f"{API_BASE}/v3/Filtro_status/resumo-status-detalhado/{projeto}", {"date": hoje_str}),
-        (f"ordens_{hoje_str}", f"{API_BASE}/v3/consultasM/ordens-atendidas-data/{projeto}", {"date": hoje_str}),
+        (f"status_{hoje_str}",
+         f"{API_BASE}/v3/Filtro_status/resumo-status-detalhado/{projeto}", {"date": hoje_str}),
+        (f"ordens_{hoje_str}",
+         f"{API_BASE}/v3/consultasM/ordens-atendidas-data/{projeto}", {"date": hoje_str}),
     ]
     dados = get_multiple_api_data(urls, headers, ttl=0)
     dados_status = dados.get(f"status_{hoje_str}", {})
@@ -57,14 +62,16 @@ def dashboard_view(request):
         pessoa=pessoa,
     )
     # --- ordens ---
-    ordens, ordens_os, skip, limit = build_ordens(request, projeto, cod_base, headers, hoje_str, tecnicos)
+    ordens, ordens_os, skip, limit = build_ordens(
+        request, projeto, cod_base, headers, hoje_str, tecnicos)
 
     # --- cards ---
-    resumo_cards = build_cards(resumo_geral, ordens, ordens_os, ver_rota_uid, filtro_uid, filtro_flag, filtro_msg)
+    resumo_cards = build_cards(
+        resumo_geral, ordens, ordens_os, ver_rota_uid, filtro_uid, filtro_flag, filtro_msg)
     sem_tecnico_count = len([
-    o for o in ordens
-    if not o.get("uid") or str(o.get("uid")).strip().lower() in ["", "none", "null", "0"]
-])
+        o for o in ordens
+        if not o.get("uid") or str(o.get("uid")).strip().lower() in ["", "none", "null", "0"]
+    ])
 
     # --- unidades ---
     unidades = sorted({
@@ -72,15 +79,16 @@ def dashboard_view(request):
         if t.get("area") not in (None, "-", "None")
     })
     # --- flags ---
-    filtro_ativo = bool(filtro_uid or filtro_flag or filtro_msg or request.GET.get("status_janela"))
+    filtro_ativo = bool(
+        filtro_uid or filtro_flag or filtro_msg or request.GET.get("status_janela"))
     sem_tecnico_count = len([
         o for o in ordens
         if not o.get("uid") or str(o.get("uid")).strip().lower() in ["", "none", "null", "0"]
     ])
- 
-        # --- contexto ---
+
+    # --- contexto ---
     context = {
-        
+
         "geral": resumo_cards,
         "status": resumo_cards.get("status", {}),
         "tecnicos": tecnicos,
@@ -101,10 +109,14 @@ def dashboard_view(request):
         "search": search,
         "ocultar_sem_nome": ocultar_sem_nome,
         "sem_tecnico_count": sem_tecnico_count,
-        "API_BASE": API_BASE, 
+        "API_BASE": API_BASE,
         "usuario_logado": request.user.username,
         "hoje": hoje,
-    "show_config_link": True,
+        "show_config_link": True,
+        "current_parent_menu": "transportes",
+        "current_menu": "controle_campo",
+        "current_submenu": "painel",
+        "current_subsubmenu": "controle",
     }
 
     return render(request, "transportes/controle_campo/technical_panel.html", context)

@@ -11,8 +11,10 @@ from django.views.decorators.csrf import csrf_protect
 API_ORDENAR_ROTAS = f"{API_BASE}/v3/ordenar"
 
 ORDENAR_FIELDS = [
-    {"name": "nome_tecnico", "label": "Técnico", "type": "select", "placeholder": "Selecione o técnico", "colspan": 2},
-    {"name": "os_list", "label": "Ordem de Serviço(s)", "type": "textarea", "placeholder": "Digite as OSs na sequência desejada, uma por linha", "colspan": 2},
+    {"name": "nome_tecnico", "label": "Técnico", "type": "select",
+        "placeholder": "Selecione o técnico", "colspan": 2},
+    {"name": "os_list", "label": "Ordem de Serviço(s)", "type": "textarea",
+     "placeholder": "Digite as OSs na sequência desejada, uma por linha", "colspan": 2},
 ]
 
 
@@ -53,7 +55,8 @@ def ordenar_rota_view(request):
         if isinstance(resp_tecnicos, list):
             tecnicos = resp_tecnicos
     except Exception as e:
-        messages.warning(request, f"Não foi possível carregar técnicos: {str(e)}")
+        messages.warning(
+            request, f"Não foi possível carregar técnicos: {str(e)}")
 
     # --- POST: ordenar rota ---
     if request.method == "POST":
@@ -67,7 +70,8 @@ def ordenar_rota_view(request):
         else:
             try:
                 # busca nome do técnico pelo uid
-                tecnico = next((t for t in tecnicos if str(t["uid"]) == str(uid)), None)
+                tecnico = next(
+                    (t for t in tecnicos if str(t["uid"]) == str(uid)), None)
                 tecnico_nome = tecnico["name"] if tecnico else f"UID {uid}"
 
                 url = f"{API_ORDENAR_ROTAS}/{uid}"
@@ -77,7 +81,8 @@ def ordenar_rota_view(request):
                     "Content-Type": "application/json",
                 }
 
-                os_data = [o.strip() for o in os_list.splitlines() if o.strip()]
+                os_data = [o.strip()
+                           for o in os_list.splitlines() if o.strip()]
 
                 client = RequestClient(
                     method="put",
@@ -89,13 +94,17 @@ def ordenar_rota_view(request):
 
                 #  Tratamento da resposta
                 if isinstance(resp, dict) and "detail" in resp:
-                    messages.error(request, f"Erro ao ordenar OSs: {resp.get('detail')}")
+                    messages.error(
+                        request, f"Erro ao ordenar OSs: {resp.get('detail')}")
                 elif isinstance(resp, dict):
-                    messages.success(request, f"OSs ordenadas para {tecnico_nome}: {resp}")
+                    messages.success(
+                        request, f"OSs ordenadas para {tecnico_nome}: {resp}")
                 elif isinstance(resp, str):
-                    messages.success(request, f"{resp} (Técnico: {tecnico_nome})")
+                    messages.success(
+                        request, f"{resp} (Técnico: {tecnico_nome})")
                 else:
-                    messages.warning(request, f"Resposta inesperada da API: {resp}")
+                    messages.warning(
+                        request, f"Resposta inesperada da API: {resp}")
 
             except Exception as e:
                 messages.error(request, f"Erro inesperado: {str(e)}")
@@ -103,5 +112,13 @@ def ordenar_rota_view(request):
     return render(
         request,
         "transportes/tools/order_route.html",
-        {  "show_config_link": True,"fields": ORDENAR_FIELDS, "tecnicos": tecnicos, "tecnico_nome": tecnico_nome},
+        {"show_config_link": True,
+         "fields": ORDENAR_FIELDS,
+         "tecnicos": tecnicos,
+         "tecnico_nome": tecnico_nome,
+         "current_parent_menu": "transportes",
+         "current_menu": "controle_campo",
+         "current_submenu": "rotas",
+         "current_subsubmenu": "ordenar_rotas",
+         },
     )

@@ -1,3 +1,4 @@
+import base64
 from django.contrib import messages
 from django.shortcuts import render, redirect
 import requests
@@ -10,15 +11,20 @@ from setup.local_settings import API_BASE, TOKEN
 from transportes.forms.form_script import ScriptingForm
 
 
-API_SCRIPT= f"{API_BASE}/v3/rota/expo-processar-fluxo-completo"
+API_SCRIPT = f"{API_BASE}/v3/rota/expo-processar-fluxo-completo"
 
-import base64
 
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('transportes.controle_campo', raise_exception=True)
 def scripting_view(request):
-    contexto = {"form": ScriptingForm()}
+    contexto = {
+        "form": ScriptingForm(),
+        "current_parent_menu": "transportes",
+        "current_menu": "controle_campo",
+        "current_submenu": "rotas",
+        "current_subsubmenu": "roteirizacao",
+    }
 
     if request.method == "POST":
         form = ScriptingForm(request.POST, request.FILES)
@@ -41,7 +47,8 @@ def scripting_view(request):
                     )
                 }
 
-                response = requests.post(API_SCRIPT, headers=headers, files=files)
+                response = requests.post(
+                    API_SCRIPT, headers=headers, files=files)
                 response.raise_for_status()
 
             except Exception as e:
@@ -59,7 +66,8 @@ def scripting_view(request):
                 ) or "retorno.xlsx"
 
                 # 🔥 Converte o arquivo em Base64
-                file_base64 = base64.b64encode(response.content).decode('utf-8')
+                file_base64 = base64.b64encode(
+                    response.content).decode('utf-8')
 
                 # 🔥 Envia para o template mostrar o botão
                 contexto["download_ready"] = True
@@ -79,7 +87,8 @@ def scripting_view(request):
                 return render(request, "transportes/tools/scripting.html", contexto)
 
             if response.status_code != 200:
-                contexto["erro"] = result.get("error", "Erro ao processar o arquivo.")
+                contexto["erro"] = result.get(
+                    "error", "Erro ao processar o arquivo.")
             else:
                 contexto["mensagem"] = (
                     f"Importação concluída: "

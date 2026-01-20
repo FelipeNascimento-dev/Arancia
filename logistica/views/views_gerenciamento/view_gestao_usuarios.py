@@ -135,5 +135,7 @@ def user_ger(request):
             "additional_infos": additional_infos,
             "usuarios_json": json.dumps(usuarios_data, cls=DjangoJSONEncoder),
             "form": CustomUserCreationForm(),
+            "current_menu": "gestao_user",
+            "current_parent_menu": "gerenciamento"
         },
     )

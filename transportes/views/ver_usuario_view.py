@@ -8,6 +8,7 @@ from setup.local_settings import API_BASE
 
 API_TOKEN = "123"
 
+
 @login_required
 def ver_usuario_view(request):
     search = request.GET.get("search", "").lower()
@@ -20,7 +21,6 @@ def ver_usuario_view(request):
     # se não tiver contexto definido → manda para config
     if not cod_base:
         return redirect(f"{reverse('transportes:config_context')}?next={request.path}")
-
 
     API_LIST_TEC = f"{API_BASE}/v3/tecnico/{cod_base}/buscar"
     API_PUT_TEC = f"{API_BASE}/v3/tecnico/update/"
@@ -38,22 +38,24 @@ def ver_usuario_view(request):
             "profile": request.POST.get("profile"),
             "status": request.POST.get("status"),
         }
-        payload = {k: v for k, v in payload.items() if v}  # remove campos vazios
+        # remove campos vazios
+        payload = {k: v for k, v in payload.items() if v}
 
         try:
             resp = requests.put(
-    f"{API_PUT_TEC}{uid}",
-    headers={
-        "access_token": API_TOKEN,
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-    },
-    json=payload,
-)
+                f"{API_PUT_TEC}{uid}",
+                headers={
+                    "access_token": API_TOKEN,
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+            )
             if resp.status_code in (200, 201):
                 messages.success(request, "Técnico atualizado com sucesso!")
             else:
-                messages.error(request, f"Erro ao atualizar técnico ({resp.status_code}) → {resp.text}")
+                messages.error(
+                    request, f"Erro ao atualizar técnico ({resp.status_code}) → {resp.text}")
         except Exception as e:
             messages.error(request, f"Falha ao comunicar API: {e}")
         return redirect("transportes:ver_usuario")
@@ -67,11 +69,11 @@ def ver_usuario_view(request):
         resp = requests.get(
             API_LIST_TEC,
             params=params,
-            headers = {
-            "Accept": "application/json",
-            "access_token": API_TOKEN
-        }
-            
+            headers={
+                "Accept": "application/json",
+                "access_token": API_TOKEN
+            }
+
         )
         tecnicos = resp.json() if resp.status_code == 200 else []
     except Exception:
@@ -101,6 +103,11 @@ def ver_usuario_view(request):
             "search": search,
             "cod_base": cod_base,
             "projeto": projeto,
-            "profile": profile,  "show_config_link": True,
+            "profile": profile,
+            "show_config_link": True,
+            "current_parent_menu": "transportes",
+            "current_menu": "controle_campo",
+            "current_submenu": "usuarios",
+            "current_subsubmenu": "editar_usuario",
         },
     )

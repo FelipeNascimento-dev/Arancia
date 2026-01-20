@@ -382,3 +382,32 @@
   scrollbar-width: thin;
   scrollbar-color: #c1c1c1 transparent;
 }
+
+.itens-sidebar.active,
+.dropdown-content a.active {
+    background-color: var(--hover-bg);
+    font-weight: 600;
+}
+
+.dropdown.active > .dropbtn {
+    background-color: var(--hover-bg);
+}
+
+.dropdown.active > .dropbtn {
+    background-color: var(--hover-bg);
+    font-weight: 600;
+}
+
+.submenu-toggle.active {
+    background-color: var(--hover-bg);
+    font-weight: 600;
+}
+
+.sub-submenu.open {
+    display: block;
+}
+
+.dropdown-content a.active {
+    background-color: var(--hover-bg);
+    font-weight: 600;
+}

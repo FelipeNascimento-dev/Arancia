@@ -60,4 +60,10 @@ def criar_user_view(request):
     else:
         form = UsuarioForm()
 
-    return render(request, "transportes/tools/create_user.html", {"form": form})
+    return render(request, "transportes/tools/create_user.html", {
+        "form": form,
+        "current_parent_menu": "transportes",
+        "current_menu": "controle_campo",
+        "current_submenu": "usuarios",
+        "current_subsubmenu": "criar_usuario",
+    })
