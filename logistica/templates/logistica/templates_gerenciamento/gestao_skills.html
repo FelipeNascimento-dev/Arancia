@@ -6,11 +6,23 @@
 <div class="grid-container">
 
     <div class="box" id="box-group">
-        <div class="box-header">
-            <h3>GAIs Existentes</h3>
-            <button type="button" class="btn btn-primary btn-sm" onclick="openCreateGroupModal()">
-                <i class="fa-solid fa-plus"></i> Novo GAI
-            </button>
+        <div class="box-header" style="flex-direction: column; align-items: stretch; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>GAIs Existentes</h3>
+                <button type="button" class="btn btn-primary btn-sm" onclick="openCreateGroupModal()">
+                    <i class="fa-solid fa-plus"></i> Novo GAI
+                </button>
+            </div>
+
+            <form method="get">
+                <input
+                    type="text"
+                    name="gai_q"
+                    placeholder="Pesquisar GAI..."
+                    value="{{ request.GET.gai_q }}"
+                    style="width: 100%; padding: 6px 8px;"
+                >
+            </form>
         </div>
 
         <ul>
