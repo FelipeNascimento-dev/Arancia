@@ -10,7 +10,21 @@ from django.contrib.auth.decorators import login_required, permission_required
 @permission_required("logistica.gestao_total", raise_exception=True)
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def skill_ger(request):
-    grupos = GroupAditionalInformation.objects.all().order_by("nome")
+    gai_q = request.GET.get("gai_q")
+
+    grupos = GroupAditionalInformation.objects.all()
+
+    if gai_q:
+        grupos = grupos.filter(
+            nome__icontains=gai_q
+        ) | grupos.filter(
+            razao_social__icontains=gai_q
+        ) | grupos.filter(
+            cnpj__icontains=gai_q
+        )
+
+    grupos = grupos.order_by("nome")
+
     selected_group = None
     usuarios_vinculados = []
     all_users = User.objects.filter(

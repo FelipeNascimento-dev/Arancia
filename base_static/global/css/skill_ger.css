@@ -424,7 +424,6 @@
     background: #e5e7eb;
 }
 
-/* RESPONSIVO */
 @media (max-width: 1024px) {
     .fields-grid {
         grid-template-columns: repeat(2, 1fr);
