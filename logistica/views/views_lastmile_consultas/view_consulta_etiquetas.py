@@ -112,6 +112,10 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
                 "rows": items,
                 'site_title': 'Consulta de Etiquetas',
                 "etapa_ativa": 'consulta_etiquetas',
+                "current_parent_menu": "logistica",
+                "current_menu": "lastmile",
+                "current_submenu": "consultas",
+                "current_subsubmenu": "consulta_etiquetas"
             })
 
         _save_items(request, [])
@@ -121,6 +125,10 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
             "rows": [],
             'site_title': 'Consulta de Etiquetas',
             "etapa_ativa": 'consulta_etiquetas',
+            "current_parent_menu": "logistica",
+            "current_menu": "lastmile",
+            "current_submenu": "consultas",
+            "current_subsubmenu": "consulta_etiquetas"
         })
 
     items = _get_items(request)
@@ -134,6 +142,10 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
                 "botao_texto": "Consultar",
                 "rows": [],
                 "etapa_ativa": 'consulta_etiquetas',
+                "current_parent_menu": "logistica",
+                "current_menu": "lastmile",
+                "current_submenu": "consultas",
+                "current_subsubmenu": "consulta_etiquetas"
             })
 
         items = _fill_urls_with_api(items, request)
@@ -143,6 +155,10 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
             "botao_texto": "Consultar",
             "rows": items,
             "etapa_ativa": 'consulta_etiquetas',
+            "current_parent_menu": "logistica",
+            "current_menu": "lastmile",
+            "current_submenu": "consultas",
+            "current_subsubmenu": "consulta_etiquetas"
         })
 
     pedido = (request.POST.get("pedido") or "").strip()
@@ -161,4 +177,8 @@ def consulta_etiquetas(request: HttpRequest) -> HttpResponse:
         "rows": items,
         'site_title': 'Consulta de Etiquetas',
         "etapa_ativa": 'consulta_etiquetas',
+        "current_parent_menu": "logistica",
+        "current_menu": "lastmile",
+        "current_submenu": "consultas",
+        "current_subsubmenu": "consulta_etiquetas"
     })

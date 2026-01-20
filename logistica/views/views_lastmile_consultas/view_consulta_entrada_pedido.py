@@ -28,5 +28,9 @@ def order_consult(request):
             "botao_texto": "Consultar",
             "site_title": "Consultar Pedido Entrada",
             "nome_form": titulo,
+            "current_parent_menu": "logistica",
+            "current_menu": "lastmile",
+            "current_submenu": "consultas",
+            "current_subsubmenu": "consultar_pedido"
         },
     )

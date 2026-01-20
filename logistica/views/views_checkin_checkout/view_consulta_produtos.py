@@ -195,5 +195,8 @@ def product_create(request):
             "produtos": produtos,
             "cliente_id_para_modal": cliente_id_para_modal,
             "consultado": consultado,
+            "current_parent_menu": "logistica",
+            "current_menu": "checkin",
+            "current_submenu": "consulta_produtos",
         },
     )

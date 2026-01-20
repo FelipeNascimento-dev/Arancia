@@ -17,6 +17,23 @@ def client_select(request, vetor):
 
     request.session["vetor"] = vetor.upper()
 
+    context = {
+        "site_title": titulo,
+        "botao_texto": "Selecionar Cliente",
+        "current_parent_menu": "logistica",
+    }
+
+    if vetor == "IN":
+        context.update({
+            "current_menu": "checkin",
+            "current_submenu": "iniciar_checkin",
+        })
+    elif vetor == "OUT":
+        context.update({
+            "current_menu": "checkout",
+            "current_submenu": "iniciar_checkout",
+        })
+
     try:
         url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=1000"
         res = RequestClient(url=url, method="GET", headers={"Accept": JSON_CT})
@@ -72,8 +89,10 @@ def client_select(request, vetor):
 
         return redirect("logistica:consultar_romaneio")
 
-    return render(request, "logistica/templates_checkin_checkout/checkin_iniciar.html", {
-        "form": form,
-        "site_title": titulo,
-        "botao_texto": "Selecionar Cliente",
-    })
+    context["form"] = form
+
+    return render(
+        request,
+        "logistica/templates_checkin_checkout/checkin_iniciar.html",
+        context
+    )

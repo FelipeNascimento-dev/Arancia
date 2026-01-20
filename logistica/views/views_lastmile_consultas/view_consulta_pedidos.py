@@ -89,4 +89,8 @@ def consulta_pedidos(request):
         "botao_texto": "Consultar",
         "site_title": "Consulta de Pedidos",
         "tabela_dados": tabela_dados,
+        "current_parent_menu": "logistica",
+        "current_menu": "lastmile",
+        "current_submenu": "consultas",
+        "current_subsubmenu": "extracao_pedido"
     })

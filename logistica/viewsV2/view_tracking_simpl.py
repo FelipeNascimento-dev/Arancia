@@ -93,7 +93,7 @@ def _dedup_upper(values: Iterable[str]) -> list[str]:
 
 
 # ================= Render =================
-def _render_pcp(request: HttpRequest, form, code_info: TrackingOriginalCode, serials: list[str]) -> HttpResponse:
+def _render_pcp(request: HttpRequest, form, code_info: TrackingOriginalCode, serials: list[str], menu_context: dict) -> HttpResponse:
     return render(
         request,
         "logistica/templates_fluxo_entrega/pcp.html",
@@ -105,6 +105,7 @@ def _render_pcp(request: HttpRequest, form, code_info: TrackingOriginalCode, ser
             "show_serial": code_info.show_serial,
             "site_title": f"IP - {code_info.description}",
             "chip_map": request.session.get("chip_map", {}),
+            **menu_context,
         },
     )
 
@@ -124,7 +125,7 @@ def _force_pedido(request):
 
 
 # ================= Serial Actions =================
-def _handle_add_serial(request, code_info, pedido_atual, form):
+def _handle_add_serial(request, code_info, pedido_atual, form, menu_context):
     pedido_atual = _force_pedido(request)   # <<< SEMPRE GARANTE O PEDIDO
 
     serial = (request.POST.get("serial") or "").strip().upper()
@@ -167,7 +168,7 @@ def _handle_add_serial(request, code_info, pedido_atual, form):
     })
 
 
-def _handle_remove_serial(request, code_info, pedido_atual, form):
+def _handle_remove_serial(request, code_info, pedido_atual, form, menu_context):
     serials = _get_serials_from_session(request, pedido_atual)
 
     try:
@@ -192,10 +193,10 @@ def _handle_remove_serial(request, code_info, pedido_atual, form):
         show_serial=code_info.show_serial
     )
 
-    return _render_pcp(request, form, code_info, serials)
+    return _render_pcp(request, form, code_info, serials, menu_context)
 
 
-def _handle_clear_serials(request, code_info, pedido_atual, form):
+def _handle_clear_serials(request, code_info, pedido_atual, form, menu_context):
     _save_serials_to_session(request, pedido_atual, [])
     request.session["chip_map"] = {}
     request.session.modified = True
@@ -211,18 +212,18 @@ def _handle_clear_serials(request, code_info, pedido_atual, form):
         show_serial=code_info.show_serial
     )
 
-    return _render_pcp(request, form, code_info, [])
+    return _render_pcp(request, form, code_info, [], menu_context)
 
 
-def _dispatch_serial_actions_if_any(request, code_info, pedido_atual, form):
+def _dispatch_serial_actions_if_any(request, code_info, pedido_atual, form, menu_context):
     if code_info.original_code != "202":
         return None
     if "add_serial" in request.POST:
-        return _handle_add_serial(request, code_info, _get_pedido_atual(request), form)
+        return _handle_add_serial(request, code_info, _get_pedido_atual(request), form, menu_context)
     if "remove_serial" in request.POST:
-        return _handle_remove_serial(request, code_info, _get_pedido_atual(request), form)
+        return _handle_remove_serial(request, code_info, _get_pedido_atual(request), form, menu_context)
     if "clear_serials" in request.POST:
-        return _handle_clear_serials(request, code_info, _get_pedido_atual(request), form)
+        return _handle_clear_serials(request, code_info, _get_pedido_atual(request), form, menu_context)
     return None
 
 
@@ -295,7 +296,7 @@ def _post_success_redirect(code_info: TrackingOriginalCode, numero_pedido: str) 
     return redirect(view_name, code=next_code) if next_code else redirect(view_name)
 
 
-def _process_enviar_evento(request, code_info, form, serials):
+def _process_enviar_evento(request, code_info, form, serials, menu_context):
     if "enviar_evento" not in request.POST:
         return None
 
@@ -303,7 +304,7 @@ def _process_enviar_evento(request, code_info, form, serials):
         messages.warning(
             request, f"Corrija os erros do formulário: {form.errors.as_text()}"
         )
-        return _render_pcp(request, form, code_info, serials)
+        return _render_pcp(request, form, code_info, serials, menu_context)
 
     numero_pedido = str(form.cleaned_data.get("pedido"))
     _ensure_pedido_in_session(request, numero_pedido)
@@ -316,7 +317,7 @@ def _process_enviar_evento(request, code_info, form, serials):
                 request,
                 "Adicione ao menos 1 serial antes de enviar o Retorno do picking."
             )
-            return _render_pcp(request, form, code_info, serials)
+            return _render_pcp(request, form, code_info, serials, menu_context)
         seriais_concat = "|".join(serials)
     else:
         seriais_concat = ""
@@ -359,11 +360,11 @@ def _process_enviar_evento(request, code_info, form, serials):
             if isinstance(resp, dict)
             else str(resp),
         )
-        return _render_pcp(request, form, code_info, serials)
+        return _render_pcp(request, form, code_info, serials, menu_context)
 
     except Exception as e:
         messages.error(request, f"Erro ao enviar rastreamento: {e}")
-        return _render_pcp(request, form, code_info, serials)
+        return _render_pcp(request, form, code_info, serials, menu_context)
 
 
 # ================= View Principal =================
@@ -372,7 +373,22 @@ def _process_enviar_evento(request, code_info, form, serials):
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 def trackingIPV2(request: HttpRequest, code: str) -> HttpResponse:
     code_info = TrackingOriginalCode(code)
+    ETAPA_MENU_MAP = {
+        "201": "pcp",
+        "202": "retorno_picking",
+        "203": "consolidacao",
+        "204": "expedicao",
+        "205": "troca_custodia",
+    }
+
     titulo = f"IP - {code_info.description}"
+
+    menu_context = {
+        "current_parent_menu": "logistica",
+        "current_menu": "lastmile",
+        "current_submenu": "entrega_simplificada",
+        "current_subsubmenu": ETAPA_MENU_MAP.get(code),
+    }
 
     pedido_atual = _get_pedido_atual(request)
     serials = _get_serials_from_session(
@@ -410,7 +426,7 @@ def trackingIPV2(request: HttpRequest, code: str) -> HttpResponse:
         if resp:
             return resp
 
-        return _render_pcp(request, form, code_info, serials)
+        return _render_pcp(request, form, code_info, serials, menu_context)
 
     initial = {}
     if _consume_carry_next(request):
@@ -420,4 +436,4 @@ def trackingIPV2(request: HttpRequest, code: str) -> HttpResponse:
 
     form = trackingIPForm(initial=initial, nome_form=titulo,
                           show_serial=code_info.show_serial)
-    return _render_pcp(request, form, code_info, serials)
+    return _render_pcp(request, form, code_info, serials, menu_context)

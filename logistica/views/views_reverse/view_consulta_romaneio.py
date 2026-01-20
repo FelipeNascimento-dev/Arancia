@@ -112,5 +112,9 @@ def consult_rom(request):
         "botao_texto": botao_texto,
         "site_title": titulo,
         "proximo_disponivel": proximo_disponivel,
-        "result": result
+        "result": result,
+        "current_parent_menu": "logistica",
+        "current_menu": "lastmile",
+        "current_submenu": "reverse",
+        "current_subsubmenu": "consultar_romaneio"
     })

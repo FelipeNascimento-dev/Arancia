@@ -32,7 +32,7 @@
 
         <!-- Logística -->
         {% if perms.logistica.logistica_perm %}
-        <div class="dropdown {% if current_parent_menu == 'logistica' %}active{% endif %}"">
+        <div class="dropdown {% if current_parent_menu == 'logistica' %}active{% endif %}">
             <button type="button" class="dropbtn itens-sidebar">
                 <i class="fas fa-tools"></i>
                 <span class="texto-item">&nbsp; Logística</span>
@@ -40,27 +40,52 @@
             <div class="dropdown-content">
                 {% if perms.logistica.lastmile_b2c %}
                 {% if perms.logistica.checkin_principal %}
-                <h5 class="submenu-toggle" data-target="checkin-sub">Check-In Geral</h5>
-                <div class="sub-submenu" id="checkin-sub">
-                    <a href="{% url 'logistica:client_select' 'IN' %}">Iniciar Check-In</a>
-                    <a href="{% url 'logistica:client_consult' %}">Consulta de Clientes</a>
-                    <a href="{% url 'logistica:product_create' %}">Consulta de Produtos</a>
+                <h5 class="submenu-toggle {% if current_menu == 'checkin' %}active{% endif %}" data-target="checkin-sub">Check-In Geral</h5>
+                <div class="sub-submenu {% if current_menu == 'checkin' %}show{% endif %}" id="checkin-sub">
+                    <a href="{% url 'logistica:client_select' 'IN' %}"
+                    class="{% if current_submenu == 'iniciar_checkin' %}active{% endif %}">
+                        Iniciar Check-In
+                    </a>
+                    <a href="{% url 'logistica:client_consult' %}"
+                    class="{% if current_submenu == 'consulta_clientes' %}active{% endif %}">
+                        Consulta de Clientes
+                    </a>
+                    <a href="{% url 'logistica:product_create' %}"
+                    class="{% if current_submenu == 'consulta_produtos' %}active{% endif %}">
+                        Consulta de Produtos
+                    </a>
                 </div>
                 {% endif %}
                 {% if perms.logistica.checkout_principal %}
-                <h5 class="submenu-toggle" data-target="checkout-sub">Check-Out Geral</h5>
-                <div class="sub-submenu" id="checkout-sub">
-                    <a href="{% url 'logistica:client_select' 'OUT' %}">Iniciar Check-Out</a>
+                <h5 class="submenu-toggle {% if current_menu == 'checkout' %}active{% endif %}"
+                    data-target="checkout-sub">
+                    Check-Out Geral
+                </h5>
+                <div class="sub-submenu {% if current_menu == 'checkout' %}show{% endif %}"
+                    id="checkout-sub">
+                    <a href="{% url 'logistica:client_select' 'OUT' %}"
+                    class="{% if current_submenu == 'iniciar_checkout' %}active{% endif %}">
+                        Iniciar Check-Out
+                    </a>
                 </div>
                 {% endif %}
 
-                <h5 class="submenu-toggle" data-target="lastmile-sub">Lastmile (B2C)</h5>
-                <div class="sub-submenu" id="lastmile-sub">
-                    <h5 class="submenu-toggle" data-target="consulta-sub">Consultas</h5>
-                    <div class="sub-submenu" id="consulta-sub">
-                        <a href="{% url 'logistica:consultar_pedido' %}">Consultar pedido</a>
-                        <a href="{% url 'logistica:consulta_pedidos' %}">IP - Extração de Pedidos</a>
-                        <a href="{% url 'logistica:consulta_etiquetas' %}">IP - Consulta de Etiquetas</a>
+                <h5 class="submenu-toggle {% if current_menu == 'lastmile' %}active{% endif %}" data-target="lastmile-sub">Lastmile (B2C)</h5>
+                <div class="sub-submenu {% if current_menu == 'lastmile' %}show{% endif %}" id="lastmile-sub">
+                    <h5 class="submenu-toggle {% if current_submenu == 'consultas' %}active{% endif %}" data-target="consulta-sub">Consultas</h5>
+                    <div class="sub-submenu {% if current_submenu == 'consultas' %}show{% endif %}" id="consulta-sub">
+                        <a href="{% url 'logistica:consultar_pedido' %}"
+                        class="{% if current_subsubmenu == 'consultar_pedido' %}active{% endif %}">
+                            Consultar pedido
+                        </a>
+                        <a href="{% url 'logistica:consulta_pedidos' %}"
+                        class="{% if current_subsubmenu == 'extracao_pedido' %}active{% endif %}">
+                            IP - Extração de Pedidos
+                        </a>
+                        <a href="{% url 'logistica:consulta_etiquetas' %}"
+                        class="{% if current_subsubmenu == 'consulta_etiquetas' %}active{% endif %}">
+                            IP - Consulta de Etiquetas
+                        </a>
                     </div>
                     {% if perms.logistica.entrega_com_sap %}
                     <h5 class="submenu-toggle" data-target="lastmile-entrada-sub-comp">Fluxo de Entrega</h5>
@@ -91,33 +116,63 @@
                     </div>
                     {% endif %}
                     {% if perms.logistica.inst_simplified %}
-                    <h5 class="submenu-toggle" data-target="lastmile-entrada-sub">Fluxo de Entrega - Simplificado</h5>
-                    <div class="sub-submenu" id="lastmile-entrada-sub">
-                        <a href="{% url 'logistica:consulta_pedidos' %}">IP - Extração de Pedidos</a>
-                        <a href="{% url 'logistica:pcp_simpl' 201 %}">IP - PCP</a>
-                        <a href="{% url 'logistica:retorno_picking_simpl' 202 %}">IP - Retorno do Picking</a>
-                        <a href="{% url 'logistica:consolidacao_simpl' 203 %}">IP - Consolidação</a>
-                        <a href="{% url 'logistica:expedicao_simpl' 204 %}">IP - Expedição</a>
-                        <a href="{% url 'logistica:consulta_etiquetas' %}">IP - Consulta de Etiquetas</a>
-                        <a href="{% url 'logistica:troca_custodia_simpl' 205 %}">IP - Troca de Custódia</a>
+                    <h5 class="submenu-toggle {% if current_submenu == 'entrega_simplificada' %}active{% endif %}" data-target="lastmile-entrada-sub">Fluxo de Entrega - Simplificado</h5>
+                    <div class="sub-submenu {% if current_submenu == 'entrega_simplificada' %}show{% endif %}"
+                        id="lastmile-entrada-sub">
+
+                        <a href="{% url 'logistica:pcp_simpl' 201 %}"
+                        class="{% if current_subsubmenu == 'pcp' %}active{% endif %}">
+                            IP - PCP
+                        </a>
+
+                        <a href="{% url 'logistica:retorno_picking_simpl' 202 %}"
+                        class="{% if current_subsubmenu == 'retorno_picking' %}active{% endif %}">
+                            IP - Retorno do Picking
+                        </a>
+
+                        <a href="{% url 'logistica:consolidacao_simpl' 203 %}"
+                        class="{% if current_subsubmenu == 'consolidacao' %}active{% endif %}">
+                            IP - Consolidação
+                        </a>
+
+                        <a href="{% url 'logistica:expedicao_simpl' 204 %}"
+                        class="{% if current_subsubmenu == 'expedicao' %}active{% endif %}">
+                            IP - Expedição
+                        </a>
+
+                        <a href="{% url 'logistica:troca_custodia_simpl' 205 %}"
+                        class="{% if current_subsubmenu == 'troca_custodia' %}active{% endif %}">
+                            IP - Troca de Custódia
+                        </a>
                     </div>
+
                     {% endif %}
-                    <h5 class="submenu-toggle" data-target="lastmile-retirada-sub">Fluxo de Retirada</h5>
-                    <div class="sub-submenu" id="lastmile-retirada-sub">
-                        <a href="{% url 'logistica:order_return_check' %}">Conferir Retirada</a>
+                    <h5 class="submenu-toggle {% if current_submenu == 'retirada' %}active{% endif %}" data-target="lastmile-retirada-sub">Fluxo de Retirada</h5>
+                    <div class="sub-submenu {% if current_submenu == 'retirada' %}show{% endif %}" id="lastmile-retirada-sub">
+                        <a href="{% url 'logistica:order_return_check' %}"
+                        class="{% if current_subsubmenu == 'conferir_retirada' %}active{% endif %}">
+                            Conferir Retirada
+                        </a>
                     </div>
                     {% if perms.logistica.reverse %}
-                    <h5 class="submenu-toggle" data-target="reverse-sub">Reversa</h5>
-                    <div class="sub-submenu" id="reverse-sub">
-                        <a href="{% url 'logistica:consultar_romaneio' %}">Consultar Romaneio</a>
+                    <h5 class="submenu-toggle {% if current_submenu == 'reverse' %}active{% endif %}" data-target="reverse-sub">Reversa</h5>
+                    <div class="sub-submenu {% if current_submenu == 'reverse' %}show{% endif %}" id="reverse-sub">
+                        <a href="{% url 'logistica:consultar_romaneio' %}"
+                        class="{% if current_subsubmenu == 'consultar_romaneio' %}active{% endif %}">
+                            Consultar Romaneio
+                        </a>
                         <a href="{% url 'logistica:consulta_etiquetas' %}">Consulta de Etiquetas</a>
                     </div>
                     {% endif %}
-                    <h5 class="submenu-toggle" data-target="recebimentos-sub">Estoque</h5>
-                    <div class="sub-submenu" id="recebimentos-sub">
-                        <a href="{% url 'logistica:recebimento_remessa' %}">Recebimento</a>
+                    <h5 class="submenu-toggle {% if current_submenu == 'estoque' %}active{% endif %}" data-target="recebimentos-sub">Estoque</h5>
+                    <div class="sub-submenu {% if current_submenu == 'estoque' %}show{% endif %}" id="recebimentos-sub">
+                        <a href="{% url 'logistica:recebimento_remessa' %}"
+                        class="{% if current_subsubmenu == 'recebimento_estoque' %}active{% endif %}">
+                            Recebimento
+                        </a>
                         {% if perms.logistica.gerente_estoque %}
-                            <a href="{% url 'logistica:gerenciamento_estoque' %}">Gestão de Estoque</a>
+                            <a href="{% url 'logistica:gerenciamento_estoque' %}"
+                            class="{% if current_subsubmenu == 'gerenciamento' %}active{% endif %}">Gestão de Estoque</a>
                         {% endif %}
                     </div>
                 </div>
