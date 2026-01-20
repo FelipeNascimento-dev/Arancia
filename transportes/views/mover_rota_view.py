@@ -11,8 +11,10 @@ import requests
 API_MOVER = f"{API_BASE}/v3/mover"
 
 MOVER_FIELDS = [
-    {"name": "nome_tecnico", "label": "Técnico", "type": "select", "placeholder": "Selecione o técnico", "colspan": 1},
-    {"name": "os_list", "label": "Ordem de Serviço(s)", "type": "textarea", "placeholder": "Digite uma OS por linha", "colspan": 2},
+    {"name": "nome_tecnico", "label": "Técnico", "type": "select",
+        "placeholder": "Selecione o técnico", "colspan": 1},
+    {"name": "os_list", "label": "Ordem de Serviço(s)", "type": "textarea",
+     "placeholder": "Digite uma OS por linha", "colspan": 2},
 ]
 
 
@@ -34,13 +36,15 @@ def mover_rota_view(request):
     # Buscar lista de técnicos
     try:
         headers = {"Accept": "application/json", "access_token": API_TOKEN}
-        url_tecnicos = API_TECNICOS + (f"?Profile={profile}" if profile else "")
+        url_tecnicos = API_TECNICOS + \
+            (f"?Profile={profile}" if profile else "")
         buscar = RequestClient(method="get", url=url_tecnicos, headers=headers)
         resp_tec = buscar.send_api_request()
         if isinstance(resp_tec, list):
             tecnicos = resp_tec
     except Exception as e:
-        messages.warning(request, f"Não foi possível carregar técnicos: {str(e)}")
+        messages.warning(
+            request, f"Não foi possível carregar técnicos: {str(e)}")
 
     # --- POST: mover rota ---
     if request.method == "POST":
@@ -53,7 +57,8 @@ def mover_rota_view(request):
             try:
                 url = f"{API_MOVER}/excel?created_by={request.user.username}"
                 headers = {"access_token": API_TOKEN}
-                files = {"file": (uploaded_file.name, uploaded_file.read(), uploaded_file.content_type)}
+                files = {
+                    "file": (uploaded_file.name, uploaded_file.read(), uploaded_file.content_type)}
 
                 resp = requests.put(url, headers=headers, files=files)
 
@@ -80,10 +85,12 @@ def mover_rota_view(request):
                 messages.error(request, "Informe pelo menos uma OS.")
             else:
                 try:
-                    tec_match = next((t for t in tecnicos if str(t["uid"]) == str(uid)), None)
+                    tec_match = next(
+                        (t for t in tecnicos if str(t["uid"]) == str(uid)), None)
                     tecnico_nome = tec_match["name"] if tec_match else f"UID {uid}"
 
-                    os_data = [o.strip() for o in os_list.splitlines() if o.strip()]
+                    os_data = [o.strip()
+                               for o in os_list.splitlines() if o.strip()]
                     url = f"{API_MOVER}/manual?uid={uid}&novo_tec={tecnico_nome}&created_by={request.user.username}"
                     headers_put = {
                         "Accept": "application/json",
@@ -115,7 +122,8 @@ def mover_rota_view(request):
                                 f"{moved_success} OS(s) movida(s), mas {moved_error} falharam: {resp}"
                             )
                         else:
-                            messages.error(request, f"Nenhuma OS movida: {resp}")
+                            messages.error(
+                                request, f"Nenhuma OS movida: {resp}")
 
                     elif isinstance(resp, str):
                         texto = resp.lower().strip()
@@ -124,7 +132,8 @@ def mover_rota_view(request):
                         else:
                             messages.error(request, resp)
                     else:
-                        messages.error(request, f"Resposta inesperada da API: {resp}")
+                        messages.error(
+                            request, f"Resposta inesperada da API: {resp}")
 
                 except Exception as e:
                     messages.error(request, f"Erro inesperado: {str(e)}")
@@ -137,6 +146,10 @@ def mover_rota_view(request):
             "tecnicos": tecnicos,
             "tecnico_nome": tecnico_nome,
             "created_by": request.user.username,
-              "show_config_link": True,
+            "show_config_link": True,
+            "current_parent_menu": "transportes",
+            "current_menu": "controle_campo",
+            "current_submenu": "rotas",
+            "current_subsubmenu": "mover_rota"
         },
     )

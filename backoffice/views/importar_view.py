@@ -16,7 +16,12 @@ API_MOVER = f"{API_BASE_BKO}v1/import/create/import"
 @login_required(login_url='logistica:login')
 @permission_required('backoffice.Importar', raise_exception=True)
 def importar_excel_view(request):
-    contexto = {"form": ImportacaoForm()}
+    contexto = {
+        "form": ImportacaoForm(),
+        "current_menu": "importar_equipamentos",
+        "current_submenu": "bko_importar",
+        "current_parent_menu": "backoffice"
+    }
 
     if request.method == "POST":
         form = ImportacaoForm(request.POST, request.FILES)

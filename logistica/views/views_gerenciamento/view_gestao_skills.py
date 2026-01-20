@@ -100,6 +100,8 @@ def skill_ger(request):
         "usuarios_vinculados": usuarios_vinculados,
         "all_users": all_users,
         "form": form,
-        "site_title": 'Gerenciamento de GAI'
+        "site_title": 'Gerenciamento de GAI',
+        "current_menu": "gestao_gai",
+        "current_parent_menu": "gerenciamento",
     }
     return render(request, "logistica/templates_gerenciamento/gestao_skills.html", context)
