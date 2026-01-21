@@ -16,7 +16,7 @@
         <div class="divider-horizontal"></div>
         <div class="divider-horizontal-reduzida"></div>
 
-        <a href="{% url 'logistica:index' %}" class="itens-sidebar">
+        <a href="{% url 'logistica:index' %}" class="itens-sidebar {% if current_menu == 'home' %}active{% endif %}">
             <i class="fa-solid fa-house"></i>
             <span class="texto-item">Home</span>
         </a>
