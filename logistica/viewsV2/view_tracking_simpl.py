@@ -397,10 +397,43 @@ def trackingIPV2(request: HttpRequest, code: str) -> HttpResponse:
     if request.method == "POST":
         pedido_atual = _force_pedido(request)
 
-        # ------------------ SALVAR CHIP ------------------
+        if request.POST.get("cancel_chip"):
+            pedido_atual = _force_pedido(request)
+            serial = (request.POST.get("serial") or "").strip().upper()
+
+            serials = _get_serials_from_session(request, pedido_atual)
+            if serial in serials:
+                serials.remove(serial)
+                _save_serials_to_session(request, pedido_atual, serials)
+
+            chip_map = request.session.get("chip_map", {})
+            chip_map.pop(serial, None)
+            request.session["chip_map"] = chip_map
+            request.session.modified = True
+
+            messages.warning(
+                request,
+                f"Serial {serial} descartado. É obrigatório informar o chip."
+            )
+            return redirect(request.path)
+
         if request.POST.get("save_chip"):
-            serial = request.POST.get("serial").strip().upper()
-            chip_number = request.POST.get("chip_number").strip()
+            pedido_atual = _force_pedido(request)
+
+            serial = (request.POST.get("serial") or "").strip().upper()
+            chip_number = (request.POST.get("chip_number") or "").strip()
+
+            if not chip_number:
+                serials = _get_serials_from_session(request, pedido_atual)
+                if serial in serials:
+                    serials.remove(serial)
+                    _save_serials_to_session(request, pedido_atual, serials)
+
+                messages.error(
+                    request,
+                    f"O chip é obrigatório. O serial {serial} não foi inserido."
+                )
+                return redirect(request.path)
 
             chip_map = request.session.get("chip_map", {})
             chip_map[serial] = chip_number
@@ -412,17 +445,17 @@ def trackingIPV2(request: HttpRequest, code: str) -> HttpResponse:
                 request, f"Chip {chip_number} associado ao serial {serial}."
             )
             return redirect(request.path)
-        # --------------------------------------------------
 
         form = trackingIPForm(request.POST, nome_form=titulo,
                               show_serial=code_info.show_serial)
 
         resp = _dispatch_serial_actions_if_any(
-            request, code_info, pedido_atual, form)
+            request, code_info, pedido_atual, form, menu_context)
         if resp:
             return resp
 
-        resp = _process_enviar_evento(request, code_info, form, serials)
+        resp = _process_enviar_evento(
+            request, code_info, form, serials, menu_context)
         if resp:
             return resp
 

@@ -221,7 +221,6 @@
 
         <div class="my-modal-header">
             <h3>Associar Chip ao Serial</h3>
-            <button class="my-modal-close" onclick="fecharModal()">×</button>
         </div>
 
         <div class="my-modal-body">
@@ -237,7 +236,6 @@
                     name="chip_number"
                     class="my-input"
                     placeholder="Chip Number"
-                    required
                 >
 
                 <input type="hidden" name="serial" value="{{ modal_serial }}">
@@ -245,10 +243,16 @@
 
                 <div class="my-modal-actions">
                     <button type="submit" class="my-btn my-btn-primary">Salvar</button>
-                    <button type="button" class="my-btn my-btn-secondary" onclick="fecharModal()">Fechar</button>
+                    <button 
+                        type="submit"
+                        name="cancel_chip"
+                        value="1"
+                        class="my-btn my-btn-secondary"
+                    >
+                        Cancelar
+                    </button>
                 </div>
             </form>
-
         </div>
     </div>
 </div>
