@@ -83,6 +83,55 @@ def gerenciamento_estoque(request):
 
         request.POST = new_post
 
+    if request.method == "POST" and (
+        "exportar_resumo_produto" in request.POST
+        or "exportar_resumo_ztipo" in request.POST
+    ):
+
+        aggregate_by = (
+            "product"
+            if "exportar_resumo_produto" in request.POST
+            else "ztipo"
+        )
+
+        filtros = request.session.get("estoque_filtros")
+
+        if not filtros:
+            messages.error(request, "Nenhum filtro aplicado para exportação.")
+            return redirect(request.path)
+
+        client = filtros["client"]
+        pa_ids = [int(i) for i in filtros["cd_estoque"]]
+        status = filtros.get("status", "IN_DEPOT")
+
+        stock_type = request.POST.get("stock_type")
+        if stock_type:
+            stock_type = stock_type.strip()
+
+        if not client or not pa_ids:
+            messages.error(request, "Selecione cliente e ao menos um CD.")
+            return redirect(request.path)
+
+        query_params = [
+            ("status", status),
+            ("agregate_by", aggregate_by),
+        ]
+
+        if stock_type:
+            query_params.append(("stock_type", stock_type))
+
+        for pa in pa_ids:
+            query_params.append(("locations_ids", pa))
+
+        qs = urlencode(query_params, doseq=True)
+
+        export_url = (
+            f"{STOCK_API_URL}/v1/items/list-byid/{client}/resume/export?{qs}"
+        )
+        print(export_url)
+
+        return redirect(export_url)
+
     if request.method == "POST" and "exportar" in request.POST:
 
         form, _, _, sales_channels_map = carregar_formulario(request)
