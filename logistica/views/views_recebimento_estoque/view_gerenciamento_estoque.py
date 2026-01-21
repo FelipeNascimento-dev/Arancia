@@ -128,7 +128,6 @@ def gerenciamento_estoque(request):
         export_url = (
             f"{STOCK_API_URL}/v1/items/list-byid/{client}/resume/export?{qs}"
         )
-        print(export_url)
 
         return redirect(export_url)
 
