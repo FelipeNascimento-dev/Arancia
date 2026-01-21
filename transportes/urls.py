@@ -4,10 +4,8 @@ from transportes.views.View_session import config_context_view
 from transportes.views.iframe import painel_Dashboard_view
 from transportes.views.scripting_view import scripting_view
 from transportes.views.view_panel_technical import registrar_tratamento_view
-
-
 from .views import extrair_enderecos_view, gerar_etiquetas_view, dashboard_view, criar_user_view, ver_usuario_view, mover_rota_view, ordenar_rota_view
-
+from .views import consulta_os
 
 app_name = 'transportes'
 
@@ -25,4 +23,7 @@ urlpatterns = [
     path("Ferramentas/mover-rotas/", mover_rota_view, name="mover_rota"),
     path("Ferramentas/ordenar-rotas/", ordenar_rota_view, name="ordenar_rota"),
     path("Ferramentas/roteirizacao/", scripting_view, name="scripting"),
+
+
+    path("chamados/consulta-os/", consulta_os, name="consulta_os"),
 ]

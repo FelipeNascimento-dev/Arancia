@@ -252,6 +252,17 @@
                         </a>
                     </div>
                 </div>
+                <h5 class="submenu-toggle {% if current_menu == 'controle_chamados' %}active{% endif %}"
+                    data-target="controle-chamados">
+                    Controle de Chamados
+                </h5>
+                <div class="sub-submenu {% if current_menu == 'controle_chamados' %}show{% endif %}"
+                    id="controle-chamados">
+                    <a href="{% url 'transportes:consulta_os' %}"
+                    class="{% if current_submenu == 'consulta_os' %}active{% endif %}">
+                        Consulta de OS
+                    </a>
+                </div>
                 {% endif %}
             </div>
         </div>

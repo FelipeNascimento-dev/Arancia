@@ -6,3 +6,4 @@ from .ordenar_rota_view import ordenar_rota_view
 from .ver_usuario_view import ver_usuario_view
 from .View_session import config_context_view
 from .scripting_view import scripting_view
+from .views_controle_chamados.consulta_os import consulta_os
