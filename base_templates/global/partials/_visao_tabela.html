@@ -1,93 +1,77 @@
-<table class="data-table">
-
-    {% if tipo == "detalhe" %}
-    <thead>
-        <tr>
-            <th>Serial</th>
-            <th>Status</th>
-            <th>Dias</th>
-            <th>Localização</th>
-            <th>SKU</th>
-            <th>Descrição</th>
-            <th>Último Movimento</th>
-            <th>Informações Adicionais</th>
-        </tr>
-    </thead>
-
-    <tbody>
-        {% for item in itens %}
-        <tr>
-            <td>{{ item.serial }}</td>
-            <td>{{ item.status }}</td>
-            <td>{{ item.dias_no_estoque|default:"-" }}</td>
-            <td>{{ item.location_name }}</td>
-            <td>{{ item.product_sku }}</td>
-            <td>{{ item.product_description }}</td>
-            <td>{{ item.last_movement_in_date|default:"-" }}</td>
-
-            <td style="text-align:center;">
-                {% if item.extra_info %}
-                <button class="btn-json" data-json='{{ item.extra_info|safe|escapejs }}' data-key="Extra Info"
-                    onclick="showJsonModal(this)">
-                    +
-                </button>
-                {% else %}
-                -
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-    {% endif %}
-
-    {% if tipo == "resumo" %}
-    <h3 style="margin: 30px 0 10px; margin-left: 65px;">Resumo por Produto</h3>
+<form method="POST">
+    {% csrf_token %}
 
     <table class="data-table">
+
+        {% if tipo == "detalhe" %}
         <thead>
             <tr>
-                <th>PA</th>
-                <th>Tipo de estoque</th>
-                <th>Produto</th>
-                <th>Quantidade</th>
+                <th>Serial</th>
+                <th>Status</th>
+                <th>Dias</th>
+                <th>Localização</th>
+                <th>SKU</th>
+                <th>Descrição</th>
+                <th>Último Movimento</th>
+                <th>Informações Adicionais</th>
             </tr>
         </thead>
+
         <tbody>
-            {% for pa in itens %}
-            {% for st in pa.stock_types %}
-            {% for produto, qtd in st.qtd_por_produto.items %}
+            {% for item in itens %}
             <tr>
-                <td>{{ pa.pa }}</td>
-                <td>{{ st.type }}</td>
-                <td>{{ produto }}</td>
-                <td><strong>{{ qtd }}</strong></td>
+                <td>{{ item.serial }}</td>
+                <td>{{ item.status }}</td>
+                <td>{{ item.dias_no_estoque|default:"-" }}</td>
+                <td>{{ item.location_name }}</td>
+                <td>{{ item.product_sku }}</td>
+                <td>{{ item.product_description }}</td>
+                <td>{{ item.last_movement_in_date|default:"-" }}</td>
+
+                <td style="text-align:center;">
+                    {% if item.extra_info %}
+                    <button class="btn-json" data-json='{{ item.extra_info|safe|escapejs }}' data-key="Extra Info"
+                        onclick="showJsonModal(this)">
+                        +
+                    </button>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
-            {% endfor %}
-            {% endfor %}
         </tbody>
-    </table>
+        {% endif %}
 
-        {% if exibe_ztipo %}
-        <h3 style="margin: 40px 0 10px; margin-left: 65px;">Resumo por ZTIPO</h3>
+        {% if tipo == "resumo" %}
+        <h3 style="margin: 30px 0 10px; margin-left: 65px;">
+            Resumo por Produto
+            <button
+                type="submit"
+                name="exportar_resumo_produto"
+                value="product"
+                class="extract-balanced">
+                <i class="fa-solid fa-download"></i>Extrair
+            </button>
+        </h3>
 
-        <table class="data-table" style="margin-bottom: 40px;">
+        <table class="data-table">
             <thead>
                 <tr>
                     <th>PA</th>
                     <th>Tipo de estoque</th>
-                    <th>ZTIPO</th>
+                    <th>Produto</th>
                     <th>Quantidade</th>
                 </tr>
             </thead>
             <tbody>
                 {% for pa in itens %}
                 {% for st in pa.stock_types %}
-                {% for ztipo, qtd in st.qtd_por_ztipo.items %}
+                {% for produto, qtd in st.qtd_por_produto.items %}
                 <tr>
                     <td>{{ pa.pa }}</td>
                     <td>{{ st.type }}</td>
-                    <td>{{ ztipo }}</td>
+                    <td>{{ produto }}</td>
                     <td><strong>{{ qtd }}</strong></td>
                 </tr>
                 {% endfor %}
@@ -96,8 +80,44 @@
             </tbody>
         </table>
 
+            {% if exibe_ztipo %}
+            <h3 style="margin: 40px 0 10px; margin-left: 65px;">
+                Resumo por ZTIPO
+                <button
+                type="submit"
+                name="exportar_resumo_ztipo"
+                value="ztipo"
+                class="extract-balanced">
+                <i class="fa-solid fa-download"></i>Extrair
+            </button>
+            </h3>
+
+            <table class="data-table" style="margin-bottom: 40px;">
+                <thead>
+                    <tr>
+                        <th>PA</th>
+                        <th>Tipo de estoque</th>
+                        <th>ZTIPO</th>
+                        <th>Quantidade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pa in itens %}
+                    {% for st in pa.stock_types %}
+                    {% for ztipo, qtd in st.qtd_por_ztipo.items %}
+                    <tr>
+                        <td>{{ pa.pa }}</td>
+                        <td>{{ st.type }}</td>
+                        <td>{{ ztipo }}</td>
+                        <td><strong>{{ qtd }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% endif %}
         {% endif %}
-    {% endif %}
-
-
-</table>
+    </table>
+</form>
