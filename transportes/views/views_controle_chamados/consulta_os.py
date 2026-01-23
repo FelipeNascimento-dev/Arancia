@@ -74,8 +74,16 @@ def consulta_os(request):
         form.fields["base"].choices = bases
         form.fields["tecnico"].choices = tecnicos_choices
 
+        if not tecnicos_choices:
+            messages.warning(
+                request,
+                "Essa base não possui técnicos cadastrados."
+            )
+
         if form.is_valid():
             messages.success(request, "Consulta realizada com sucesso")
+
+        form.errors.pop("tecnico", None)
 
     else:
         form = ConsultaOSForm(nome_form=titulo)
