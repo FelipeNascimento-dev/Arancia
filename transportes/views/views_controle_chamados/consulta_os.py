@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
-
+from logistica.models import Group, GroupAditionalInformation
 from setup.local_settings import API_BASE
 from utils.request import RequestClient
 from ...forms import ConsultaOSForm
@@ -10,16 +10,31 @@ from ...forms import ConsultaOSForm
 TOKEN = "123"
 
 
+def get_bases_from_arancia_pa():
+    bases = []
+
+    try:
+        grupo_pai = Group.objects.get(name="arancia_PA")
+    except Group.DoesNotExist:
+        return bases
+
+    gai_list = GroupAditionalInformation.objects.filter(group=grupo_pai)
+
+    for gai in gai_list:
+        value = f"PA_{gai.cod_iata}"
+        label = gai.nome or gai.cod_iata
+
+        bases.append((value, label))
+
+    return sorted(bases, key=lambda x: x[1])
+
+
 @csrf_protect
 @login_required(login_url='logistica:login')
 def consulta_os(request):
     titulo = 'Consulta de OS'
 
-    bases = [
-        ("PA_SPO", "São Paulo"),
-        ("RJO", "Rio de Janeiro"),
-        ("MG", "Minas Gerais"),
-    ]
+    bases = get_bases_from_arancia_pa()
 
     tecnicos_choices = []
 
