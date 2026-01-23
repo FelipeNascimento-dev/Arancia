@@ -2,7 +2,21 @@ from django import forms
 
 
 class ConsultaOSForm(forms.Form):
-    os_number = forms.CharField(label='Numero da OS', required=True)
+    base = forms.ChoiceField(
+        label="Selecione a Base",
+        choices=[],
+        widget=forms.Select(
+            attrs={
+                "onchange": "this.form.submit();"
+            }
+        )
+    )
+
+    tecnico = forms.ChoiceField(
+        label="Selecione o Técnico",
+        choices=[],
+        required=False
+    )
 
     def __init__(self, *args, nome_form=None, **kwargs):
         super().__init__(*args, **kwargs)
