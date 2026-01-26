@@ -60,8 +60,8 @@ def consulta_os(request):
                 resp = client.send_api_request()
 
                 if isinstance(resp, list):
-                    tecnicos_choices = [
-                        (tec["username"], tec["name"])
+                    tecnicos_choices = [("", "Todos os Técnicos")] + [
+                        (tec["uid"], tec["name"])
                         for tec in resp
                     ]
                 else:
@@ -80,8 +80,60 @@ def consulta_os(request):
                 "Essa base não possui técnicos cadastrados."
             )
 
-        if form.is_valid():
-            messages.success(request, "Consulta realizada com sucesso")
+        if form.is_valid() and "enviar_evento" in request.POST:
+            base = form.cleaned_data.get("base")
+            tecnico_uid = form.cleaned_data.get("tecnico")
+            tag = form.cleaned_data.get("tag") or "Pendente"
+
+            data_inicial = form.cleaned_data.get("data_inicial")
+            data_final = form.cleaned_data.get("data_final")
+
+            if not data_inicial:
+                data_inicial = data_final
+            if not data_final:
+                data_final = data_inicial
+
+            unidade_nome = base
+
+            try:
+                url = f"{API_BASE}/v3/controle_campo/chamados/{base}"
+
+                headers = {
+                    "accept": "application/json",
+                    "access_token": TOKEN,
+                    "Content-Type": "application/json",
+                }
+
+                params = {
+                    "unidade": unidade_nome,
+                    "uid": tecnico_uid,
+                    "tag": tag,
+                    "data_inicial": data_inicial.strftime("%Y-%m-%d") if data_inicial else None,
+                    "data_final": data_final.strftime("%Y-%m-%d") if data_final else None,
+                    "offset": 0,
+                    "limit": 100,
+                }
+
+                params = {k: v for k, v in params.items() if v is not None}
+
+                client = RequestClient(
+                    method="get",
+                    url=url,
+                    headers=headers,
+                    request_data=params,
+                )
+
+                resp_chamados = client.send_api_request()
+
+                print(resp_chamados)
+
+                messages.success(
+                    request,
+                    f"Consulta realizada com sucesso. Registros encontrados: {len(resp_chamados) if isinstance(resp_chamados, list) else 0}"
+                )
+
+            except Exception as e:
+                messages.error(request, f"Erro ao buscar chamados: {e}")
 
         form.errors.pop("tecnico", None)
 
