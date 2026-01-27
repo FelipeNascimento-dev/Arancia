@@ -5,7 +5,7 @@ from transportes.views.iframe import painel_Dashboard_view
 from transportes.views.scripting_view import scripting_view
 from transportes.views.view_panel_technical import registrar_tratamento_view
 from .views import extrair_enderecos_view, gerar_etiquetas_view, dashboard_view, criar_user_view, ver_usuario_view, mover_rota_view, ordenar_rota_view
-from .views import consulta_os
+from .views import consulta_os, lista_tecnicos
 
 app_name = 'transportes'
 
@@ -26,4 +26,5 @@ urlpatterns = [
 
 
     path("chamados/consulta-os/", consulta_os, name="consulta_os"),
+    path("chamados/lista-tecnicos/", lista_tecnicos, name="lista_tecnicos"),
 ]

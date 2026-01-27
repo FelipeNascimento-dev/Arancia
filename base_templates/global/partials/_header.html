@@ -262,6 +262,10 @@
                     class="{% if current_submenu == 'consulta_os' %}active{% endif %}">
                         Consulta de OS
                     </a>
+                    <a href="{% url 'transportes:lista_tecnicos' %}"
+                    class="{% if current_submenu == 'lista_tecnicos' %}active{% endif %}">
+                        Lista de Técnicos
+                    </a>
                 </div>
                 {% endif %}
             </div>

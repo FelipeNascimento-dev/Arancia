@@ -49,7 +49,7 @@ def consulta_os(request):
 
         if base_selecionada:
             try:
-                url = f"{API_BASE}/v3/controle_campo/tecnicos/{base_selecionada}?offset=0&limit=100"
+                url = f"{API_BASE}/v3/controle_campo/tecnicos/{base_selecionada}"
 
                 headers = {
                     "accept": "application/json",
