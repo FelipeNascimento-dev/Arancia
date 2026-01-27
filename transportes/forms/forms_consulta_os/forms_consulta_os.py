@@ -12,7 +12,9 @@ class ConsultaOSForm(forms.Form):
         label="Selecione a Base",
         choices=[],
         widget=forms.Select(
-            attrs={"onchange": "this.form.submit();"}
+            attrs={
+                "onchange": "if (this.value) this.form.submit();"
+            }
         )
     )
 
