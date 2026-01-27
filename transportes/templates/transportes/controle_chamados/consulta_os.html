@@ -7,14 +7,158 @@
         height: auto;
         margin-top: 65px;
     }
+
+    .cards-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 32px;
+        padding: 20px 10px 40px;
+    }
+
+    .card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 10px 26px rgba(0,0,0,.08);
+        overflow: hidden;
+        max-width: 410px;
+        min-height: 500px;
+        display: flex;
+        flex-direction: column;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 18px 36px rgba(0,0,0,.12);
+    }
+
+    .card-header {
+        background-color: #ccc;
+        color: #fff;
+        padding: 18px 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .os-code {
+        font-size: 1.4rem;
+        font-weight: 700;
+        letter-spacing: .5px;
+    }
+
+    .tag {
+        background: rgba(255,255,255,.2);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: .85rem;
+        font-weight: 600;
+    }
+
+    .card-section {
+        padding: 18px 22px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .card-section.grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px 24px;
+    }
+
+    .card-section.highlight {
+        background: #fafafa;
+        border-left: 5px solid #ff6f00;
+    }
+
+    .label {
+        font-size: .75rem;
+        text-transform: uppercase;
+        font-weight: 600;
+        color: #777;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .value {
+        font-size: .95rem;
+        font-weight: 500;
+        color: #222;
+        line-height: 1.45;
+    }
+
+    @media (max-width: 768px) {
+        .cards-container {
+            grid-template-columns: 1fr;
+        }
+
+        .card-section.grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 
 <div class="form-container">
     <div class="form-card-2col">
         <form method="POST">
             {% include 'global/partials/_form_2col.html' %}
+            <button type="submit" name="exportar" value="1" class="extract-balanced">
+                <i class="fa-solid fa-download"></i> Exportar estoque
+            </button>
         </form>
     </div>
 </div>
 
+{% if itens %}
+<div class="cards-container">
+    {% for item in itens %}
+    <div class="card" data-tag="{{ item.tag }}">
+        <div class="card-header">
+            <span class="os-code">{{ item.os }}</span>
+            <span class="tag">{{ item.tag }}</span>
+        </div>
+
+        <div class="card-section grid">
+            <div>
+                <span class="label">Técnico</span>
+                <span class="value">{{ item.nome_tecnico }}</span>
+            </div>
+
+            <div>
+                <span class="label">Projeto</span>
+                <span class="value">{{ item.projeto }}</span>
+            </div>
+
+            <div>
+                <span class="label">Unidade</span>
+                <span class="value">{{ item.unidade }}</span>
+            </div>
+
+            <div>
+                <span class="label">Abertura</span>
+                <span class="value">{{ item.dt_abertura_fmt }}</span>
+            </div>
+        </div>
+
+        <div class="card-section">
+            <span class="label">Endereço</span>
+            <span class="value">
+                {{ item.bairro }} – {{ item.cidade }}<br>
+                CEP {{ item.cep }}
+            </span>
+        </div>
+
+        <div class="card-section highlight">
+            <span class="label">Conclusão Operador</span>
+            <span class="value">{{ item.conclusao_operador|default:"-" }}</span>
+        </div>
+
+        <div class="card-section">
+            <span class="label">Mensagem</span>
+            <span class="value">{{ item.mensagem|default:"-" }}</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 {% endblock %}
