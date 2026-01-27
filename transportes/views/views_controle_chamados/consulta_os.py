@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
@@ -9,6 +9,7 @@ from ...forms import ConsultaOSForm
 from datetime import datetime
 
 TOKEN = "123"
+PAGE_SIZE = 50
 
 
 def get_bases_from_arancia_pa():
@@ -34,15 +35,17 @@ def get_bases_from_arancia_pa():
 @login_required(login_url='logistica:login')
 def consulta_os(request):
     titulo = 'Consulta de OS'
-
     bases = get_bases_from_arancia_pa()
-
     tecnicos_choices = []
-
     itens = []
+    page = 1
+    has_next = False
+    has_prev = False
 
     if request.method == "POST":
         base_selecionada = request.POST.get("base")
+        page = int(request.POST.get("page", 1))
+        offset = (page - 1) * PAGE_SIZE
 
         if base_selecionada:
             try:
@@ -74,7 +77,7 @@ def consulta_os(request):
                 messages.error(request, f"Erro ao buscar técnicos: {e}")
 
         form = ConsultaOSForm(request.POST, nome_form=titulo)
-        form.fields["base"].choices = bases
+        form.fields["base"].choices = [("", "Selecione a base")] + bases
         form.fields["tecnico"].choices = tecnicos_choices
 
         if not tecnicos_choices:
@@ -83,7 +86,47 @@ def consulta_os(request):
                 "Essa base não possui técnicos cadastrados."
             )
 
+        if "exportar" in request.POST:
+            base = request.POST.get("base")
+            tecnico_uid = request.POST.get("tecnico") or None
+            tag = request.POST.get("tag") or "Pendente"
+            data_inicial = request.POST.get("data_inicial")
+            data_final = request.POST.get("data_final")
+
+            if not base:
+                messages.error(request, "Selecione uma base para exportar.")
+                return redirect(request.path)
+
+            cod_base = "CTBSEQ"
+
+            params = {
+                "unidade": base,
+                "uid": tecnico_uid,
+                "tag": tag,
+                "data_inicial": data_inicial or None,
+                "data_final": data_final or None,
+            }
+
+            params = {k: v for k, v in params.items() if v}
+
+            # url = f"{API_BASE}/v3/controle_campo/chamados/{cod_base}/export"
+            url = f"{API_BASE}/v3/controle_campo/chamados/{cod_base}/export?unidade={base}&uid={tecnico_uid}&tag={tag}&data_inicial={data_inicial}&data_final={data_final}"
+            url = f"http://192.168.0.214/RetencaoAPI/api/v3/controle_campo/chamados/CTBSEQ/export?unidade=PA_SPO&uid=2668&tag=Pendente&data_inicial=2026-01-26&data_final=2026-01-26"
+            # chamados/CTBSEQ/export?unidade=PA_SPO&uid=2668&tag=Pendente&data_inicial=2026-01-26&data_final=2026-01-26
+            client = RequestClient(
+                method="get",
+                url=url,
+                headers={
+                    "accept": "application/json",
+                    "access_token": '123'
+                }
+            )
+
+            return redirect(url)
+
         if form.is_valid() and "enviar_evento" in request.POST:
+            page = int(request.POST.get("page", 1))
+            offset = (page - 1) * PAGE_SIZE
             base = form.cleaned_data.get("base")
             tecnico_uid = form.cleaned_data.get("tecnico")
             if not tecnico_uid:
@@ -115,8 +158,8 @@ def consulta_os(request):
                     "tag": tag,
                     "data_inicial": data_inicial.strftime("%Y-%m-%d") if data_inicial else None,
                     "data_final": data_final.strftime("%Y-%m-%d") if data_final else None,
-                    "offset": 0,
-                    "limit": 100,
+                    "offset": offset,
+                    "limit": PAGE_SIZE,
                 }
 
                 params = {k: v for k, v in params.items() if v is not None}
@@ -130,6 +173,9 @@ def consulta_os(request):
 
                 resp_chamados = client.send_api_request()
 
+                itens = resp_chamados if isinstance(
+                    resp_chamados, list) else []
+
                 for item in itens:
                     if item.get("dt_abertura"):
                         item["dt_abertura_fmt"] = (
@@ -140,8 +186,8 @@ def consulta_os(request):
                     else:
                         item["dt_abertura_fmt"] = "-"
 
-                itens = resp_chamados if isinstance(
-                    resp_chamados, list) else []
+                has_next = len(itens) == PAGE_SIZE
+                has_prev = page > 1
 
                 messages.success(
                     request,
@@ -151,25 +197,9 @@ def consulta_os(request):
             except Exception as e:
                 messages.error(request, f"Erro ao buscar chamados: {e}")
 
-        elif "exportar_tec" in request.POST:
-            url = f"{API_BASE}/v3/controle_campo/chamados/{base}/export"
-
-            client = RequestClient(
-                method="get",
-                url=url,
-                headers=headers,
-                request_data=params,
-            )
-
-            export_resp = client.send_api_request()
-
-            return export_resp
-
-        form.errors.pop("tecnico", None)
-
     else:
         form = ConsultaOSForm(nome_form=titulo)
-        form.fields["base"].choices = bases
+        form.fields["base"].choices = [("", "Selecione a base")] + bases
         form.fields["tecnico"].choices = []
 
     return render(
@@ -178,6 +208,9 @@ def consulta_os(request):
         {
             "form": form,
             "itens": itens,
+            "page": page,
+            "has_next": has_next,
+            "has_prev": has_prev,
             "site_title": titulo,
             "botao_texto": "Consultar",
             "current_parent_menu": "transportes",

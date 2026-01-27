@@ -96,14 +96,69 @@
             grid-template-columns: 1fr;
         }
     }
+
+    .pagination-container {
+        margin: 30px 0 10px;
+        text-align: center;
+    }
+
+    .btn-page {
+        background: #ccc;
+        color: #fff;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-page:hover {
+        background: #ccc;
+    }
+
+    .page-indicator {
+        font-weight: 600;
+        color: #444;
+        padding: 10px 14px;
+    }
+
+    .extract-balanced {
+        background: #0f9d58;
+        color: #ffffff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: 0.2s;
+    }
+
+    .extract-balanced:hover {
+        background: #0c7c45;
+    }
 </style>
 
 <div class="form-container">
     <div class="form-card-2col">
         <form method="POST">
+            {% csrf_token %}
             {% include 'global/partials/_form_2col.html' %}
+        </form>
+        <form method="POST">
+            {% csrf_token %}
+
+            <input type="hidden" name="base" value="{{ form.base.value }}">
+            <input type="hidden" name="tecnico" value="{{ form.tecnico.value }}">
+            <input type="hidden" name="tag" value="{{ form.tag.value }}">
+            <input type="hidden" name="data_inicial" value="{{ form.data_inicial.value }}">
+            <input type="hidden" name="data_final" value="{{ form.data_final.value }}">
+
             <button type="submit" name="exportar" value="1" class="extract-balanced">
-                <i class="fa-solid fa-download"></i> Exportar estoque
+                <i class="fa-solid fa-download"></i> Exportar
             </button>
         </form>
     </div>
@@ -161,4 +216,38 @@
     {% endfor %}
 </div>
 {% endif %}
+
+{% if itens %}
+<div class="pagination-container">
+    <form method="POST" style="display:flex;gap:12px;justify-content:center;">
+        {% csrf_token %}
+
+        <input type="hidden" name="base" value="{{ form.base.value }}">
+        <input type="hidden" name="tecnico" value="{{ form.tecnico.value }}">
+        <input type="hidden" name="tag" value="{{ form.tag.value }}">
+        <input type="hidden" name="data_inicial" value="{{ form.data_inicial.value }}">
+        <input type="hidden" name="data_final" value="{{ form.data_final.value }}">
+        <input type="hidden" name="enviar_evento" value="1">
+
+        {% if has_prev %}
+        <button type="submit" name="page" value="{{ page|add:'-1' }}" class="btn-page">
+            <i class="fa-solid fa-angles-left"></i>
+        </button>
+        {% endif %}
+
+        <span class="page-indicator">
+            Página {{ page }}
+        </span>
+
+        {% if has_next %}
+        <button type="submit" name="page" value="{{ page|add:'1' }}" class="btn-page">
+            <i class="fa-solid fa-angles-right"></i>
+        </button>
+        {% endif %}
+    </form>
+</div>
+{% endif %}
+
+
+
 {% endblock %}
