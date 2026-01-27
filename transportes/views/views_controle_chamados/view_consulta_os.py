@@ -88,10 +88,16 @@ def consulta_os(request):
 
         if "exportar" in request.POST:
             base = request.POST.get("base")
-            tecnico_uid = request.POST.get("tecnico") or None
+            tecnico_uid = request.POST.get("tecnico")
+            tecnico_uid = f'&uid={tecnico_uid}' if tecnico_uid not in (
+                '', 'None') else ''
             tag = request.POST.get("tag") or "Pendente"
             data_inicial = request.POST.get("data_inicial")
+            data_inicial = f'&data_inicial={data_inicial}' if data_inicial not in (
+                '', 'None') else ''
             data_final = request.POST.get("data_final")
+            data_final = f'&data_final={data_final}' if data_final not in (
+                '', 'None') else ''
 
             if not base:
                 messages.error(request, "Selecione uma base para exportar.")
@@ -110,17 +116,7 @@ def consulta_os(request):
             params = {k: v for k, v in params.items() if v}
 
             # url = f"{API_BASE}/v3/controle_campo/chamados/{cod_base}/export"
-            url = f"{API_BASE}/v3/controle_campo/chamados/{cod_base}/export?unidade={base}&uid={tecnico_uid}&tag={tag}&data_inicial={data_inicial}&data_final={data_final}"
-            url = f"http://192.168.0.214/RetencaoAPI/api/v3/controle_campo/chamados/CTBSEQ/export?unidade=PA_SPO&uid=2668&tag=Pendente&data_inicial=2026-01-26&data_final=2026-01-26"
-            # chamados/CTBSEQ/export?unidade=PA_SPO&uid=2668&tag=Pendente&data_inicial=2026-01-26&data_final=2026-01-26
-            client = RequestClient(
-                method="get",
-                url=url,
-                headers={
-                    "accept": "application/json",
-                    "access_token": '123'
-                }
-            )
+            url = f"{API_BASE}/v3/controle_campo/chamados/{cod_base}/export?unidade={base}{tecnico_uid}&tag={tag}{data_inicial}{data_final}"
 
             return redirect(url)
 
