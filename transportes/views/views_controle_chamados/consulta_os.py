@@ -6,6 +6,7 @@ from logistica.models import Group, GroupAditionalInformation
 from setup.local_settings import API_BASE
 from utils.request import RequestClient
 from ...forms import ConsultaOSForm
+from datetime import datetime
 
 TOKEN = "123"
 
@@ -37,6 +38,8 @@ def consulta_os(request):
     bases = get_bases_from_arancia_pa()
 
     tecnicos_choices = []
+
+    itens = []
 
     if request.method == "POST":
         base_selecionada = request.POST.get("base")
@@ -83,6 +86,8 @@ def consulta_os(request):
         if form.is_valid() and "enviar_evento" in request.POST:
             base = form.cleaned_data.get("base")
             tecnico_uid = form.cleaned_data.get("tecnico")
+            if not tecnico_uid:
+                tecnico_uid = None
             tag = form.cleaned_data.get("tag") or "Pendente"
 
             data_inicial = form.cleaned_data.get("data_inicial")
@@ -93,10 +98,10 @@ def consulta_os(request):
             if not data_final:
                 data_final = data_inicial
 
-            unidade_nome = base
+            cod_base = "CTBSEQ"
 
             try:
-                url = f"{API_BASE}/v3/controle_campo/chamados/{base}"
+                url = f"{API_BASE}/v3/controle_campo/chamados/{cod_base}"
 
                 headers = {
                     "accept": "application/json",
@@ -105,7 +110,7 @@ def consulta_os(request):
                 }
 
                 params = {
-                    "unidade": unidade_nome,
+                    "unidade": base,
                     "uid": tecnico_uid,
                     "tag": tag,
                     "data_inicial": data_inicial.strftime("%Y-%m-%d") if data_inicial else None,
@@ -125,7 +130,18 @@ def consulta_os(request):
 
                 resp_chamados = client.send_api_request()
 
-                print(resp_chamados)
+                for item in itens:
+                    if item.get("dt_abertura"):
+                        item["dt_abertura_fmt"] = (
+                            item["dt_abertura"]
+                            .replace("T", " ")
+                            .split(".")[0]
+                        )
+                    else:
+                        item["dt_abertura_fmt"] = "-"
+
+                itens = resp_chamados if isinstance(
+                    resp_chamados, list) else []
 
                 messages.success(
                     request,
@@ -134,6 +150,20 @@ def consulta_os(request):
 
             except Exception as e:
                 messages.error(request, f"Erro ao buscar chamados: {e}")
+
+        elif "exportar_tec" in request.POST:
+            url = f"{API_BASE}/v3/controle_campo/chamados/{base}/export"
+
+            client = RequestClient(
+                method="get",
+                url=url,
+                headers=headers,
+                request_data=params,
+            )
+
+            export_resp = client.send_api_request()
+
+            return export_resp
 
         form.errors.pop("tecnico", None)
 
@@ -147,6 +177,7 @@ def consulta_os(request):
         'transportes/controle_chamados/consulta_os.html',
         {
             "form": form,
+            "itens": itens,
             "site_title": titulo,
             "botao_texto": "Consultar",
             "current_parent_menu": "transportes",
