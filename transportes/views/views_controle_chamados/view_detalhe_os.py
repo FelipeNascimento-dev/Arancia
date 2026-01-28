@@ -41,6 +41,11 @@ def detalhe_os(request, os):
         request,
         'transportes/controle_chamados/detalhe_os.html',
         {
-            'os_detail': resp
-        }
+            'os_detail': resp,
+            "site_title": 'Detalhes da OS',
+            "botao_texto": "Consultar",
+            "current_parent_menu": "transportes",
+            "current_menu": "controle_chamados",
+            "current_submenu": "consulta_os",
+        },
     )

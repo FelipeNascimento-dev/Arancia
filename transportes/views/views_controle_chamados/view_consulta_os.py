@@ -38,7 +38,6 @@ def consulta_os(request):
                 messages.error(request, resp.get(
                     "detail", "Chamado não encontrado!"))
             else:
-                messages.success(request, "OS encontrada!")
                 return redirect('transportes:detalhe_os', os=os)
 
     form.errors.pop("ordem_servico", None)
