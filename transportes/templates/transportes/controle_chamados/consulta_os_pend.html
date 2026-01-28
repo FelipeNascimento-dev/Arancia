@@ -45,6 +45,8 @@
         font-size: 1.4rem;
         font-weight: 700;
         letter-spacing: .5px;
+        text-decoration: none;
+        color: #fff;
     }
 
     .tag {
@@ -169,7 +171,9 @@
     {% for item in itens %}
     <div class="card" data-tag="{{ item.tag }}">
         <div class="card-header">
-            <span class="os-code">{{ item.os }}</span>
+            <a class="os-code"
+          href="{% url 'transportes:detalhe_os' item.os %}"
+          target="_blank">{{ item.os }}</a>
             <span class="tag">{{ item.tag }}</span>
         </div>
 
