@@ -1,0 +1,211 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+    .container{
+        max-width: 1300px;
+        margin-left: 25px;
+        margin-bottom: 40px;
+    }
+
+    .os-card {
+        margin-top: 70px;
+        background: var(--card-bg, #fff);
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        padding: 24px;
+    }
+
+    .os-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+    }
+
+    .os-header h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    .os-tag {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        background: #e6f4ea;
+        color: #1e7e34;
+    }
+
+    .os-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .os-field {
+        font-size: 13px;
+    }
+
+    .os-field span {
+        display: block;
+        font-size: 12px;
+        color: #777;
+        margin-bottom: 4px;
+    }
+
+    .os-section {
+        margin-top: 24px;
+    }
+
+    .os-section h3 {
+        font-size: 15px;
+        margin-bottom: 10px;
+        border-left: 4px solid #d32f2f;
+        padding-left: 8px;
+    }
+
+    .os-history {
+        max-height: 280px;
+        overflow-y: auto;
+        white-space: pre-line;
+        background: #f9f9f9;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        line-height: 1.5;
+        border: 1px solid #eee;
+    }
+
+    .os-image {
+        margin-top: 12px;
+        text-align: center;
+    }
+
+    .os-image img {
+        max-width: 250px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+
+    .os-footer {
+        margin-top: 20px;
+        font-size: 12px;
+        color: #666;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+</style>
+
+<div class="container">
+    <div class="os-card">
+
+        <div class="os-header">
+            <h2>OS #{{ os_detail.os }} — {{ os_detail.projeto }}</h2>
+            <span class="os-tag">{{ os_detail.tag }}</span>
+        </div>
+
+        <div class="os-grid">
+            <div class="os-field">
+                <span>Técnico</span>
+                {{ os_detail.nome_tecnico }}
+            </div>
+
+            <div class="os-field">
+                <span>Tipo de Atendimento</span>
+                {{ os_detail.tipo_atendimento }}
+            </div>
+
+            <div class="os-field">
+                <span>Data de Abertura</span>
+                {{ os_detail.dt_abertura|date:"d/m/Y H:i" }}
+            </div>
+
+            <div class="os-field">
+                <span>Data de Fechamento</span>
+                {{ os_detail.dt_fechamento|date:"d/m/Y H:i" }}
+            </div>
+
+            <div class="os-field">
+                <span>Ocorrência</span>
+                {{ os_detail.ocorrencia }}
+            </div>
+
+            <div class="os-field">
+                <span>Conclusão do Operador</span>
+                {{ os_detail.conclusao_operador }}
+            </div>
+        </div>
+
+        <div class="os-section">
+            <h3>Cliente</h3>
+
+            <div class="os-grid">
+                <div class="os-field">
+                    <span>Razão Social</span>
+                    {{ os_detail.razao_social }}
+                </div>
+
+                <div class="os-field">
+                    <span>Endereço</span>
+                    {{ os_detail.logradouro }} {{ os_detail.numero }}
+                    {% if os_detail.complemento %} - {{ os_detail.complemento }}{% endif %}
+                </div>
+
+                <div class="os-field">
+                    <span>Bairro / Cidade</span>
+                    {{ os_detail.bairro }} - {{ os_detail.cidade }}/{{ os_detail.uf }}
+                </div>
+
+                <div class="os-field">
+                    <span>CEP</span>
+                    {{ os_detail.cep }}
+                </div>
+            </div>
+        </div>
+
+        <div class="os-section">
+            <h3>Preferências e Horário</h3>
+
+            <div class="os-grid">
+                <div class="os-field">
+                    <span>Preferência</span>
+                    {{ os_detail.preferencia }}
+                </div>
+
+                <div class="os-field">
+                    <span>Alteração de HF</span>
+                    {{ os_detail.alteracao_hf }}
+                </div>
+            </div>
+        </div>
+
+        <div class="os-section">
+            <h3>Histórico de Ocorrências</h3>
+            <div class="os-history">
+                {{ os_detail.problema_apresentado }}
+            </div>
+        </div>
+
+        {% if os_detail.imageurl %}
+        <div class="os-section os-image">
+            <h3>Imagem Anexada</h3>
+            <img src="{{ os_detail.imageurl }}" alt="Imagem da OS">
+        </div>
+        {% endif %}
+
+        <div class="os-footer">
+            <div>Latitude: {{ os_detail.latitude }}</div>
+            <div>Longitude: {{ os_detail.longitude }}</div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

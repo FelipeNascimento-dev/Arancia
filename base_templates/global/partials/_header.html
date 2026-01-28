@@ -258,6 +258,10 @@
                 </h5>
                 <div class="sub-submenu {% if current_menu == 'controle_chamados' %}show{% endif %}"
                     id="controle-chamados">
+                    <a href="{% url 'transportes:consulta_os_pend' %}"
+                    class="{% if current_submenu == 'consulta_os_pend' %}active{% endif %}">
+                        Consulta OS Pendentes
+                    </a>
                     <a href="{% url 'transportes:consulta_os' %}"
                     class="{% if current_submenu == 'consulta_os' %}active{% endif %}">
                         Consulta de OS
