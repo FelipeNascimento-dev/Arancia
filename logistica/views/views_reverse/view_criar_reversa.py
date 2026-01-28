@@ -45,12 +45,19 @@ def reverse_create(request):
     except Exception:
         user_sales_channel = None
 
+    saved_from_location = request.session.get("reverse_from_location")
+    saved_to_location = request.session.get("reverse_to_location")
+
     form = ReverseCreateForm(
         request.POST or None,
         nome_form=titulo,
         user_sales_channel=user_sales_channel,
         romaneio_num=romaneio_in,
-        user=request.user
+        user=request.user,
+        initial={
+            "sales_channel": saved_from_location,
+            "group_aditional_information": saved_to_location,
+        }
     )
 
     volums = result.get("volums", [])
@@ -68,6 +75,11 @@ def reverse_create(request):
         v["kits"] = kits
 
     if request.method == "POST" and form.is_valid() and "enviar_evento" in request.POST:
+        request.session["reverse_from_location"] = form.cleaned_data.get(
+            "sales_channel")
+        request.session["reverse_to_location"] = form.cleaned_data.get(
+            "group_aditional_information")
+
         serial = form.cleaned_data.get("serial")
         if serial:
             serial_norm = serial.strip().upper()

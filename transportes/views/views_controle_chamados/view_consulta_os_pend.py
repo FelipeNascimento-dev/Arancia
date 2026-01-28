@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_protect
 from logistica.models import Group, GroupAditionalInformation
 from setup.local_settings import API_BASE
 from utils.request import RequestClient
-from ...forms import ConsultaOSForm
+from ...forms import ConsultaOSPendForm
 from datetime import datetime
 
 TOKEN = "123"
@@ -33,8 +33,8 @@ def get_bases_from_arancia_pa():
 
 @csrf_protect
 @login_required(login_url='logistica:login')
-def consulta_os(request):
-    titulo = 'Consulta de OS'
+def consulta_os_pend(request):
+    titulo = 'Consulta de OS Pendentes'
     bases = get_bases_from_arancia_pa()
     tecnicos_choices = []
     itens = []
@@ -49,7 +49,7 @@ def consulta_os(request):
 
         if base_selecionada:
             try:
-                url = f"{API_BASE}/v3/controle_campo/tecnicos/{base_selecionada}?offset=0&limit=100"
+                url = f"{API_BASE}/v3/controle_campo/tecnicos/{base_selecionada}"
 
                 headers = {
                     "accept": "application/json",
@@ -76,7 +76,7 @@ def consulta_os(request):
             except Exception as e:
                 messages.error(request, f"Erro ao buscar técnicos: {e}")
 
-        form = ConsultaOSForm(request.POST, nome_form=titulo)
+        form = ConsultaOSPendForm(request.POST, nome_form=titulo)
         form.fields["base"].choices = [("", "Selecione a base")] + bases
         form.fields["tecnico"].choices = tecnicos_choices
 
@@ -88,10 +88,16 @@ def consulta_os(request):
 
         if "exportar" in request.POST:
             base = request.POST.get("base")
-            tecnico_uid = request.POST.get("tecnico") or None
+            tecnico_uid = request.POST.get("tecnico")
+            tecnico_uid = f'&uid={tecnico_uid}' if tecnico_uid not in (
+                '', 'None') else ''
             tag = request.POST.get("tag") or "Pendente"
             data_inicial = request.POST.get("data_inicial")
+            data_inicial = f'&data_inicial={data_inicial}' if data_inicial not in (
+                '', 'None') else ''
             data_final = request.POST.get("data_final")
+            data_final = f'&data_final={data_final}' if data_final not in (
+                '', 'None') else ''
 
             if not base:
                 messages.error(request, "Selecione uma base para exportar.")
@@ -110,17 +116,7 @@ def consulta_os(request):
             params = {k: v for k, v in params.items() if v}
 
             # url = f"{API_BASE}/v3/controle_campo/chamados/{cod_base}/export"
-            url = f"{API_BASE}/v3/controle_campo/chamados/{cod_base}/export?unidade={base}&uid={tecnico_uid}&tag={tag}&data_inicial={data_inicial}&data_final={data_final}"
-            url = f"http://192.168.0.214/RetencaoAPI/api/v3/controle_campo/chamados/CTBSEQ/export?unidade=PA_SPO&uid=2668&tag=Pendente&data_inicial=2026-01-26&data_final=2026-01-26"
-            # chamados/CTBSEQ/export?unidade=PA_SPO&uid=2668&tag=Pendente&data_inicial=2026-01-26&data_final=2026-01-26
-            client = RequestClient(
-                method="get",
-                url=url,
-                headers={
-                    "accept": "application/json",
-                    "access_token": '123'
-                }
-            )
+            url = f"{API_BASE}/v3/controle_campo/chamados/{cod_base}/export?unidade={base}{tecnico_uid}&tag={tag}{data_inicial}{data_final}"
 
             return redirect(url)
 
@@ -198,13 +194,13 @@ def consulta_os(request):
                 messages.error(request, f"Erro ao buscar chamados: {e}")
 
     else:
-        form = ConsultaOSForm(nome_form=titulo)
+        form = ConsultaOSPendForm(nome_form=titulo)
         form.fields["base"].choices = [("", "Selecione a base")] + bases
         form.fields["tecnico"].choices = []
 
     return render(
         request,
-        'transportes/controle_chamados/consulta_os.html',
+        'transportes/controle_chamados/consulta_os_pend.html',
         {
             "form": form,
             "itens": itens,
@@ -215,6 +211,6 @@ def consulta_os(request):
             "botao_texto": "Consultar",
             "current_parent_menu": "transportes",
             "current_menu": "controle_chamados",
-            "current_submenu": "consulta_os",
+            "current_submenu": "consulta_os_pend",
         },
     )

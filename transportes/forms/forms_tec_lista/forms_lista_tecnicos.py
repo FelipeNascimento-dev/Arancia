@@ -1,8 +1,11 @@
 from django import forms
 
 
-class ConsultaOSForm(forms.Form):
-    ordem_servico = forms.CharField(label="Insira o numero da OS ")
+class ListaTecnicoForm(forms.Form):
+    base = forms.ChoiceField(
+        label="Selecione a Base",
+        choices=[],
+    )
 
     def __init__(self, *args, nome_form=None, **kwargs):
         super().__init__(*args, **kwargs)
