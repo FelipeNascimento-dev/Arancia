@@ -20,11 +20,21 @@ def checkout_reverse(request, vetor):
     modal_origin = False
 
     user = request.user
+    can_choose_origin = request.user.has_perm("logistica.gestao_total")
     sales_channel = user.designacao.informacao_adicional.sales_channel
     if sales_channel == 'all':
         location_id = 0
     else:
         location_id = user.designacao.informacao_adicional_id
+
+    origin_label = None
+
+    if not can_choose_origin and location_id:
+        try:
+            origin_obj = GroupAditionalInformation.objects.get(id=location_id)
+            origin_label = origin_obj.nome
+        except GroupAditionalInformation.DoesNotExist:
+            origin_label = None
 
     cliente_selecionado = request.session.get("selected_client")
 
@@ -37,70 +47,74 @@ def checkout_reverse(request, vetor):
 
     origin_choices = []
 
-    try:
-        grupo_pa = Group.objects.get(name="arancia_PA")
+    if can_choose_origin:
+        try:
+            grupo_pa = Group.objects.get(name="arancia_PA")
 
-        origin_qs = (
-            GroupAditionalInformation.objects
-            .filter(group=grupo_pa)
-            .annotate(nome_lower=Lower("nome"))
-            .order_by("nome_lower")
-            .values("id", "nome")
-        )
+            origin_qs = (
+                GroupAditionalInformation.objects
+                .filter(group=grupo_pa)
+                .annotate(nome_lower=Lower("nome"))
+                .order_by("nome_lower")
+                .values("id", "nome")
+            )
 
-        for o in origin_qs:
-            origin_choices.append({
-                "id": o["id"],
-                "label": o["nome"]
-            })
-    except Group.DoesNotExist:
-        pass
+            for o in origin_qs:
+                origin_choices.append({
+                    "id": o["id"],
+                    "label": o["nome"]
+                })
+        except Group.DoesNotExist:
+            pass
 
     destination_choices = []
 
-    if request.user.has_perm("logistica.gestao_total"):
-        grupos = Group.objects.filter(name__in=["arancia_PA", "arancia_CD"])
+    grupos = Group.objects.filter(name__in=["arancia_PA", "arancia_CD"])
 
-        destinos = (
-            GroupAditionalInformation.objects
-            .filter(group__in=grupos)
-            .select_related("group")
-            .annotate(nome_lower=Lower("nome"))
-            .order_by("group__name", "nome_lower")
-        )
+    destinos = (
+        GroupAditionalInformation.objects
+        .filter(group__in=grupos)
+        .select_related("group")
+        .annotate(nome_lower=Lower("nome"))
+        .order_by("group__name", "nome_lower")
+    )
 
-        for d in destinos:
-            if d.group.name == "arancia_PA":
-                label = f"[PA] {d.nome}"
-            elif d.group.name == "arancia_CD":
-                label = f"[CD] {d.nome}"
-            else:
-                label = d.nome
+    for d in destinos:
+        if d.group.name == "arancia_PA":
+            label = f"[PA] {d.nome}"
+        elif d.group.name == "arancia_CD":
+            label = f"[CD] {d.nome}"
+        else:
+            label = d.nome
 
-            destination_choices.append({
-                "id": d.id,
-                "label": label
-            })
+        destination_choices.append({
+            "id": d.id,
+            "label": label
+        })
 
     if request.method == 'POST':
         if 'novo_romaneio' in request.POST:
             modal_origin = True
 
         elif 'confirmar_origem' in request.POST:
-            origin_id = request.POST.get("origin_id")
+            if can_choose_origin:
+                origin_id = request.POST.get("origin_id")
+            else:
+                origin_id = location_id
             destination_id = request.POST.get("destination_id")
 
             if not origin_id or not destination_id:
                 messages.error(request, "Selecione origem e destino")
                 modal_origin = True
             else:
-                url_post = f"{STOCK_API_URL}/v1/romaneios/novo"
+                url_post = f"{STOCK_API_URL}/v2/romaneios/"
 
                 payload = {
+                    "created_by": request.user.username,
+                    "location_id": location_id,
+                    "client_name": client_code,
                     "origin_id": int(origin_id),
                     "destination_id": int(destination_id),
-                    "client_code": client_code,
-                    "created_by": request.user.username,
                 }
 
                 client_post = RequestClient(
@@ -113,11 +127,13 @@ def checkout_reverse(request, vetor):
                     request_data=payload,
                 )
 
+                print(payload)
+
                 result = client_post.send_api_request()
 
                 if isinstance(result, dict):
                     messages.success(request, "Romaneio criado com sucesso")
-                    return redirect("logistica:reverse_create")
+                    return redirect("logistica:checkout_reverse")
 
                 messages.error(request, "Erro ao criar romaneio")
                 modal_origin = True
@@ -149,4 +165,6 @@ def checkout_reverse(request, vetor):
             'client_name': client_name,
             'origin_choices': origin_choices,
             'destination_choices': destination_choices,
+            'can_choose_origin': can_choose_origin,
+            'origin_label': origin_label,
         })

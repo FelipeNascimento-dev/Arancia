@@ -78,6 +78,7 @@
         <form method="POST">
             {% csrf_token %}
 
+            {% if can_choose_origin %}
             <div class="form-group">
                 <label for="origin_id">Origem</label>
                 <select name="origin_id" id="origin_id" required>
@@ -87,6 +88,12 @@
                     {% endfor %}
                 </select>
             </div>
+            {% else %}
+            <div class="form-group">
+                <label>Origem</label>
+                <input type="text" value="{{ origin_label }}" disabled>
+            </div>
+            {% endif %}
 
             <div class="form-group">
                 <label for="destination_id">Destino</label>
