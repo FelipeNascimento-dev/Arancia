@@ -80,6 +80,12 @@
       Criar romaneio
     </button>
     {% endif %}
+
+    {% if request.resolver_match.url_name == 'checkout_reverse' %}
+    <button type="submit" class="submit-button-right btn-success" name="novo_romaneio">
+      Criar romaneio
+    </button>
+    {% endif %}
     
     <button type="submit" class="submit-button-right" name="enviar_evento" value="1">
       {{ botao_texto }}

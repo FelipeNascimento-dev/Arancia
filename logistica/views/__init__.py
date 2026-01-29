@@ -36,3 +36,4 @@ from .views_recebimento_estoque.view_gerenciamento_estoque import gerenciamento_
 from .views_recebimento_estoque.view_gerenciamento_kits import gerenciamento_kits
 from .transp import transp_view
 from .views_checkin_checkout.print_serial import print_serial
+from .views_checkin_checkout.view_checkout_reverse import checkout_reverse
