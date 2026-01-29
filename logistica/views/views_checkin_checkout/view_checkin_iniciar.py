@@ -58,10 +58,6 @@ def client_select(request, vetor):
 
     if request.method == "POST" and form.is_valid():
         client = form.cleaned_data["client"]
-        # order = form.cleaned_data["order"]
-
-        # request.session["order"] = order
-
         client_name_real = next(
             (name for code, name in choices if code == client),
             client
@@ -73,21 +69,16 @@ def client_select(request, vetor):
         }
 
         if client.lower() == "cielo":
-            # if not order:
-            #     messages.error(
-            #         request, "O campo 'Order' é obrigatório para Cielo.")
-            #     return redirect("logistica:client_select", vetor=vetor)
-
             if vetor.upper() == "IN":
                 return redirect("logistica:client_checkin")
 
             if vetor.upper() == "OUT":
-                return redirect("logistica:consultar_romaneio")
+                return redirect("logistica:checkout_reverse", vetor=vetor)
 
         if vetor.upper() == "IN":
             return redirect("logistica:client_checkin")
 
-        return redirect("logistica:consultar_romaneio")
+        return redirect("logistica:checkout_reverse", vetor=vetor)
 
     context["form"] = form
 

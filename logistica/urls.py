@@ -86,6 +86,10 @@ urls_Checkin = [
     path('check-in/product/create/', product_create, name='product_create'),
     path("print-serial/<str:serial>/", print_serial, name="print_serial"),
 
+
+    path("check/<str:vetor>/reverse/consulta/",
+         checkout_reverse, name='checkout_reverse')
+
 ]
 
 urlpatterns = urls_User + urls_LastmileB2C + urls_Gerenciamento + urls_Checkin + \
