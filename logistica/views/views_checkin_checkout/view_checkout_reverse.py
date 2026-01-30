@@ -152,11 +152,13 @@ def checkout_reverse(request, vetor):
             result = client_get.send_api_request()
 
             if isinstance(result, dict) and result.get("romaneio"):
+                numero_rom = result.get('romaneio')
+
                 request.session["romaneio_num"] = result.get("romaneio")
                 request.session["result"] = result
                 messages.success(
                     request, f"Romaneio {result.get('romaneio')} encontrado!")
-                return redirect("logistica:reverse_create")
+                return redirect("logistica:checkout_reverse_create", rom=numero_rom)
     return render(
         request,
         'logistica/templates_checkin_checkout/checkout_reverse.html', {
