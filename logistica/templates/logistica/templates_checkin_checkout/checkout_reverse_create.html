@@ -26,6 +26,7 @@
         gap: 16px;
         margin-top: 16px;
         margin-left: 65px;
+        margin-bottom: 75px;
     }
 
     .volume-card {
@@ -133,6 +134,34 @@
         background-color: transparent !important;
         border: none !important;
     }
+
+    .romaneio-locations {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 20px
+    }
+
+    .meta-item {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 8px 10px;
+        line-height: 1.2;
+    }
+
+    .meta-label {
+        display: block;
+        font-size: 11px;
+        text-transform: uppercase;
+        color: #777;
+        margin-bottom: 2px;
+    }
+
+    .meta-value {
+        font-weight: 500;
+        color: #333;
+        font-size: 14px;
+    }
 </style>
 
 <div class="form-container">
@@ -142,6 +171,22 @@
             {% include 'global/partials/_form_2col.html' %}
             <div class="signature">
                 {{ romaneio.status }}
+            </div>
+            <div class="romaneio-locations">
+                <div class="meta-item">
+                    <span class="meta-label">Localização</span>
+                    <span class="meta-value">{{ romaneio.location }}</span>
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-label">Origem</span>
+                    <span class="meta-value">{{ romaneio.origin }}</span>
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-label">Destino</span>
+                    <span class="meta-value">{{ romaneio.destination }}</span>
+                </div>
             </div>
         </form>
     </div>
