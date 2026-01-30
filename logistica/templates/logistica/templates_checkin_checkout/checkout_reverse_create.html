@@ -7,6 +7,132 @@
         margin-top: 65px;
         margin-bottom: auto;
     }
+
+    .section-title {
+        margin-top: 30px;
+        margin-left: 65px;
+        font-weight: 600;
+    }
+
+    .romaneio-info {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px 20px;
+    }
+
+    .volume-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+        margin-top: 16px;
+        margin-left: 65px;
+    }
+
+    .volume-card {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+
+    }
+
+    .volume-full {
+        border-color: #e74c3c;
+        background: #fff6f6;
+    }
+
+    .volume-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .badge {
+        background: #3498db;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+    }
+
+    .kits-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .kit-item {
+        display: grid;
+        grid-template-columns: 70px 1fr 30px;
+        align-items: center;
+        padding: 8px 10px;
+        background: #f7f7f7;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    .kit-number {
+        font-weight: 500;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .kit-serial {
+        font-family: monospace;
+        text-align: center;
+        color: #555;
+    }
+
+    .kit-remove-form {
+        margin: 0;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .btn-remove {
+        background: none;
+        border: none;
+        color: #e74c3c;
+        font-size: 16px;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .btn-remove:hover {
+        color: #c0392b;
+    }
+
+
+    .empty-info {
+        color: #777;
+        margin-top: 10px;
+        margin-left: 65px;
+    }
+
+    .signature {
+        position: absolute;
+        z-index: 1;
+        top: 15px;
+        right: 30px;
+        font-weight: bold;
+        color: var(--form-titulo);
+        margin: 0;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background-color: #fff;
+    }
+
+    #status {
+        background-color: transparent !important;
+        border: none !important;
+    }
 </style>
 
 <div class="form-container">
@@ -14,8 +140,59 @@
         <form method="POST" id="romaneioForm">
             {% csrf_token %}
             {% include 'global/partials/_form_2col.html' %}
+            <div class="signature">
+                {{ romaneio.status }}
+            </div>
         </form>
     </div>
 </div>
+
+{% if romaneio %}
+<h3 class="section-title">Volumes</h3>
+
+{% if romaneio.volums %}
+<div class="volume-grid">
+    {% for volume in romaneio.volums %}
+    <div class="volume-card {% if volume.kits|length >= 25 %}volume-full{% endif %}">
+
+        <div class="volume-header">
+            <span>Volume {{ volume.volum_number }}</span>
+            <span class="badge">
+                {{ volume.kits|length }}/25
+            </span>
+        </div>
+
+        <div class="kits-list">
+            {% for kit in volume.kits %}
+            <div class="kit-item">
+                <span class="kit-number">Kit {{ kit.kit_number }}</span>
+
+                <span class="kit-serial">{{ kit.serial }}</span>
+
+                <form method="POST" class="kit-remove-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="remove_serial" value="1">
+                    <input type="hidden" name="serial" value="{{ kit.serial }}">
+
+                    <button type="submit" class="btn-remove" title="Remover serial"
+                        onclick="return confirm('Remover o serial {{ kit.serial }}? Esta ação é irreversível.')">
+                        ✖
+                    </button>
+                </form>
+            </div>
+            {% empty %}
+            <div class="kit-empty">
+                Nenhum kit neste volume
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="empty-info">Nenhum volume criado ainda.</p>
+{% endif %}
+{% endif %}
 
 {% endblock %}

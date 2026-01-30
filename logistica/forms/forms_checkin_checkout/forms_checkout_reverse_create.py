@@ -2,7 +2,14 @@ from django import forms
 
 
 class CheckoutReverseCreateForm(forms.Form):
-    serial = forms.CharField(label='Serial', required=False)
+    serial = forms.CharField(
+        label='Serial',
+        required=True,
+        widget=forms.TextInput(attrs={
+            'autocomplete': 'off',
+            'autofocus': True
+        })
+    )
 
     def __init__(self, *args, nome_form=None, **kwargs):
         super().__init__(*args, **kwargs)
