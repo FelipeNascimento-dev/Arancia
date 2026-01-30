@@ -233,7 +233,7 @@
 </style>
 
 <div class="form-container">
-    <div class="form-card-2col" action="{{ form_action }}" method="POST">
+    <div class="form-card-2col" method="POST">
         <form method="POST" id="romaneioForm">
             {% csrf_token %}
             <div class="back-detail">
@@ -245,12 +245,13 @@
             <div class="signature">
                 {{ romaneio.status }}
             </div>
-            {% include 'global/partials/_form_2col.html' %}
+            {% include 'global/partials/_form_2colV2.html' %}
             {% if romaneio.status == 'ABERTO' %}
             <button type="button" class="btn-actions" onclick="toggleActionsMenu()">
                 Ações ▾
             </button>
             <div id="actions-dropdown" class="actions-dropdown">
+                {% csrf_token %}
                 <div class="itens">
                     <button type="submit" class="dropdown-item" name="cancelar_romaneio" value="1">
                         Cancelar Romaneio

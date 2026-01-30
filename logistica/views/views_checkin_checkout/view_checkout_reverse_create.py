@@ -3,6 +3,7 @@ from ...forms import CheckoutReverseCreateForm
 from setup.local_settings import STOCK_API_URL
 from utils.request import RequestClient
 from django.contrib import messages
+from datetime import datetime
 
 JSON_CT = "application/json"
 
@@ -124,6 +125,40 @@ def checkout_reverse_create(request, rom):
 
         return redirect(request.path)
 
+    if request.method == "POST" and 'cancelar_romaneio' in request.POST:
+        payload_put = {
+            "status_rom": "CANCELADO",
+            "update_by": user.username,
+            "updated_at": datetime.utcnow().isoformat() + "Z"
+        }
+
+        url_put = f"{STOCK_API_URL}/v1/romaneios/{numero_romaneio}"
+
+        client_put = RequestClient(
+            url=url_put,
+            method="PUT",
+            headers={
+                "Accept": JSON_CT,
+                "Content-Type": JSON_CT,
+            },
+            request_data=payload_put
+        )
+
+        result_put = client_put.send_api_request()
+
+        if isinstance(result_put, dict) and "detail" not in result_put:
+            messages.success(request, "Romaneio cancelado com sucesso")
+        else:
+            messages.error(
+                request,
+                result_put.get("detail", "Erro ao cancelar romaneio")
+            )
+
+        return redirect(request.path)
+
+    if request.method == "POST" and 'finalizar_romaneio' in request.POST:
+        messages.success(request, 'o caralho foi')
+
     return render(
         request,
         'logistica/templates_checkin_checkout/checkout_reverse_create.html', {
@@ -131,6 +166,7 @@ def checkout_reverse_create(request, rom):
             'botao_texto': 'Inserir',
             'site_title': titulo,
             'romaneio': result,
+            'disable_enviar_evento': result.get("status") != "ABERTO",
             "current_parent_menu": "logistica",
             "current_menu": "checkout",
             "current_submenu": "iniciar_checkout"

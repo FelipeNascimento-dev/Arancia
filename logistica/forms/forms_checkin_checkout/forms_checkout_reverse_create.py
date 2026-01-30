@@ -4,7 +4,7 @@ from django import forms
 class CheckoutReverseCreateForm(forms.Form):
     serial = forms.CharField(
         label='Serial',
-        required=True,
+        required=False,
         widget=forms.TextInput(attrs={
             'autocomplete': 'off',
             'autofocus': True
