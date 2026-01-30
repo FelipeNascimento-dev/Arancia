@@ -88,7 +88,9 @@ urls_Checkin = [
 
 
     path("check/<str:vetor>/reverse/consulta/",
-         checkout_reverse, name='checkout_reverse')
+         checkout_reverse, name='checkout_reverse'),
+    path("check/OUT/reverse/create/<str:rom>", checkout_reverse_create,
+         name='checkout_reverse_create'),
 
 ]
 

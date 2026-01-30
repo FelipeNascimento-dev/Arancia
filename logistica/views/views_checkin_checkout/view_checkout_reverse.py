@@ -131,9 +131,11 @@ def checkout_reverse(request, vetor):
 
                 result = client_post.send_api_request()
 
+                numero_rom = result.get('romaneio')
+
                 if isinstance(result, dict):
                     messages.success(request, "Romaneio criado com sucesso")
-                    return redirect("logistica:checkout_reverse")
+                    return redirect("logistica:checkout_reverse_create", rom=numero_rom)
 
                 messages.error(request, "Erro ao criar romaneio")
                 modal_origin = True
