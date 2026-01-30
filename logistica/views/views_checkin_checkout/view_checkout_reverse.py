@@ -171,4 +171,8 @@ def checkout_reverse(request, vetor):
             'destination_choices': destination_choices,
             'can_choose_origin': can_choose_origin,
             'origin_label': origin_label,
+            'site_title': titulo,
+            "current_parent_menu": "logistica",
+            "current_menu": "checkout",
+            "current_submenu": "iniciar_checkout"
         })

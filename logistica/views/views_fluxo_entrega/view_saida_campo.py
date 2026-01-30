@@ -79,6 +79,10 @@ def saida_campo(request, tp_reg: str):
                 'site_title': titulo,
                 'serials': saida_get_serials(request),
                 'show_serial': True,
+                "current_parent_menu": "logistica",
+                "current_menu": "SAP",
+                "current_submenu": "sap_saida",
+                "current_subsubmenu": "saida_campo"
             })
 
         if 'remove_serial' in request.POST:
@@ -99,6 +103,10 @@ def saida_campo(request, tp_reg: str):
                 'site_title': titulo,
                 'serials': saida_get_serials(request),
                 'show_serial': True,
+                "current_parent_menu": "logistica",
+                "current_menu": "SAP",
+                "current_submenu": "sap_saida",
+                "current_subsubmenu": "saida_campo"
             })
 
         if 'clear_serials' in request.POST:
@@ -112,6 +120,10 @@ def saida_campo(request, tp_reg: str):
                 'site_title': titulo,
                 'serials': [],
                 'show_serial': True,
+                "current_parent_menu": "logistica",
+                "current_menu": "SAP",
+                "current_submenu": "sap_saida",
+                "current_subsubmenu": "saida_campo"
             })
 
         form = SaidaCampoForm(request.POST, nome_form=titulo)
@@ -134,6 +146,10 @@ def saida_campo(request, tp_reg: str):
                         'site_title': titulo,
                         'serials': saida_get_serials(request),
                         'show_serial': True,
+                        "current_parent_menu": "logistica",
+                        "current_menu": "SAP",
+                        "current_submenu": "sap_saida",
+                        "current_subsubmenu": "saida_campo"
                     })
                 serials = [unico]
 
@@ -181,6 +197,10 @@ def saida_campo(request, tp_reg: str):
                     'site_title': titulo,
                     'serials': saida_get_serials(request),
                     'show_serial': True,
+                    "current_parent_menu": "logistica",
+                    "current_menu": "SAP",
+                    "current_submenu": "sap_saida",
+                    "current_subsubmenu": "saida_campo"
                 })
 
             saida_save_serials(request, [])
@@ -196,6 +216,10 @@ def saida_campo(request, tp_reg: str):
             'site_title': titulo,
             'serials': saida_get_serials(request),
             'show_serial': True,
+            "current_parent_menu": "logistica",
+            "current_menu": "SAP",
+            "current_submenu": "sap_saida",
+            "current_subsubmenu": "saida_campo"
         })
 
     initial = {}
@@ -212,4 +236,8 @@ def saida_campo(request, tp_reg: str):
         'site_title': titulo,
         'serials': saida_get_serials(request),
         'show_serial': True,
+        "current_parent_menu": "logistica",
+        "current_menu": "SAP",
+        "current_submenu": "sap_saida",
+        "current_subsubmenu": "saida_campo"
     })

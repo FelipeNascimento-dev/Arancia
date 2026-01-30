@@ -58,6 +58,10 @@ def consulta_ec01(request):
                 'tp_reg': form.data.get('tp_reg', ''),
                 'botao_texto': 'Consultar',
                 'site_title': 'SAP - Consulta Resultados EC',
+                "current_parent_menu": "logistica",
+                "current_menu": "SAP",
+                "current_submenu": "sap_saida",
+                "current_subsubmenu": "consulta_saida_campo"
             })
 
         if form.is_valid():
@@ -85,6 +89,10 @@ def consulta_ec01(request):
                 'tp_reg': tp_reg,
                 'botao_texto': 'Consultar',
                 'site_title': 'SAP - Consulta Resultados EC',
+                "current_parent_menu": "logistica",
+                "current_menu": "SAP",
+                "current_submenu": "sap_saida",
+                "current_subsubmenu": "consulta_saida_campo"
             })
 
         messages.warning(request, 'Corrija os erros do formulário.')
@@ -95,6 +103,10 @@ def consulta_ec01(request):
             'tp_reg': form.data.get('tp_reg', ''),
             'botao_texto': 'Consultar',
             'site_title': 'SAP - Consulta Resultados EC',
+            "current_parent_menu": "logistica",
+            "current_menu": "SAP",
+            "current_submenu": "sap_saida",
+            "current_subsubmenu": "consulta_saida_campo"
         })
 
     if id_pre_recebido:
@@ -120,6 +132,10 @@ def consulta_ec01(request):
         'tp_reg': initial_data.get('tp_reg', ''),
         'botao_texto': 'Consultar',
         'site_title': 'SAP - Consulta Resultados EC',
+        "current_parent_menu": "logistica",
+        "current_menu": "SAP",
+        "current_submenu": "sap_saida",
+        "current_subsubmenu": "consulta_saida_campo"
     })
 
 

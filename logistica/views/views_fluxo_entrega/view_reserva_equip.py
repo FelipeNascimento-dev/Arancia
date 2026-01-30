@@ -60,6 +60,10 @@ def reserva_equip(request, tp_reg):
             'site_title': titulo,
             'serials': reserva_get_serials(request),
             'show_serial': True,
+            "current_parent_menu": "logistica",
+            "current_menu": "SAP",
+            "current_submenu": "sap_reserva",
+            "current_subsubmenu": "reserva_equip"
         })
 
     serials = reserva_get_serials(request)
@@ -98,6 +102,10 @@ def reserva_equip(request, tp_reg):
             'site_title': titulo,
             'serials': reserva_get_serials(request),
             'show_serial': True,
+            "current_parent_menu": "logistica",
+            "current_menu": "SAP",
+            "current_submenu": "sap_reserva",
+            "current_subsubmenu": "reserva_equip"
         })
 
     if 'remove_serial' in request.POST:
@@ -118,6 +126,10 @@ def reserva_equip(request, tp_reg):
             'site_title': titulo,
             'serials': reserva_get_serials(request),
             'show_serial': True,
+            "current_parent_menu": "logistica",
+            "current_menu": "SAP",
+            "current_submenu": "sap_reserva",
+            "current_subsubmenu": "reserva_equip"
         })
 
     if 'clear_serials' in request.POST:
@@ -131,6 +143,10 @@ def reserva_equip(request, tp_reg):
             'site_title': titulo,
             'serials': [],
             'show_serial': True,
+            "current_parent_menu": "logistica",
+            "current_menu": "SAP",
+            "current_submenu": "sap_reserva",
+            "current_subsubmenu": "reserva_equip"
         })
 
     form = ReservaEquipamentosForm(request.POST, nome_form=titulo)
@@ -148,6 +164,10 @@ def reserva_equip(request, tp_reg):
                     'site_title': titulo,
                     'serials': reserva_get_serials(request),
                     'show_serial': True,
+                    "current_parent_menu": "logistica",
+                    "current_menu": "SAP",
+                    "current_submenu": "sap_reserva",
+                    "current_subsubmenu": "reserva_equip"
                 })
             serials = [unico]
 
@@ -192,6 +212,10 @@ def reserva_equip(request, tp_reg):
             'site_title': titulo,
             'serials': reserva_get_serials(request),
             'show_serial': True,
+            "current_parent_menu": "logistica",
+            "current_menu": "SAP",
+            "current_submenu": "sap_reserva",
+            "current_subsubmenu": "reserva_equip"
         })
     else:
         messages.warning(
@@ -203,4 +227,8 @@ def reserva_equip(request, tp_reg):
             'site_title': titulo,
             'serials': reserva_get_serials(request),
             'show_serial': True,
+            "current_parent_menu": "logistica",
+            "current_menu": "SAP",
+            "current_submenu": "sap_reserva",
+            "current_subsubmenu": "reserva_equip"
         })
