@@ -6,7 +6,7 @@ from django.contrib import messages
 
 JSON_CT = "application/json"
 
-MAX_KITS_PER_VOLUME = 2
+MAX_KITS_PER_VOLUME = 25
 MAX_VOLUMES = 10
 
 
@@ -128,5 +128,8 @@ def checkout_reverse_create(request, rom):
             'botao_texto': 'Inserir',
             'site_title': titulo,
             'romaneio': result,
+            "current_parent_menu": "logistica",
+            "current_menu": "checkout",
+            "current_submenu": "iniciar_checkout"
         }
     )

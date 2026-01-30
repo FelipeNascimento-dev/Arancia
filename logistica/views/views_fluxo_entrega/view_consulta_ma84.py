@@ -56,6 +56,10 @@ def consulta_ma84(request):
                 'tp_reg': form.data.get('tp_reg', ''),
                 'botao_texto': 'Consultar',
                 'site_title': 'SAP - Consulta Resultados MA',
+                "current_parent_menu": "logistica",
+                "current_menu": "SAP",
+                "current_submenu": "sap_reserva",
+                "current_subsubmenu": "consulta_reserva_equip"
             })
 
         if form.is_valid():
@@ -91,6 +95,10 @@ def consulta_ma84(request):
                 'tp_reg': novo_tp_reg,
                 'botao_texto': 'Consultar',
                 'site_title': 'SAP - Consulta Resultados MA',
+                "current_parent_menu": "logistica",
+                "current_menu": "SAP",
+                "current_submenu": "sap_reserva",
+                "current_subsubmenu": "consulta_reserva_equip"
             })
 
         return render(request, 'logistica/templates_fluxo_entrega/consulta_result_ma.html', {
@@ -100,6 +108,10 @@ def consulta_ma84(request):
             'tp_reg': form.data.get('tp_reg', ''),
             'botao_texto': 'Consultar',
             'site_title': 'SAP - Consulta Resultados MA',
+            "current_parent_menu": "logistica",
+            "current_menu": "SAP",
+            "current_submenu": "sap_reserva",
+            "current_subsubmenu": "consulta_reserva_equip"
         })
 
     # GET
@@ -129,6 +141,10 @@ def consulta_ma84(request):
         'tp_reg': initial_data.get('tp_reg', tp_reg),
         'botao_texto': 'Consultar',
         'site_title': 'SAP - Consulta Resultados MA',
+        "current_parent_menu": "logistica",
+        "current_menu": "SAP",
+        "current_submenu": "sap_reserva",
+        "current_subsubmenu": "consulta_reserva_equip"
     })
 
 
