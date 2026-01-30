@@ -22,6 +22,9 @@ def checkout_reverse_create(request, rom):
     titulo = f'Romaneio {numero_romaneio}'
     form = CheckoutReverseCreateForm(request.POST or None, nome_form=titulo)
 
+    client_code = request.session.get("client_code")
+    client_name = request.session.get("client_name")
+
     result = None
 
     try:
@@ -68,7 +71,7 @@ def checkout_reverse_create(request, rom):
                 "serial": serial,
                 "volume_number": str(volume_number),
                 "kit_number": str(kit_number),
-                "client": "cielo",
+                "client": client_code,
                 "location_id": location_id,
                 "create_by": user.username,
             }

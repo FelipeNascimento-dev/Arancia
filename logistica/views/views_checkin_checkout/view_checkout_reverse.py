@@ -134,6 +134,8 @@ def checkout_reverse(request, vetor):
                 numero_rom = result.get('romaneio')
 
                 if isinstance(result, dict):
+                    request.session["client_code"] = client_code
+                    request.session["client_name"] = client_name
                     messages.success(request, "Romaneio criado com sucesso")
                     return redirect("logistica:checkout_reverse_create", rom=numero_rom)
 
@@ -153,6 +155,9 @@ def checkout_reverse(request, vetor):
 
             if isinstance(result, dict) and result.get("romaneio"):
                 numero_rom = result.get('romaneio')
+
+                request.session["client_code"] = client_code
+                request.session["client_name"] = client_name
 
                 request.session["romaneio_num"] = result.get("romaneio")
                 request.session["result"] = result

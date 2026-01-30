@@ -162,16 +162,105 @@
         color: #333;
         font-size: 14px;
     }
+
+    .back-detail {
+        color: var(--form-titulo);
+        border: 1px solid var(--form-titulo);
+        padding: 4px 8px;
+        border-radius: 8px;
+        margin: 0;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 100;
+    }
+
+    .back-link {
+        text-decoration: none;
+        color: var(--form-titulo);
+        font-size: 12px;
+    }
+
+    .actions-menu {
+        position: relative;
+        display: inline-block;
+        margin-top: 30px;
+    }
+
+    .btn-actions {
+        background: #444;
+        color: #fff;
+        padding: 8px 14px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 30px;
+    }
+
+    .btn-actions:hover {
+        background: #666;
+    }
+
+    .actions-dropdown {
+        display: none;
+        position: absolute;
+        left: 30px;
+        background: #ffffff;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        max-width: 150px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+    }
+
+    .actions-dropdown .itens {
+        margin: 0;
+    }
+
+    .dropdown-item {
+        width: 100%;
+        text-align: left;
+        padding: 8px 12px;
+        border: none;
+        background: none;
+        cursor: pointer;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f5f5f5;
+    }
 </style>
 
 <div class="form-container">
     <div class="form-card-2col" action="{{ form_action }}" method="POST">
         <form method="POST" id="romaneioForm">
             {% csrf_token %}
-            {% include 'global/partials/_form_2col.html' %}
+            <div class="back-detail">
+                <a href="javascript:history.back()" class="back-link" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
             <div class="signature">
                 {{ romaneio.status }}
             </div>
+            {% include 'global/partials/_form_2col.html' %}
+            {% if romaneio.status == 'ABERTO' %}
+            <button type="button" class="btn-actions" onclick="toggleActionsMenu()">
+                Ações ▾
+            </button>
+            <div id="actions-dropdown" class="actions-dropdown">
+                <div class="itens">
+                    <button type="submit" class="dropdown-item" name="cancelar_romaneio" value="1">
+                        Cancelar Romaneio
+                    </button>
+                    <button type="submit" class="dropdown-item" name="finalizar_romaneio" value="1">
+                        Finalizar Romaneio
+                    </button>
+                </div>
+            </div>
+            {% endif %}
             <div class="romaneio-locations">
                 <div class="meta-item">
                     <span class="meta-label">Localização</span>
@@ -239,5 +328,19 @@
 <p class="empty-info">Nenhum volume criado ainda.</p>
 {% endif %}
 {% endif %}
+
+<script>
+    function toggleActionsMenu() {
+        const menu = document.getElementById("actions-dropdown");
+        menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+
+    window.addEventListener("click", function (e) {
+        const menu = document.getElementById("actions-dropdown");
+        if (!e.target.matches(".btn-actions")) {
+            menu.style.display = "none";
+        }
+    });
+</script>
 
 {% endblock %}
