@@ -8,7 +8,7 @@ from ..forms import trackingIPForm
 from utils.request import RequestClient
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
-from setup.local_settings import API_URL
+from setup.local_settings import API_URL, STOCK_API_URL
 
 TRACKING_URL = API_URL + "/api/v2/trackings/send"
 SESSION_PREFIX = "retorno_serials_"
@@ -126,11 +126,12 @@ def _force_pedido(request):
 
 # ================= Serial Actions =================
 def _handle_add_serial(request, code_info, pedido_atual, form, menu_context):
-    pedido_atual = _force_pedido(request)   # <<< SEMPRE GARANTE O PEDIDO
+    pedido_atual = _force_pedido(request)
 
-    serial = (request.POST.get("serial") or "").strip().upper()
+    serial = (request.POST.get("serial") or "").strip()
     show_modal = False
     modal_serial = None
+    modal_chip = ""
 
     if not serial:
         messages.info(request, "Digite um serial.")
@@ -138,15 +139,51 @@ def _handle_add_serial(request, code_info, pedido_atual, form, menu_context):
         serials = _get_serials_from_session(request, pedido_atual)
 
         if serial not in serials:
+
+            url = f"{STOCK_API_URL}/v1/items/delivery/{serial}?client=cielo"
+
+            api_client = RequestClient(
+                url=url,
+                method="GET",
+                headers={"accept": "application/json"}
+            )
+
+            resp_api = api_client.send_api_request()
+
+            print(resp_api)
+
+            if not isinstance(resp_api, dict):
+                messages.error(request, "Erro ao consultar o serial na PA.")
+                return redirect(request.path)
+
+            if resp_api.get("status") != "IN_DEPOT":
+                messages.error(
+                    request,
+                    f"Serial {serial} não está disponível em estoque na PA."
+                )
+                return redirect(request.path)
+
             serials.append(serial)
             _save_serials_to_session(request, pedido_atual, serials)
 
-            show_modal = True
-            modal_serial = serial
+            if resp_api.get("required_chip") is True:
+                show_modal = True
+                modal_serial = serial
 
-            messages.success(request, "Serial inserido.")
-        else:
-            messages.info(request, "Serial já está na lista.")
+                chip_serial = resp_api.get("chip_serial")
+
+                if chip_serial and chip_serial != "None":
+                    chip_map = request.session.get("chip_map", {})
+                    chip_map[serial] = chip_serial
+                    request.session["chip_map"] = chip_map
+                    request.session.modified = True
+
+                    modal_chip = chip_serial
+            else:
+                show_modal = False
+                modal_serial = None
+
+            messages.success(request, "Serial inserido com sucesso.")
 
     initial = _build_initial(form, request, pedido_atual, exclude=("serial",))
     initial["pedido"] = pedido_atual
@@ -165,6 +202,7 @@ def _handle_add_serial(request, code_info, pedido_atual, form, menu_context):
         "show_serial": True,
         "show_modal": show_modal,
         "modal_serial": modal_serial,
+        "modal_chip": modal_chip,
     })
 
 
