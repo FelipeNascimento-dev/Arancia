@@ -69,28 +69,41 @@ def checkout_reverse(request, vetor):
 
     destination_choices = []
 
-    grupos = Group.objects.filter(name__in=["arancia_PA", "arancia_CD"])
-
-    destinos = (
-        GroupAditionalInformation.objects
-        .filter(group__in=grupos)
-        .select_related("group")
-        .annotate(nome_lower=Lower("nome"))
-        .order_by("group__name", "nome_lower")
-    )
-
-    for d in destinos:
-        if d.group.name == "arancia_PA":
-            label = f"[PA] {d.nome}"
-        elif d.group.name == "arancia_CD":
-            label = f"[CD] {d.nome}"
-        else:
-            label = d.nome
+    try:
+        pa_tatuape = GroupAditionalInformation.objects.get(
+            nome__iexact="Tatuapé"
+        )
 
         destination_choices.append({
-            "id": d.id,
-            "label": label
+            "id": pa_tatuape.id,
+            "label": "PA Tatuapé"
         })
+
+    except GroupAditionalInformation.DoesNotExist:
+        pass
+
+    # grupos = Group.objects.filter(name__in=["arancia_PA", "arancia_CD"])
+
+    # destinos = (
+    #     GroupAditionalInformation.objects
+    #     .filter(group__in=grupos)
+    #     .select_related("group")
+    #     .annotate(nome_lower=Lower("nome"))
+    #     .order_by("group__name", "nome_lower")
+    # )
+
+    # for d in destinos:
+    #     if d.group.name == "arancia_PA":
+    #         label = f"[PA] {d.nome}"
+    #     elif d.group.name == "arancia_CD":
+    #         label = f"[CD] {d.nome}"
+    #     else:
+    #         label = d.nome
+
+    #     destination_choices.append({
+    #         "id": d.id,
+    #         "label": label
+    #     })
 
     if request.method == 'POST':
         if 'novo_romaneio' in request.POST:
@@ -101,7 +114,8 @@ def checkout_reverse(request, vetor):
                 origin_id = request.POST.get("origin_id")
             else:
                 origin_id = location_id
-            destination_id = request.POST.get("destination_id")
+            destination_id = pa_tatuape.id
+            # destination_id = request.POST.get("destination_id")
 
             if not origin_id or not destination_id:
                 messages.error(request, "Selecione origem e destino")
