@@ -178,7 +178,7 @@ def reserva_equip(request, tp_reg):
             else None
         )
         cod_centro = (
-            user.designacao.informacao_adicional.cod_certer
+            user.designacao.informacao_adicional.cod_center
             if user.designacao and user.designacao.informacao_adicional
             else None
         )
