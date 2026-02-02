@@ -148,6 +148,7 @@ class PermissaoUsuarioDummy(models.Model):
             ("checkin_principal", "Check-in Principal"),
             ("checkout_principal", "Check-out Principal"),
             ("products_management", "Gerenciamento de Produtos"),
+            ("estoque", "Pode Visualizar Estoque"),
             ("gerente_estoque", "Gerente de Estoque"),
             ("reverse", "Reversa"),
             ("desinstalacao", "Pode fazer Desinstalação")
