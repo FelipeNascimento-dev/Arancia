@@ -709,9 +709,11 @@
                     </button>
                     <div class="dropdown-menu">
                         <div class="dropdown-item">
+                            {% if perms.gestao_total %}
                             <button type="submit" name="exportar" value="1" class="extract-balanced">
                                 <i class="fa-solid fa-download"></i> Exportar estoque
                             </button>
+                            {% endif %}
                         </div>
                         <div class="dropdown-item">
                             <button type="button" onclick="selectAllPAs()" class="view-balanced">
