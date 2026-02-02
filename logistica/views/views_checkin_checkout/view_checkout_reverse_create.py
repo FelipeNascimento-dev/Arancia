@@ -157,7 +157,45 @@ def checkout_reverse_create(request, rom):
         return redirect(request.path)
 
     if request.method == "POST" and 'finalizar_romaneio' in request.POST:
-        messages.success(request, 'o caralho foi')
+
+        if result.get("status") != "ABERTO":
+            messages.error(request, "Romaneio não pode ser finalizado.")
+            return redirect(request.path)
+
+        payload_finish = {
+            "finished_by": user.username,
+            "finished_at": datetime.utcnow().isoformat() + "Z",
+            "movement_type": "RETURN",
+            "external_order_number": numero_romaneio
+        }
+
+        url_finish = (
+            f"{STOCK_API_URL}/v2/romaneios/finish/{numero_romaneio}?location_id={location_id}"
+        )
+
+        client_finish = RequestClient(
+            url=url_finish,
+            method="POST",
+            headers={
+                "Accept": JSON_CT,
+                "Content-Type": JSON_CT,
+            },
+            request_data=payload_finish
+        )
+
+        print(payload_finish)
+
+        result_finish = client_finish.send_api_request()
+
+        if isinstance(result_finish, dict) and "detail" not in result_finish:
+            messages.success(request, "Romaneio finalizado com sucesso")
+        else:
+            messages.error(
+                request,
+                result_finish.get("detail", "Erro ao finalizar romaneio")
+            )
+
+        return redirect(request.path)
 
     return render(
         request,

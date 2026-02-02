@@ -38,7 +38,6 @@
                 <span class="texto-item">&nbsp; Logística</span>
             </button>
             <div class="dropdown-content">
-                {% if perms.logistica.lastmile_b2c %}
                 {% if perms.logistica.checkin_principal %}
                 <h5 class="submenu-toggle {% if current_menu == 'checkin' %}active{% endif %}" data-target="checkin-sub">Check-In Geral</h5>
                 <div class="sub-submenu {% if current_menu == 'checkin' %}show{% endif %}" id="checkin-sub">
@@ -103,7 +102,7 @@
                         </a>
                     </div>
                 </div>
-
+                {% if perms.logistica.lastmile_b2c %}
                 <h5 class="submenu-toggle {% if current_menu == 'lastmile' %}active{% endif %}" data-target="lastmile-sub">Lastmile (B2C)</h5>
                 <div class="sub-submenu {% if current_menu == 'lastmile' %}show{% endif %}" id="lastmile-sub">
                     <h5 class="submenu-toggle {% if current_submenu == 'consultas' %}active{% endif %}" data-target="consulta-sub">Consultas</h5>
@@ -179,8 +178,8 @@
                             IP - Troca de Custódia
                         </a>
                     </div>
-
                     {% endif %}
+                    {% if perms.logistica.desinstalacao %}
                     <h5 class="submenu-toggle {% if current_submenu == 'retirada' %}active{% endif %}" data-target="lastmile-retirada-sub">Fluxo de Retirada</h5>
                     <div class="sub-submenu {% if current_submenu == 'retirada' %}show{% endif %}" id="lastmile-retirada-sub">
                         <a href="{% url 'logistica:order_return_check' %}"
@@ -188,6 +187,7 @@
                             Conferir Retirada
                         </a>
                     </div>
+                    {% endif %}
                     {% if perms.logistica.reverse %}
                     <h5 class="submenu-toggle {% if current_submenu == 'reverse' %}active{% endif %}" data-target="reverse-sub">Reversa</h5>
                     <div class="sub-submenu {% if current_submenu == 'reverse' %}show{% endif %}" id="reverse-sub">
@@ -198,6 +198,7 @@
                         <a href="{% url 'logistica:consulta_etiquetas' %}">Consulta de Etiquetas</a>
                     </div>
                     {% endif %}
+                    {% if perms.logistica.estoque %}
                     <h5 class="submenu-toggle {% if current_submenu == 'estoque' %}active{% endif %}" data-target="recebimentos-sub">Estoque</h5>
                     <div class="sub-submenu {% if current_submenu == 'estoque' %}show{% endif %}" id="recebimentos-sub">
                         <a href="{% url 'logistica:recebimento_remessa' %}"
@@ -209,6 +210,7 @@
                             class="{% if current_subsubmenu == 'gerenciamento' %}active{% endif %}">Gestão de Estoque</a>
                         {% endif %}
                     </div>
+                    {% endif %}
                 </div>
                 {% endif %}
             </div>
