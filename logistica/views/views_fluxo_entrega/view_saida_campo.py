@@ -164,7 +164,7 @@ def saida_campo(request, tp_reg: str):
                 else None
             )
             cod_centro = (
-                user.designacao.informacao_adicional.cod_certer
+                user.designacao.informacao_adicional.cod_center
                 if user.designacao and user.designacao.informacao_adicional
                 else None
             )

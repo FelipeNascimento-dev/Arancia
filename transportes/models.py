@@ -1,7 +1,8 @@
 import httpx
 from datetime import datetime
-from setup.local_settings import status_labels,TOKEN ,API_BASE
+from setup.local_settings import status_labels, TOKEN, API_BASE
 from django.db import models
+
 
 def auth_headers():
     return {"accept": "application/json", "access_token": TOKEN}
@@ -34,7 +35,6 @@ def initials(nome: str) -> str:
 def now_str():
     return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-from django.db import models
 
 class UsuarioExtra(models.Model):
     username = models.CharField(max_length=150, unique=True)
@@ -60,6 +60,7 @@ class PersonalPermissions(models.Model):
             ("gerar_etiquetas", "Gerar Etiquetas"),
             ("transp_menu", "Mostrar menu transporte"),
             ("CC_admin", "Mostrar menu administrativo"),
+            ("controle_chamados", "Controle de Chamados"),
         ]
 
     def __str__(self):
