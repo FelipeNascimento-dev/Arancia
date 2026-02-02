@@ -149,7 +149,8 @@ class PermissaoUsuarioDummy(models.Model):
             ("checkout_principal", "Check-out Principal"),
             ("products_management", "Gerenciamento de Produtos"),
             ("gerente_estoque", "Gerente de Estoque"),
-            ("reverse", "Reversa")
+            ("reverse", "Reversa"),
+            ("desinstalacao", "Pode fazer Desinstalação")
         ]
 
     def __str__(self):

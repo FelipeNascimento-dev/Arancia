@@ -308,11 +308,12 @@
                     {% csrf_token %}
                     <input type="hidden" name="remove_serial" value="1">
                     <input type="hidden" name="serial" value="{{ kit.serial }}">
-
+                    {% if romaneio.status == 'ABERTO' %}
                     <button type="submit" class="btn-remove" title="Remover serial"
                         onclick="return confirm('Remover o serial {{ kit.serial }}? Esta ação é irreversível.')">
                         ✖
                     </button>
+                    {% endif %}
                 </form>
             </div>
             {% empty %}
