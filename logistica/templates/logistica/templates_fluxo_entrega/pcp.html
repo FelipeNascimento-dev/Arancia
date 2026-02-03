@@ -190,7 +190,6 @@
         box-shadow: 0 0 0 2px rgba(0, 83, 166, .18);
     }
 
-    /* Corrigir display da opção placeholder */
     .my-select option[value=""] {
         color: #777;
     }
@@ -237,6 +236,7 @@
                     class="my-input"
                     placeholder="Chip Number"
                     value="{{ modal_chip }}"
+                    autofocus
                 >
 
                 <input type="hidden" name="serial" value="{{ modal_serial }}">
@@ -262,6 +262,21 @@
 function fecharModal() {
     document.getElementById('chipModal').remove();
 }
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("chipModal");
+    if (!modal) return;
+
+    const input = modal.querySelector('input[name="chip_number"]');
+    if (!input) return;
+
+    setTimeout(() => {
+        input.focus({ preventScroll: true });
+        input.select();
+    }, 150);
+});
 </script>
 {% endif %}
 
