@@ -67,6 +67,12 @@
             <tbody>
                 {% for pa in itens %}
                 {% for st in pa.stock_types %}
+                <tr class="total-row">
+                    <td>{{ pa.pa }}</td>
+                    <td>{{ st.type }}</td>
+                    <td><strong>Total</strong></td>
+                    <td><strong>{{ st.total }}</strong></td>
+                </tr>
                 {% for produto, qtd in st.qtd_por_produto.items %}
                 <tr>
                     <td>{{ pa.pa }}</td>
@@ -104,6 +110,12 @@
                 <tbody>
                     {% for pa in itens %}
                     {% for st in pa.stock_types %}
+                    <tr class="total-row">
+                        <td>{{ pa.pa }}</td>
+                        <td>{{ st.type }}</td>
+                        <td><strong>Total</strong></td>
+                        <td><strong>{{ st.total }}</strong></td>
+                    </tr>
                     {% for ztipo, qtd in st.qtd_por_ztipo.items %}
                     <tr>
                         <td>{{ pa.pa }}</td>
