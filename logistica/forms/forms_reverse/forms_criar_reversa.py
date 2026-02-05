@@ -65,24 +65,45 @@ class ReverseCreateForm(forms.Form):
 
         self.fields["sales_channel"].choices = sc_choices
 
-        if user_sales_channel:
-            self.fields["sales_channel"].initial = user_sales_channel
-            if user_sales_channel.lower() != "all":
-                self.fields["sales_channel"].disabled = True
+        if (
+            user_sales_channel
+            and user_sales_channel.lower() != "all"
+            and self.user
+            and hasattr(self.user, "designacao")
+            and self.user.designacao.informacao_adicional
+        ):
+            info = self.user.designacao.informacao_adicional
+
+            self.fields["sales_channel"].choices = [
+                (info.id, info.nome)
+            ]
+            self.fields["sales_channel"].initial = info.id
+            # self.fields["sales_channel"].disabled = True
 
         destino_choices = [("", "")]
 
-        if self.user and self.user.has_perm("logistica.gestao_total"):
+        if self.user and self.user.has_perm("logistica.reverse"):
             grupos = Group.objects.filter(
-                name__in=["arancia_PA", "arancia_CD"]
+                name__in=["arancia_CD"]
             )
+
+            # destinos = (
+            #     GroupAditionalInformation.objects
+            #     .filter(group__in=grupos)
+            #     .select_related("group")
+            #     .annotate(nome_lower=Lower("nome"))
+            #     .order_by("group__name", "nome_lower")
+            # )
 
             destinos = (
                 GroupAditionalInformation.objects
-                .filter(group__in=grupos)
+                .filter(
+                    group__in=grupos,
+                    nome__istartswith="Flex"
+                )
                 .select_related("group")
                 .annotate(nome_lower=Lower("nome"))
-                .order_by("group__name", "nome_lower")
+                .order_by("nome_lower")
             )
 
             for d in destinos:
