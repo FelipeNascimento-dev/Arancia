@@ -223,15 +223,9 @@
                     <button type="submit" class="dropdown-item" name="cancelar_rom" value="1">
                         Cancelar Romaneio
                     </button>
-                    {% if client == 'cielo' %}
                     <button type="submit" class="dropdown-item" name="enviar_cotacao" value="1">
                         Enviar Cotação
                     </button>
-                    {% else %}
-                    <button type="submit" class="dropdown-item" name="finalizar_rom" value="1">
-                        Finalizar Romaneio
-                    </button>
-                    {% endif %}
                 </div>
             </div>
             {% endif %}
@@ -327,7 +321,15 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const serialInput = document.getElementById("id_serial");
+    if (serialInput) {
+        serialInput.focus();
+        serialInput.select(); // opcional, já deixa pronto pra bipar
+    }
+});
+</script>
 
 <script>
     function toggleActionsMenu() {

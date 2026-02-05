@@ -74,6 +74,7 @@ def order_detail(request, order: str):
 
         if tipo == "NORMAL":
             if ultima_tracking[:3] != '205' and volume_state not in ["CLARIFY_DELIVERY_FAIL", "DELIVERY_FAILED"]:
+                # if ultima_tracking[:3] != '205':
                 try:
                     tracking_atual = int(
                         (result.get("ultima_tracking") or "200").split(" ")[0])

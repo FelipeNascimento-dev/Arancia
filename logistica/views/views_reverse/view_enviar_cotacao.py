@@ -10,8 +10,25 @@ JSON_CT = "application/json"
 def send_quotes(request):
     result = None
     if "enviar_cotacao" in request.POST:
+        romaneio_in = request.session.get("romaneio_num")
+
+        user_sales_channel = None
+        if (
+            request.user.is_authenticated
+            and hasattr(request.user, "designacao")
+            and request.user.designacao.informacao_adicional
+        ):
+            user_sales_channel = (
+                request.user.designacao.informacao_adicional.sales_channel or ""
+            ).strip()
+
         form = ReverseCreateForm(
-            request.POST)
+            request.POST,
+            nome_form="Reversa de Equipamento",
+            user_sales_channel=user_sales_channel,
+            romaneio_num=romaneio_in,
+            user=request.user,
+        )
         if form.errors:
             for field, errors in form.errors.items():
                 for error in errors:

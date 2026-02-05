@@ -22,6 +22,7 @@ def reverse_create(request):
     client_data = request.session.get("selected_client", {})
     client_code = client_data.get("client_code", "").lower()
     client_name = client_data.get("client_name", "")
+    client = 'cielo'
 
     last_rom = request.session.get("current_romaneio")
     if romaneio_in and last_rom != romaneio_in:
@@ -68,12 +69,6 @@ def reverse_create(request):
     if last_volume and last_volume.get("kits"):
         last_kit_serial = last_volume["kits"][0]["serial"]
 
-    for v in volums:
-        kits = list(reversed(v.get("kits", [])))
-        for idx, k in enumerate(kits, start=1):
-            k["kit_number"] = idx
-        v["kits"] = kits
-
     if request.method == "POST" and form.is_valid() and "enviar_evento" in request.POST:
         request.session["reverse_from_location"] = form.cleaned_data.get(
             "sales_channel")
@@ -87,12 +82,15 @@ def reverse_create(request):
             if not volums:
                 volums.append({"volum_number": 1, "kits": []})
 
-            ultimo_volume = volums[-1]
+            ultimo_volume = max(
+                volums,
+                key=lambda v: int(v.get("volum_number", 0))
+            )
 
-            if len(ultimo_volume["kits"]) >= 24:
+            if len(ultimo_volume["kits"]) >= 25:
                 if len(volums) >= 10:
                     messages.error(
-                        request, "Limite máximo de 5 volumes atingido!")
+                        request, "Limite máximo de 10 volumes atingido!")
                     return redirect("logistica:reverse_create")
                 novo_numero = int(ultimo_volume["volum_number"]) + 1
                 volums.append({"volum_number": novo_numero, "kits": []})
@@ -136,6 +134,7 @@ def reverse_create(request):
     if request.method == "POST" and form.is_valid() and "enviar_cotacao" in request.POST:
         _result = send_quotes(request)
         order = _result.get('order_number')
+        client = 'cielo'
 
         if _result and 'detail' not in _result:
             result = _result
