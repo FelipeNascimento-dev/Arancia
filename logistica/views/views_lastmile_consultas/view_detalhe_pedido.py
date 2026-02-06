@@ -65,6 +65,34 @@ def order_detail(request, order: str):
     request_success = False
 
     if request.method == "POST":
+        if "cancelar_pedido" in request.POST:
+            result = request.session.get("result")
+
+            if not isinstance(result, dict):
+                messages.error(request, "Erro interno ao cancelar pedido.")
+                return redirect("logistica:consultar_pedido")
+
+            url = f"{API_URL}/api/reverse-order/cancel/{order}?canceled_by={request.user.username}"
+            client = RequestClient(
+                url=url,
+                method="POST",
+                headers={"Accept": JSON_CT, "Content-Type": JSON_CT}
+            )
+
+            cancel_result = client.send_api_request()
+
+            if isinstance(cancel_result, dict) and "detail" in cancel_result:
+                messages.error(
+                    request, f"Erro ao cancelar pedido: {cancel_result['detail']}")
+            else:
+                messages.success(
+                    request, f"Pedido {order} cancelado com sucesso!")
+                result["status"] = "CANCELLED"
+                request.session["result"] = result
+                request.session.modified = True
+
+            return redirect("logistica:detalhe_pedido", order=order)
+
         result = request.session.get("result")
         form = OrderDetailForm(request.POST or None, dados=result)
         tipo = (
@@ -151,23 +179,6 @@ def order_detail(request, order: str):
                     request, f"Erro ao enviar tracking: {result['detail']}")
 
             return redirect("logistica:detalhe_pedido", order=order)
-
-        if "cancelar_pedido" in request.POST:
-            url = f"{API_URL}/api/reverse-order/cancel/AR{order}?canceled_by={request.user.username}"
-            client = RequestClient(
-                url=url, method="POST",
-                headers={"Accept": JSON_CT, "Content-Type": JSON_CT}
-            )
-            _result = client.send_api_request()
-            if "detail" in _result:
-                messages.error(
-                    request, f"Erro ao cancelar pedido: {_result['detail']}")
-            else:
-                messages.success(
-                    request, f"Pedido {order} cancelado com sucesso!")
-                result['status'] = 'CANCELLED'
-                request.session["result"] = result
-                request.session.modified = True
 
         if "troca_custodia" in request.POST:
             user = request.user
