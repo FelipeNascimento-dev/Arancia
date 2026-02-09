@@ -314,8 +314,7 @@ def gerenciamento_estoque(request):
             "produtos_api": produtos_api,
             "stock_types": stock_types,
             "current_parent_menu": "logistica",
-            "current_menu": "lastmile",
-            "current_submenu": "estoque",
-            "current_subsubmenu": "gerenciamento"
+            "current_menu": "estoque",
+            "current_submenu": "gerenciamento",
         }
     )

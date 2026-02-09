@@ -146,8 +146,7 @@ def recebimento_remessa(request):
             "site_title": titulo,
             "etapa_ativa": "recebimento_remessa",
             "current_parent_menu": "logistica",
-            "current_menu": "lastmile",
-            "current_submenu": "estoque",
-            "current_subsubmenu": "recebimento_estoque"
+            "current_menu": "estoque",
+            "current_submenu": "recebimento_estoque",
         },
     )

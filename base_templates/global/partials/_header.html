@@ -177,6 +177,11 @@
                         class="{% if current_subsubmenu == 'troca_custodia' %}active{% endif %}">
                             IP - Troca de Custódia
                         </a>
+
+                        <a href="{% url 'logistica:consultar_pedido' %}"
+                        class="{% if current_subsubmenu == 'insucesso' %}active{% endif %}">
+                            IP - Insucesso de Entrega
+                        </a>
                     </div>
                     {% endif %}
                     {% if perms.logistica.desinstalacao %}
@@ -198,18 +203,18 @@
                         <a href="{% url 'logistica:consulta_etiquetas' %}">Consulta de Etiquetas</a>
                     </div>
                     {% endif %}
-                    {% if perms.logistica.estoque %}
-                    <h5 class="submenu-toggle {% if current_submenu == 'estoque' %}active{% endif %}" data-target="recebimentos-sub">Estoque</h5>
-                    <div class="sub-submenu {% if current_submenu == 'estoque' %}show{% endif %}" id="recebimentos-sub">
-                        <a href="{% url 'logistica:recebimento_remessa' %}"
-                        class="{% if current_subsubmenu == 'recebimento_estoque' %}active{% endif %}">
-                            Recebimento
-                        </a>
-                        {% if perms.logistica.gerente_estoque %}
-                            <a href="{% url 'logistica:gerenciamento_estoque' %}"
-                            class="{% if current_subsubmenu == 'gerenciamento' %}active{% endif %}">Gestão de Estoque</a>
-                        {% endif %}
-                    </div>
+                </div>
+                {% endif %}
+                {% if perms.logistica.estoque %}
+                <h5 class="submenu-toggle {% if current_menu == 'estoque' %}active{% endif %}" data-target="recebimentos-sub">Estoque</h5>
+                <div class="sub-submenu {% if current_menu == 'estoque' %}show{% endif %}" id="recebimentos-sub">
+                    <a href="{% url 'logistica:recebimento_remessa' %}"
+                    class="{% if current_submenu == 'recebimento_estoque' %}active{% endif %}">
+                        Recebimento
+                    </a>
+                    {% if perms.logistica.gerente_estoque %}
+                        <a href="{% url 'logistica:gerenciamento_estoque' %}"
+                        class="{% if current_submenu == 'gerenciamento' %}active{% endif %}">Gestão de Estoque</a>
                     {% endif %}
                 </div>
                 {% endif %}
