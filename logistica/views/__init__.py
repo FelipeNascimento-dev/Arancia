@@ -38,3 +38,4 @@ from .transp import transp_view
 from .views_checkin_checkout.print_serial import print_serial
 from .views_checkin_checkout.view_checkout_reverse import checkout_reverse
 from .views_checkin_checkout.view_checkout_reverse_create import checkout_reverse_create
+from .views_fluxo_entrega.view_recebimento_insucesso import recebimento_insucesso
