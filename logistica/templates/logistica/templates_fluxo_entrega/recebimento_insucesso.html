@@ -1,0 +1,97 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+{% include 'global/partials/_progress_insucesso.html' with step_atual='recebimento' %}
+
+<style>
+    .form-card-2col {
+        height: auto;
+        margin-top: 65px;
+    }
+
+    .modal {
+        position: fixed;
+        z-index: 9999;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background: #fff;
+        padding: 24px;
+        border-radius: 12px;
+        text-align: center;
+        max-width: 450px;
+        width: 90%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 20px;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.96);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST">
+            {% csrf_token %}
+            {% include 'global/partials/_form_2col.html' %}
+        </form>
+    </div>
+</div>
+
+{% if modal_insucesso %}
+<div class="modal" id="modalInsucesso">
+    <div class="modal-content">
+        <h3><strong>ATENÇÃO</strong></h3>
+        <p>Deseja realmente registrar o insucesso?</p>
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="pedido" value="{{ request.POST.pedido }}">
+
+            <div class="modal-actions">
+                <button type="button"
+                        class="submit-button-right"
+                        onclick="fecharModal()">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        name="confirm_insucesso"
+                        class="submit-button-right">
+                    Confirmar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<script>
+function fecharModal() {
+    const modal = document.getElementById("modalInsucesso");
+    if (modal) {
+        modal.remove();
+    }
+}
+</script>
+
+{% endblock %}
