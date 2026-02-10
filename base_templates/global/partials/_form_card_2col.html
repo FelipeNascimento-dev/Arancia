@@ -30,7 +30,6 @@
     </div>
 
     <div class="form-actions">
-
         {% if botao_texto == "RECEBER DESINSTALAÇÃO" %}
         <button type="submit" class="submit-button-right" name="enviar_evento" value="1">
             {{ botao_texto }}
@@ -66,8 +65,7 @@
         </button>
         {% elif fluxo_encerrado %}
         <button type="submit" class="submit-button-right btn-disabled"
-        disabled
-        style="opacity:0.6; cursor:not-allowed;" name="enviar_evento" value="1">
+            disabled style="opacity:0.6; cursor:not-allowed;" name="enviar_evento" value="1">
             FLUXO FINALIZADO
         </button>
         {% elif botao_texto == "PROXIMA TRACKING" %}

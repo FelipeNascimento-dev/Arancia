@@ -222,8 +222,8 @@ def gerenciamento_estoque(request):
     resultado_itens = []
     totais = {}
     produtos_unicos = []
-    visao = request.POST.get("visao")
-    modo_exibicao = request.POST.get("modo_exibicao")
+    visao = request.POST.get("visao", "detalhe")
+    modo_exibicao = request.POST.get("modo_exibicao", "tabela")
     limit = int(request.POST.get("limit", 25))
     offset = int(request.POST.get("offset", 0))
     has_more = False

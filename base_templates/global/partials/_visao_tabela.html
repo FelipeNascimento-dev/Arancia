@@ -68,8 +68,8 @@
                 {% for pa in itens %}
                 {% for st in pa.stock_types %}
                 <tr class="total-row">
-                    <td>{{ pa.pa }}</td>
-                    <td>{{ st.type }}</td>
+                    <td><strong>{{ pa.pa }}</strong></td>
+                    <td><strong>{{ st.type }}</strong></td>
                     <td><strong>Total</strong></td>
                     <td><strong>{{ st.total }}</strong></td>
                 </tr>
@@ -111,8 +111,8 @@
                     {% for pa in itens %}
                     {% for st in pa.stock_types %}
                     <tr class="total-row">
-                        <td>{{ pa.pa }}</td>
-                        <td>{{ st.type }}</td>
+                        <td><strong>{{ pa.pa }}</strong></td>
+                        <td><strong>{{ st.type }}</strong></td>
                         <td><strong>Total</strong></td>
                         <td><strong>{{ st.total }}</strong></td>
                     </tr>
