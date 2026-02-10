@@ -1,7 +1,6 @@
 <style>
     .progress-container {
         width: 100%;
-        margin-bottom: 30px;
         margin-top: 70px;
     }
 
@@ -30,8 +29,7 @@
     }
 
     .progress-step.active {
-        background: #c62828;
-        /* vermelho corporativo */
+        background: #28c628;
         color: #fff;
     }
 
@@ -49,7 +47,7 @@
 
     .progress-step.active .step-number {
         background: #fff;
-        color: #c62828;
+        color: #28c66f;
     }
 
     .step-label {
@@ -61,6 +59,12 @@
         width: 60px;
         height: 2px;
         background: #ccc;
+    }
+
+    .progress-step.disabled {
+        background: #eee;
+        color: #999;
+        cursor: not-allowed;
     }
 </style>
 
@@ -75,18 +79,10 @@
 
         <div class="progress-line"></div>
 
-        {% if pedido %}
-        <a href="{% url 'logistica:unsuccessful_insert' order=pedido %}"
+        <a href="{% url 'logistica:unsuccessful_insert' %}"
         class="progress-step {% if step_atual == 'conferencia' %}active{% endif %}">
             <div class="step-number">2</div>
             <div class="step-label">Conferência de Insucesso</div>
         </a>
-        {% else %}
-        <div class="progress-step disabled">
-            <div class="step-number">2</div>
-            <div class="step-label">Conferência de Insucesso</div>
-        </div>
-        {% endif %}
-
     </div>
 </div>

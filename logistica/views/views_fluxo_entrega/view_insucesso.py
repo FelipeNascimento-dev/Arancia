@@ -22,7 +22,7 @@ def unsuccessful_insert(request, order=None):
 
     serials_display = serials_good + serials_bad
 
-    numero_pedido = order or request.GET.get('order')
+    numero_pedido = request.session.get('pedido_insucesso')
 
     if request.method == 'POST':
         form = UnsuccessfulInsertForm(request.POST, nome_form=titulo)

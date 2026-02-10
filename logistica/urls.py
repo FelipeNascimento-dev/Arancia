@@ -65,7 +65,7 @@ urls_LastmileB2C = [
     path('reverse/delete/<str:serial>/', delete_btn, name='delete_btn'),
     path('reverse/cancel/<str:id>/', cancel_btn, name='cancel_btn'),
     path('reverse/envio', send_quotes, name='send_quotes'),
-    path('insucesso/insert/<str:order>/',
+    path('insucesso/insert/',
          unsuccessful_insert, name='unsuccessful_insert'),
     path('insucesso/recebimento/', recebimento_insucesso,
          name='recebimento_insucesso'),
