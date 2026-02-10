@@ -174,7 +174,7 @@ def unsuccessful_insert(request, order=None):
                 request.session[key_bad] = []
 
                 messages.success(request, "Envio concluído com sucesso!")
-                return redirect('logistica:unsuccessful_insert', order=pedido)
+                return redirect('logistica:unsuccessful_insert')
 
             else:
                 messages.error(request, "Preencha os campos obrigatórios.")
