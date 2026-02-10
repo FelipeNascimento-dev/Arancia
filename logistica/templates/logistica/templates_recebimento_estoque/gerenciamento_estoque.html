@@ -637,8 +637,8 @@
         <form method="POST">
             {% include 'global/partials/_form_2colV2.html' %}
             {% csrf_token %}
-            <input type="hidden" id="visao" name="visao" value="{{ visao|default:'' }}">
-            <input type="hidden" name="modo_exibicao" id="modo_exibicao" value="{{ modo_exibicao|default:'' }}">
+            <input type="hidden" id="visao" name="visao" value="{{ visao|default:'detalhe' }}">
+            <input type="hidden" name="modo_exibicao" id="modo_exibicao" value="{{ modo_exibicao|default:'tabela' }}">
             <div class="top-bar-balanced">
                 <div class="dropdown">
                     <button type="button" class="dropdown-btn">
@@ -721,6 +721,14 @@
                             </button>
                         </div>
                     </div>
+                </div>
+                <div class="top-action">
+                    <button type="submit"
+                            name="aplicar_filtros"
+                            value="1"
+                            class="extract-balanced">
+                        <i class="fa-solid fa-filter"></i> Aplicar filtros
+                    </button>
                 </div>
             </div>
 
