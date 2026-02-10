@@ -474,8 +474,28 @@ def trackingIPV2(request: HttpRequest, code: str) -> HttpResponse:
                 return redirect(request.path)
 
             chip_map = request.session.get("chip_map", {})
-            chip_map[serial] = chip_number
 
+            chip_ja_usado = next(
+                (s for s, c in chip_map.items()
+                 if c == chip_number and s != serial),
+                None
+            )
+
+            if chip_ja_usado:
+                messages.error(
+                    request,
+                    f"O chip {chip_number} já está associado ao serial {chip_ja_usado}. "
+                    "Não é permitido usar o mesmo chip em dois seriais diferentes."
+                )
+
+                serials = _get_serials_from_session(request, pedido_atual)
+                if serial in serials:
+                    serials.remove(serial)
+                    _save_serials_to_session(request, pedido_atual, serials)
+
+                return redirect(request.path)
+
+            chip_map[serial] = chip_number
             request.session["chip_map"] = chip_map
             request.session.modified = True
 

@@ -174,7 +174,7 @@ def unsuccessful_insert(request, order=None):
                 request.session[key_bad] = []
 
                 messages.success(request, "Envio concluído com sucesso!")
-                return redirect('logistica:unsuccessful_insert', order=pedido)
+                return redirect('logistica:unsuccessful_insert')
 
             else:
                 messages.error(request, "Preencha os campos obrigatórios.")
@@ -197,4 +197,8 @@ def unsuccessful_insert(request, order=None):
         'botao_texto': 'Registrar Insucesso',
         'site_title': titulo,
         'etapa_ativa': 'unsuccessful_insert',
+        "current_parent_menu": "logistica",
+        "current_menu": "lastmile",
+        "current_submenu": "entrega_simplificada",
+        "current_subsubmenu": "conferencia_insucesso"
     })

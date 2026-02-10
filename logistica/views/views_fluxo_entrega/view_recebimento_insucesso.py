@@ -50,6 +50,8 @@ def recebimento_insucesso(request):
 
             return redirect('logistica:unsuccessful_insert')
 
+    form.errors.pop("pedido", None)
+
     return render(
         request,
         'logistica/templates_fluxo_entrega/recebimento_insucesso.html',

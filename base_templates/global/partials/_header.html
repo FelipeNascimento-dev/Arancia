@@ -182,6 +182,11 @@
                         class="{% if current_subsubmenu == 'insucesso' %}active{% endif %}">
                             IP - Insucesso de Entrega
                         </a>
+
+                        <a href="{% url 'logistica:unsuccessful_insert' %}"
+                        class="{% if current_subsubmenu == 'conferencia_insucesso' %}active{% endif %}">
+                            IP - Conferência de Insucesso
+                        </a>
                     </div>
                     {% endif %}
                     {% if perms.logistica.desinstalacao %}
