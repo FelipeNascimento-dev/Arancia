@@ -45,7 +45,10 @@ def recebimento_insucesso(request):
                 messages.success(
                     request, "Evento de Recebimento Insucesso enviado com sucesso.")
 
-            return redirect('logistica:unsuccessful_insert', order=pedido)
+                request.session['pedido_insucesso'] = pedido
+                request.session.modified = True
+
+            return redirect('logistica:unsuccessful_insert')
 
     return render(
         request,
