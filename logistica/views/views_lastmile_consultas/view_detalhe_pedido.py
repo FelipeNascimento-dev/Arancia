@@ -61,7 +61,7 @@ def view_order(request, order: str, ep_name: str):
 def order_detail(request, order: str):
     request.session["pedido"] = str(order)
     request.session.modified = True
-
+    fluxo_encerrado = False
     request_success = False
 
     if request.method == "POST":
@@ -99,6 +99,7 @@ def order_detail(request, order: str):
             form.fields['shipment_order_type'].initial or '').strip().upper()
         volume_state = (result.get("volume_state") or "").strip().upper()
         ultima_tracking = (result.get("ultima_tracking") or "").strip().upper()
+        fluxo_encerrado = ultima_tracking[:3] == '205'
 
         if tipo == "NORMAL":
             # if ultima_tracking[:3] != '205' and volume_state not in ["CLARIFY_DELIVERY_FAIL", "DELIVERY_FAILED"]:
@@ -251,6 +252,8 @@ def order_detail(request, order: str):
             pass
     request.session["result"] = result
 
+    fluxo_encerrado = ultima_tracking[:3] == '205'
+
     dict_botao_texto = {
         "RETURN": "RECEBER DESINSTALAÇÃO",
         "REVERSE": "RECEBER REVERSA",
@@ -270,6 +273,7 @@ def order_detail(request, order: str):
         "adicionais_campos": adicionais_campos,
         "historico_tracking": historico_tracking,
         "botao_texto": botao_texto,
+        "fluxo_encerrado": fluxo_encerrado,
         "site_title": "Detalhe do Pedido",
         "nome_formulario": form.form_title,
         "mostrar_acoes": mostrar_acoes,
