@@ -101,8 +101,8 @@ def order_detail(request, order: str):
         ultima_tracking = (result.get("ultima_tracking") or "").strip().upper()
 
         if tipo == "NORMAL":
-            if ultima_tracking[:3] != '205' and volume_state not in ["CLARIFY_DELIVERY_FAIL", "DELIVERY_FAILED"]:
-                # if ultima_tracking[:3] != '205':
+            # if ultima_tracking[:3] != '205' and volume_state not in ["CLARIFY_DELIVERY_FAIL", "DELIVERY_FAILED"]:
+            if ultima_tracking[:3] != '205':
                 try:
                     tracking_atual = int(
                         (result.get("ultima_tracking") or "200").split(" ")[0])
@@ -117,26 +117,26 @@ def order_detail(request, order: str):
                     return redirect("logistica:pcp_simpl", code=proxima_tracking)
                 else:
                     return redirect("logistica:pcp", code=proxima_tracking)
-            else:
-                tipo = 'NORMAL|INSUCESSO' if (
-                    tipo == 'NORMAL' and volume_state in ["CLARIFY_DELIVERY_FAIL", "DELIVERY_FAILED"]) else tipo
-                payload = {
-                    "order_number": result.get("order_number"),
-                    "volume_number": result.get("volume_number") or 1,
-                    "order_type": "FAILURE",
-                    "tracking_code": "206",
-                    "created_by": request.user.username,
-                }
+            # else:
+            #     tipo = 'NORMAL|INSUCESSO' if (
+            #         tipo == 'NORMAL' and volume_state in ["CLARIFY_DELIVERY_FAIL", "DELIVERY_FAILED"]) else tipo
+            #     payload = {
+            #         "order_number": result.get("order_number"),
+            #         "volume_number": result.get("volume_number") or 1,
+            #         "order_type": "FAILURE",
+            #         "tracking_code": "206",
+            #         "created_by": request.user.username,
+            #     }
 
-                client = RequestClient(
-                    url=f"{API_URL}/api/v2/trackings/send",
-                    method="POST",
-                    headers={"Accept": JSON_CT, "Content-Type": JSON_CT},
-                    request_data=payload
-                )
-                _result = client.send_api_request()
-            request.session["request_insucesso_success"] = True
-            return redirect("logistica:detalhe_pedido", order=order)
+            #     client = RequestClient(
+            #         url=f"{API_URL}/api/v2/trackings/send",
+            #         method="POST",
+            #         headers={"Accept": JSON_CT, "Content-Type": JSON_CT},
+            #         request_data=payload
+            #     )
+            #     _result = client.send_api_request()
+            # request.session["request_insucesso_success"] = True
+            # return redirect("logistica:detalhe_pedido", order=order)
 
         elif tipo == "RETURN":
             request_success = button_desn(request, order)
