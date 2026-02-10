@@ -38,70 +38,6 @@
                 <span class="texto-item">&nbsp; Logística</span>
             </button>
             <div class="dropdown-content">
-                {% if perms.logistica.checkin_principal %}
-                <h5 class="submenu-toggle {% if current_menu == 'checkin' %}active{% endif %}" data-target="checkin-sub">Check-In Geral</h5>
-                <div class="sub-submenu {% if current_menu == 'checkin' %}show{% endif %}" id="checkin-sub">
-                    <a href="{% url 'logistica:client_select' 'IN' %}"
-                    class="{% if current_submenu == 'iniciar_checkin' %}active{% endif %}">
-                        Iniciar Check-In
-                    </a>
-                    <a href="{% url 'logistica:client_consult' %}"
-                    class="{% if current_submenu == 'consulta_clientes' %}active{% endif %}">
-                        Consulta de Clientes
-                    </a>
-                    <a href="{% url 'logistica:product_create' %}"
-                    class="{% if current_submenu == 'consulta_produtos' %}active{% endif %}">
-                        Consulta de Produtos
-                    </a>
-                </div>
-                {% endif %}
-                {% if perms.logistica.checkout_principal %}
-                <h5 class="submenu-toggle {% if current_menu == 'checkout' %}active{% endif %}"
-                    data-target="checkout-sub">
-                    Check-Out Geral
-                </h5>
-                <div class="sub-submenu {% if current_menu == 'checkout' %}show{% endif %}"
-                    id="checkout-sub">
-                    <a href="{% url 'logistica:client_select' 'OUT' %}"
-                    class="{% if current_submenu == 'iniciar_checkout' %}active{% endif %}">
-                        Iniciar Check-Out
-                    </a>
-                </div>
-                {% endif %}
-
-                <h5 class="submenu-toggle {% if current_menu == 'SAP' %}active{% endif %}" data-target="sap-sub">SAP</h5>
-                <div class="sub-submenu {% if current_menu == 'SAP' %}show{% endif %}" id="sap-sub">
-                    <h5 class="submenu-toggle {% if current_submenu == 'sap_reserva' %}active{% endif %}" data-target="reserva-sub-sap">SAP - Reserva de equipamento</h5>
-                    <div class="sub-submenu {% if current_submenu == 'sap_reserva' %}show{% endif %}" id="reserva-sub-sap">
-                        <a href="{% url 'logistica:reserva_equip' 84 %}"
-                        class="{% if current_subsubmenu == 'reserva_equip' %}active{% endif %}">
-                            Reserva de equipamento (MA84)
-                        </a>
-                        <a href="{% url 'logistica:estorno_reserva' 85 %}"
-                        class="{% if current_subsubmenu == 'reserva_equip' %}active{% endif %}">
-                            Estorno Reserva de Equipamento (MA85)
-                        </a>
-                        <a href="{% url 'logistica:consulta_result_ma' %}"
-                        class="{% if current_subsubmenu == 'consulta_reserva_equip' %}active{% endif %}">
-                            Consulta Reserva/Estorno Reserva
-                        </a>
-                    </div>
-                    <h5 class="submenu-toggle {% if current_submenu == 'sap_saida' %}active{% endif %}" data-target="saida-sub-sap">SAP - Saída para Campo</h5>
-                    <div class="sub-submenu {% if current_submenu == 'sap_saida' %}show{% endif %}" id="saida-sub-sap">
-                        <a href="{% url 'logistica:saida_campo' 1 %}"
-                        class="{% if current_subsubmenu == 'saida_campo' %}active{% endif %}">
-                            Saída para Campo (EC01)
-                        </a>
-                        <a href="{% url 'logistica:cancelamento_saida_campo' 2 %}"
-                        class="{% if current_subsubmenu == 'saida_campo' %}active{% endif %}">
-                            Estorno Saida para Campo (EC02)
-                        </a>
-                        <a href="{% url 'logistica:consulta_result_ec' %}"
-                        class="{% if current_subsubmenu == 'consulta_saida_campo' %}active{% endif %}">
-                            Consulta Saída/Estorno Saída
-                        </a>
-                    </div>
-                </div>
                 {% if perms.logistica.lastmile_b2c %}
                 <h5 class="submenu-toggle {% if current_menu == 'lastmile' %}active{% endif %}" data-target="lastmile-sub">Lastmile (B2C)</h5>
                 <div class="sub-submenu {% if current_menu == 'lastmile' %}show{% endif %}" id="lastmile-sub">
@@ -208,6 +144,69 @@
                         <a href="{% url 'logistica:consulta_etiquetas' %}">Consulta de Etiquetas</a>
                     </div>
                     {% endif %}
+                </div>
+                {% endif %}
+                <h5 class="submenu-toggle {% if current_menu == 'SAP' %}active{% endif %}" data-target="sap-sub">SAP</h5>
+                <div class="sub-submenu {% if current_menu == 'SAP' %}show{% endif %}" id="sap-sub">
+                    <h5 class="submenu-toggle {% if current_submenu == 'sap_reserva' %}active{% endif %}" data-target="reserva-sub-sap">SAP - Reserva de equipamento</h5>
+                    <div class="sub-submenu {% if current_submenu == 'sap_reserva' %}show{% endif %}" id="reserva-sub-sap">
+                        <a href="{% url 'logistica:reserva_equip' 84 %}"
+                        class="{% if current_subsubmenu == 'reserva_equip' %}active{% endif %}">
+                            Reserva de equipamento (MA84)
+                        </a>
+                        <a href="{% url 'logistica:estorno_reserva' 85 %}"
+                        class="{% if current_subsubmenu == 'reserva_equip' %}active{% endif %}">
+                            Estorno Reserva de Equipamento (MA85)
+                        </a>
+                        <a href="{% url 'logistica:consulta_result_ma' %}"
+                        class="{% if current_subsubmenu == 'consulta_reserva_equip' %}active{% endif %}">
+                            Consulta Reserva/Estorno Reserva
+                        </a>
+                    </div>
+                    <h5 class="submenu-toggle {% if current_submenu == 'sap_saida' %}active{% endif %}" data-target="saida-sub-sap">SAP - Saída para Campo</h5>
+                    <div class="sub-submenu {% if current_submenu == 'sap_saida' %}show{% endif %}" id="saida-sub-sap">
+                        <a href="{% url 'logistica:saida_campo' 1 %}"
+                        class="{% if current_subsubmenu == 'saida_campo' %}active{% endif %}">
+                            Saída para Campo (EC01)
+                        </a>
+                        <a href="{% url 'logistica:cancelamento_saida_campo' 2 %}"
+                        class="{% if current_subsubmenu == 'saida_campo' %}active{% endif %}">
+                            Estorno Saida para Campo (EC02)
+                        </a>
+                        <a href="{% url 'logistica:consulta_result_ec' %}"
+                        class="{% if current_subsubmenu == 'consulta_saida_campo' %}active{% endif %}">
+                            Consulta Saída/Estorno Saída
+                        </a>
+                    </div>
+                </div>
+                {% if perms.logistica.checkin_principal %}
+                <h5 class="submenu-toggle {% if current_menu == 'checkin' %}active{% endif %}" data-target="checkin-sub">Check-In Geral</h5>
+                <div class="sub-submenu {% if current_menu == 'checkin' %}show{% endif %}" id="checkin-sub">
+                    <a href="{% url 'logistica:client_select' 'IN' %}"
+                    class="{% if current_submenu == 'iniciar_checkin' %}active{% endif %}">
+                        Iniciar Check-In
+                    </a>
+                    <a href="{% url 'logistica:client_consult' %}"
+                    class="{% if current_submenu == 'consulta_clientes' %}active{% endif %}">
+                        Consulta de Clientes
+                    </a>
+                    <a href="{% url 'logistica:product_create' %}"
+                    class="{% if current_submenu == 'consulta_produtos' %}active{% endif %}">
+                        Consulta de Produtos
+                    </a>
+                </div>
+                {% endif %}
+                {% if perms.logistica.checkout_principal %}
+                <h5 class="submenu-toggle {% if current_menu == 'checkout' %}active{% endif %}"
+                    data-target="checkout-sub">
+                    Check-Out Geral
+                </h5>
+                <div class="sub-submenu {% if current_menu == 'checkout' %}show{% endif %}"
+                    id="checkout-sub">
+                    <a href="{% url 'logistica:client_select' 'OUT' %}"
+                    class="{% if current_submenu == 'iniciar_checkout' %}active{% endif %}">
+                        Iniciar Check-Out
+                    </a>
                 </div>
                 {% endif %}
                 {% if perms.logistica.estoque %}
