@@ -1,6 +1,114 @@
-<!--SEMPRE QUE ADICIONAR OU REMOVER UMA ETAPA, AJUSTAR O CSS DO BACKGROUND ETAPAS PARA QUE FIQUE COM AS BORDAS-->
+<style>
+  #etapas-logistica {
+    width: 1350px;
+    margin-left: 65px;
+    margin-top: 60px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .background-etapas {
+    background: #f8f8f8;
+    padding: 10px 10px;
+    border-radius: 50px;
+  }
+
+  .etapas {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .etapa {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    background: #f1f1f1;
+    color: #555;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .etapa:hover {
+    background: #e0e0e0;
+  }
+
+  .etapa.ativa {
+    background: #28c628;
+    color: #fff;
+  }
+
+  .etapa::before {
+    content: attr(data-step);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: bold;
+  }
+
+  .etapa.ativa::before {
+    background: #fff;
+    color: #28c628;
+  }
+
+  .etapa+.etapa::after {
+    content: "";
+    position: absolute;
+    left: -16px;
+    width: 16px;
+    height: 2px;
+    background: #ccc;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+</style>
 
 <div id="etapas-logistica" class="etapas-container active">
+  <div class="background-etapas">
+    <div class="etapas">
+
+      <a class="etapa {% if etapa_ativa == 'pcp' %}ativa{% endif %}" data-step="1"
+        href="{% url 'logistica:pcp_simpl' 201 %}">
+        PCP
+      </a>
+
+      <a class="etapa {% if etapa_ativa == 'retorno_picking' %}ativa{% endif %}" data-step="2"
+        href="{% url 'logistica:retorno_picking_simpl' 202 %}">
+        Retorno do Picking
+      </a>
+
+      <a class="etapa {% if etapa_ativa == 'consolidacao' %}ativa{% endif %}" data-step="3"
+        href="{% url 'logistica:consolidacao_simpl' 203 %}">
+        Consolidação
+      </a>
+
+      <a class="etapa {% if etapa_ativa == 'expedicao' %}ativa{% endif %}" data-step="4"
+        href="{% url 'logistica:expedicao_simpl' 204 %}">
+        Expedição
+      </a>
+
+      <a class="etapa {% if etapa_ativa == 'consulta_etiquetas' %}ativa{% endif %}" data-step="5"
+        href="{% url 'logistica:consulta_etiquetas' %}">
+        Etiquetas
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<!--SEMPRE QUE ADICIONAR OU REMOVER UMA ETAPA, AJUSTAR O CSS DO BACKGROUND ETAPAS PARA QUE FIQUE COM AS BORDAS-->
+
+<!-- <div id="etapas-logistica" class="etapas-container active">
   <div class="background-etapas">
     <div class="etapas">
       <a class="etapa {% if etapa_ativa == 'pcp' %}ativa{% endif %}" href="{% url 'logistica:pcp_simpl' 201 %}">
@@ -26,4 +134,4 @@
       </a>
     </div>
   </div>
-</div>
+</div> -->
