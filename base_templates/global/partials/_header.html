@@ -318,9 +318,10 @@
                     </div>
                     {% endif %}
                 </div>
-                
-
                 {% endif %}
+                <a href="{% url 'logistica:index' %}" class="itens-sidebar {% if current_menu == 'home' %}active{% endif %}">
+                    <span class="texto-item">Lista de OS</span>
+                </a>
             </div>
         </div>
         {% endif %}
