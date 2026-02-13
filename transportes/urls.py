@@ -30,4 +30,7 @@ urlpatterns = [
     path("chamados/consulta-os/", consulta_os, name="consulta_os"),
     path("chamados/detalhe-os/<str:os>/", detalhe_os, name="detalhe_os"),
     path("chamados/lista-tecnicos/", lista_tecnicos, name="lista_tecnicos"),
+
+    path("detalhe-os/", detalhe_os, name="detalhe_os"),
+
 ]

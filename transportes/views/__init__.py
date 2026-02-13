@@ -10,3 +10,4 @@ from .views_controle_chamados.view_consulta_os_pend import consulta_os_pend
 from .views_controle_chamados.view_lista_tecnicos import lista_tecnicos
 from .views_controle_chamados.view_consulta_os import consulta_os
 from .views_controle_chamados.view_detalhe_os import detalhe_os
+from .views_transportes.view_detalhe_os import detalhe_os
