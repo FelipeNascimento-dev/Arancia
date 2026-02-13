@@ -21,6 +21,7 @@
 @import url(responsividade.css);
 @import url(campo.css);
 @import url(ferramentas.css);
+/* @import url(detalhe_os.css); */
 
 :root {
   --background-formularios: #fff;
@@ -56,6 +57,7 @@ body {
   align-items: flex-start;
   box-sizing: border-box;
   position: relative;
+  background-color: #fff;
 }
 
 .forma::before {
