@@ -210,7 +210,8 @@ def consulta_os_pend(request):
             "site_title": titulo,
             "botao_texto": "Consultar",
             "current_parent_menu": "transportes",
-            "current_menu": "controle_chamados",
-            "current_submenu": "consulta_os_pend",
+            "current_menu": "controle_campo",
+            "current_submenu": "controle_chamados",
+            "current_subsubmenu": "consulta_os_pend",
         },
     )
