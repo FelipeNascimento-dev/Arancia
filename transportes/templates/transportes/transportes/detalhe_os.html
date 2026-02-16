@@ -225,14 +225,46 @@
 
     .travel-card {
         padding: 0;
+        margin-bottom: 20px;
+        overflow: hidden;
+        transition: all 0.25s ease;
     }
 
     .travel-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 20px;
+        padding: 18px 20px;
         cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    .travel-header:hover {
+        background: #f4f6f9;
+    }
+
+    .travel-body {
+        max-height: 0;
+        overflow: hidden;
+        padding: 0 20px;
+        transition: all 0.3s ease;
+        opacity: 0;
+    }
+
+    .travel-card.active .travel-body {
+        max-height: 500px;
+        padding: 20px;
+        opacity: 1;
+    }
+
+    .travel-arrow {
+        font-size: 16px;
+        color: #999;
+        transition: transform 0.3s ease;
+    }
+
+    .travel-card.active .travel-arrow {
+        transform: rotate(180deg);
     }
 
     .travel-title {
@@ -244,11 +276,6 @@
         font-size: 13px;
         color: #666;
         margin-top: 4px;
-    }
-
-    .travel-body {
-        padding: 20px;
-        border-top: 1px solid #eee;
     }
 
     .travel-info-grid {
@@ -352,6 +379,7 @@
     .cotacao-card {
         width: 100%;
         max-width: 400px;
+        margin-bottom: 20px;
     }
 
     .cotacao-header {
@@ -749,11 +777,15 @@
                 <div class="icon-box"><i class="fa-solid fa-box" style="color: #74C0FC;"></i></div>
                 <div>
                     <div class="title">
-                        #26000000609
-                        <span class="badge badge-yellow">PENDENTE</span>
+                        #{{ payload.service_order.order_number }}
+                        <span class="badge badge-yellow">
+                            {{ payload.service_order.order_state.type }}
+                        </span>
                     </div>
                     <div class="subtitle">
-                        Tipo: Transporte de Equipamentos • Criado por: Davi • Data: 23/01/2026
+                        Tipo: {{ payload.service_order.order_type.description }}
+                        • Criado por: {{ payload.service_order.created_by }}
+                        • ID: {{ payload.service_order.id }}
                     </div>
                 </div>
             </div>
@@ -798,7 +830,9 @@
                 <div class="summary-icon blue"><i class="fa-solid fa-box" style="color: #74C0FC;"></i></div>
                 <div>
                     <div class="summary-title">Itens</div>
-                    <div class="summary-number">4</div>
+                    <div class="summary-number">
+                        {{ payload.items|length }}
+                    </div>
                     <div class="summary-sub">equipamentos</div>
                 </div>
             </div>
@@ -807,7 +841,9 @@
                 <div class="summary-icon orange"><i class="fa-solid fa-truck" style="color: #fc7474;"></i></div>
                 <div>
                     <div class="summary-title">Viagens</div>
-                    <div class="summary-number">1</div>
+                    <div class="summary-number">
+                        {{ payload.travels|length }}
+                    </div>
                     <div class="summary-sub">ativa</div>
                 </div>
             </div>
@@ -816,7 +852,9 @@
                 <div class="summary-icon green"><i class="fa-regular fa-file" style="color: #63E6BE;"></i></div>
                 <div>
                     <div class="summary-title">Cotações</div>
-                    <div class="summary-number">1</div>
+                    <div class="summary-number">
+                        {{ payload.quotes|length }}
+                    </div>
                     <div class="summary-sub">criada</div>
                 </div>
             </div>
@@ -825,7 +863,9 @@
                 <div class="summary-icon yellow"><i class="fa-solid fa-chart-line" style="color: #FFD43B;"></i></div>
                 <div>
                     <div class="summary-title">Status</div>
-                    <div class="summary-status">PENDENTE</div>
+                    <div class="summary-status">
+                        {{ payload.service_order.order_state.type }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -838,26 +878,28 @@
                     </div>
                     <div>
                         <div class="location-label">ORIGEM</div>
-                        <div class="location-name">TI (SPO)</div>
+                        <div class="location-name">
+                            {{ payload.origin.nome|upper }} ({{ payload.origin.cod_iata }})
+                        </div>
                     </div>
                 </div>
 
                 <div class="location-address">
-                    Rua Bonfim, 81<br>
-                    Maranhão - São Paulo/SP<br>
-                    CEP: 03073-010
+                    {{ payload.origin.logradouro }}, {{ payload.origin.numero }}<br>
+                    {{ payload.origin.bairro }} - {{ payload.origin.cidade }}/{{ payload.origin.estado }}<br>
+                    CEP: {{ payload.origin.CEP }}
                 </div>
 
                 <div class="divider"></div>
 
                 <div class="contact-line">
-                    <i class="fa-regular fa-user"></i> Igor Rocha
+                    <i class="fa-regular fa-user"></i> {{ payload.origin.responsavel }}
                 </div>
                 <div class="contact-line">
-                    <i class="fa-solid fa-phone"></i> (11) 97233-9756
+                    <i class="fa-solid fa-phone"></i> {{ payload.origin.telefone1 }}
                 </div>
                 <div class="contact-line">
-                    <i class="fa-regular fa-envelope"></i> ti@c-trends.com.br
+                    <i class="fa-regular fa-envelope"></i> {{ payload.origin.email }}
                 </div>
             </div>
 
@@ -872,28 +914,33 @@
                     </div>
                     <div>
                         <div class="location-label">DESTINO</div>
-                        <div class="location-name">TATUAPÉ (SPO)</div>
+                        <div class="location-name">
+                            {{ payload.destination.nome|upper }} ({{ payload.destination.cod_iata }})
+                        </div>
                     </div>
                 </div>
                 <div class="location-address">
-                    Rua Bonfim, 81 - Portão azul<br>
-                    Maranhão - São Paulo/SP<br>
-                    CEP: 03073-010
+                    {{ payload.destination.logradouro }}, {{ payload.destination.numero }}
+                    {% if payload.destination.complemento %}
+                        - {{ payload.destination.complemento }}
+                    {% endif %}<br>
+                    {{ payload.destination.bairro }} - {{ payload.destination.cidade }}/{{ payload.destination.estado }}<br>
+                    CEP: {{ payload.destination.CEP }}
                 </div>
                 <div class="divider"></div>
                 <div class="contact">
-                    <i class="fa-regular fa-user"></i> Bruno<br>
-                    <i class="fa-regular fa-envelope"></i> suportecd@c-trends.com.br
+                    <i class="fa-regular fa-user"></i> {{ payload.destination.responsavel }}<br>
+                    <i class="fa-regular fa-envelope"></i> {{ payload.destination.email }}
                 </div>
             </div>
         </div>
 
         <div class="tabs-wrapper">
             <div class="tabs">
-                <div class="tab active" data-tab="itens"><i class="fa-solid fa-box"></i> Itens (4)</div>
-                <div class="tab" data-tab="viagens"><i class="fa-solid fa-truck"></i> Viagens (1)</div>
-                <div class="tab" data-tab="cotacoes"><i class="fa-regular fa-file"></i> Cotações (1)</div>
-                <div class="tab" data-tab="eventos"><i class="fa-solid fa-chart-line"></i> Eventos (2)</div>
+                <div class="tab active" data-tab="itens"><i class="fa-solid fa-box"></i> Itens ({{ payload.items|length }})</div>
+                <div class="tab" data-tab="viagens"><i class="fa-solid fa-truck"></i> Viagens ({{ payload.travels|length }})</div>
+                <div class="tab" data-tab="cotacoes"><i class="fa-regular fa-file"></i> Cotações ({{ payload.quotes|length }})</div>
+                <div class="tab" data-tab="eventos"><i class="fa-solid fa-chart-line"></i> Eventos ({{ payload.service_order.service_order_events|length }})</div>
             </div>
         </div>
 
@@ -909,41 +956,82 @@
                                 <th>Status</th>
                                 <th>Viagem</th>
                                 <th>Prazo</th>
+                                <th>Sub-Itens</th>
+                                <th>Eventos</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>SN-001</td>
-                                <td>Notebook Dell XPS</td>
-                                <td>Equipamento</td>
-                                <td><span class="badge badge-yellow">Pendente</span></td>
-                                <td>-</td>
-                                <td>07/02</td>
-                            </tr>
-                            <tr>
-                                <td>SN-002</td>
-                                <td>Monitor LG 27"</td>
-                                <td>Periférico</td>
-                                <td><span class="badge badge-yellow">Pendente</span></td>
-                                <td>-</td>
-                                <td>23/01</td>
-                            </tr>
+                            {% for item in payload.items %}
+                                <tr>
+                                    <td>{{ item.serial_number }}</td>
+                                    <td>{{ item.product_model }}</td>
+                                    <td>{{ item.product_type }}</td>
+
+                                    <td>
+                                        <span class="badge badge-yellow">
+                                            {{ payload.service_order.order_state.type }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        {% if item.travel_order_id %}
+                                            {{ item.travel_order_id }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {{ item.created_at|slice:":10" }}
+                                    </td>
+
+                                    <td>
+                                        {% if item.sub_itens %}
+                                            <button class="btn-secondary btn-filhos"
+                                                    onclick="abrirModalFilhos({{ item.id }})">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if item.item_events %}
+                                            <button class="btn-secondary"
+                                                    onclick="abrirModalEventosItem({{ item.id }})">
+                                                Ver ({{ item.item_events|length }})
+                                            </button>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
 
             <div class="tab-pane" id="viagens">
+               {% for travel in payload.travels %}
                 <div class="os-card travel-card">
-                    <div class="travel-header">
+
+                    <div class="travel-header" onclick="toggleTravel(this)">
                         <div>
                             <div class="travel-title">
-                                Viagem #67
-                                <span class="badge badge-blue">Em Andamento</span>
+                                Viagem #{{ travel.id }}
+                                <span class="badge badge-blue">
+                                    Status {{ travel.status_id }}
+                                </span>
                             </div>
                             <div class="travel-sub">
-                                Iniciada em 23/01/2026 às 16:37
+                                Criada em {{ travel.created_at|slice:":19" }}
                             </div>
+                        </div>
+
+                        <div class="travel-arrow">
+                            <i class="fa-solid fa-chevron-down"></i>
                         </div>
                     </div>
 
@@ -951,81 +1039,100 @@
                         <div class="travel-info-grid">
                             <div>
                                 <div class="info-label">Motorista</div>
-                                <div class="info-value">João da Silva</div>
+                                <div class="info-value">{{ travel.driver_id }}</div>
                             </div>
                             <div>
                                 <div class="info-label">Transportadora</div>
-                                <div class="info-value">LogiTrans</div>
-                            </div>
-                            <div>
-                                <div class="info-label">Início</div>
-                                <div class="info-value">23/01/2026 16:37</div>
+                                <div class="info-value">{{ travel.carrier_id }}</div>
                             </div>
                             <div>
                                 <div class="info-label">Valor</div>
-                                <div class="info-value">R$ 12.00</div>
+                                <div class="info-value">
+                                    R$ {{ travel.price_charged }}
+                                </div>
                             </div>
                         </div>
+
+                        {% if travel.travel_events %}
+                        <div class="events-title">Eventos da Viagem</div>
+
+                        {% for ev in travel.travel_events %}
+                            <div class="event-item">
+                                <div class="event-dot"></div>
+                                <div>
+                                    {{ ev.description }}
+                                    <div class="event-author">
+                                        por {{ ev.created_by }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        {% endif %}
+
                     </div>
                 </div>
+                {% endfor %}
             </div>
 
             <div class="tab-pane" id="cotacoes">
+                {% for quote in payload.quotes %}
                 <div class="os-card cotacao-card">
                     <div class="cotacao-header">
-                        <div class="cotacao-icon green"><i class="fa-regular fa-file"></i></div>
                         <div>
-                            <div class="cotacao-title">Transportadora Express</div>
-                            <div class="cotacao-sub">Transportadora</div>
+                            <div class="cotacao-title">
+                                Cotação #{{ quote.id }}
+                            </div>
+                            <div class="cotacao-sub">
+                                Criado por {{ quote.created_by }}
+                            </div>
                         </div>
                     </div>
 
                     <div class="cotacao-grid">
                         <div>
                             <div class="info-label">Peso</div>
-                            <div class="info-value">10kg</div>
+                            <div class="info-value">{{ quote.total_weight }} kg</div>
                         </div>
+
                         <div>
                             <div class="info-label">Volume</div>
-                            <div class="info-value">10</div>
+                            <div class="info-value">{{ quote.total_volume }}</div>
                         </div>
+
                         <div>
                             <div class="info-label">Valor</div>
-                            <div class="info-value green-text">R$ 10.00</div>
+                            <div class="info-value green-text">
+                                R$ {{ quote.estimated_price }}
+                            </div>
                         </div>
+
                         <div>
                             <div class="info-label">Prazo</div>
-                            <div class="info-value">10 dias</div>
+                            <div class="info-value">
+                                {{ quote.estimated_deadline }} dias
+                            </div>
                         </div>
                     </div>
-
                     <button class="btn-success">✔ Aprovar Cotação</button>
                 </div>
+                {% endfor %}
             </div>
 
             <div class="tab-pane" id="eventos">
                 <div class="os-card">
                     <div class="timeline-title">Timeline de Eventos</div>
                     <div class="timeline">
+                        {% for event in payload.service_order.service_order_events %}
                         <div class="timeline-item">
                             <div class="timeline-dot"></div>
                             <div class="timeline-card">
-                                Foi adicionada uma cotação à OS.
+                                {{ event.description }}
                                 <div class="timeline-meta">
-                                    por Sistema • 23/01/2026 às 17:15
+                                    por {{ event.created_by }}
                                 </div>
                             </div>
                         </div>
-
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-card">
-                                OS foi criada e aguarda cotação
-                                <div class="timeline-meta">
-                                    por Davi • 23/01/2026 às 16:09
-                                </div>
-                            </div>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -1176,6 +1283,35 @@
         </div>
     </div>
 </div>
+<!-- MODAL PARA SUB-ITENS -->
+<div class="os-modal-overlay" id="modalFilhos">
+    <div class="os-modal" style="width:600px;">
+        <div class="os-modal-header">
+            <div class="os-modal-title">
+                Seriais Filhos
+            </div>
+            <div class="os-modal-close" onclick="fecharModalFilhos()">✕</div>
+        </div>
+
+        <div class="os-modal-body" id="modalFilhosBody">
+        </div>
+    </div>
+</div>
+<!-- MODAL PARA EVENTOS -->
+<div class="os-modal-overlay" id="modalEventosItem">
+    <div class="os-modal" style="width:650px;">
+        <div class="os-modal-header">
+            <div class="os-modal-title">
+                Histórico do Item
+            </div>
+            <div class="os-modal-close" onclick="fecharModalEventosItem()">✕</div>
+        </div>
+
+        <div class="os-modal-body" id="modalEventosItemBody">
+        </div>
+    </div>
+</div>
+
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -1248,6 +1384,140 @@
                 }
             });
         }
+
+        const modalFilhos = document.getElementById("modalFilhos");
+        const modalFilhosBody = document.getElementById("modalFilhosBody");
+
+        const filhosData = {
+            {% for item in payload.items %}
+                {% if item.sub_itens %}
+                    "{{ item.id }}": [
+                        {% for sub in item.sub_itens %}
+                            {
+                                serial: "{{ sub.serial_number }}",
+                                model: "{{ sub.product_model }}",
+                                type: "{{ sub.product_type }}"
+                            },
+                        {% endfor %}
+                    ],
+                {% endif %}
+            {% endfor %}
+        };
+
+        window.abrirModalFilhos = function(itemId) {
+
+            const filhos = filhosData[itemId];
+
+            if (!filhos) return;
+
+            let html = `
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#0e76bd; color:white;">
+                            <th style="padding:10px;">Serial</th>
+                            <th style="padding:10px;">Modelo</th>
+                            <th style="padding:10px;">Tipo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            filhos.forEach(f => {
+                html += `
+                    <tr style="border-bottom:1px solid #eee;">
+                        <td style="padding:10px;">${f.serial}</td>
+                        <td style="padding:10px;">${f.model}</td>
+                        <td style="padding:10px;">${f.type}</td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+
+            modalFilhosBody.innerHTML = html;
+            modalFilhos.classList.add("show");
+        };
+
+        window.fecharModalFilhos = function() {
+            modalFilhos.classList.remove("show");
+        };
+
+        modalFilhos.addEventListener("click", function(e) {
+            if (e.target === modalFilhos) {
+                fecharModalFilhos();
+            }
+        });
+
+        window.toggleTravel = function(element) {
+
+            const card = element.closest(".travel-card");
+
+            // Fecha outras viagens abertas (opcional)
+            document.querySelectorAll(".travel-card").forEach(c => {
+                if (c !== card) {
+                    c.classList.remove("active");
+                }
+            });
+
+            card.classList.toggle("active");
+        };
+
+        const eventosItemData = {
+            {% for item in payload.items %}
+                {% if item.item_events %}
+                    "{{ item.id }}": [
+                        {% for ev in item.item_events %}
+                            {
+                                description: "{{ ev.description|escapejs }}",
+                                created_by: "{{ ev.created_by }}",
+                                id: "{{ ev.id }}"
+                            },
+                        {% endfor %}
+                    ],
+                {% endif %}
+            {% endfor %}
+        };
+
+        const modalEventosItem = document.getElementById("modalEventosItem");
+        const modalEventosItemBody = document.getElementById("modalEventosItemBody");
+
+        window.abrirModalEventosItem = function(itemId) {
+
+            const eventos = eventosItemData[itemId];
+
+            if (!eventos) return;
+
+            let html = `<div class="timeline">`;
+
+            eventos.forEach(ev => {
+                html += `
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-card">
+                            ${ev.description}
+                            <div class="timeline-meta">
+                                por ${ev.created_by}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+
+            modalEventosItemBody.innerHTML = html;
+            modalEventosItem.classList.add("show");
+        };
+
+        window.fecharModalEventosItem = function() {
+            modalEventosItem.classList.remove("show");
+        };
+
+        modalEventosItem.addEventListener("click", function(e) {
+            if (e.target === modalEventosItem) {
+                fecharModalEventosItem();
+            }
+        });
 
     });
 </script>
