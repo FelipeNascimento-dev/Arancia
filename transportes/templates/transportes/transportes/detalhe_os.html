@@ -180,18 +180,10 @@
         border-bottom: 1px solid #eee;
     }
 
-    th,
-    td {
-        text-align: left;
-    }
-
-    th:nth-child(4),
-    th:nth-child(5),
-    th:nth-child(6),
-    td:nth-child(4),
-    td:nth-child(5),
-    td:nth-child(6) {
+    table th,
+    table td {
         text-align: center;
+        vertical-align: middle;
     }
 
     .badge {
@@ -453,8 +445,8 @@
         background: #0e76bd;
         border-radius: 50%;
         position: absolute;
-        left: -2px;
-        top: 6px;
+        left: -16px;
+        top: 28px;
     }
 
     .timeline-card {
@@ -768,6 +760,26 @@
     .os-container {
         display: block !important;
     }
+
+    .btn-subitens {
+        background-color: transparent;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+        color: black;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+    .btn-events{
+        background-color: transparent;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+        color: black;
+        cursor: pointer;
+        font-size: 15px;
+    }
 </style>
 
 <div class="os-container">
@@ -987,7 +999,7 @@
 
                                     <td>
                                         {% if item.sub_itens %}
-                                            <button class="btn-secondary btn-filhos"
+                                            <button class="btn-subitens"
                                                     onclick="abrirModalFilhos({{ item.id }})">
                                                 <i class="fa-solid fa-eye"></i>
                                             </button>
@@ -998,9 +1010,9 @@
 
                                     <td>
                                         {% if item.item_events %}
-                                            <button class="btn-secondary"
+                                            <button class="btn-events"
                                                     onclick="abrirModalEventosItem({{ item.id }})">
-                                                Ver ({{ item.item_events|length }})
+                                                <i class="fa-solid fa-clock"></i>
                                             </button>
                                         {% else %}
                                             -
@@ -1068,7 +1080,6 @@
                             </div>
                         {% endfor %}
                         {% endif %}
-
                     </div>
                 </div>
                 {% endfor %}
