@@ -129,6 +129,12 @@ def _handle_add_serial(request, code_info, pedido_atual, form, menu_context):
     pedido_atual = _force_pedido(request)
 
     serial = (request.POST.get("serial") or "").strip()
+    user = request.user
+    sales_channel = user.designacao.informacao_adicional.sales_channel
+    if sales_channel == 'all':
+        location_id = 0
+    else:
+        location_id = user.designacao.informacao_adicional_id
     show_modal = False
     modal_serial = None
     modal_chip = ""
@@ -140,7 +146,7 @@ def _handle_add_serial(request, code_info, pedido_atual, form, menu_context):
 
         if serial not in serials:
 
-            url = f"{STOCK_API_URL}/v1/items/delivery/{serial}?client=cielo"
+            url = f"{STOCK_API_URL}/v1/items/delivery/{serial}?client=cielo&location_id={location_id}"
 
             api_client = RequestClient(
                 url=url,
