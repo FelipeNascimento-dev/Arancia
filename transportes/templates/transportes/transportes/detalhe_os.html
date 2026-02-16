@@ -3,10 +3,11 @@
 {% block content %}
 
 <style>
-    .container {
-        margin-left: 50px; /* largura real da sidebar */
-        margin-top: 20px;
-        width: calc(100% - 80px);
+    .os-container {
+        margin-left: 50px;
+        margin-top: 50px;
+        /* width: calc(100% - 80px); */
+        height: auto;
     }
 
     .card {
@@ -24,7 +25,7 @@
         height: 250px;
         min-width: 625px;
     }
-    
+
     .content-wrapper {
         padding: 30px;
     }
@@ -152,24 +153,6 @@
         text-align: center;
         font-size: 24px;
         color: #bbb;
-    }
-
-    .tabs {
-        display: flex;
-        gap: 20px;
-        margin-bottom: 20px;
-    }
-
-    .tab {
-        padding: 8px 12px;
-        cursor: pointer;
-        font-weight: 500;
-        color: #666;
-    }
-
-    .tab.active {
-        color: #1e90ff;
-        border-bottom: 2px solid #1e90ff;
     }
 
     .table-card {
@@ -367,7 +350,8 @@
     }
 
     .cotacao-card {
-        width: 400px;
+        width: 100%;
+        max-width: 400px;
     }
 
     .cotacao-header {
@@ -597,6 +581,7 @@
         justify-content: center;
         color: #1e90ff;
         font-size: 16px;
+        margin-left: 15px;
     }
 
 
@@ -724,9 +709,40 @@
         color: #666;
         margin-bottom: 20px;
     }
+
+    .tab-content {
+        width: 100%;
+        overflow: visible;
+    }
+
+    .tab-pane {
+        width: 100%;
+    }
+
+    .tab-content {
+        display: block !important;
+        width: 100%;
+    }
+
+    .tab-pane {
+        display: none;
+        width: 100%;
+    }
+
+    .tab-pane.active {
+        display: block !important;
+    }
+
+    .content-wrapper {
+        display: block !important;
+    }
+
+    .os-container {
+        display: block !important;
+    }
 </style>
 
-<div class="container">
+<div class="os-container">
     <div class="content-wrapper">
         <div class="card header">
             <div class="header-left">
@@ -883,7 +899,7 @@
 
         <div class="tab-content">
             <div class="tab-pane active" id="itens">
-                <div class="card table-card">
+                <div class="os-card table-card">
                     <table>
                         <thead>
                             <tr>
@@ -918,7 +934,7 @@
             </div>
 
             <div class="tab-pane" id="viagens">
-                <div class="card travel-card">
+                <div class="os-card travel-card">
                     <div class="travel-header">
                         <div>
                             <div class="travel-title">
@@ -955,7 +971,7 @@
             </div>
 
             <div class="tab-pane" id="cotacoes">
-                <div class="card cotacao-card">
+                <div class="os-card cotacao-card">
                     <div class="cotacao-header">
                         <div class="cotacao-icon green"><i class="fa-regular fa-file"></i></div>
                         <div>
@@ -988,7 +1004,7 @@
             </div>
 
             <div class="tab-pane" id="eventos">
-                <div class="card">
+                <div class="os-card">
                     <div class="timeline-title">Timeline de Eventos</div>
                     <div class="timeline">
                         <div class="timeline-item">
@@ -1014,7 +1030,7 @@
                 </div>
             </div>
         </div>
-    </div>    
+    </div>
 </div>
 
 <!-- MODAIS -->
@@ -1024,7 +1040,7 @@
     <div class="modal">
         <div class="modal-header">
             <div class="modal-title">
-                🚚 Nova Viagem
+                Nova Viagem
             </div>
             <div class="modal-close" onclick="fecharModal()">✕</div>
         </div>
@@ -1101,7 +1117,7 @@
     <div class="modal modal-lg">
         <div class="modal-header">
             <div class="modal-title">
-                💲 Nova Cotação
+                Nova Cotação
             </div>
             <div class="modal-close" onclick="fecharModalCotacao()">✕</div>
         </div>
@@ -1163,78 +1179,77 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        const tabs = document.querySelectorAll(".tabs .tab");
+        const panes = document.querySelectorAll(".tab-content .tab-pane");
 
-        const tabButtons = document.querySelectorAll(".tabs-wrapper .tab");
-        const panes = document.querySelectorAll(".tab-pane");
+        tabs.forEach(tab => {
+            tab.addEventListener("click", function () {
 
-        tabButtons.forEach(tab => {
-            tab.addEventListener("click", () => {
+                const targetId = this.dataset.tab;
 
-                tabButtons.forEach(t => t.classList.remove("active"));
+                tabs.forEach(t => t.classList.remove("active"));
                 panes.forEach(p => p.classList.remove("active"));
 
-                tab.classList.add("active");
+                this.classList.add("active");
 
-                const target = tab.dataset.tab;
-                const pane = document.getElementById(target);
-
-                if (pane) {
-                    pane.classList.add("active");
+                const targetPane = document.getElementById(targetId);
+                if (targetPane) {
+                    targetPane.classList.add("active");
                 }
             });
         });
 
-    });
-
-    document.addEventListener("DOMContentLoaded", function () {
-
         const toggle = document.querySelector(".dropdown-toggle");
         const menu = document.querySelector(".dropdown-menu");
 
-        toggle.addEventListener("click", function (e) {
-            e.stopPropagation();
-            menu.classList.toggle("show");
-        });
+        if (toggle && menu) {
+            toggle.addEventListener("click", function (e) {
+                e.stopPropagation();
+                menu.classList.toggle("show");
+            });
 
-        document.addEventListener("click", function () {
-            menu.classList.remove("show");
-        });
-
-    });
-
-    // SCRIPT PARA ABRIR MODAL DE CRIAR VIAGEM 
-
-    function abrirModal() {
-        document.getElementById("modalNovaViagem").classList.add("show");
-    }
-
-    function fecharModal() {
-        document.getElementById("modalNovaViagem").classList.remove("show");
-    }
-
-    document.addEventListener("click", function (e) {
-        const modal = document.getElementById("modalNovaViagem");
-        if (e.target === modal) {
-            fecharModal();
+            document.addEventListener("click", function () {
+                menu.classList.remove("show");
+            });
         }
-    });
 
-    // SCRIPT PARA ABRIR MODAL DE CRIAR COTAÇÃO
+        const modalViagem = document.getElementById("modalNovaViagem");
 
-    function abrirModalCotacao() {
-        document.getElementById("modalNovaCotacao").classList.add("show");
-    }
+        window.abrirModal = function () {
+            modalViagem.classList.add("show");
+        };
 
-    function fecharModalCotacao() {
-        document.getElementById("modalNovaCotacao").classList.remove("show");
-    }
+        window.fecharModal = function () {
+            modalViagem.classList.remove("show");
+        };
 
-    document.addEventListener("click", function (e) {
-        const modal = document.getElementById("modalNovaCotacao");
-        if (e.target === modal) {
-            fecharModalCotacao();
+        if (modalViagem) {
+            modalViagem.addEventListener("click", function (e) {
+                if (e.target === modalViagem) {
+                    fecharModal();
+                }
+            });
         }
-    });
 
+        const modalCotacao = document.getElementById("modalNovaCotacao");
+
+        window.abrirModalCotacao = function () {
+            modalCotacao.classList.add("show");
+        };
+
+        window.fecharModalCotacao = function () {
+            modalCotacao.classList.remove("show");
+        };
+
+        if (modalCotacao) {
+            modalCotacao.addEventListener("click", function (e) {
+                if (e.target === modalCotacao) {
+                    fecharModalCotacao();
+                }
+            });
+        }
+
+    });
 </script>
+
 {% endblock content %}

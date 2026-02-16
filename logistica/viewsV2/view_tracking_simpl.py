@@ -156,11 +156,8 @@ def _handle_add_serial(request, code_info, pedido_atual, form, menu_context):
                 messages.error(request, "Erro ao consultar o serial na PA.")
                 return redirect(request.path)
 
-            if resp_api.get("status") != "IN_DEPOT":
-                messages.error(
-                    request,
-                    f"Serial {serial} não está disponível em estoque na PA."
-                )
+            if 'detail' in resp_api:
+                messages.error(request, resp_api.get('detail'))
                 return redirect(request.path)
 
             serials.append(serial)
