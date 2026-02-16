@@ -10,7 +10,7 @@
         height: auto;
     }
 
-    .card {
+    .os-card {
         background: white;
         border-radius: 12px;
         padding: 20px;
@@ -588,7 +588,7 @@
     /* MODAL PARA CRIAR VIAGEM */
 
     /* MODAL */
-    .modal-overlay {
+    .os-modal-overlay {
         position: fixed;
         inset: 0;
         background: rgba(0, 0, 0, 0.5);
@@ -598,11 +598,11 @@
         z-index: 2000;
     }
 
-    .modal-overlay.show {
+    .os-modal-overlay.show {
         display: flex;
     }
 
-    .modal {
+    .os-modal {
         background: white;
         width: 650px;
         border-radius: 12px;
@@ -622,7 +622,7 @@
         }
     }
 
-    .modal-header {
+    .os-modal-header {
         padding: 18px 20px;
         display: flex;
         justify-content: space-between;
@@ -630,18 +630,18 @@
         border-bottom: 1px solid #eee;
     }
 
-    .modal-title {
+    .os-modal-title {
         font-weight: 600;
         font-size: 18px;
     }
 
-    .modal-close {
+    .os-modal-close {
         cursor: pointer;
         font-size: 18px;
         color: #777;
     }
 
-    .modal-body {
+    .os-modal-body {
         padding: 20px;
     }
 
@@ -692,7 +692,7 @@
         color: #777;
     }
 
-    .modal-footer {
+    .os-modal-footer {
         padding: 15px 20px;
         border-top: 1px solid #eee;
         display: flex;
@@ -700,11 +700,11 @@
         gap: 10px;
     }
 
-    .modal-lg {
+    .os-modal-lg {
         width: 720px;
     }
 
-    .modal-description {
+    .os-modal-description {
         font-size: 14px;
         color: #666;
         margin-bottom: 20px;
@@ -744,7 +744,7 @@
 
 <div class="os-container">
     <div class="content-wrapper">
-        <div class="card header">
+        <div class="os-card header">
             <div class="header-left">
                 <div class="icon-box"><i class="fa-solid fa-box" style="color: #74C0FC;"></i></div>
                 <div>
@@ -794,7 +794,7 @@
         </div>
 
         <div class="summary-grid">
-            <div class="card summary">
+            <div class="os-card summary">
                 <div class="summary-icon blue"><i class="fa-solid fa-box" style="color: #74C0FC;"></i></div>
                 <div>
                     <div class="summary-title">Itens</div>
@@ -803,7 +803,7 @@
                 </div>
             </div>
 
-            <div class="card summary">
+            <div class="os-card summary">
                 <div class="summary-icon orange"><i class="fa-solid fa-truck" style="color: #fc7474;"></i></div>
                 <div>
                     <div class="summary-title">Viagens</div>
@@ -812,7 +812,7 @@
                 </div>
             </div>
 
-            <div class="card summary">
+            <div class="os-card summary">
                 <div class="summary-icon green"><i class="fa-regular fa-file" style="color: #63E6BE;"></i></div>
                 <div>
                     <div class="summary-title">Cotações</div>
@@ -821,7 +821,7 @@
                 </div>
             </div>
 
-            <div class="card summary">
+            <div class="os-card summary">
                 <div class="summary-icon yellow"><i class="fa-solid fa-chart-line" style="color: #FFD43B;"></i></div>
                 <div>
                     <div class="summary-title">Status</div>
@@ -1036,16 +1036,16 @@
 <!-- MODAIS -->
 
 <!-- MODAL PARA CRIAR VIAGEM -->
-<div class="modal-overlay" id="modalNovaViagem">
-    <div class="modal">
-        <div class="modal-header">
-            <div class="modal-title">
+<div class="os-modal-overlay" id="modalNovaViagem">
+    <div class="os-modal">
+        <div class="os-modal-header">
+            <div class="os-modal-title">
                 Nova Viagem
             </div>
-            <div class="modal-close" onclick="fecharModal()">✕</div>
+            <div class="os-modal-close" onclick="fecharModal()">✕</div>
         </div>
 
-        <div class="modal-body">
+        <div class="os-modal-body">
             <div class="form-grid">
                 <div class="form-group">
                     <label>Motorista</label>
@@ -1106,24 +1106,24 @@
                 </label>
             </div>
         </div>
-        <div class="modal-footer">
+        <div class="os-modal-footer">
             <button class="btn-secondary" onclick="fecharModal()">Cancelar</button>
             <button class="btn-primary">Criar Viagem</button>
         </div>
     </div>
 </div>
 <!-- MODAL PARA CRIAR COTAÇÃO -->
-<div class="modal-overlay" id="modalNovaCotacao">
-    <div class="modal modal-lg">
-        <div class="modal-header">
-            <div class="modal-title">
+<div class="os-modal-overlay" id="modalNovaCotacao">
+    <div class="os-modal modal-lg">
+        <div class="os-modal-header">
+            <div class="os-modal-title">
                 Nova Cotação
             </div>
-            <div class="modal-close" onclick="fecharModalCotacao()">✕</div>
+            <div class="os-modal-close" onclick="fecharModalCotacao()">✕</div>
         </div>
 
-        <div class="modal-body">
-            <div class="modal-description">
+        <div class="os-modal-body">
+            <div class="os-modal-description">
                 Preencha os dados para criar uma nova cotação para a OS #609
             </div>
 
@@ -1170,7 +1170,7 @@
                 </div>
             </div>
         </div>
-        <div class="modal-footer">
+        <div class="os-modal-footer">
             <button class="btn-secondary" onclick="fecharModalCotacao()">Cancelar</button>
             <button class="btn-primary">Criar Cotação</button>
         </div>
