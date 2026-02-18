@@ -1,8 +1,9 @@
+from urllib import request
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
-from logistica.models import Group, GroupAditionalInformation
+from logistica.models import Group, GroupAditionalInformation, UserDesignation
 from setup.local_settings import API_BASE
 from utils.request import RequestClient
 from ...forms import ConsultaOSPendForm
@@ -31,19 +32,69 @@ def get_bases_from_arancia_pa():
     return sorted(bases, key=lambda x: x[1])
 
 
+def usuario_pode_ver_todas_bases(user):
+    return user.has_perm("transportes.controle_chamados")
+
+
+# def get_base_usuario(user):
+#     try:
+#         user_groups = user.groups.all()
+
+#         gai = UserDesignation.objects.filter(
+#             group__in=user_groups
+#         ).first()
+
+#         if gai:
+#             return f"PA_{gai.cod_iata}"
+
+#         return None
+
+#     except Exception:
+#         return None
+
+def get_base_usuario(user):
+    try:
+        ud = user.designacao
+
+        if ud and ud.informacao_adicional:
+            gai = ud.informacao_adicional
+
+            return {
+                "value": f"PA_{gai.cod_iata}",
+                "label": gai.nome
+            }
+
+        return None
+
+    except Exception:
+        return None
+
+
 @csrf_protect
 @login_required(login_url='logistica:login')
 def consulta_os_pend(request):
     titulo = 'Consulta de OS Pendentes'
     bases = get_bases_from_arancia_pa()
+    pode_ver_todas = usuario_pode_ver_todas_bases(request.user)
+    base_usuario = get_base_usuario(request.user)
     tecnicos_choices = []
     itens = []
     page = 1
     has_next = False
     has_prev = False
 
+    base_usuario_data = get_base_usuario(request.user)
+
+    if base_usuario_data:
+        base_usuario_value = base_usuario_data["value"]
+        base_usuario_label = base_usuario_data["label"]
+    else:
+        base_usuario_value = None
+        base_usuario_label = None
+
     if request.method == "POST":
         base_selecionada = request.POST.get("base")
+
         page = int(request.POST.get("page", 1))
         offset = (page - 1) * PAGE_SIZE
 
@@ -77,7 +128,16 @@ def consulta_os_pend(request):
                 messages.error(request, f"Erro ao buscar técnicos: {e}")
 
         form = ConsultaOSPendForm(request.POST, nome_form=titulo)
-        form.fields["base"].choices = [("", "Selecione a base")] + bases
+        if pode_ver_todas:
+            form.fields["base"].choices = [("", "Selecione a base")] + bases
+        else:
+            if base_usuario:
+                form.fields["base"].choices = [
+                    ("", "Selecione a base"),
+                    (base_usuario_value, base_usuario_label),
+                ]
+            else:
+                form.fields["base"].choices = [("", "Selecione a base")]
         form.fields["tecnico"].choices = tecnicos_choices
 
         if not tecnicos_choices:
@@ -87,7 +147,10 @@ def consulta_os_pend(request):
             )
 
         if "exportar" in request.POST:
-            base = request.POST.get("base")
+            if pode_ver_todas:
+                base = request.POST.get("base")
+            else:
+                base = base_usuario_value
             tecnico_uid = request.POST.get("tecnico")
             tecnico_uid = f'&uid={tecnico_uid}' if tecnico_uid not in (
                 '', 'None') else ''
@@ -138,6 +201,11 @@ def consulta_os_pend(request):
                 data_final = data_inicial
 
             cod_base = "CTBSEQ"
+
+            if pode_ver_todas:
+                base = form.cleaned_data.get("base")
+            else:
+                base = base_usuario_value
 
             try:
                 url = f"{API_BASE}/v3/controle_campo/chamados/{cod_base}"
@@ -195,7 +263,16 @@ def consulta_os_pend(request):
 
     else:
         form = ConsultaOSPendForm(nome_form=titulo)
-        form.fields["base"].choices = [("", "Selecione a base")] + bases
+        if pode_ver_todas:
+            form.fields["base"].choices = [("", "Selecione a base")] + bases
+        else:
+            if base_usuario:
+                form.fields["base"].choices = [
+                    ("", "Selecione a base"),
+                    (base_usuario_value, base_usuario_label),
+                ]
+            else:
+                form.fields["base"].choices = [("", "Selecione a base")]
         form.fields["tecnico"].choices = []
 
     return render(

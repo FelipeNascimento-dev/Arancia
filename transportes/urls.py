@@ -5,7 +5,7 @@ from transportes.views.iframe import painel_Dashboard_view
 from transportes.views.scripting_view import scripting_view
 from transportes.views.view_panel_technical import registrar_tratamento_view
 from .views import extrair_enderecos_view, gerar_etiquetas_view, dashboard_view, criar_user_view, ver_usuario_view, mover_rota_view, ordenar_rota_view
-from .views import consulta_os_pend, lista_tecnicos, consulta_os, detalhe_os
+from .views import consulta_os_pend, lista_tecnicos, consulta_os, detalhe_os, detalhe_os_transp
 
 app_name = 'transportes'
 
@@ -28,9 +28,9 @@ urlpatterns = [
     path("chamados/consulta-os/pendentes/",
          consulta_os_pend, name="consulta_os_pend"),
     path("chamados/consulta-os/", consulta_os, name="consulta_os"),
-    path("chamados/detalhe-os/<str:os>/", detalhe_os, name="detalhe_os"),
+    path("chamados/detalhe-os/<path:os>/", detalhe_os, name="detalhe_os"),
     path("chamados/lista-tecnicos/", lista_tecnicos, name="lista_tecnicos"),
 
-    path("detalhe-os/", detalhe_os, name="detalhe_os"),
+    path("detalhe-os/", detalhe_os_transp, name="detalhe_os_transp"),
 
 ]

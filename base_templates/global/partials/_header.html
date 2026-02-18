@@ -296,7 +296,7 @@
                             Ordenar Rotas
                         </a>
                     </div>
-                    {% if perms.transportes.controle_chamados %}
+                    
                     <h5 class="submenu-toggle {% if current_submenu == 'controle_chamados' %}active{% endif %}"
                         data-target="controle-chamados">
                         Controle de Chamados
@@ -316,7 +316,7 @@
                             Lista de Técnicos
                         </a>
                     </div>
-                    {% endif %}
+                    
                 </div>
                 {% endif %}
                 <a href="{% url 'logistica:index' %}" class="itens-sidebar {% if current_menu == 'home' %}active{% endif %}">
