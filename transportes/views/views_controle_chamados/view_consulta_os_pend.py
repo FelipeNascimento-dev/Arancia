@@ -36,22 +36,6 @@ def usuario_pode_ver_todas_bases(user):
     return user.has_perm("transportes.controle_chamados")
 
 
-# def get_base_usuario(user):
-#     try:
-#         user_groups = user.groups.all()
-
-#         gai = UserDesignation.objects.filter(
-#             group__in=user_groups
-#         ).first()
-
-#         if gai:
-#             return f"PA_{gai.cod_iata}"
-
-#         return None
-
-#     except Exception:
-#         return None
-
 def get_base_usuario(user):
     try:
         ud = user.designacao
