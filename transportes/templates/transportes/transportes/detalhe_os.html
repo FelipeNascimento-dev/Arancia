@@ -424,7 +424,13 @@
         padding-left: 20px;
     }
 
-    .timeline::before {
+    .timeline-item {
+        border-left: 2px solid #ddd;
+        padding-left: 15px;
+        margin-left: 5px;
+    }
+
+    /* .timeline::before {
         content: "";
         position: absolute;
         left: 8px;
@@ -432,7 +438,7 @@
         bottom: 0;
         width: 2px;
         background: #ddd;
-    }
+    } */
 
     .timeline-item {
         position: relative;
@@ -445,7 +451,7 @@
         background: #0e76bd;
         border-radius: 50%;
         position: absolute;
-        left: -16px;
+        left: -5.6px;
         top: 28px;
     }
 
@@ -780,6 +786,18 @@
         cursor: pointer;
         font-size: 15px;
     }
+
+    .modal-scroll-limit {
+        max-height: 350px;
+        overflow-y: auto;
+        padding-right: 6px;
+    }
+
+    .travel-scroll {
+        max-height: 300px;
+        overflow-y: auto;
+        padding-right: 8px;
+    }
 </style>
 
 <div class="os-container">
@@ -1068,17 +1086,21 @@
                         {% if travel.travel_events %}
                         <div class="events-title">Eventos da Viagem</div>
 
-                        {% for ev in travel.travel_events %}
-                            <div class="event-item">
-                                <div class="event-dot"></div>
-                                <div>
+                        <div class="timeline travel-scroll">
+
+                            {% for ev in travel.travel_events %}
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-card">
                                     {{ ev.description }}
-                                    <div class="event-author">
+                                    <div class="timeline-meta">
                                         por {{ ev.created_by }}
                                     </div>
                                 </div>
                             </div>
-                        {% endfor %}
+                            {% endfor %}
+
+                        </div>
                         {% endif %}
                     </div>
                 </div>
@@ -1498,7 +1520,7 @@
 
             if (!eventos) return;
 
-            let html = `<div class="timeline">`;
+            let html = `<div class="timeline modal-scroll-limit">`;
 
             eventos.forEach(ev => {
                 html += `
