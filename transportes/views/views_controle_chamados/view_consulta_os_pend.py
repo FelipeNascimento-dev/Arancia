@@ -33,7 +33,7 @@ def get_bases_from_arancia_pa():
 
 
 def usuario_pode_ver_todas_bases(user):
-    return user.has_perm("transportes.controle_chamados")
+    return user.has_perm("transportes.CC_admin")
 
 
 def get_base_usuario(user):

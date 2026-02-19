@@ -815,7 +815,7 @@
                     <div class="subtitle">
                         Tipo: {{ payload.service_order.order_type.description }}
                         • Criado por: {{ payload.service_order.created_by }}
-                        • ID: {{ payload.service_order.id }}
+                        • Data: {{ payload.service_order.created_at|date:"d/m/Y H:i" }}
                     </div>
                 </div>
             </div>
@@ -985,7 +985,7 @@
                                 <th>Tipo</th>
                                 <th>Status</th>
                                 <th>Viagem</th>
-                                <th>Prazo</th>
+                                <th>Criado em</th>
                                 <th>Sub-Itens</th>
                                 <th>Eventos</th>
                             </tr>
@@ -1161,7 +1161,7 @@
                             <div class="timeline-card">
                                 {{ event.description }}
                                 <div class="timeline-meta">
-                                    por {{ event.created_by }}
+                                    {{ event.created_at|date:"d/m/Y H:i" }} • por {{ event.created_by }}
                                 </div>
                             </div>
                         </div>

@@ -70,28 +70,36 @@ def _get_label_url(request, pedido: str, volume: int) -> Optional[str]:
     return content.get("label_url")
 
 
-def _fill_urls_with_api(items: List[Dict[str, Any]], request: Optional[HttpRequest] = None) -> List[Dict[str, Any]]:
-    out: List[Dict[str, Any]] = []
+def _fill_urls_with_api(
+    items: List[Dict[str, Any]],
+    request: Optional[HttpRequest] = None
+) -> List[Dict[str, Any]]:
+
     for it in items:
+        if it.get("url") and not isinstance(it.get("url"), dict):
+            continue
+
         ped = it["pedido"]
         vol = int(it["volume"])
+
         try:
             url = _get_label_url(request, ped, vol)
 
             if not url:
-                out.append({"pedido": ped, "volume": vol, "url": {
-                           "detail": "Erro interno do servidor"}})
-            elif 'detail' in url:
-                out.append({"pedido": ped, "volume": vol,
-                           "url": url})
+                it["url"] = {"detail": "Erro interno do servidor"}
+            elif isinstance(url, dict) and "detail" in url:
+                it["url"] = url
             else:
-                out.append({"pedido": ped, "volume": vol, "url": url})
+                it["url"] = url
+
         except Exception as e:
             if request:
                 messages.error(
-                    request, f"Erro na consulta do pedido {ped}: {e}")
-            out.append({"pedido": ped, "volume": vol, "url": "INSUCESSO"})
-    return out
+                    request, f"Erro na consulta do pedido {ped}: {e}"
+                )
+            it["url"] = "INSUCESSO"
+
+    return items
 
 
 @csrf_protect
