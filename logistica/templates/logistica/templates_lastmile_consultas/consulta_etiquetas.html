@@ -91,15 +91,25 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         const pedidoField = document.getElementById("id_pedido");
-        if (pedidoField) {
-            pedidoField.focus({ preventScroll: true });
+        const volumeField = document.getElementById("id_qtde_vol");
 
-            pedidoField.addEventListener("keydown", function (e) {
+        function enableEnterSubmit(field) {
+            if (!field) return;
+
+            field.addEventListener("keydown", function (e) {
                 if (e.key === "Enter") {
                     e.preventDefault();
                     this.form.requestSubmit();
                 }
             });
+        }
+
+        enableEnterSubmit(pedidoField);
+        enableEnterSubmit(volumeField);
+
+        // Foco inicial
+        if (pedidoField) {
+            pedidoField.focus({ preventScroll: true });
         }
     });
 </script>
