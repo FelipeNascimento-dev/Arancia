@@ -33,7 +33,7 @@
   font-size: 15px;
 }
 
-.form-grid-2col input,
+.form-grid-2col input:not([type="radio"]):not([type="checkbox"]),
 .form-grid-2col select,
 .form-grid-2col textarea {
   width: 100%;
@@ -42,6 +42,37 @@
   border: 1px solid var(--form-input-border);
   border-radius: 10px;
   font-size: 15px;
+}
+
+.form-grid-2col .form-group ul {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.form-grid-2col .form-group li {
+  margin: 0;
+}
+
+.form-grid-2col .form-group li label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.form-grid-2col input[type="radio"],
+.form-grid-2col input[type="checkbox"] {
+  width: auto;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
 }
 
 .error {

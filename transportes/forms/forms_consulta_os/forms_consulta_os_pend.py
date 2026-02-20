@@ -3,6 +3,7 @@ from django import forms
 
 class ConsultaOSPendForm(forms.Form):
     TAG_CHOICES = [
+        ("Todos", "Todos"),
         ("Pendente", "Pendente"),
         ("Finalizado", "Finalizado"),
         ("Em rota", "Em rota"),
@@ -28,7 +29,7 @@ class ConsultaOSPendForm(forms.Form):
         label="Status do Chamado",
         choices=TAG_CHOICES,
         required=False,
-        initial="Pendente"
+        initial="Todos"
     )
 
     data_inicial = forms.DateField(

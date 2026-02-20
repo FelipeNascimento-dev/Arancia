@@ -798,6 +798,12 @@
         overflow-y: auto;
         padding-right: 8px;
     }
+
+    .cotacoes-wrapper {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+    }
 </style>
 
 <div class="os-container">
@@ -1108,47 +1114,49 @@
             </div>
 
             <div class="tab-pane" id="cotacoes">
-                {% for quote in payload.quotes %}
-                <div class="os-card cotacao-card">
-                    <div class="cotacao-header">
-                        <div>
-                            <div class="cotacao-title">
-                                Cotação #{{ quote.id }}
-                            </div>
-                            <div class="cotacao-sub">
-                                Criado por {{ quote.created_by }}
+                <div class="cotacoes-wrapper">
+                    {% for quote in payload.quotes %}
+                    <div class="os-card cotacao-card">
+                        <div class="cotacao-header">
+                            <div>
+                                <div class="cotacao-title">
+                                    Cotação #{{ quote.id }}
+                                </div>
+                                <div class="cotacao-sub">
+                                    Criado por {{ quote.created_by }}
+                                </div>
                             </div>
                         </div>
+
+                        <div class="cotacao-grid">
+                            <div>
+                                <div class="info-label">Peso</div>
+                                <div class="info-value">{{ quote.total_weight }} kg</div>
+                            </div>
+
+                            <div>
+                                <div class="info-label">Volume</div>
+                                <div class="info-value">{{ quote.total_volume }}</div>
+                            </div>
+
+                            <div>
+                                <div class="info-label">Valor</div>
+                                <div class="info-value green-text">
+                                    R$ {{ quote.estimated_price }}
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="info-label">Prazo</div>
+                                <div class="info-value">
+                                    {{ quote.estimated_deadline }} dias
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn-success">✔ Aprovar Cotação</button>
                     </div>
-
-                    <div class="cotacao-grid">
-                        <div>
-                            <div class="info-label">Peso</div>
-                            <div class="info-value">{{ quote.total_weight }} kg</div>
-                        </div>
-
-                        <div>
-                            <div class="info-label">Volume</div>
-                            <div class="info-value">{{ quote.total_volume }}</div>
-                        </div>
-
-                        <div>
-                            <div class="info-label">Valor</div>
-                            <div class="info-value green-text">
-                                R$ {{ quote.estimated_price }}
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="info-label">Prazo</div>
-                            <div class="info-value">
-                                {{ quote.estimated_deadline }} dias
-                            </div>
-                        </div>
-                    </div>
-                    <button class="btn-success">✔ Aprovar Cotação</button>
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </div>
 
             <div class="tab-pane" id="eventos">

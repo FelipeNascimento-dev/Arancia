@@ -84,7 +84,7 @@ def consulta_os_pend(request):
 
         if base_selecionada:
             try:
-                url = f"{API_BASE}/v3/controle_campo/tecnicos/{base_selecionada}"
+                url = f"http://192.168.0.216/RetencaoAPI/api/v3/controle_campo/tecnicos/{base_selecionada}"
 
                 headers = {
                     "accept": "application/json",
@@ -138,7 +138,7 @@ def consulta_os_pend(request):
             tecnico_uid = request.POST.get("tecnico")
             tecnico_uid = f'&uid={tecnico_uid}' if tecnico_uid not in (
                 '', 'None') else ''
-            tag = request.POST.get("tag") or "Pendente"
+            tag = request.POST.get("tag") or "Todos"
             data_inicial = request.POST.get("data_inicial")
             data_inicial = f'&data_inicial={data_inicial}' if data_inicial not in (
                 '', 'None') else ''
@@ -163,7 +163,7 @@ def consulta_os_pend(request):
             params = {k: v for k, v in params.items() if v}
 
             # url = f"{API_BASE}/v3/controle_campo/chamados/{cod_base}/export"
-            url = f"{API_BASE}/v3/controle_campo/chamados/{cod_base}/export?unidade={base}{tecnico_uid}&tag={tag}{data_inicial}{data_final}"
+            url = f"http://192.168.0.216/RetencaoAPI/api/v3/controle_campo/chamados/{cod_base}/export?unidade={base}{tecnico_uid}&tag={tag}{data_inicial}{data_final}"
 
             return redirect(url)
 
@@ -174,7 +174,7 @@ def consulta_os_pend(request):
             tecnico_uid = form.cleaned_data.get("tecnico")
             if not tecnico_uid:
                 tecnico_uid = None
-            tag = form.cleaned_data.get("tag") or "Pendente"
+            tag = form.cleaned_data.get("tag") or "Todos"
 
             data_inicial = form.cleaned_data.get("data_inicial")
             data_final = form.cleaned_data.get("data_final")
@@ -192,7 +192,7 @@ def consulta_os_pend(request):
                 base = base_usuario_value
 
             try:
-                url = f"{API_BASE}/v3/controle_campo/chamados/{cod_base}"
+                url = f"http://192.168.0.216/RetencaoAPI/api/v3/controle_campo/chamados/{cod_base}"
 
                 headers = {
                     "accept": "application/json",
@@ -237,6 +237,10 @@ def consulta_os_pend(request):
                 has_next = len(itens) == PAGE_SIZE
                 has_prev = page > 1
 
+                if 'detail' in resp_chamados:
+                    messages.error(request, resp_chamados.get(
+                        "detail", "Erro ao buscar chamados."))
+
                 messages.success(
                     request,
                     f"Consulta realizada com sucesso. Registros encontrados: {len(resp_chamados) if isinstance(resp_chamados, list) else 0}"
@@ -272,7 +276,6 @@ def consulta_os_pend(request):
             "botao_texto": "Consultar",
             "current_parent_menu": "transportes",
             "current_menu": "controle_campo",
-            "current_submenu": "controle_chamados",
-            "current_subsubmenu": "consulta_os_pend",
+            "current_submenu": "consulta_os_pend",
         },
     )
