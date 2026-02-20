@@ -26,6 +26,9 @@
     </div>
     {% endif %}
     {% endfor %}
+
+  
+
     <!-- {% if etapa_ativa == 'retorno_picking' and request.session.retorno_picking_modo == 'kit' %}
       <div class="form-group">
         <label>&nbsp;</label>
@@ -39,7 +42,6 @@
       </div>
     {% endif %} -->
   </div>
-
   {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' or request.resolver_match.url_name == 'recebimento_remessa' or request.resolver_match.url_name == 'order_return_check' or request.resolver_match.url_name == 'unsuccessful_insert' %}
     {% if serials %}
     <div class="chips-wrap" aria-label="Seriais adicionados">

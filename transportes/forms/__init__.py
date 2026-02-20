@@ -1,3 +1,4 @@
 from .forms_consulta_os.forms_consulta_os_pend import ConsultaOSPendForm
 from .forms_consulta_os.forms_consulta_os import ConsultaOSForm
 from .forms_tec_lista.forms_lista_tecnicos import ListaTecnicoForm
+from .forms_transporte.forms_consulta_os_transp import ConsultaOStranspForm

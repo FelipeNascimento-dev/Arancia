@@ -138,7 +138,7 @@ def consulta_os_pend(request):
             tecnico_uid = request.POST.get("tecnico")
             tecnico_uid = f'&uid={tecnico_uid}' if tecnico_uid not in (
                 '', 'None') else ''
-            tag = request.POST.get("tag") or "Pendente"
+            tag = request.POST.get("tag") or "Todos"
             data_inicial = request.POST.get("data_inicial")
             data_inicial = f'&data_inicial={data_inicial}' if data_inicial not in (
                 '', 'None') else ''
@@ -174,7 +174,7 @@ def consulta_os_pend(request):
             tecnico_uid = form.cleaned_data.get("tecnico")
             if not tecnico_uid:
                 tecnico_uid = None
-            tag = form.cleaned_data.get("tag") or "Pendente"
+            tag = form.cleaned_data.get("tag") or "Todos"
 
             data_inicial = form.cleaned_data.get("data_inicial")
             data_final = form.cleaned_data.get("data_final")
@@ -272,7 +272,6 @@ def consulta_os_pend(request):
             "botao_texto": "Consultar",
             "current_parent_menu": "transportes",
             "current_menu": "controle_campo",
-            "current_submenu": "controle_chamados",
-            "current_subsubmenu": "consulta_os_pend",
+            "current_submenu": "consulta_os_pend",
         },
     )

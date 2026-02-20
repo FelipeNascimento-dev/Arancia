@@ -1,0 +1,22 @@
+from django import forms
+
+
+class ConsultaOStranspForm(forms.Form):
+    numero_os = forms.CharField(label="Insira o número da OS")
+
+    tipo_os = forms.ChoiceField(
+        label="Consultar por",
+        choices=[
+            ("IN", "OS Interna"),
+            ("EX", "OS Externa"),
+        ],
+        widget=forms.RadioSelect,
+        initial="IN",
+        required=True,
+    )
+
+    client = forms.ChoiceField(label="Cliente", choices=[], required=False)
+
+    def __init__(self, *args, nome_form=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.nome_formulario = nome_form or "Consulta de OS"

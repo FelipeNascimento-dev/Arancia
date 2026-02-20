@@ -50,7 +50,6 @@ def consulta_os(request):
             "botao_texto": "Consultar",
             "current_parent_menu": "transportes",
             "current_menu": "controle_campo",
-            "current_submenu": "controle_chamados",
-            "current_subsubmenu": "consulta_os",
+            "current_submenu": "consulta_os",
         },
     )
