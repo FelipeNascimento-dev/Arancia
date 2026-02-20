@@ -6,7 +6,11 @@ class ConsultaOStranspForm(forms.Form):
         label="Cliente", choices=[], required=False)
 
     status = forms.ChoiceField(
-        label="Status da OS", choices=[], required=False)
+        label="Status da OS", choices=[
+            ("TODOS", "Todos os status"),
+            ("TODOS_FINALIZADORES", "Todos Finalizadores"),
+            ("TODOS_NAO_FINALIZADORES", "Todos Não Finalizadores"),
+        ], required=False)
 
     numero_os = forms.CharField(
         label="Insira o número da OS")
