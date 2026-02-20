@@ -32,6 +32,11 @@ def consulta_os_transp(request):
         form.fields['client'].choices = [
             ("", "Todos os clientes")] + [(cliente['id'], cliente['nome']) for cliente in resp]
 
+    cliente_selecionado = cliente if cliente else ""
+
+    if not status:
+        url = f"{TRANSP_API_URL}/order_types/list/Projeto/?Projeto={cliente_selecionado}"
+
     return render(request, 'transportes/transportes/consulta_os_transp.html', {
         "form": form,
         "site_title": titulo,
