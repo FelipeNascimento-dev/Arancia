@@ -2,7 +2,14 @@ from django import forms
 
 
 class ConsultaOStranspForm(forms.Form):
-    numero_os = forms.CharField(label="Insira o número da OS")
+    client = forms.ChoiceField(
+        label="Cliente", choices=[], required=False)
+
+    status = forms.ChoiceField(
+        label="Status da OS", choices=[], required=False)
+
+    numero_os = forms.CharField(
+        label="Insira o número da OS")
 
     tipo_os = forms.ChoiceField(
         label="Consultar por",
@@ -14,8 +21,6 @@ class ConsultaOStranspForm(forms.Form):
         initial="IN",
         required=True,
     )
-
-    client = forms.ChoiceField(label="Cliente", choices=[], required=False)
 
     def __init__(self, *args, nome_form=None, **kwargs):
         super().__init__(*args, **kwargs)

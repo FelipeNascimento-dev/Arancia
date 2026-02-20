@@ -84,7 +84,7 @@ def consulta_os_pend(request):
 
         if base_selecionada:
             try:
-                url = f"{API_BASE}/v3/controle_campo/tecnicos/{base_selecionada}"
+                url = f"http://192.168.0.216/RetencaoAPI/api/v3/controle_campo/tecnicos/{base_selecionada}"
 
                 headers = {
                     "accept": "application/json",
@@ -163,7 +163,7 @@ def consulta_os_pend(request):
             params = {k: v for k, v in params.items() if v}
 
             # url = f"{API_BASE}/v3/controle_campo/chamados/{cod_base}/export"
-            url = f"{API_BASE}/v3/controle_campo/chamados/{cod_base}/export?unidade={base}{tecnico_uid}&tag={tag}{data_inicial}{data_final}"
+            url = f"http://192.168.0.216/RetencaoAPI/api/v3/controle_campo/chamados/{cod_base}/export?unidade={base}{tecnico_uid}&tag={tag}{data_inicial}{data_final}"
 
             return redirect(url)
 
@@ -192,7 +192,7 @@ def consulta_os_pend(request):
                 base = base_usuario_value
 
             try:
-                url = f"{API_BASE}/v3/controle_campo/chamados/{cod_base}"
+                url = f"http://192.168.0.216/RetencaoAPI/api/v3/controle_campo/chamados/{cod_base}"
 
                 headers = {
                     "accept": "application/json",
@@ -236,6 +236,10 @@ def consulta_os_pend(request):
 
                 has_next = len(itens) == PAGE_SIZE
                 has_prev = page > 1
+
+                if 'detail' in resp_chamados:
+                    messages.error(request, resp_chamados.get(
+                        "detail", "Erro ao buscar chamados."))
 
                 messages.success(
                     request,
