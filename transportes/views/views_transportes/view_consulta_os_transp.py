@@ -7,6 +7,7 @@ from django.contrib import messages
 
 def consulta_os_transp(request):
     titulo = "Consulta OS"
+    resultado_api = []
 
     url = f"{TRANSP_API_URL}/gai/clientes/status?cliente=arancia_client"
     headers = {
@@ -22,8 +23,11 @@ def consulta_os_transp(request):
 
     resp = client.send_api_request()
 
+    if 'detail' in resp:
+        messages.error(request, resp['detail'])
+
     form = ConsultaOStranspForm(
-        request.POST or None,
+        request.GET or None,
         payload=resp
     )
 
@@ -71,6 +75,12 @@ def consulta_os_transp(request):
 
         resultado_api = lista_request.send_api_request()
 
+        if 'detail' in resultado_api:
+            messages.error(request, resultado_api['detail'])
+        else:
+            messages.success(
+                request, f"Consulta realizada com sucesso. {len(resultado_api)} OS encontradas.")
+
         print(resultado_api)
 
     return render(
@@ -80,5 +90,6 @@ def consulta_os_transp(request):
             "form": form,
             "site_title": titulo,
             "botao_texto": "Consultar",
+            "orders": resultado_api if isinstance(resultado_api, list) else [],
         },
     )

@@ -13,7 +13,7 @@ class ConsultaOStranspForm(forms.Form):
         choices=[("IN", "OS Interna"), ("EX", "OS Externa")],
         widget=forms.RadioSelect,
         initial="IN",
-        required=True,
+        required=False,
     )
 
     def __init__(self, *args, nome_form=None, payload=None, **kwargs):
