@@ -31,6 +31,7 @@ urlpatterns = [
     path("chamados/detalhe-os/<path:os>/", detalhe_os, name="detalhe_os"),
     path("chamados/lista-tecnicos/", lista_tecnicos, name="lista_tecnicos"),
 
-    path("detalhe-os/", detalhe_os_transp, name="detalhe_os_transp"),
+    path("detalhe-os/<path:order_number>/",
+         detalhe_os_transp, name="detalhe_os_transp"),
     path("consulta-os-transp/", consulta_os_transp, name="consulta_os_transp"),
 ]

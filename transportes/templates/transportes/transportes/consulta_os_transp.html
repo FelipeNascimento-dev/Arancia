@@ -7,46 +7,161 @@
         height: auto;
         margin-top: 65px;
     }
+
+    .cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+        align-items: start;
+    }
+
+    .card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: flex-start;
+        padding: 12px 14px;
+        background: #f7f7f7;
+    }
+
+    .badge-num {
+        background: #4caf50;
+        color: #fff;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        flex: 0 0 28px;
+    }
+
+    .card-title {
+        margin: 0;
+        font-size: 1rem;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .card-body {
+        padding: 12px 14px;
+    }
+
+    .card-body p {
+        margin: 6px 0;
+        color: #555;
+        font-size: 0.92rem;
+    }
+
+    .card-body strong {
+        color: #222;
+    }
 </style>
 
 <div class="form-container">
     <div class="form-card-2col">
         <form method="POST">
-            {% csrf_token %}
             {% include 'global/partials/_form_2col.html' %}
         </form>
     </div>
 </div>
 
+{% if orders %}
+<div class="cards-container">
+    {% for item in orders|dictsort:"created_at" %}
+    <div class="card">
+        <div class="card-header">
+            <span class="badge-num">{{ forloop.counter }}</span>
+            <a class="card-title" href="{% url 'transportes:detalhe_os_transp' item.order_number %}"
+          target="_blank">
+                {{ item.order_number }}
+            </a>
+        </div>
+
+        <div class="card-body">
+            <p>
+                <strong>Nº Externo:</strong><br />
+                {{ item.external_order_number }}
+            </p>
+
+            <p>
+                <strong>Cliente:</strong><br />
+                {{ item.client.nome }}
+            </p>
+
+            <p>
+                <strong>Tipo de OS:</strong><br />
+                {{ item.order_type.type }}
+            </p>
+
+            <p>
+                <strong>Status:</strong><br />
+                {% if item.status.finished %}
+                <span style="color:#2e7d32; font-weight:700;">
+                    {{ item.status.type }}
+                </span>
+                {% else %}
+                <span style="color:#f9a825; font-weight:700;">
+                    {{ item.status.type }}
+                </span>
+                {% endif %}
+            </p>
+
+            <p>
+                <strong>Criado por:</strong><br />
+                {{ item.created_by }}
+            </p>
+
+            <p>
+                <strong>Data de Criação:</strong><br />
+                <time class="js-dt" datetime="{{ item.created_at }}">
+                    {{ item.created_at }}
+                </time>
+            </p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function () {
 
-    const clientSelect = document.getElementById("id_client");
-    const orderTypeSelect = document.getElementById("id_order_type");
+        const clientSelect = document.getElementById("id_client");
+        const orderTypeSelect = document.getElementById("id_order_type");
 
-    function reloadWithParams() {
-        const params = new URLSearchParams(window.location.search);
-
-        if (clientSelect) {
-            params.set("client", clientSelect.value);
+        function setOrDelete(params, key, value) {
+            if (value && value !== "") params.set(key, value);
+            else params.delete(key);
         }
 
-        if (orderTypeSelect) {
-            params.set("order_type", orderTypeSelect.value);
+        function reloadWithParams() {
+            const params = new URLSearchParams(window.location.search);
+
+            if (clientSelect) setOrDelete(params, "client", clientSelect.value);
+            if (orderTypeSelect) setOrDelete(params, "order_type", orderTypeSelect.value);
+
+            window.location.search = params.toString();
         }
 
-        window.location.search = params.toString();
-    }
+        if (clientSelect) clientSelect.addEventListener("change", reloadWithParams);
+        if (orderTypeSelect) orderTypeSelect.addEventListener("change", reloadWithParams);
 
-    if (clientSelect) {
-        clientSelect.addEventListener("change", reloadWithParams);
-    }
-
-    if (orderTypeSelect) {
-        orderTypeSelect.addEventListener("change", reloadWithParams);
-    }
-
-});
+    });
 </script>
 
 {% endblock %}
