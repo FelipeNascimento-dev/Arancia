@@ -18,4 +18,35 @@
     </div>
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const clientSelect = document.getElementById("id_client");
+    const orderTypeSelect = document.getElementById("id_order_type");
+
+    function reloadWithParams() {
+        const params = new URLSearchParams(window.location.search);
+
+        if (clientSelect) {
+            params.set("client", clientSelect.value);
+        }
+
+        if (orderTypeSelect) {
+            params.set("order_type", orderTypeSelect.value);
+        }
+
+        window.location.search = params.toString();
+    }
+
+    if (clientSelect) {
+        clientSelect.addEventListener("change", reloadWithParams);
+    }
+
+    if (orderTypeSelect) {
+        orderTypeSelect.addEventListener("change", reloadWithParams);
+    }
+
+});
+</script>
+
 {% endblock %}

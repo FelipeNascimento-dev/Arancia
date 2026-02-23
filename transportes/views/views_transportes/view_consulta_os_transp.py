@@ -6,39 +6,35 @@ from django.contrib import messages
 
 
 def consulta_os_transp(request):
-    titulo = 'Consulta OS'
-    form = ConsultaOStranspForm(request.GET or None, nome_form=titulo)
-    cliente = request.GET.get('client')
-    status = request.GET.get('status')
+    titulo = "Consulta OS"
 
-    if not cliente:
-        url = f"{TRANSP_API_URL}/gai/list/clientes?cliente=arancia_client"
-        headers = {
-            "accept": "application/json",
-            "Content-Type": "application/json",
-        }
-        client = RequestClient(
-            method="get",
-            url=url,
-            headers=headers,
-        )
+    url = f"{TRANSP_API_URL}/gai/clientes/status?cliente=arancia_client"
+    headers = {
+        "accept": "application/json",
+        "Content-Type": "application/json",
+    }
 
-        resp = client.send_api_request()
+    client = RequestClient(
+        method="get",
+        url=url,
+        headers=headers,
+    )
 
-        if 'detail' in resp:
-            messages.error(request, resp.get(
-                "detail", "Chamado não encontrado!"))
+    resp = client.send_api_request()
 
-        form.fields['client'].choices = [
-            ("", "Todos os clientes")] + [(cliente['id'], cliente['nome']) for cliente in resp]
+    print(resp)
 
-    cliente_selecionado = cliente if cliente else ""
+    form = ConsultaOStranspForm(
+        request.GET or None,
+        payload=resp
+    )
 
-    if not status:
-        url = f"{TRANSP_API_URL}/order_types/list/Projeto/?Projeto={cliente_selecionado}"
-
-    return render(request, 'transportes/transportes/consulta_os_transp.html', {
-        "form": form,
-        "site_title": titulo,
-        "botao_texto": "Consultar",
-    })
+    return render(
+        request,
+        "transportes/transportes/consulta_os_transp.html",
+        {
+            "form": form,
+            "site_title": titulo,
+            "botao_texto": "Consultar",
+        },
+    )
