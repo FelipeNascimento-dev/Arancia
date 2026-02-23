@@ -167,6 +167,18 @@
         <strong>Estado do Volume:</strong> <br />
         {{ item.volume_state }}
       </p>
+      <p>
+        <strong>Transportadora:</strong> <br /> 
+        {{ item.logistic_provider_name }}
+      </p>
+      <p>
+        <strong>Cliente:</strong> <br />
+        {{ item.client_name }}
+      </p>
+      <p>
+        <strong>CEP:</strong> <br />
+        {{ item.client_CEP }}
+      </p>
     </div>
   </div>
   {% endfor %}

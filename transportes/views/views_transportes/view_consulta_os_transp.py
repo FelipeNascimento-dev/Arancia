@@ -22,12 +22,56 @@ def consulta_os_transp(request):
 
     resp = client.send_api_request()
 
-    print(resp)
-
     form = ConsultaOStranspForm(
-        request.GET or None,
+        request.POST or None,
         payload=resp
     )
+
+    if request.method == "POST" and "enviar_evento" in request.POST:
+        params = {}
+
+        tipo_os = request.POST.get("tipo_os")
+        numero_os = request.POST.get("numero_os")
+
+        if numero_os:
+            if tipo_os == "IN":
+                params["IN"] = numero_os
+            elif tipo_os == "EX":
+                params["EX"] = numero_os
+
+        cliente_id = request.POST.get("client")
+        if cliente_id:
+            cliente_obj = next(
+                (c for c in resp if str(c["id"]) == cliente_id),
+                None,
+            )
+
+            if cliente_obj:
+                params["cliente"] = cliente_obj["nome"]
+
+        status_id = request.POST.get("status")
+        if status_id:
+            params["status_id"] = status_id
+
+        order_type = request.POST.get("order_type")
+        if order_type:
+            params["order_type"] = order_type
+
+        params["limit"] = 50
+        params["offset"] = 0
+
+        url_lista = f"{TRANSP_API_URL}/service_orders/list"
+
+        lista_request = RequestClient(
+            method="get",
+            url=url_lista,
+            headers={"accept": "application/json"},
+            request_data=params,
+        )
+
+        resultado_api = lista_request.send_api_request()
+
+        print(resultado_api)
 
     return render(
         request,
