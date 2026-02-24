@@ -12,7 +12,6 @@ class ConsultaOStranspForm(forms.Form):
         label="Consultar por",
         choices=[("IN", "OS Interna"), ("EX", "OS Externa")],
         widget=forms.RadioSelect,
-        initial="IN",
         required=False,
     )
 

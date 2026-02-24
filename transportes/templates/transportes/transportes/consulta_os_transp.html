@@ -70,6 +70,95 @@
     .card-body strong {
         color: #222;
     }
+
+    .pagination-bar {
+        margin-top: 20px;
+        margin-bottom: 35px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pagination-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .pagination-pages {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .pagination-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 36px;
+        padding: 0 14px;
+        border-radius: 10px;
+        border: 1px solid #e6e8ee;
+        background: #ffffff;
+        color: #1f2937;
+        font-weight: 600;
+        font-size: .92rem;
+        text-decoration: none;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, .06);
+        transition: background .15s ease, border-color .15s ease, transform .08s ease;
+        user-select: none;
+    }
+
+    .pagination-btn:hover {
+        background: #f7f8fb;
+        border-color: #d7dbe5;
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+    .pagination-btn:active {
+        transform: translateY(0);
+    }
+
+    .pagination-btn--prev,
+    .pagination-btn--next {
+        background: #f3f4f6;
+        border-color: #e5e7eb;
+        color: #374151;
+    }
+
+    .pagination-btn--prev:hover,
+    .pagination-btn--next:hover {
+        background: #eef0f4;
+    }
+
+    .pagination-btn--page {
+        min-width: 40px;
+        padding: 0 12px;
+    }
+
+    .pagination-btn--active {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: #fff;
+        cursor: default;
+    }
+
+    .pagination-btn--disabled {
+        opacity: .45;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .pagination-info {
+        color: #6b7280;
+        font-weight: 600;
+        font-size: .9rem;
+    }
 </style>
 
 <div class="form-container">
@@ -86,8 +175,7 @@
     <div class="card">
         <div class="card-header">
             <span class="badge-num">{{ forloop.counter }}</span>
-            <a class="card-title" href="{% url 'transportes:detalhe_os_transp' item.order_number %}"
-          target="_blank">
+            <a class="card-title" href="{% url 'transportes:detalhe_os_transp' item.order_number %}" target="_blank">
                 {{ item.order_number }}
             </a>
         </div>
@@ -135,6 +223,49 @@
         </div>
     </div>
     {% endfor %}
+</div>
+
+<div class="pagination-bar">
+  {% with qs=pagination.base_qs %}
+    <div class="pagination-row">
+
+      {% if pagination.has_prev %}
+        <a class="pagination-btn pagination-btn--prev"
+           href="?{% if qs %}{{ qs }}&{% endif %}page={{ pagination.prev_page }}">
+          ◀ Anterior
+        </a>
+      {% else %}
+        <span class="pagination-btn pagination-btn--prev pagination-btn--disabled">◀ Anterior</span>
+      {% endif %}
+
+      <div class="pagination-pages">
+        {% for p in pagination.pages %}
+          {% if p == pagination.page %}
+            <span class="pagination-btn pagination-btn--page pagination-btn--active">{{ p }}</span>
+          {% else %}
+            <a class="pagination-btn pagination-btn--page"
+               href="?{% if qs %}{{ qs }}&{% endif %}page={{ p }}">
+              {{ p }}
+            </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      {% if pagination.has_next %}
+        <a class="pagination-btn pagination-btn--next"
+           href="?{% if qs %}{{ qs }}&{% endif %}page={{ pagination.next_page }}">
+          Próxima ▶
+        </a>
+      {% else %}
+        <span class="pagination-btn pagination-btn--next pagination-btn--disabled">Próxima ▶</span>
+      {% endif %}
+
+    </div>
+
+    <div class="pagination-info">
+      Página {{ pagination.page }} / {{ pagination.total_pages }}
+    </div>
+  {% endwith %}
 </div>
 {% endif %}
 
