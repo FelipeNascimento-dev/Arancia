@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from setup.local_settings import TRANSP_API_URL
 from utils.request import RequestClient
 from django.contrib import messages
@@ -75,8 +75,39 @@ def detalhe_os_transp(request, order_number):
 
             try:
                 url_quote = f"{TRANSP_API_URL}/quotes/create"
-            except:
-                pass
+                headers = {
+                    "accept": "application/json",
+                    "Content-Type": "application/json",
+                }
+
+                client = RequestClient(
+                    method="POST",
+                    url=url_quote,
+                    headers=headers,
+                    request_data={
+                        "service_order_id": service_order_id,
+                        "carrier_id": carrier_id,
+                        "origin_id": origin_id,
+                        "destination_id": destination_id,
+                        "total_weight": total_weight,
+                        "total_volume": total_volume,
+                        "estimated_price": estimated_price,
+                        "estimated_deadline": estimated_deadline,
+                        "created_by": created_by
+                    }
+                )
+
+                api_response = client.send_api_request()
+
+                print(client.request_data)
+
+                if 'detail' in api_response:
+                    messages.error(request, api_response['detail'])
+                else:
+                    messages.success(request, "Cotação criada com sucesso!")
+                    return redirect('transportes:detalhe_os_transp', order_number=order_number)
+            except Exception as e:
+                messages.error(request, f"Erro ao criar cotação: {e}")
 
     return render(request, 'transportes/transportes/detalhe_os.html', {
         "order_number": order_number,
