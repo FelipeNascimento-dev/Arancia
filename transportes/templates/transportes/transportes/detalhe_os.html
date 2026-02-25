@@ -777,7 +777,7 @@
         font-size: 15px;
     }
 
-    .btn-events{
+    .btn-events {
         background-color: transparent;
         border: none;
         padding: 6px 10px;
@@ -958,9 +958,9 @@
                 <div class="location-address">
                     {{ payload.destination.logradouro }}, {{ payload.destination.numero }}
                     {% if payload.destination.complemento %}
-                        - {{ payload.destination.complemento }}
+                    - {{ payload.destination.complemento }}
                     {% endif %}<br>
-                    {{ payload.destination.bairro }} - {{ payload.destination.cidade }}/{{ payload.destination.estado }}<br>
+                    {{ payload.destination.bairro }} - {{ payload.destination.cidade }}/{{ payload.destination.estado}}<br>
                     CEP: {{ payload.destination.CEP }}
                 </div>
                 <div class="divider"></div>
@@ -973,10 +973,14 @@
 
         <div class="tabs-wrapper">
             <div class="tabs">
-                <div class="tab active" data-tab="itens"><i class="fa-solid fa-box"></i> Itens ({{ payload.items|length }})</div>
-                <div class="tab" data-tab="viagens"><i class="fa-solid fa-truck"></i> Viagens ({{ payload.travels|length }})</div>
-                <div class="tab" data-tab="cotacoes"><i class="fa-regular fa-file"></i> Cotações ({{ payload.quotes|length }})</div>
-                <div class="tab" data-tab="eventos"><i class="fa-solid fa-chart-line"></i> Eventos ({{ payload.service_order.service_order_events|length }})</div>
+                <div class="tab active" data-tab="itens"><i class="fa-solid fa-box"></i> Itens 
+                    ({{ payload.items|length }})</div>
+                <div class="tab" data-tab="viagens"><i class="fa-solid fa-truck"></i> Viagens 
+                    ({{ payload.travels|length }})</div>
+                <div class="tab" data-tab="cotacoes"><i class="fa-regular fa-file"></i> Cotações 
+                    ({{ payload.quotes|length }})</div>
+                <div class="tab" data-tab="eventos"><i class="fa-solid fa-chart-line"></i> Eventos 
+                    ({{ payload.service_order.service_order_events|length }})</div>
             </div>
         </div>
 
@@ -998,51 +1002,49 @@
                         </thead>
                         <tbody>
                             {% for item in payload.items %}
-                                <tr>
-                                    <td>{{ item.serial_number }}</td>
-                                    <td>{{ item.product_model }}</td>
-                                    <td>{{ item.product_type }}</td>
+                            <tr>
+                                <td>{{ item.serial_number }}</td>
+                                <td>{{ item.product_model }}</td>
+                                <td>{{ item.product_type }}</td>
 
-                                    <td>
-                                        <span class="badge badge-yellow">
-                                            {{ payload.service_order.order_state.type }}
-                                        </span>
-                                    </td>
+                                <td>
+                                    <span class="badge badge-yellow">
+                                        {{ payload.service_order.order_state.type }}
+                                    </span>
+                                </td>
 
-                                    <td>
-                                        {% if item.travel_order_id %}
-                                            {{ item.travel_order_id }}
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
+                                <td>
+                                    {% if item.travel_order_id %}
+                                    {{ item.travel_order_id }}
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
 
-                                    <td>
-                                        {{ item.created_at|slice:":10" }}
-                                    </td>
+                                <td>
+                                    {{ item.created_at|slice:":10" }}
+                                </td>
 
-                                    <td>
-                                        {% if item.sub_itens %}
-                                            <button class="btn-subitens"
-                                                    onclick="abrirModalFilhos({{ item.id }})">
-                                                <i class="fa-solid fa-eye"></i>
-                                            </button>
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
+                                <td>
+                                    {% if item.sub_itens %}
+                                    <button class="btn-subitens" onclick="abrirModalFilhos({{ item.id }})">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
 
-                                    <td>
-                                        {% if item.item_events %}
-                                            <button class="btn-events"
-                                                    onclick="abrirModalEventosItem({{ item.id }})">
-                                                <i class="fa-solid fa-clock"></i>
-                                            </button>
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
-                                </tr>
+                                <td>
+                                    {% if item.item_events %}
+                                    <button class="btn-events" onclick="abrirModalEventosItem({{ item.id }})">
+                                        <i class="fa-solid fa-clock"></i>
+                                    </button>
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -1050,7 +1052,7 @@
             </div>
 
             <div class="tab-pane" id="viagens">
-               {% for travel in payload.travels %}
+                {% for travel in payload.travels %}
                 <div class="os-card travel-card">
 
                     <div class="travel-header" onclick="toggleTravel(this)">
@@ -1261,69 +1263,102 @@
     </div>
 </div>
 <!-- MODAL PARA CRIAR COTAÇÃO -->
-<div class="os-modal-overlay" id="modalNovaCotacao">
-    <div class="os-modal modal-lg">
-        <div class="os-modal-header">
-            <div class="os-modal-title">
-                Nova Cotação
-            </div>
-            <div class="os-modal-close" onclick="fecharModalCotacao()">✕</div>
-        </div>
+<form method="post">
+    {% csrf_token %}
 
-        <div class="os-modal-body">
-            <div class="os-modal-description">
-                Preencha os dados para criar uma nova cotação para a OS #609
-            </div>
+    <!-- manda a OS no POST -->
+    <input type="hidden" name="service_order_id" value="{{ payload.service_order.id }}">
 
-            <div class="form-group">
-                <label>Transportadora</label>
-                <select style="margin-bottom: 15px;">
-                    <option>Pesquisar transportadora...</option>
-                </select>
+    <div class="os-modal-overlay" id="modalNovaCotacao">
+        <div class="os-modal modal-lg">
+            <div class="os-modal-header">
+                <div class="os-modal-title">Nova Cotação</div>
+                <div class="os-modal-close" onclick="fecharModalCotacao()">✕</div>
             </div>
 
-            <div class="form-grid">
+            <div class="os-modal-body">
+                <div class="os-modal-description">
+                    Preencha os dados para criar uma nova cotação para a OS #{{ payload.service_order.order_number }}
+                </div>
+
                 <div class="form-group">
-                    <label>Origem</label>
-                    <select>
-                        <option>Pesquisar...</option>
+                    <label>Transportadora</label>
+                    <select name="carrier_id" style="margin-bottom: 10px;" required>
+                        <option value="">Selecione uma transportadora...</option>
+                        {% for carrier in carriers %}
+                        <option value="{{ carrier.id }}">{{ carrier.nome }}</option>
+                        {% endfor %}
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Destino</label>
-                    <select>
-                        <option>Pesquisar...</option>
-                    </select>
-                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Origem</label>
+                        <select name="origin_id" required>
+                            <option value="">Selecionar origem...</option>
+                            {% for g in grupos %}
+                            <option value="{{ g.id }}">
+                                {% if g.group.name == "arancia_CD" %}
+                                    [CD]
+                                {% elif g.group.name == "arancia_PA" %}
+                                    [PA]
+                                {% elif g.group.name == "arancia_CUSTOMER" %}
+                                    [CUSTOMER]
+                                {% endif %}
+                                {{ g.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-                <div class="form-group">
-                    <label>Peso Total (kg)</label>
-                    <input type="number" value="0">
-                </div>
+                    <div class="form-group">
+                        <label>Destino</label>
+                        <select name="destination_id" required>
+                            <option value="">Selecionar destino...</option>
+                            {% for g in grupos %}
+                            <option value="{{ g.id }}">
+                                {% if g.group.name == "arancia_CD" %}
+                                    [CD]
+                                {% elif g.group.name == "arancia_PA" %}
+                                    [PA]
+                                {% elif g.group.name == "arancia_CUSTOMER" %}
+                                    [CUSTOMER]
+                                {% endif %}
+                                {{ g.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-                <div class="form-group">
-                    <label>Volume Total (m³)</label>
-                    <input type="number" value="0">
-                </div>
+                    <div class="form-group">
+                        <label>Peso Total (kg)</label>
+                        <input type="number" name="total_weight" value="0" step="0.01" min="0" required>
+                    </div>
 
-                <div class="form-group">
-                    <label>Valor Estimado (R$)</label>
-                    <input type="number" value="0">
-                </div>
+                    <div class="form-group">
+                        <label>Volume Total (m³)</label>
+                        <input type="number" name="total_volume" value="0" step="0.0001" min="0" required>
+                    </div>
 
-                <div class="form-group">
-                    <label>Prazo (dias)</label>
-                    <input type="number" value="0">
+                    <div class="form-group">
+                        <label>Valor Estimado (R$)</label>
+                        <input type="number" name="estimated_price" value="0" step="0.01" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Prazo (dias)</label>
+                        <input type="number" name="estimated_deadline" value="0" step="1" min="0" required>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="os-modal-footer">
-            <button class="btn-secondary" onclick="fecharModalCotacao()">Cancelar</button>
-            <button class="btn-primary">Criar Cotação</button>
+
+            <div class="os-modal-footer">
+                <button type="button" class="btn-secondary" onclick="fecharModalCotacao()">Cancelar</button>
+                <button type="submit" class="btn-primary" name="criar_cotacao" value="1">Criar Cotação</button>
+            </div>
         </div>
     </div>
-</div>
+</form>
 <!-- MODAL PARA SUB-ITENS -->
 <div class="os-modal-overlay" id="modalFilhos">
     <div class="os-modal" style="width:600px;">
@@ -1431,27 +1466,27 @@
 
         const filhosData = {
             {% for item in payload.items %}
-                {% if item.sub_itens %}
-                    "{{ item.id }}": [
-                        {% for sub in item.sub_itens %}
+        {% if item.sub_itens %}
+        "{{ item.id }}": [
+            {% for sub in item.sub_itens %}
                             {
-                                serial: "{{ sub.serial_number }}",
-                                model: "{{ sub.product_model }}",
-                                type: "{{ sub.product_type }}"
-                            },
-                        {% endfor %}
+            serial: "{{ sub.serial_number }}",
+            model: "{{ sub.product_model }}",
+            type: "{{ sub.product_type }}"
+        },
+        {% endfor %}
                     ],
-                {% endif %}
-            {% endfor %}
+        {% endif %}
+        {% endfor %}
         };
 
-        window.abrirModalFilhos = function(itemId) {
+    window.abrirModalFilhos = function (itemId) {
 
-            const filhos = filhosData[itemId];
+        const filhos = filhosData[itemId];
 
-            if (!filhos) return;
+        if (!filhos) return;
 
-            let html = `
+        let html = `
                 <table style="width:100%; border-collapse:collapse;">
                     <thead>
                         <tr style="background:#0e76bd; color:white;">
@@ -1463,75 +1498,75 @@
                     <tbody>
             `;
 
-            filhos.forEach(f => {
-                html += `
+        filhos.forEach(f => {
+            html += `
                     <tr style="border-bottom:1px solid #eee;">
                         <td style="padding:10px;">${f.serial}</td>
                         <td style="padding:10px;">${f.model}</td>
                         <td style="padding:10px;">${f.type}</td>
                     </tr>
                 `;
-            });
+        });
 
-            html += `</tbody></table>`;
+        html += `</tbody></table>`;
 
-            modalFilhosBody.innerHTML = html;
-            modalFilhos.classList.add("show");
-        };
+        modalFilhosBody.innerHTML = html;
+        modalFilhos.classList.add("show");
+    };
 
-        window.fecharModalFilhos = function() {
-            modalFilhos.classList.remove("show");
-        };
+    window.fecharModalFilhos = function () {
+        modalFilhos.classList.remove("show");
+    };
 
-        modalFilhos.addEventListener("click", function(e) {
-            if (e.target === modalFilhos) {
-                fecharModalFilhos();
+    modalFilhos.addEventListener("click", function (e) {
+        if (e.target === modalFilhos) {
+            fecharModalFilhos();
+        }
+    });
+
+    window.toggleTravel = function (element) {
+
+        const card = element.closest(".travel-card");
+
+        // Fecha outras viagens abertas (opcional)
+        document.querySelectorAll(".travel-card").forEach(c => {
+            if (c !== card) {
+                c.classList.remove("active");
             }
         });
 
-        window.toggleTravel = function(element) {
+        card.classList.toggle("active");
+    };
 
-            const card = element.closest(".travel-card");
-
-            // Fecha outras viagens abertas (opcional)
-            document.querySelectorAll(".travel-card").forEach(c => {
-                if (c !== card) {
-                    c.classList.remove("active");
-                }
-            });
-
-            card.classList.toggle("active");
-        };
-
-        const eventosItemData = {
+    const eventosItemData = {
             {% for item in payload.items %}
-                {% if item.item_events %}
-                    "{{ item.id }}": [
-                        {% for ev in item.item_events %}
-                            {
-                                description: "{{ ev.description|escapejs }}",
-                                created_by: "{{ ev.created_by }}",
-                                id: "{{ ev.id }}"
-                            },
-                        {% endfor %}
+    {% if item.item_events %}
+    "{{ item.id }}": [
+        {% for ev in item.item_events %}
+    {
+        description: "{{ ev.description|escapejs }}",
+            created_by: "{{ ev.created_by }}",
+                id: "{{ ev.id }}"
+    },
+    {% endfor %}
                     ],
-                {% endif %}
-            {% endfor %}
+    {% endif %}
+    {% endfor %}
         };
 
-        const modalEventosItem = document.getElementById("modalEventosItem");
-        const modalEventosItemBody = document.getElementById("modalEventosItemBody");
+    const modalEventosItem = document.getElementById("modalEventosItem");
+    const modalEventosItemBody = document.getElementById("modalEventosItemBody");
 
-        window.abrirModalEventosItem = function(itemId) {
+    window.abrirModalEventosItem = function (itemId) {
 
-            const eventos = eventosItemData[itemId];
+        const eventos = eventosItemData[itemId];
 
-            if (!eventos) return;
+        if (!eventos) return;
 
-            let html = `<div class="timeline modal-scroll-limit">`;
+        let html = `<div class="timeline modal-scroll-limit">`;
 
-            eventos.forEach(ev => {
-                html += `
+        eventos.forEach(ev => {
+            html += `
                     <div class="timeline-item">
                         <div class="timeline-dot"></div>
                         <div class="timeline-card">
@@ -1542,23 +1577,23 @@
                         </div>
                     </div>
                 `;
-            });
-
-            html += `</div>`;
-
-            modalEventosItemBody.innerHTML = html;
-            modalEventosItem.classList.add("show");
-        };
-
-        window.fecharModalEventosItem = function() {
-            modalEventosItem.classList.remove("show");
-        };
-
-        modalEventosItem.addEventListener("click", function(e) {
-            if (e.target === modalEventosItem) {
-                fecharModalEventosItem();
-            }
         });
+
+        html += `</div>`;
+
+        modalEventosItemBody.innerHTML = html;
+        modalEventosItem.classList.add("show");
+    };
+
+    window.fecharModalEventosItem = function () {
+        modalEventosItem.classList.remove("show");
+    };
+
+    modalEventosItem.addEventListener("click", function (e) {
+        if (e.target === modalEventosItem) {
+            fecharModalEventosItem();
+        }
+    });
 
     });
 </script>
