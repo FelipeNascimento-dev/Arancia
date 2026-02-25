@@ -819,9 +819,20 @@
                         </span>
                     </div>
                     <div class="subtitle">
-                        Tipo: {{ payload.service_order.order_type.description }}
-                        • Criado por: {{ payload.service_order.created_by }}
-                        • Data: {{ payload.service_order.created_at|date:"d/m/Y H:i" }}
+                        {% if payload.service_order.external_order_number %}
+                            OS Externa: {{ payload.service_order.external_order_number }} •
+                        {% endif %}
+                        {% if payload.service_order.order_type %}
+                            Tipo: {{ payload.service_order.order_type.description }}
+                        {% endif %}
+                        {% if payload.service_order.created_by %}
+                            • Criado por: {{ payload.service_order.created_by }}
+                        {% endif %}
+                        {% if payload.service_order.created_at %}
+                            {% with iso=payload.service_order.created_at %}
+                                • Data: {{ iso|slice:"8:10" }}/{{ iso|slice:"5:7" }}/{{ iso|slice:"0:4" }} {{ iso|slice:"11:16" }}
+                            {% endwith %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -869,7 +880,6 @@
                     <div class="summary-number">
                         {{ payload.items|length }}
                     </div>
-                    <div class="summary-sub">equipamentos</div>
                 </div>
             </div>
 
@@ -880,7 +890,6 @@
                     <div class="summary-number">
                         {{ payload.travels|length }}
                     </div>
-                    <div class="summary-sub">ativa</div>
                 </div>
             </div>
 
@@ -891,7 +900,6 @@
                     <div class="summary-number">
                         {{ payload.quotes|length }}
                     </div>
-                    <div class="summary-sub">criada</div>
                 </div>
             </div>
 
@@ -915,7 +923,10 @@
                     <div>
                         <div class="location-label">ORIGEM</div>
                         <div class="location-name">
-                            {{ payload.origin.nome|upper }} ({{ payload.origin.cod_iata }})
+                            {{ payload.origin.nome|upper }} 
+                            {% if payload.origin.cod_iata %}
+                                ({{ payload.origin.cod_iata }})
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -929,13 +940,28 @@
                 <div class="divider"></div>
 
                 <div class="contact-line">
-                    <i class="fa-regular fa-user"></i> {{ payload.origin.responsavel }}
+                    <i class="fa-regular fa-user"></i> 
+                    {% if payload.origin.responsavel %}
+                        {{ payload.origin.responsavel }}
+                    {% else %}
+                        Não Informado
+                    {% endif %}
                 </div>
                 <div class="contact-line">
-                    <i class="fa-solid fa-phone"></i> {{ payload.origin.telefone1 }}
+                    <i class="fa-solid fa-phone"></i> 
+                    {% if payload.origin.telefone1 %}
+                        {{ payload.origin.telefone1 }}
+                    {% else %}
+                        Não Informado
+                    {% endif %}
                 </div>
                 <div class="contact-line">
-                    <i class="fa-regular fa-envelope"></i> {{ payload.origin.email }}
+                    <i class="fa-regular fa-envelope"></i> 
+                    {% if payload.origin.email %}
+                        {{ payload.origin.email }}
+                    {% else %}
+                        Não Informado
+                    {% endif %}
                 </div>
             </div>
 
@@ -951,7 +977,10 @@
                     <div>
                         <div class="location-label">DESTINO</div>
                         <div class="location-name">
-                            {{ payload.destination.nome|upper }} ({{ payload.destination.cod_iata }})
+                            {{ payload.destination.nome|upper }} 
+                            {% if payload.destination.cod_iata %}
+                                ({{ payload.destination.cod_iata }})
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -965,8 +994,19 @@
                 </div>
                 <div class="divider"></div>
                 <div class="contact">
-                    <i class="fa-regular fa-user"></i> {{ payload.destination.responsavel }}<br>
-                    <i class="fa-regular fa-envelope"></i> {{ payload.destination.email }}
+                    <i class="fa-regular fa-user"></i> 
+                    {% if payload.destination.responsavel %}
+                        {{ payload.destination.responsavel }}
+                    {% else %}
+                        Não Informado
+                    {% endif %}
+                    <br>
+                    <i class="fa-regular fa-envelope"></i> 
+                    {% if payload.destination.email %}
+                        {{ payload.destination.email }}
+                    {% else %}
+                        Não Informado
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -1022,7 +1062,11 @@
                                 </td>
 
                                 <td>
-                                    {{ item.created_at|slice:":10" }}
+                                    {% if item.created_at %}
+                                        {{ item.created_at|slice:"8:10" }}/{{ item.created_at|slice:"5:7" }}/{{ item.created_at|slice:"0:4" }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
                                 </td>
 
                                 <td>
@@ -1132,6 +1176,11 @@
 
                         <div class="cotacao-grid">
                             <div>
+                                <div class="info-label">Transportadora</div>
+                                <div class="info-value">{{ quote.carrier.nome }}</div>
+                            </div>
+
+                            <div>
                                 <div class="info-label">Peso</div>
                                 <div class="info-value">{{ quote.total_weight }} kg</div>
                             </div>
@@ -1198,18 +1247,22 @@
         <div class="os-modal-body">
             <div class="form-grid">
                 <div class="form-group">
+                    <label>Transportadora</label>
+                    <select name="carrier_id" required>
+                        <option value="">Selecione uma transportadora...</option>
+                        {% for carrier in carriers %}
+                        <option value="{{ carrier.id }}">{{ carrier.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label>Motorista</label>
                     <select>
                         <option>Buscar motorista...</option>
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Transportadora</label>
-                    <select>
-                        <option>Buscar transportadora...</option>
-                    </select>
-                </div>
 
                 <div class="form-group">
                     <label>Veículo</label>
@@ -1229,6 +1282,9 @@
                     <label>Cotação (opcional)</label>
                     <select>
                         <option>Selecionar cotação...</option>
+                        {% for quote in payload.quotes %}
+                        <option value="{{ quote.id }}">#{{ quote.id }} - {{ quote.estimated_price }}</option>
+                        {% endfor %}
                     </select>
                 </div>
 
@@ -1240,20 +1296,12 @@
 
             <div class="items-box">
                 <div class="items-title">Itens da Viagem</div>
+                {% for item in payload.items %}
                 <label class="checkbox-item">
                     <input type="checkbox">
-                    Notebook Dell XPS <span>(SN-001)</span>
+                    {{ item.description }} <span>({{ item.serial_number }})</span>
                 </label>
-
-                <label class="checkbox-item">
-                    <input type="checkbox">
-                    Monitor LG 27" <span>(SN-002)</span>
-                </label>
-
-                <label class="checkbox-item">
-                    <input type="checkbox">
-                    Teclado Mecânico <span>(SN-003)</span>
-                </label>
+                {% endfor %}
             </div>
         </div>
         <div class="os-modal-footer">

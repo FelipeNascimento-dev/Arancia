@@ -22,6 +22,8 @@ def detalhe_os_transp(request, order_number):
 
     resp = client.send_api_request()
 
+    print(resp)
+
     url_carriers = f"{TRANSP_API_URL}/Carriers/list"
     carriers_request = RequestClient(
         method="get",
@@ -114,4 +116,5 @@ def detalhe_os_transp(request, order_number):
         "payload": resp,
         "carriers": carriers,
         "grupos": grupos,
+        "site_title": "Detalhe da OS"
     })

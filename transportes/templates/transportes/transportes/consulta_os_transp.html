@@ -198,13 +198,13 @@
 
             <p>
                 <strong>Status:</strong><br />
-                {% if item.status.finished %}
+                {% if item.order_state.finished %}
                 <span style="color:#2e7d32; font-weight:700;">
-                    {{ item.status.type }}
+                    {{ item.order_state.type }}
                 </span>
                 {% else %}
                 <span style="color:#f9a825; font-weight:700;">
-                    {{ item.status.type }}
+                    {{ item.order_state.type }}
                 </span>
                 {% endif %}
             </p>
