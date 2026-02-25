@@ -736,6 +736,88 @@
         margin-bottom: 20px;
     }
 
+    /* MODAL ADICIONAR ITEM */
+    .item-alert{
+        border-radius:10px;
+        padding:12px 14px;
+        margin-bottom:14px;
+        font-size:14px;
+    }
+
+    #modalItemContent {
+        height: 720px;
+        width: 800px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    #modalItemBody {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+    }
+
+    #modalItemBody::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #modalItemBody::-webkit-scrollbar-thumb {
+        background: #cfd8dc;
+        border-radius: 6px;
+    }
+
+    #modalItemBody::-webkit-scrollbar-thumb:hover {
+        background: #b0bec5;
+    }
+
+    .item-alert.success{ background:#e9f7ef; color:#1f7a3a; border:1px solid #bfe8cf; }
+    .item-alert.error{ background:#fff2f2; color:#a12525; border:1px solid #f3bcbc; }
+
+    textarea{
+        width:100%;
+        padding:10px;
+        border-radius:8px;
+        border:1px solid #ddd;
+        font-size:14px;
+        resize:vertical;
+    }
+
+    .subitens-container{
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+    }
+
+    .subitem-row{
+        display:grid;
+        grid-template-columns: 1.2fr 1.2fr 1fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 44px;
+        gap:10px;
+        align-items:end;
+        padding:10px;
+        border:1px solid #e6e6e6;
+        border-radius:10px;
+        background:#fff;
+    }
+
+    .subitem-row .form-group{ margin:0; }
+    .subitem-row .remove-subitem{
+        height:40px;
+        border:none;
+        border-radius:8px;
+        cursor:pointer;
+        background:#f4f6f9;
+    }
+    .subitem-row .remove-subitem:hover{
+        background:#ffeaea;
+    }
+    .subitem-row input{
+        padding:10px;
+        border-radius:8px;
+        border:1px solid #ddd;
+        font-size:14px;
+    }
+
     .tab-content {
         width: 100%;
         overflow: visible;
@@ -804,6 +886,28 @@
         grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
         gap: 20px;
     }
+
+    .driver-dropdown {
+        position: absolute;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-top: 60px;
+        width: 300px;
+        max-height: 200px;
+        overflow-y: auto;
+        display: none;
+        z-index: 9999;
+    }
+
+    .driver-item {
+        padding: 8px 10px;
+        cursor: pointer;
+    }
+
+    .driver-item:hover {
+        background: #f4f6f9;
+    }
 </style>
 
 <div class="os-container">
@@ -843,6 +947,10 @@
                 </button>
 
                 <div class="dropdown-menu">
+
+                    <div class="dropdown-item" onclick="abrirModalCriarItem()">
+                        <i class="fa-solid fa-list"></i> Adicionar Item
+                    </div>
 
                     <div class="dropdown-item" onclick="abrirModalCotacao()">
                         <i class="fa-solid fa-plus"></i> Adicionar Cotação
@@ -1233,6 +1341,95 @@
 </div>
 
 <!-- MODAIS -->
+<!-- MODAL PARA ADICIONAR ITEM -->
+<form method="post">
+    {% csrf_token %}
+    <div class="os-modal-overlay" id="modalNovoItem">
+    <div class="os-modal os-modal-lg" id="modalItemContent">
+        <div class="os-modal-header">
+        <div class="os-modal-title">Adicionar Item</div>
+        <div class="os-modal-close" onclick="fecharModalCriarItem()">✕</div>
+        </div>
+
+        <div class="os-modal-body" id="modalItemBody">
+        <div class="os-modal-description">
+            Preencha os dados do item para a OS <b>#{{ payload.service_order.order_number }}</b>
+        </div>
+
+        <div id="itemModalAlert" class="item-alert" style="display:none;"></div>
+            <input type="hidden" name="service_order_id" value="{{ payload.service_order.id }}">
+            <input type="hidden" name="order_number"
+       value="{{ payload.service_order.external_order_number|default:payload.service_order.order_number }}">
+            <input type="hidden" name="created_by" value="{{ request.user.username }}">
+
+            <div class="form-grid">
+            <div class="form-group">
+                <label>Serial (principal)</label>
+                <input type="text" name="serial_number"required>
+            </div>
+
+            <div class="form-group">
+                <label>Modelo</label>
+                <input type="text" name="product_model" required>
+            </div>
+
+            <div class="form-group">
+                <label>Item Control</label>
+                <input type="text" name="item_control">
+            </div>
+
+            <div class="form-group">
+                <label>Client ID</label>
+                <input type="number" name="client_id" value="0" min="0">
+            </div>
+
+            <div class="form-group">
+                <label>Peso (kg)</label>
+                <input type="number" name="weight" value="0" step="0.01" min="0">
+            </div>
+
+            <div class="form-group">
+                <label>Altura (cm)</label>
+                <input type="number" name="height" value="0" step="0.01" min="0">
+            </div>
+
+            <div class="form-group">
+                <label>Comprimento (cm)</label>
+                <input type="number" name="length" value="0" step="0.01" min="0">
+            </div>
+
+            <div class="form-group">
+                <label>Largura (cm)</label>
+                <input type="number" name="width" value="0" step="0.01" min="0">
+            </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:18px;">
+            <label>Extra Information (JSON)</label>
+            <textarea name="extra_information" rows="3" placeholder='{"chave":"valor"}'></textarea>
+            </div>
+
+            <div class="items-box">
+                <div class="items-title" style="display:flex;justify-content:space-between;align-items:center;">
+                    <span>Sub-itens</span>
+                    <button type="button" class="btn-primary" style="padding:8px 12px;" onclick="addSubItemRow()">
+                    + Adicionar Sub-item
+                    </button>
+                </div>
+
+                <div id="subItensContainer" class="subitens-container">
+                    <!-- linhas entram via JS -->
+                </div>
+            </div>
+        </div>
+
+        <div class="os-modal-footer">
+        <button type="button" class="btn-secondary" onclick="fecharModalCriarItem()">Cancelar</button>
+        <button type="submit" class="btn-primary" name="criar_item" value="1">Salvar Item</button>
+        </div>
+    </div>
+    </div>
+</form>
 
 <!-- MODAL PARA CRIAR VIAGEM -->
 <div class="os-modal-overlay" id="modalNovaViagem">
@@ -1258,11 +1455,10 @@
 
                 <div class="form-group">
                     <label>Motorista</label>
-                    <select>
-                        <option>Buscar motorista...</option>
-                    </select>
+                    <input type="text" id="driverSearch" placeholder="Digite o nome do motorista..." autocomplete="off">
+                    <input type="hidden" name="driver_id" id="driverId">
+                    <div id="driverResults" class="driver-dropdown"></div>
                 </div>
-
 
                 <div class="form-group">
                     <label>Veículo</label>
@@ -1283,7 +1479,7 @@
                     <select>
                         <option>Selecionar cotação...</option>
                         {% for quote in payload.quotes %}
-                        <option value="{{ quote.id }}">#{{ quote.id }} - {{ quote.estimated_price }}</option>
+                        <option value="{{ quote.id }}">{{ quote.carrier.nome }} - R${{ quote.estimated_price }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -1646,4 +1842,149 @@
     });
 </script>
 
+<!-- JS PARA MODAL DE ITENS -->
+<script>
+  const modalNovoItem = document.getElementById("modalNovoItem");
+
+  window.abrirModalCriarItem = function () {
+    modalNovoItem.classList.add("show");
+
+    const container = document.getElementById("subItensContainer");
+    if (container.children.length === 0) {
+      addSubItemRow();
+    }
+  };
+
+  window.fecharModalCriarItem = function () {
+    modalNovoItem.classList.remove("show");
+  };
+
+  if (modalNovoItem) {
+    modalNovoItem.addEventListener("click", function (e) {
+      if (e.target === modalNovoItem) {
+        fecharModalCriarItem();
+      }
+    });
+  }
+
+  window.addSubItemRow = function () {
+    const container = document.getElementById("subItensContainer");
+    const row = document.createElement("div");
+    row.className = "subitem-row";
+
+    row.innerHTML = `
+      <div class="form-group">
+        <label>Serial</label>
+        <input type="text" name="sub_serial[]" />
+      </div>
+
+      <div class="form-group">
+        <label>Modelo</label>
+        <input type="text" name="sub_model[]" />
+      </div>
+
+      <div class="form-group">
+        <label>Tipo</label>
+        <input type="text" name="sub_type[]" />
+      </div>
+
+      <div class="form-group">
+        <label>Item Control</label>
+        <input type="text" name="sub_control[]" />
+      </div>
+
+      <div class="form-group">
+        <label>Peso</label>
+        <input type="number" name="sub_weight[]" value="0" step="0.01" min="0">
+      </div>
+
+      <div class="form-group">
+        <label>Altura</label>
+        <input type="number" name="sub_height[]" value="0" step="0.01" min="0">
+      </div>
+
+      <div class="form-group">
+        <label>Comp.</label>
+        <input type="number" name="sub_length[]" value="0" step="0.01" min="0">
+      </div>
+
+      <div class="form-group">
+        <label>Larg.</label>
+        <input type="number" name="sub_width[]" value="0" step="0.01" min="0">
+      </div>
+
+      <button type="button" class="remove-subitem" onclick="this.parentElement.remove()">
+        ✕
+      </button>
+    `;
+
+    container.appendChild(row);
+  };
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    const input = document.getElementById("driverSearch");
+    const resultsBox = document.getElementById("driverResults");
+    const hiddenId = document.getElementById("driverId");
+    const carrierSelect = document.querySelector("select[name='carrier_id']");
+
+    let timeout = null;
+
+    input.addEventListener("keyup", function(){
+
+        const query = this.value.trim();
+        const carrierId = carrierSelect.value;
+
+        clearTimeout(timeout);
+
+        if(query.length < 2){
+            resultsBox.style.display = "none";
+            return;
+        }
+
+        timeout = setTimeout(() => {
+
+            fetch("{% url 'transportes:buscar_motoristas' %}?nome=" + query + "&carrier_id=" + carrierId)
+                .then(res => res.json())
+                .then(data => {
+
+                    resultsBox.innerHTML = "";
+
+                    if(!data.items.length){
+                        resultsBox.style.display = "none";
+                        return;
+                    }
+
+                    data.items.forEach(driver => {
+
+                        const div = document.createElement("div");
+                        div.classList.add("driver-item");
+                        div.innerText = driver.name;
+
+                        div.onclick = function(){
+                            input.value = driver.name;
+                            hiddenId.value = driver.id;
+                            resultsBox.style.display = "none";
+                        }
+
+                        resultsBox.appendChild(div);
+                    });
+
+                    resultsBox.style.display = "block";
+                });
+
+        }, 300); // debounce
+    });
+
+    document.addEventListener("click", function(e){
+        if(!input.contains(e.target)){
+            resultsBox.style.display = "none";
+        }
+    });
+
+});
+</script>
 {% endblock content %}
