@@ -908,6 +908,81 @@
     .driver-item:hover {
         background: #f4f6f9;
     }
+
+    .custom-select {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .custom-select-trigger {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 12px;
+        background: #fff;
+        font-size: 14px;
+    }
+
+    .custom-select-dropdown {
+        position: absolute;
+        top: 105%;
+        left: 0;
+        width: 100%;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        max-height: 280px;
+        overflow-y: auto;
+        display: none;
+        z-index: 9999;
+    }
+
+    .custom-option {
+        position: relative;
+        padding: 14px 14px 14px 14px;
+        border-bottom: 1px solid #f1f1f1;
+        transition: 0.2s;
+    }
+
+    .custom-option:hover {
+        background: #f4f6f9;
+    }
+
+    .option-content {
+        position: relative;
+        padding-top: 22px;
+    }
+
+    .option-text {
+        font-size: 14px;
+        line-height: 1.4;
+        word-break: break-word;
+    }
+
+    .option-tags {
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: flex;
+        gap: 6px;
+    }
+
+    .tag {
+        font-size: 8px;
+        padding: 4px 8px;
+        border-radius: 20px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .tag-status {
+        background: #e8f2ff;
+        color: #0e76bd;
+    }
+
+    .tag-final {
+        background: #e9f7ef;
+        color: #1f7a3a;
+    }
 </style>
 
 <div class="os-container">
@@ -1212,7 +1287,7 @@
                             <div class="travel-title">
                                 Viagem #{{ travel.id }}
                                 <span class="badge badge-blue">
-                                    Status {{ travel.status.type }}
+                                    {{ travel.status.type }}
                                 </span>
                             </div>
                             <div class="travel-sub">
@@ -1645,7 +1720,8 @@
 </div>
 
 <!-- MODAL PARA CRIACAO DE EVENTOS NAS TRAVELS -->
-<div class="os-modal-overlay" id="modalEventosTravel">
+{% if modal_travel_events %}
+<div class="os-modal-overlay show" id="modalEventosTravel">
     <div class="os-modal" style="width:700px;">
         <div class="os-modal-header">
             <div class="os-modal-title">
@@ -1656,26 +1732,106 @@
 
         <div class="os-modal-body">
 
-            <input type="hidden" id="travelEventId">
+            <form method="post">
+                {% csrf_token %}
 
-            <div class="form-group" style="margin-bottom:15px;">
-                <label>Novo Evento</label>
-                <textarea id="travelEventDescription" rows="3"
-                            placeholder="Descreva o evento..."></textarea>
-            </div>
+                <input type="hidden" name="travel_id" value="{{ request.POST.travel_id }}">
 
-            <button class="btn-primary"
-                    style="margin-bottom:20px;"
-                    onclick="criarEventoTravel()">
-                Adicionar Evento
-            </button>
+               <div class="form-group">
+                    <label>Tipo de Evento</label>
+                    <input type="hidden" name="event_type_id" id="eventTypeId">
+                    <div class="custom-select" id="eventTypeSelect">
+                        <div class="custom-select-trigger">
+                            Selecione um tipo...
+                        </div>
 
-            <div id="travelEventsList" class="timeline modal-scroll-limit"></div>
+                        <div class="custom-select-dropdown">
+                            {% for ev in travel_event_types %}
+                            <div class="custom-option"
+                                data-id="{{ ev.id }}"
+                                data-required="{{ ev.required_items|yesno:'true,false' }}">
+                                <div class="option-content">
+                                    <div class="option-tags">
+                                        {% if ev.status %}
+                                            <span class="tag tag-status">
+                                                {{ ev.status.type }}
+                                            </span>
+                                        {% endif %}
+                                        {% if ev.status and ev.status.finished %}
+                                            <span class="tag tag-final">
+                                                Finalizador
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="option-text">
+                                        {{ ev.description }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div id="eventItemsBox" class="items-box" style="display:none; margin-top:20px;">
+                    <div class="items-title">Itens da Viagem</div>
+                    {% if travel_items %}
+                        {% for item in travel_items %}
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="items" value="{{ item.id }}">
+                            {{ item.product_model }}
+                            <span>({{ item.serial_number }})</span>
+                        </label>
+                        {% endfor %}
+                    {% else %}
+                        <div style="font-size:13px; color:#777;">
+                            Nenhum item vinculado a esta viagem.
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group" style="margin-top:15px;">
+                    <label>Descrição (opcional)</label>
+                    <textarea name="description" rows="3"
+                        placeholder="Observações adicionais..."></textarea>
+                </div>
+
+                <div class="form-grid" style="margin-top:15px;">
+                    <div class="form-group">
+                        <label>Latitude</label>
+                        <input type="text"
+                            name="location_lat"
+                            placeholder="-23.550520">
+                    </div>
+                    <div class="form-group">
+                        <label>Longitude</label>
+                        <input type="text"
+                            name="location_long"
+                            placeholder="-46.633308">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top:15px;">
+                    <label>Imagem (opcional)</label>
+                    <input type="file"
+                        name="event_image"
+                        accept="image/*">
+                </div>
+
+                <div style="margin-top:20px; text-align:right;">
+                    <button type="submit"
+                            class="btn-primary"
+                            name="criar_evento_travel"
+                            value="1">
+                        Criar Evento
+                    </button>
+                </div>
+            </form>
 
         </div>
     </div>
 </div>
-
+{% endif %}
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -2151,6 +2307,52 @@ document.addEventListener("DOMContentLoaded", function(){
         if(!input.contains(e.target)){
             resultsBox.style.display = "none";
         }
+    });
+
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    const select = document.getElementById("eventTypeSelect");
+    const trigger = select.querySelector(".custom-select-trigger");
+    const dropdown = select.querySelector(".custom-select-dropdown");
+    const hiddenInput = document.getElementById("eventTypeId");
+    const itemsBox = document.getElementById("eventItemsBox");
+
+    trigger.addEventListener("click", function(e){
+        e.stopPropagation();
+        dropdown.style.display =
+            dropdown.style.display === "block" ? "none" : "block";
+    });
+
+    select.querySelectorAll(".custom-option").forEach(option => {
+
+        option.addEventListener("click", function(){
+
+            const id = this.dataset.id;
+            const required = this.dataset.required === "true";
+
+            hiddenInput.value = id;
+            trigger.innerHTML = this.innerHTML;
+            dropdown.style.display = "none";
+
+            // 🔥 AQUI ESTÁ A REGRA
+            if(required){
+                itemsBox.style.display = "block";
+            } else {
+                itemsBox.style.display = "none";
+
+                // limpa checkboxes se esconder
+                itemsBox.querySelectorAll("input[type='checkbox']")
+                        .forEach(cb => cb.checked = false);
+            }
+        });
+    });
+
+    document.addEventListener("click", function(){
+        dropdown.style.display = "none";
     });
 
 });
