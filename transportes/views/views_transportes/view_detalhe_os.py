@@ -53,7 +53,51 @@ def buscar_motoristas(request):
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.acesso_arancia', raise_exception=True)
+def buscar_veiculos(request):
+
+    carrier_id = request.GET.get("carrier_id")
+    plate = request.GET.get("plate", "").strip()
+
+    if not carrier_id:
+        return JsonResponse({"items": []})
+
+    url = f"{TRANSP_API_URL}/carriers_vehicles/list?plate={plate}&carrier_id={carrier_id}"
+    headers = {
+        "accept": "application/json",
+        "Content-Type": "application/json",
+    }
+
+    params = {
+        "carrier_id": carrier_id,
+        "limit": 20
+    }
+
+    if plate:
+        params["plate"] = plate
+
+    client = RequestClient(
+        method="get",
+        url=url,
+        headers=headers,
+    )
+
+    response = client.send_api_request()
+
+    items = []
+    if isinstance(response, dict):
+        items = response.get("items") or response.get("results") or []
+    elif isinstance(response, list):
+        items = response
+
+    return JsonResponse({"items": items})
+
+
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def detalhe_os_transp(request, order_number):
+    modal_travel_events = False
+    travel_event_types = []
+    travel_items = []
 
     url = f"{TRANSP_API_URL}/service_orders/{order_number}"
     headers = {
@@ -263,10 +307,161 @@ def detalhe_os_transp(request, order_number):
             except Exception as e:
                 messages.error(request, f"Erro ao criar cotação: {e}")
 
+        if "criar_viagem" in request.POST:
+            order_id = int(request.POST.get("service_order_id"))
+            driver_id = int(request.POST.get("driver_id"))
+            carrier_id = int(request.POST.get("carrier_id"))
+            vehicle_id = int(request.POST.get("vehicle_id"))
+
+            quote_id_raw = request.POST.get("quote_id")
+            quote_id = int(quote_id_raw) if quote_id_raw else None
+
+            price_charged_raw = request.POST.get("price_charged")
+
+            try:
+                price_charged = float(str(price_charged_raw).replace(",", "."))
+            except:
+                price_charged = 0.0
+
+            created_by = request.user.username
+
+            items = request.POST.getlist("items")
+            items = [int(i) for i in items]
+
+            payload = {
+                "order_id": order_id,
+                "driver_id": driver_id,
+                "carrier_id": carrier_id,
+                "price_charged": price_charged,
+                "vehicle_id": vehicle_id,
+                "quote_id": quote_id,
+                "created_by": created_by,
+                "items": items
+            }
+
+            print(payload)
+
+            try:
+                url = f"{TRANSP_API_URL}/order_travels/create"
+
+                client = RequestClient(
+                    method="POST",
+                    url=url,
+                    headers={
+                        "accept": "application/json",
+                        "Content-Type": "application/json",
+                    },
+                    request_data=payload
+                )
+
+                response = client.send_api_request()
+
+                if "detail" in response:
+                    messages.error(request, response["detail"])
+                else:
+                    messages.success(request, "Viagem criada com sucesso!")
+                    return redirect('transportes:detalhe_os_transp', order_number=order_number)
+
+            except Exception as e:
+                messages.error(request, f"Erro ao criar viagem: {e}")
+
+        if "travel_events" in request.POST:
+            modal_travel_events = True
+
+            travel_id = request.POST.get("travel_id")
+
+            travel_items = []
+
+            if travel_id:
+                travel_items = [
+                    item for item in resp.get("items", [])
+                    if str(item.get("travel_order_id")) == str(travel_id)
+                ]
+
+                client_id = resp.get("client", {}).get("nome")
+                order_type = resp.get("service_order", {}).get(
+                    "order_type", {}).get("id")
+            try:
+                url = f"{TRANSP_API_URL}/order_events_types/list?cliente={client_id}&order_type={order_type}"
+
+                client = RequestClient(
+                    method="GET",
+                    url=url,
+                    headers={
+                        "accept": "application/json",
+                        "Content-Type": "application/json",
+                    },
+                )
+
+                response_travel = client.send_api_request()
+
+                if isinstance(response_travel, list):
+                    travel_event_types = [
+                        ev for ev in response_travel
+                        if ev.get("active") is True
+                    ]
+
+                elif isinstance(response_travel, dict) and "detail" in response_travel:
+                    messages.error(request, response_travel["detail"])
+
+            except Exception as e:
+                messages.error(request, f"Erro ao consultar eventos: {e}")
+
+        if "criar_evento_travel" in request.POST:
+            travel_id = int(request.POST.get("travel_id"))
+            event_type_id = int(request.POST.get("event_type_id"))
+            description = request.POST.get("description")
+            created_by = request.user.username
+            location_lat = request.POST.get("location_lat")
+            location_long = request.POST.get("location_long")
+            img_url = request.POST.get("img_url")
+            selected_items = request.POST.getlist("items")
+            selected_items = [int(i) for i in selected_items]
+
+            payload = {
+                "event_type_id": event_type_id,
+                "created_by": created_by,
+            }
+
+            if description:
+                payload["description"] = description
+            if location_lat:
+                payload["location_lat"] = location_lat
+            if location_long:
+                payload["location_long"] = location_long
+            if img_url:
+                payload["img_url"] = img_url
+            if selected_items:
+                payload["extra_information"] = {
+                    "items": selected_items
+                }
+
+            url = f"{TRANSP_API_URL}/order_tracking_events/create?id={travel_id}&destination=travel"
+            client = RequestClient(
+                method="POST",
+                url=url,
+                headers={
+                    "accept": "application/json",
+                    "Content-Type": "application/json",
+                },
+                request_data=payload
+            )
+
+            response_event = client.send_api_request()
+
+            if "detail" in response_event:
+                messages.error(request, response_event["detail"])
+            else:
+                messages.success(request, "Evento criado com sucesso!")
+                return redirect('transportes:detalhe_os_transp', order_number=order_number)
+
     return render(request, 'transportes/transportes/detalhe_os.html', {
         "order_number": order_number,
         "payload": resp,
         "carriers": carriers,
         "grupos": grupos,
+        "modal_travel_events": modal_travel_events,
+        "travel_event_types": travel_event_types,
+        "travel_items": travel_items,
         "site_title": "Detalhe da OS"
     })
