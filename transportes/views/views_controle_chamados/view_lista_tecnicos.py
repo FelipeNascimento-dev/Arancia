@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, permission_required
 from ...forms import ListaTecnicoForm
 from logistica.models import Group, GroupAditionalInformation
 from setup.local_settings import API_BASE
@@ -9,6 +10,8 @@ TOKEN = "123"
 PAGE_SIZE = 25
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def get_bases_from_arancia_pa():
     bases = []
 
@@ -28,6 +31,8 @@ def get_bases_from_arancia_pa():
     return sorted(bases, key=lambda x: x[1])
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def lista_tecnicos(request):
     titulo = 'Lista de Técnicos'
     bases = get_bases_from_arancia_pa()

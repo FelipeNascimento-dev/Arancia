@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_protect
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('transportes.gerar_etiquetas', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def gerar_etiquetas_view(request):
     return render(request, "transportes/controle_campo/frame2.html", {
         "titulo": "Gerar Etiquetas",
@@ -19,6 +20,7 @@ def gerar_etiquetas_view(request):
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('transportes.controle_campo', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def extrair_enderecos_view(request):
     return render(request, "transportes/controle_campo/frame2.html", {
         "titulo": "Extrair Endereços",
@@ -32,6 +34,7 @@ def extrair_enderecos_view(request):
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('transportes.controle_campo', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def painel_Dashboard_view(request):
     return render(request, "transportes/controle_campo/iframe.html", {
         "titulo": "Dashboard",

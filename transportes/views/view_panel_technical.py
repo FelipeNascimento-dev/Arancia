@@ -4,10 +4,13 @@ from django.utils.dateparse import parse_datetime
 from django.utils.timezone import make_aware, is_naive, localtime, now
 from transportes.utils.utils import format_datetime, normalizar_celular
 from setup.local_settings import API_BASE
+from django.contrib.auth.decorators import login_required, permission_required
 
 TRATAMENTOS = "{APIBASE}/v3/tratamento/{uid}?person_treated={pessoa}"
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def build_tecnicos(
     dados_status,
     hoje,
@@ -138,6 +141,8 @@ def build_tecnicos(
 # transportes/views/view_tratamento.py
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def registrar_tratamento_view(request, uid):
     pessoa = request.user.username
     url = f"{API_BASE}/v3/tratamento/{uid}?person_treated={pessoa}"

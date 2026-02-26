@@ -14,6 +14,7 @@ TOKEN = "123"
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('transportes.CC_admin', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def criar_user_view(request):
     if request.method == "POST":
         form = UsuarioForm(request.POST)

@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, permission_required
 from ...forms import CheckoutReverseCreateForm
 from setup.local_settings import STOCK_API_URL
 from utils.request import RequestClient
@@ -11,6 +12,8 @@ MAX_KITS_PER_VOLUME = 25
 MAX_VOLUMES = 10
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def checkout_reverse_create(request, rom):
     numero_romaneio = rom
     user = request.user

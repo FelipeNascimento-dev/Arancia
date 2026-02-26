@@ -17,6 +17,7 @@ API_SCRIPT = f"{API_BASE}/v3/rota/expo-processar-fluxo-completo"
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('transportes.controle_campo', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def scripting_view(request):
     contexto = {
         "form": ScriptingForm(),
