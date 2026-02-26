@@ -53,7 +53,49 @@ def buscar_motoristas(request):
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.acesso_arancia', raise_exception=True)
+def buscar_veiculos(request):
+
+    carrier_id = request.GET.get("carrier_id")
+    plate = request.GET.get("plate", "").strip()
+
+    if not carrier_id:
+        return JsonResponse({"items": []})
+
+    url = f"{TRANSP_API_URL}/carriers_vehicles/list?plate={plate}&carrier_id={carrier_id}"
+    headers = {
+        "accept": "application/json",
+        "Content-Type": "application/json",
+    }
+
+    params = {
+        "carrier_id": carrier_id,
+        "limit": 20
+    }
+
+    if plate:
+        params["plate"] = plate
+
+    client = RequestClient(
+        method="get",
+        url=url,
+        headers=headers,
+    )
+
+    response = client.send_api_request()
+
+    items = []
+    if isinstance(response, dict):
+        items = response.get("items") or response.get("results") or []
+    elif isinstance(response, list):
+        items = response
+
+    return JsonResponse({"items": items})
+
+
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def detalhe_os_transp(request, order_number):
+    modal_travel_events = False
 
     url = f"{TRANSP_API_URL}/service_orders/{order_number}"
     headers = {
@@ -262,6 +304,68 @@ def detalhe_os_transp(request, order_number):
                     return redirect('transportes:detalhe_os_transp', order_number=order_number)
             except Exception as e:
                 messages.error(request, f"Erro ao criar cotação: {e}")
+
+        if "criar_viagem" in request.POST:
+            order_id = int(request.POST.get("service_order_id"))
+            driver_id = int(request.POST.get("driver_id"))
+            carrier_id = int(request.POST.get("carrier_id"))
+            vehicle_id = int(request.POST.get("vehicle_id"))
+
+            quote_id_raw = request.POST.get("quote_id")
+            quote_id = int(quote_id_raw) if quote_id_raw else None
+
+            price_charged_raw = request.POST.get("price_charged")
+
+            try:
+                price_charged = float(str(price_charged_raw).replace(",", "."))
+            except:
+                price_charged = 0.0
+
+            created_by = request.user.username
+
+            items = request.POST.getlist("items")
+            items = [int(i) for i in items]
+
+            payload = {
+                "order_id": order_id,
+                "driver_id": driver_id,
+                "carrier_id": carrier_id,
+                "price_charged": price_charged,
+                "vehicle_id": vehicle_id,
+                "quote_id": quote_id,
+                "created_by": created_by,
+                "items": items
+            }
+
+            print(payload)
+
+            try:
+                url = f"{TRANSP_API_URL}/order_travels/create"
+
+                client = RequestClient(
+                    method="POST",
+                    url=url,
+                    headers={
+                        "accept": "application/json",
+                        "Content-Type": "application/json",
+                    },
+                    request_data=payload
+                )
+
+                response = client.send_api_request()
+
+                if "detail" in response:
+                    messages.error(request, response["detail"])
+                else:
+                    messages.success(request, "Viagem criada com sucesso!")
+                    return redirect('transportes:detalhe_os_transp', order_number=order_number)
+
+            except Exception as e:
+                messages.error(request, f"Erro ao criar viagem: {e}")
+
+        if "travel_events" in request.POST:
+            modal_travel_events = True
+            messages.success(request, "funfou papi")
 
     return render(request, 'transportes/transportes/detalhe_os.html', {
         "order_number": order_number,

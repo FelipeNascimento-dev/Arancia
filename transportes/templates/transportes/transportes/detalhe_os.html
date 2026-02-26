@@ -1212,7 +1212,7 @@
                             <div class="travel-title">
                                 Viagem #{{ travel.id }}
                                 <span class="badge badge-blue">
-                                    Status {{ travel.status_id }}
+                                    Status {{ travel.status.type }}
                                 </span>
                             </div>
                             <div class="travel-sub">
@@ -1229,11 +1229,11 @@
                         <div class="travel-info-grid">
                             <div>
                                 <div class="info-label">Motorista</div>
-                                <div class="info-value">{{ travel.driver_id }}</div>
+                                <div class="info-value">{{ travel.driver.name }}</div>
                             </div>
                             <div>
                                 <div class="info-label">Transportadora</div>
-                                <div class="info-value">{{ travel.carrier_id }}</div>
+                                <div class="info-value">{{ travel.carrier.nome }}</div>
                             </div>
                             <div>
                                 <div class="info-label">Valor</div>
@@ -1241,6 +1241,18 @@
                                     R$ {{ travel.price_charged }}
                                 </div>
                             </div>
+
+                            <form method="post">
+                            {% csrf_token %}
+                                <input type="hidden" name="travel_id" value="{{ travel.id }}">
+                                <button type="submit"
+                                        class="btn-subitens"
+                                        name="travel_events"
+                                        value="1"
+                                        style="margin-left: 150px;">
+                                    <i class="fa-solid fa-plus"></i> Adicionar Evento
+                                </button>
+                            </form>
                         </div>
 
                         {% if travel.travel_events %}
@@ -1432,80 +1444,80 @@
 </form>
 
 <!-- MODAL PARA CRIAR VIAGEM -->
-<div class="os-modal-overlay" id="modalNovaViagem">
-    <div class="os-modal">
-        <div class="os-modal-header">
-            <div class="os-modal-title">
-                Nova Viagem
-            </div>
-            <div class="os-modal-close" onclick="fecharModal()">✕</div>
-        </div>
-
-        <div class="os-modal-body">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Transportadora</label>
-                    <select name="carrier_id" required>
-                        <option value="">Selecione uma transportadora...</option>
-                        {% for carrier in carriers %}
-                        <option value="{{ carrier.id }}">{{ carrier.nome }}</option>
-                        {% endfor %}
-                    </select>
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="service_order_id" value="{{ payload.service_order.id }}">
+    <div class="os-modal-overlay" id="modalNovaViagem">
+        <div class="os-modal">
+            <div class="os-modal-header">
+                <div class="os-modal-title">
+                    Nova Viagem
                 </div>
-
-                <div class="form-group">
-                    <label>Motorista</label>
-                    <input type="text" id="driverSearch" placeholder="Digite o nome do motorista..." autocomplete="off">
-                    <input type="hidden" name="driver_id" id="driverId">
-                    <div id="driverResults" class="driver-dropdown"></div>
-                </div>
-
-                <div class="form-group">
-                    <label>Veículo</label>
-                    <select>
-                        <option>Buscar veículo...</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Status</label>
-                    <select>
-                        <option>Selecionar status...</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Cotação (opcional)</label>
-                    <select>
-                        <option>Selecionar cotação...</option>
-                        {% for quote in payload.quotes %}
-                        <option value="{{ quote.id }}">{{ quote.carrier.nome }} - R${{ quote.estimated_price }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Valor Cobrado (R$)</label>
-                    <input type="number" value="0">
-                </div>
+                <div class="os-modal-close" onclick="fecharModal()">✕</div>
             </div>
 
-            <div class="items-box">
-                <div class="items-title">Itens da Viagem</div>
-                {% for item in payload.items %}
-                <label class="checkbox-item">
-                    <input type="checkbox">
-                    {{ item.description }} <span>({{ item.serial_number }})</span>
-                </label>
-                {% endfor %}
+            <div class="os-modal-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Transportadora</label>
+                        <select name="carrier_id" id="carrierSelectViagem" required>
+                            <option value="">Selecione uma transportadora...</option>
+                            {% for carrier in carriers %}
+                            <option value="{{ carrier.id }}">{{ carrier.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Motorista</label>
+                        <input type="text" id="driverSearch" placeholder="Digite o nome do motorista..." autocomplete="off">
+                        <input type="hidden" name="driver_id" id="driverId">
+                        <div id="driverResults" class="driver-dropdown"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Veículo</label>
+                        <input type="text"
+                            id="vehicleSearch"
+                            placeholder="Digite a placa..."
+                            autocomplete="off">
+                        <input type="hidden" name="vehicle_id" id="vehicleId">
+                        <div id="vehicleResults" class="driver-dropdown"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cotação (opcional)</label>
+                        <select name="quote_id">
+                            <option>Selecionar cotação...</option>
+                            {% for quote in payload.quotes %}
+                            <option value="{{ quote.id }}">{{ quote.carrier.nome }} - R${{ quote.estimated_price }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Valor Cobrado (R$)</label>
+                        <input type="number" name="price_charged" value="0" step="0.01" min="0">
+                    </div>
+                </div>
+
+                <div class="items-box">
+                    <div class="items-title">Itens da Viagem</div>
+                    {% for item in payload.items %}
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="items" value="{{ item.id }}">
+                        {{ item.description }} <span>({{ item.serial_number }})</span>
+                    </label>
+                    {% endfor %}
+                </div>
             </div>
-        </div>
-        <div class="os-modal-footer">
-            <button class="btn-secondary" onclick="fecharModal()">Cancelar</button>
-            <button class="btn-primary">Criar Viagem</button>
+            <div class="os-modal-footer">
+                <button class="btn-secondary" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-primary" name="criar_viagem">Criar Viagem</button>
+            </div>
         </div>
     </div>
-</div>
+</form>
 <!-- MODAL PARA CRIAR COTAÇÃO -->
 <form method="post">
     {% csrf_token %}
@@ -1628,6 +1640,38 @@
         </div>
 
         <div class="os-modal-body" id="modalEventosItemBody">
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PARA CRIACAO DE EVENTOS NAS TRAVELS -->
+<div class="os-modal-overlay" id="modalEventosTravel">
+    <div class="os-modal" style="width:700px;">
+        <div class="os-modal-header">
+            <div class="os-modal-title">
+                Eventos da Viagem
+            </div>
+            <div class="os-modal-close" onclick="fecharModalEventosTravel()">✕</div>
+        </div>
+
+        <div class="os-modal-body">
+
+            <input type="hidden" id="travelEventId">
+
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>Novo Evento</label>
+                <textarea id="travelEventDescription" rows="3"
+                            placeholder="Descreva o evento..."></textarea>
+            </div>
+
+            <button class="btn-primary"
+                    style="margin-bottom:20px;"
+                    onclick="criarEventoTravel()">
+                Adicionar Evento
+            </button>
+
+            <div id="travelEventsList" class="timeline modal-scroll-limit"></div>
+
         </div>
     </div>
 </div>
@@ -1922,7 +1966,7 @@
   };
 </script>
 
-
+<!-- BUSCAR MOTORISTAS DIGITANDO -->
 <script>
 document.addEventListener("DOMContentLoaded", function(){
 
@@ -1966,7 +2010,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
                         div.onclick = function(){
                             input.value = driver.name;
-                            hiddenId.value = driver.id;
+                            hiddenId.value = driver.uid;
                             resultsBox.style.display = "none";
                         }
 
@@ -1977,6 +2021,130 @@ document.addEventListener("DOMContentLoaded", function(){
                 });
 
         }, 300); // debounce
+    });
+
+    document.addEventListener("click", function(e){
+        if(!input.contains(e.target)){
+            resultsBox.style.display = "none";
+        }
+    });
+
+});
+</script>
+
+<!-- BUSCAR VEICULOS -->
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    const carrierSelect = document.getElementById("carrierSelectViagem");
+    const vehicleSelect = document.getElementById("vehicleSelect");
+
+    carrierSelect.addEventListener("change", function(){
+
+        const carrierId = this.value;
+
+        vehicleSelect.innerHTML = '<option value="">Carregando...</option>';
+
+        if(!carrierId){
+            vehicleSelect.innerHTML = '<option value="">Selecione um veículo...</option>';
+            return;
+        }
+
+        fetch("{% url 'transportes:buscar_veiculos' %}?carrier_id=" + carrierId)
+            .then(res => res.json())
+            .then(data => {
+
+                vehicleSelect.innerHTML = '<option value="">Selecione um veículo...</option>';
+
+                if(!data.items.length){
+                    vehicleSelect.innerHTML = '<option value="">Nenhum veículo encontrado</option>';
+                    return;
+                }
+
+                data.items.forEach(vehicle => {
+
+                    const option = document.createElement("option");
+                    option.value = vehicle.id;
+                    option.textContent = vehicle.plate + " - " + (vehicle.model || "");
+
+                    vehicleSelect.appendChild(option);
+                });
+
+            })
+            .catch(() => {
+                vehicleSelect.innerHTML = '<option value="">Erro ao carregar veículos</option>';
+            });
+
+    });
+
+});
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    const input = document.getElementById("vehicleSearch");
+    const resultsBox = document.getElementById("vehicleResults");
+    const hiddenId = document.getElementById("vehicleId");
+    const carrierSelect = document.getElementById("carrierSelectViagem");
+
+    let timeout = null;
+
+    input.addEventListener("keyup", function(){
+
+        const plate = this.value.trim();
+        const carrierId = carrierSelect.value;
+
+        clearTimeout(timeout);
+
+        if(!carrierId){
+            resultsBox.style.display = "none";
+            return;
+        }
+
+        if(plate.length < 2){
+            resultsBox.style.display = "none";
+            return;
+        }
+
+        timeout = setTimeout(() => {
+
+            fetch("{% url 'transportes:buscar_veiculos' %}?carrier_id=" 
+                    + carrierId + "&plate=" + plate)
+
+                .then(res => res.json())
+                .then(data => {
+
+                    resultsBox.innerHTML = "";
+
+                    if(!data.items.length){
+                        resultsBox.style.display = "none";
+                        return;
+                    }
+
+                    data.items.forEach(vehicle => {
+
+                        const div = document.createElement("div");
+                        div.classList.add("driver-item");
+
+                        div.innerHTML = `
+                            <strong>${vehicle.plate}</strong>
+                            <small style="color:#777;">
+                                ${vehicle.model || ""}
+                            </small>
+                        `;
+
+                        div.onclick = function(){
+                            input.value = vehicle.plate + " - " + (vehicle.model || "");
+                            hiddenId.value = vehicle.id;
+                            resultsBox.style.display = "none";
+                        }
+
+                        resultsBox.appendChild(div);
+                    });
+
+                    resultsBox.style.display = "block";
+                });
+
+        }, 300);
     });
 
     document.addEventListener("click", function(e){
