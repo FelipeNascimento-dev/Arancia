@@ -1,7 +1,7 @@
 from urllib import request
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.csrf import csrf_protect
 from logistica.models import Group, GroupAditionalInformation, UserDesignation
 from setup.local_settings import API_BASE
@@ -13,6 +13,8 @@ TOKEN = "123"
 PAGE_SIZE = 50
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def get_bases_from_arancia_pa():
     bases = []
 
@@ -32,10 +34,14 @@ def get_bases_from_arancia_pa():
     return sorted(bases, key=lambda x: x[1])
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def usuario_pode_ver_todas_bases(user):
     return user.has_perm("transportes.CC_admin")
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def get_base_usuario(user):
     try:
         ud = user.designacao
@@ -56,6 +62,7 @@ def get_base_usuario(user):
 
 @csrf_protect
 @login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def consulta_os_pend(request):
     titulo = 'Consulta de OS Pendentes'
     bases = get_bases_from_arancia_pa()

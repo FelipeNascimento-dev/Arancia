@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, permission_required
 from setup.local_settings import TRANSP_API_URL
 from utils.request import RequestClient
 from django.contrib import messages
@@ -8,6 +9,8 @@ import json
 from django.http import JsonResponse
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def buscar_motoristas(request):
     nome = request.GET.get("nome", "").strip()
     carrier_id = request.GET.get("carrier_id")
@@ -48,6 +51,8 @@ def buscar_motoristas(request):
     return JsonResponse({"items": items})
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def detalhe_os_transp(request, order_number):
 
     url = f"{TRANSP_API_URL}/service_orders/{order_number}"

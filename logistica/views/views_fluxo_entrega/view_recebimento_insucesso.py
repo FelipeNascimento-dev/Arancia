@@ -1,5 +1,6 @@
 from ...forms import RecebimentoInsucessoForm
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from setup.local_settings import API_URL
 from utils.request import RequestClient
@@ -8,6 +9,8 @@ from utils.request import RequestClient
 JSON_CT = "application/json"
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def recebimento_insucesso(request):
     titulo = "Recebimento Insucesso"
     form = RecebimentoInsucessoForm(request.POST, nome_form=titulo)

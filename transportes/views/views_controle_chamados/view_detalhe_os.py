@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required, permission_required
 from setup.local_settings import API_BASE
 from utils.request import RequestClient
 from django.contrib import messages
@@ -6,6 +7,8 @@ from django.contrib import messages
 TOKEN = "123"
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def detalhe_os(request, os):
     os_number = os
 

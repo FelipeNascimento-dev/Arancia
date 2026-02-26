@@ -1,6 +1,6 @@
 # views/config_view.py
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 
 PROJECTS_BY_BASE = {
 
@@ -11,7 +11,8 @@ PROJECTS_BY_BASE = {
 PROFILE_OPTIONS = ["CLARO", "CIELO", "FEDEX", "CTB", "CTB Transportes"]
 
 
-@login_required
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def config_context_view(request):
     # 1) pega de GET ou POST
     next_url = request.GET.get("next") or request.POST.get("next")

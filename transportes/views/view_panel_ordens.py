@@ -1,7 +1,10 @@
 from setup.local_settings import API_BASE
 from transportes.utils.utils import get_api_data
+from django.contrib.auth.decorators import login_required, permission_required
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def build_ordens(request, projeto, cod_base, headers, hoje_str, tecnicos):
     url_ordens = f"{API_BASE}/v3/consultasM/ordens-atendidas-data/{projeto}"
     url_tec = f"{API_BASE}/v3/tecnicos/buscar_tec/{cod_base}?Profile={projeto}"

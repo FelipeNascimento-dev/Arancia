@@ -21,6 +21,7 @@ MOVER_FIELDS = [
 @csrf_protect
 @login_required(login_url='logistica:login')
 @permission_required('transportes.controle_campo', raise_exception=True)
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def mover_rota_view(request):
     cod_base = request.session.get("COD_BASE")
     profile = request.session.get("PROFILE")

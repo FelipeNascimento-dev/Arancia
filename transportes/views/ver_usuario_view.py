@@ -2,14 +2,15 @@ import requests
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.urls import reverse
 from setup.local_settings import API_BASE
 
 API_TOKEN = "123"
 
 
-@login_required
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def ver_usuario_view(request):
     search = request.GET.get("search", "").lower()
     page_number = request.GET.get("page", 1)

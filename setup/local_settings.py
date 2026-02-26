@@ -11,7 +11,7 @@ else:
     DB_HOST = '192.168.0.219'
     API_URL = 'http://192.168.0.216/fulfillment'
     STOCK_API_URL = 'http://192.168.0.214/stock/api'
-    TRANSP_API_URL = 'http://192.168.0.214/api-transportes/api'
+    TRANSP_API_URL = 'http://192.168.0.214/hg-api-transportes/api'
 
 PROJECT_BASE_PATH = '/arancia/'
 

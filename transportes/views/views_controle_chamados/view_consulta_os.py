@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, permission_required
 from ...forms import ConsultaOSForm
 from setup.local_settings import API_BASE
 from utils.request import RequestClient
@@ -7,6 +8,8 @@ from django.contrib import messages
 TOKEN = "123"
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
 def consulta_os(request):
     titulo = 'Consulta de OS'
     form = ConsultaOSForm(request.POST, nome_form=titulo)
