@@ -28,6 +28,8 @@ class CreateGAIForm(forms.Form):
     bairro = forms.CharField(label="Bairro", max_length=100, required=False)
     cidade = forms.CharField(label="Cidade", max_length=100, required=False)
     estado = forms.CharField(label="Estado", max_length=50, required=False)
+    codigo_ibge = forms.CharField(
+        label="Código IBGE", max_length=50, required=True)
     telefone1 = forms.CharField(
         label="Telefone 1", max_length=20, required=False)
     telefone2 = forms.CharField(
