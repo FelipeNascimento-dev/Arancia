@@ -8,6 +8,8 @@ from logistica.models import Group, GroupAditionalInformation
 import json
 import requests
 from django.http import JsonResponse
+from django.utils.dateparse import parse_datetime
+from django.utils.timezone import localtime
 
 
 @login_required(login_url='logistica:login')
@@ -113,6 +115,27 @@ def detalhe_os_transp(request, order_number):
     )
 
     resp = client.send_api_request()
+
+    def convert_utc_to_local(date_str):
+        if not date_str:
+            return None
+        dt = parse_datetime(date_str)
+        if dt:
+            return localtime(dt)
+        return None
+
+    if resp.get("service_order", {}).get("created_at"):
+        resp["service_order"]["created_at"] = convert_utc_to_local(
+            resp["service_order"]["created_at"]
+        )
+
+    for travel in resp.get("travels", []):
+        if travel.get("created_at"):
+            travel["created_at"] = convert_utc_to_local(travel["created_at"])
+
+    for event in resp.get("service_order", {}).get("service_order_events", []):
+        if event.get("created_at"):
+            event["created_at"] = convert_utc_to_local(event["created_at"])
 
     # print(resp)
 
