@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.db.models import Q
 from logistica.models import Group, GroupAditionalInformation
 import json
+import requests
 from django.http import JsonResponse
 
 
@@ -407,16 +408,18 @@ def detalhe_os_transp(request, order_number):
             except Exception as e:
                 messages.error(request, f"Erro ao consultar eventos: {e}")
 
+        UPLOAD_API_URL = f"http://192.168.0.216/RetencaoAPI/api/v3/upload/upload/Firebase/"
+
         if "criar_evento_travel" in request.POST:
             travel_id = int(request.POST.get("travel_id"))
             event_type_id = int(request.POST.get("event_type_id"))
-            description = request.POST.get("description")
+            description = (request.POST.get("description") or "").strip()
             created_by = request.user.username
-            location_lat = request.POST.get("location_lat")
-            location_long = request.POST.get("location_long")
-            img_url = request.POST.get("img_url")
-            selected_items = request.POST.getlist("items")
-            selected_items = [int(i) for i in selected_items]
+            location_lat = (request.POST.get("location_lat") or "").strip()
+            location_long = (request.POST.get("location_long") or "").strip()
+
+            selected_items = [int(i)
+                              for i in request.POST.getlist("items") if i]
 
             payload = {
                 "event_type_id": event_type_id,
@@ -429,14 +432,55 @@ def detalhe_os_transp(request, order_number):
                 payload["location_lat"] = location_lat
             if location_long:
                 payload["location_long"] = location_long
-            if img_url:
-                payload["img_url"] = img_url
             if selected_items:
-                payload["extra_information"] = {
-                    "items": selected_items
-                }
+                payload["extra_information"] = {"items": selected_items}
+
+            file_obj = request.FILES.get("event_image")
+
+            if file_obj and file_obj.size > 0:
+                try:
+                    upload_resp = requests.post(
+                        UPLOAD_API_URL,
+                        headers={
+                            "access_token": "123",
+                        },
+                        files={
+                            "file": (
+                                file_obj.name,
+                                file_obj,
+                                file_obj.content_type or "application/octet-stream"
+                            )
+                        },
+                        timeout=60,
+                    )
+
+                    upload_resp.raise_for_status()
+
+                    if "application/json" in upload_resp.headers.get("Content-Type", ""):
+                        upload_data = upload_resp.json()
+                    else:
+                        upload_data = upload_resp.text
+
+                    if isinstance(upload_data, str):
+                        img_url = upload_data.strip().strip('"')
+                    elif isinstance(upload_data, dict):
+                        img_url = upload_data.get(
+                            "url") or upload_data.get("data")
+                    else:
+                        img_url = None
+
+                    if img_url:
+                        payload["img_url"] = img_url
+                    else:
+                        messages.error(
+                            request, "Upload retornou resposta inválida.")
+
+                except Exception as e:
+                    messages.error(request, f"Falha ao enviar imagem: {e}")
+                    return redirect('transportes:detalhe_os_transp', order_number=order_number)
 
             url = f"{TRANSP_API_URL}/order_tracking_events/create?id={travel_id}&destination=travel"
+
             client = RequestClient(
                 method="POST",
                 url=url,
@@ -449,7 +493,7 @@ def detalhe_os_transp(request, order_number):
 
             response_event = client.send_api_request()
 
-            if "detail" in response_event:
+            if isinstance(response_event, dict) and "detail" in response_event:
                 messages.error(request, response_event["detail"])
             else:
                 messages.success(request, "Evento criado com sucesso!")

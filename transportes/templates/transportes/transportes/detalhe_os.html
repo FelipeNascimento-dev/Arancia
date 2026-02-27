@@ -1732,7 +1732,7 @@
 
         <div class="os-modal-body">
 
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
 
                 <input type="hidden" name="travel_id" value="{{ request.POST.travel_id }}">
