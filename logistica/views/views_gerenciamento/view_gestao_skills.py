@@ -72,6 +72,7 @@ def skill_ger(request):
         grupo.cidade = request.POST.get("cidade")
         grupo.estado = request.POST.get("estado")
         grupo.CEP = request.POST.get("CEP")
+        grupo.codigo_ibge = request.POST.get("codigo_ibge")
         grupo.telefone1 = request.POST.get("telefone1")
         grupo.telefone2 = request.POST.get("telefone2")
         grupo.email = request.POST.get("email")

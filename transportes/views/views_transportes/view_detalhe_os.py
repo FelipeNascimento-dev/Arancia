@@ -41,15 +41,16 @@ def buscar_motoristas(request):
         headers=headers,
     )
 
-    response = client.send_api_request()
+    response_moto = client.send_api_request()
 
-    print(response)
+    # print(response_moto)
 
     items = []
-    if isinstance(response, dict):
-        items = response.get("items") or response.get("results") or []
-    elif isinstance(response, list):
-        items = response
+    if isinstance(response_moto, dict):
+        items = response_moto.get(
+            "items") or response_moto.get("results") or []
+    elif isinstance(response_moto, list):
+        items = response_moto
 
     return JsonResponse({"items": items})
 
@@ -84,13 +85,14 @@ def buscar_veiculos(request):
         headers=headers,
     )
 
-    response = client.send_api_request()
+    response_carros = client.send_api_request()
 
     items = []
-    if isinstance(response, dict):
-        items = response.get("items") or response.get("results") or []
-    elif isinstance(response, list):
-        items = response
+    if isinstance(response_carros, dict):
+        items = response_carros.get(
+            "items") or response_carros.get("results") or []
+    elif isinstance(response_carros, list):
+        items = response_carros
 
     return JsonResponse({"items": items})
 
@@ -116,26 +118,26 @@ def detalhe_os_transp(request, order_number):
 
     resp = client.send_api_request()
 
-    def convert_utc_to_local(date_str):
-        if not date_str:
-            return None
-        dt = parse_datetime(date_str)
-        if dt:
-            return localtime(dt)
-        return None
+    # def convert_utc_to_local(date_str):
+    #     if not date_str:
+    #         return None
+    #     dt = parse_datetime(date_str)
+    #     if dt:
+    #         return localtime(dt)
+    #     return None
 
-    if resp.get("service_order", {}).get("created_at"):
-        resp["service_order"]["created_at"] = convert_utc_to_local(
-            resp["service_order"]["created_at"]
-        )
+    # if resp.get("service_order", {}).get("created_at"):
+    #     resp["service_order"]["created_at"] = convert_utc_to_local(
+    #         resp["service_order"]["created_at"]
+    #     )
 
-    for travel in resp.get("travels", []):
-        if travel.get("created_at"):
-            travel["created_at"] = convert_utc_to_local(travel["created_at"])
+    # for travel in resp.get("travels", []):
+    #     if travel.get("created_at"):
+    #         travel["created_at"] = convert_utc_to_local(travel["created_at"])
 
-    for event in resp.get("service_order", {}).get("service_order_events", []):
-        if event.get("created_at"):
-            event["created_at"] = convert_utc_to_local(event["created_at"])
+    # for event in resp.get("service_order", {}).get("service_order_events", []):
+    #     if event.get("created_at"):
+    #         event["created_at"] = convert_utc_to_local(event["created_at"])
 
     # print(resp)
 
@@ -226,7 +228,7 @@ def detalhe_os_transp(request, order_number):
                     "extra_information": {}
                 })
 
-            payload = {
+            payload_item = {
                 "order_number": ex_order_number,
                 "serial_number": serial_number,
                 "product_model": product_model,
@@ -253,12 +255,12 @@ def detalhe_os_transp(request, order_number):
                     method="POST",
                     url=url_quote,
                     headers=headers,
-                    request_data=payload
+                    request_data=payload_item
                 )
 
                 item_res = client.send_api_request()
 
-                print(client.request_data)
+                # print(client.request_data)
 
                 if 'detail' in item_res:
                     messages.error(request, item_res['detail'])
@@ -321,7 +323,7 @@ def detalhe_os_transp(request, order_number):
 
                 api_response = client.send_api_request()
 
-                print(client.request_data)
+                # print(client.request_data)
 
                 if 'detail' in api_response:
                     messages.error(request, api_response['detail'])
@@ -352,7 +354,7 @@ def detalhe_os_transp(request, order_number):
             items = request.POST.getlist("items")
             items = [int(i) for i in items]
 
-            payload = {
+            payload_travel = {
                 "order_id": order_id,
                 "driver_id": driver_id,
                 "carrier_id": carrier_id,
@@ -363,7 +365,7 @@ def detalhe_os_transp(request, order_number):
                 "items": items
             }
 
-            print(payload)
+            # print(payload_travel)
 
             try:
                 url = f"{TRANSP_API_URL}/order_travels/create"
@@ -375,13 +377,13 @@ def detalhe_os_transp(request, order_number):
                         "accept": "application/json",
                         "Content-Type": "application/json",
                     },
-                    request_data=payload
+                    request_data=payload_travel
                 )
 
-                response = client.send_api_request()
+                response_travel = client.send_api_request()
 
-                if "detail" in response:
-                    messages.error(request, response["detail"])
+                if "detail" in response_travel:
+                    messages.error(request, response_travel["detail"])
                 else:
                     messages.success(request, "Viagem criada com sucesso!")
                     return redirect('transportes:detalhe_os_transp', order_number=order_number)
@@ -444,19 +446,19 @@ def detalhe_os_transp(request, order_number):
             selected_items = [int(i)
                               for i in request.POST.getlist("items") if i]
 
-            payload = {
+            payload_event = {
                 "event_type_id": event_type_id,
                 "created_by": created_by,
             }
 
             if description:
-                payload["description"] = description
+                payload_event["description"] = description
             if location_lat:
-                payload["location_lat"] = location_lat
+                payload_event["location_lat"] = location_lat
             if location_long:
-                payload["location_long"] = location_long
+                payload_event["location_long"] = location_long
             if selected_items:
-                payload["extra_information"] = {"items": selected_items}
+                payload_event["extra_information"] = {"items": selected_items}
 
             file_obj = request.FILES.get("event_image")
 
@@ -493,7 +495,7 @@ def detalhe_os_transp(request, order_number):
                         img_url = None
 
                     if img_url:
-                        payload["img_url"] = img_url
+                        payload_event["img_url"] = img_url
                     else:
                         messages.error(
                             request, "Upload retornou resposta inválida.")
@@ -511,10 +513,12 @@ def detalhe_os_transp(request, order_number):
                     "accept": "application/json",
                     "Content-Type": "application/json",
                 },
-                request_data=payload
+                request_data=payload_event
             )
 
             response_event = client.send_api_request()
+
+            print(response_event)
 
             if isinstance(response_event, dict) and "detail" in response_event:
                 messages.error(request, response_event["detail"])

@@ -1,0 +1,298 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+    .form-card-2col {
+        height: auto;
+        margin-top: 65px;
+    }
+
+    .cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+        align-items: start;
+    }
+
+    .card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: flex-start;
+        padding: 12px 14px;
+        background: #f7f7f7;
+    }
+
+    .badge-num {
+        background: #4caf50;
+        color: #fff;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        flex: 0 0 28px;
+    }
+
+    .card-title {
+        margin: 0;
+        font-size: 1rem;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .card-body {
+        padding: 12px 14px;
+    }
+
+    .card-body p {
+        margin: 6px 0;
+        color: #555;
+        font-size: 0.92rem;
+    }
+
+    .card-body strong {
+        color: #222;
+    }
+
+    .pagination-bar {
+        margin-top: 20px;
+        margin-bottom: 35px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pagination-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .pagination-pages {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .pagination-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 36px;
+        padding: 0 14px;
+        border-radius: 10px;
+        border: 1px solid #e6e8ee;
+        background: #ffffff;
+        color: #1f2937;
+        font-weight: 600;
+        font-size: .92rem;
+        text-decoration: none;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, .06);
+        transition: background .15s ease, border-color .15s ease, transform .08s ease;
+        user-select: none;
+    }
+
+    .pagination-btn:hover {
+        background: #f7f8fb;
+        border-color: #d7dbe5;
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+    .pagination-btn:active {
+        transform: translateY(0);
+    }
+
+    .pagination-btn--prev,
+    .pagination-btn--next {
+        background: #f3f4f6;
+        border-color: #e5e7eb;
+        color: #374151;
+    }
+
+    .pagination-btn--prev:hover,
+    .pagination-btn--next:hover {
+        background: #eef0f4;
+    }
+
+    .pagination-btn--page {
+        min-width: 40px;
+        padding: 0 12px;
+    }
+
+    .pagination-btn--active {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: #fff;
+        cursor: default;
+    }
+
+    .pagination-btn--disabled {
+        opacity: .45;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .pagination-info {
+        color: #6b7280;
+        font-weight: 600;
+        font-size: .9rem;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST">
+            {% include 'global/partials/_form_2col.html' %}
+        </form>
+    </div>
+</div>
+
+{% if orders %}
+<div class="cards-container">
+    {% for item in orders|dictsort:"created_at" %}
+    <div class="card">
+        <div class="card-header">
+            <span class="badge-num">{{ forloop.counter }}</span>
+            <a class="card-title" href="{% url 'transportes:detalhe_os_transp' item.order_number %}" target="_blank">
+                {{ item.order_number }}
+            </a>
+        </div>
+
+        <div class="card-body">
+            <p>
+                <strong>Nº Externo:</strong><br />
+                {{ item.external_order_number }}
+            </p>
+
+            <p>
+                <strong>Cliente:</strong><br />
+                {{ item.client.nome }}
+            </p>
+
+            <p>
+                <strong>Tipo de OS:</strong><br />
+                {{ item.order_type.type }}
+            </p>
+
+            <p>
+                <strong>Status:</strong><br />
+                {% if item.order_state.finished %}
+                <span style="color:#2e7d32; font-weight:700;">
+                    {{ item.order_state.type }}
+                </span>
+                {% else %}
+                <span style="color:#f9a825; font-weight:700;">
+                    {{ item.order_state.type }}
+                </span>
+                {% endif %}
+            </p>
+
+            <p>
+                <strong>Criado por:</strong><br />
+                {{ item.created_by }}
+            </p>
+
+            <p>
+                <strong>Data de Criação:</strong><br />
+                <time class="js-dt" datetime="{{ item.created_at }}">
+                    {{ item.created_at }}
+                </time>
+            </p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="pagination-bar">
+  {% with qs=pagination.base_qs %}
+    <div class="pagination-row">
+
+      {% if pagination.has_prev %}
+        <a class="pagination-btn pagination-btn--prev"
+           href="?{% if qs %}{{ qs }}&{% endif %}page={{ pagination.prev_page }}">
+          ◀ Anterior
+        </a>
+      {% else %}
+        <span class="pagination-btn pagination-btn--prev pagination-btn--disabled">◀ Anterior</span>
+      {% endif %}
+
+      <div class="pagination-pages">
+        {% for p in pagination.pages %}
+          {% if p == pagination.page %}
+            <span class="pagination-btn pagination-btn--page pagination-btn--active">{{ p }}</span>
+          {% else %}
+            <a class="pagination-btn pagination-btn--page"
+               href="?{% if qs %}{{ qs }}&{% endif %}page={{ p }}">
+              {{ p }}
+            </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      {% if pagination.has_next %}
+        <a class="pagination-btn pagination-btn--next"
+           href="?{% if qs %}{{ qs }}&{% endif %}page={{ pagination.next_page }}">
+          Próxima ▶
+        </a>
+      {% else %}
+        <span class="pagination-btn pagination-btn--next pagination-btn--disabled">Próxima ▶</span>
+      {% endif %}
+
+    </div>
+
+    <div class="pagination-info">
+      Página {{ pagination.page }} / {{ pagination.total_pages }}
+    </div>
+  {% endwith %}
+</div>
+{% endif %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const clientSelect = document.getElementById("id_client");
+        const orderTypeSelect = document.getElementById("id_order_type");
+
+        function setOrDelete(params, key, value) {
+            if (value && value !== "") params.set(key, value);
+            else params.delete(key);
+        }
+
+        function reloadWithParams() {
+            const params = new URLSearchParams(window.location.search);
+
+            if (clientSelect) setOrDelete(params, "client", clientSelect.value);
+            if (orderTypeSelect) setOrDelete(params, "order_type", orderTypeSelect.value);
+
+            window.location.search = params.toString();
+        }
+
+        if (clientSelect) clientSelect.addEventListener("change", reloadWithParams);
+        if (orderTypeSelect) orderTypeSelect.addEventListener("change", reloadWithParams);
+
+    });
+</script>
+
+{% endblock %}
