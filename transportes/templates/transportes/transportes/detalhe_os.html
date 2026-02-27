@@ -2338,13 +2338,11 @@ document.addEventListener("DOMContentLoaded", function(){
             trigger.innerHTML = this.innerHTML;
             dropdown.style.display = "none";
 
-            // 🔥 AQUI ESTÁ A REGRA
             if(required){
                 itemsBox.style.display = "block";
             } else {
                 itemsBox.style.display = "none";
 
-                // limpa checkboxes se esconder
                 itemsBox.querySelectorAll("input[type='checkbox']")
                         .forEach(cb => cb.checked = false);
             }
@@ -2354,6 +2352,26 @@ document.addEventListener("DOMContentLoaded", function(){
     document.addEventListener("click", function(){
         dropdown.style.display = "none";
     });
+
+});
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    const modalEventosTravel = document.getElementById("modalEventosTravel");
+
+    if(modalEventosTravel){
+
+        window.fecharModalEventosTravel = function(){
+            modalEventosTravel.classList.remove("show");
+        };
+
+        modalEventosTravel.addEventListener("click", function(e){
+            if(e.target === modalEventosTravel){
+                fecharModalEventosTravel();
+            }
+        });
+
+    }
 
 });
 </script>
