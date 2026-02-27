@@ -1,5 +1,5 @@
 {% extends 'global/base.html' %}
-
+{% load tz %}
 {% block content %}
 
 <style>
@@ -1008,9 +1008,7 @@
                             • Criado por: {{ payload.service_order.created_by }}
                         {% endif %}
                         {% if payload.service_order.created_at %}
-                            {% with iso=payload.service_order.created_at %}
-                                • Data: {{ iso|slice:"8:10" }}/{{ iso|slice:"5:7" }}/{{ iso|slice:"0:4" }} {{ iso|slice:"11:16" }}
-                            {% endwith %}
+                            • Data: {{ payload.service_order.created_at|date:"d/m/Y H:i" }}
                         {% endif %}
                     </div>
                 </div>
