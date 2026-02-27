@@ -158,6 +158,8 @@ def consulta_os_transp(request):
             "form": form,
             "site_title": titulo,
             "botao_texto": "Consultar",
+            "current_parent_menu": "transportes",
+            "current_menu": "lista_os",
             "orders": resultado_api if isinstance(resultado_api, list) else [],
             "pagination": {
                 "page": page,

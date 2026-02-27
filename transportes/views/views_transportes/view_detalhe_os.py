@@ -534,5 +534,7 @@ def detalhe_os_transp(request, order_number):
         "modal_travel_events": modal_travel_events,
         "travel_event_types": travel_event_types,
         "travel_items": travel_items,
-        "site_title": "Detalhe da OS"
+        "site_title": "Detalhe da OS",
+        "current_parent_menu": "transportes",
+        "current_menu": "lista_os",
     })
