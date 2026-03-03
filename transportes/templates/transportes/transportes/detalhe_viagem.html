@@ -1045,10 +1045,7 @@
                         {% endif %}
                         {% if payload.travel.end_date %}
                             • Prazo:
-                            {{ payload.travel.end_date|slice:"8:10" }}/
-                            {{ payload.travel.end_date|slice:"5:7" }}/
-                            {{ payload.travel.end_date|slice:"0:4" }}
-                            {{ payload.travel.end_date|slice:"11:16" }}
+                            {{ payload.travel.end_date|slice:"8:10" }}/{{ payload.travel.end_date|slice:"5:7" }}/{{ payload.travel.end_date|slice:"0:4" }} {{ payload.travel.end_date|slice:"11:16" }}
                         {% endif %}
                     </div>
                 </div>
