@@ -21,6 +21,7 @@
         border-radius: 8px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         overflow: hidden;
+        height: 370px;
     }
 
     .card-header {
@@ -159,6 +160,35 @@
         font-weight: 600;
         font-size: .9rem;
     }
+
+    .status-tag {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #fff;
+        white-space: nowrap;
+    }
+
+    .status-NEW {
+        background-color: #2563eb;
+    }
+
+    .status-PENDENTE {
+        background-color: #f59e0b;
+    }
+
+    .status-COLETADO {
+        background-color: #10b981;
+    }
+
+    .status-FINALIZADO {
+        background-color: #6b7280;
+    }
+
+    .status-CANCELADO {
+        background-color: #dc2626;
+    }
 </style>
 
 <div class="form-container">
@@ -169,103 +199,115 @@
     </div>
 </div>
 
-{% if orders %}
+{% if travels %}
 <div class="cards-container">
-    {% for item in orders|dictsort:"created_at" %}
+    {% for item in travels %}
     <div class="card">
         <div class="card-header">
             <span class="badge-num">{{ forloop.counter }}</span>
-            <a class="card-title" href="{% url 'transportes:detalhe_os_transp' item.order_number %}" target="_blank">
-                {{ item.order_number }}
+
+            <a class="card-title"
+            href="{% url 'transportes:detalhe_viagem' item.travel.id %}"
+            target="_blank">
+                {{ item.travel.id }}
             </a>
+
+            <span class="status-tag status-{{ item.travel.status.type }}">
+                {{ item.travel.status.type }}
+            </span>
         </div>
 
         <div class="card-body">
             <p>
-                <strong>Nº Externo:</strong><br />
-                {{ item.external_order_number }}
-            </p>
-
-            <p>
                 <strong>Cliente:</strong><br />
-                {{ item.client.nome }}
-            </p>
-
-            <p>
-                <strong>Tipo de OS:</strong><br />
-                {{ item.order_type.type }}
-            </p>
-
-            <p>
-                <strong>Status:</strong><br />
-                {% if item.order_state.finished %}
-                <span style="color:#2e7d32; font-weight:700;">
-                    {{ item.order_state.type }}
+                <span>
+                    {{ item.service_order.client.nome }}
                 </span>
+            </p>
+
+            <p>
+                <strong>Transportadora:</strong><br />
+                <span>
+                    {{ item.travel.carrier.nome }}
+                </span>
+            </p>
+
+            <p>
+                <strong>Origem:</strong><br />
+                {{ item.service_order.origin.nome }}
+                <br>
+                <small>{{ item.service_order.origin.endereco }}</small>
+            </p>
+
+            <p>
+                <strong>Destino:</strong><br />
+                {{ item.service_order.destination.nome }}
+                <br>
+                <small>{{ item.service_order.destination.endereco }}</small>
+            </p>
+
+            <p>
+                <strong>Prazo Final:</strong><br />
+                {% if item.travel.end_date_formatada %}
+                    {{ item.travel.end_date_formatada }}
                 {% else %}
-                <span style="color:#f9a825; font-weight:700;">
-                    {{ item.order_state.type }}
-                </span>
+                    Em andamento
                 {% endif %}
             </p>
 
-            <p>
-                <strong>Criado por:</strong><br />
-                {{ item.created_by }}
-            </p>
-
-            <p>
-                <strong>Data de Criação:</strong><br />
-                <time class="js-dt" datetime="{{ item.created_at }}">
-                    {{ item.created_at }}
-                </time>
-            </p>
         </div>
     </div>
     {% endfor %}
 </div>
+{% endif %}
 
+{% if travels.has_other_pages %}
 <div class="pagination-bar">
-  {% with qs=pagination.base_qs %}
     <div class="pagination-row">
 
-      {% if pagination.has_prev %}
-        <a class="pagination-btn pagination-btn--prev"
-           href="?{% if qs %}{{ qs }}&{% endif %}page={{ pagination.prev_page }}">
-          ◀ Anterior
-        </a>
-      {% else %}
-        <span class="pagination-btn pagination-btn--prev pagination-btn--disabled">◀ Anterior</span>
-      {% endif %}
-
-      <div class="pagination-pages">
-        {% for p in pagination.pages %}
-          {% if p == pagination.page %}
-            <span class="pagination-btn pagination-btn--page pagination-btn--active">{{ p }}</span>
-          {% else %}
-            <a class="pagination-btn pagination-btn--page"
-               href="?{% if qs %}{{ qs }}&{% endif %}page={{ p }}">
-              {{ p }}
+        {% if travels.has_previous %}
+            <a class="pagination-btn pagination-btn--prev"
+               href="?page={{ travels.previous_page_number }}">
+                ◀ Anterior
             </a>
-          {% endif %}
-        {% endfor %}
-      </div>
+        {% else %}
+            <span class="pagination-btn pagination-btn--prev pagination-btn--disabled">
+                ◀ Anterior
+            </span>
+        {% endif %}
 
-      {% if pagination.has_next %}
-        <a class="pagination-btn pagination-btn--next"
-           href="?{% if qs %}{{ qs }}&{% endif %}page={{ pagination.next_page }}">
-          Próxima ▶
-        </a>
-      {% else %}
-        <span class="pagination-btn pagination-btn--next pagination-btn--disabled">Próxima ▶</span>
-      {% endif %}
+        <div class="pagination-pages">
+            {% for num in travels.paginator.page_range %}
+                {% if num == travels.number %}
+                    <span class="pagination-btn pagination-btn--page pagination-btn--active">
+                        {{ num }}
+                    </span>
+                {% else %}
+                    <a class="pagination-btn pagination-btn--page"
+                       href="?page={{ num }}">
+                        {{ num }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        {% if travels.has_next %}
+            <a class="pagination-btn pagination-btn--next"
+               href="?page={{ travels.next_page_number }}">
+                Próxima ▶
+            </a>
+        {% else %}
+            <span class="pagination-btn pagination-btn--next pagination-btn--disabled">
+                Próxima ▶
+            </span>
+        {% endif %}
 
     </div>
 
     <div class="pagination-info">
-      Página {{ pagination.page }} / {{ pagination.total_pages }}
+        Página {{ travels.number }} de {{ travels.paginator.num_pages }}
+        ({{ travels.paginator.count }} viagens)
     </div>
-  {% endwith %}
 </div>
 {% endif %}
 

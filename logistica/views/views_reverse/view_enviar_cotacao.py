@@ -59,6 +59,9 @@ def send_quotes(request):
                 },
                 request_data=payload,
             )
+
+            print(payload)
+
             result = client.send_api_request()
 
             if "detail" in result:
