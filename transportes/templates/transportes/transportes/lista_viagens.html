@@ -207,7 +207,7 @@
             <span class="badge-num">{{ forloop.counter }}</span>
 
             <a class="card-title"
-            href="{% url 'transportes:detalhe_os_transp' item.service_order.order_number %}"
+            href="{% url 'transportes:detalhe_viagem' item.travel.id %}"
             target="_blank">
                 {{ item.travel.id }}
             </a>
