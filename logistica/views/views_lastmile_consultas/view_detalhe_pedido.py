@@ -163,12 +163,13 @@ def order_detail(request, order: str):
             location_id = request.user.designacao.informacao_adicional_id
             payload = {
                 "order_number": order,
-                "volume_number": 1,
+                "volume_number": result.get("quantity"),
                 "order_type": "REVERSE",
                 "tracking_code": '205',
                 "created_by": request.user.username,
                 "from_location_id": location_id,
             }
+            print(payload)
             result = _send_tracking(
                 request_data=payload
             )

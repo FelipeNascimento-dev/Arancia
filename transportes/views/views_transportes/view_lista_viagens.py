@@ -95,6 +95,8 @@ def lista_viagens(request):
 
     return render(request, 'transportes/transportes/lista_viagens.html', {
         "botao_texto": 'Consultar',
+        "current_parent_menu": "transportes",
+        "current_menu": "lista_viagens",
         "site_title": titulo,
         "form": form,
         "travels": page_obj,

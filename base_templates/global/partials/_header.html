@@ -312,9 +312,14 @@
                     
                 </div>
                 {% endif %}
-                <a href="{% url 'transportes:consulta_os_transp' %}" class="itens-sidebar {% if current_menu == 'lista_os' %}active{% endif %}">
-                    <span class="texto-item">Lista de OS</span>
-                </a>
+                {% if perms.transportes.transportes %}
+                    <a href="{% url 'transportes:consulta_os_transp' %}" class="itens-sidebar {% if current_menu == 'lista_os' %}active{% endif %}">
+                        <span class="texto-item">Lista de OS</span>
+                    </a>
+                    <a href="{% url 'transportes:lista_viagens' %}" class="itens-sidebar {% if current_menu == 'lista_viagens' %}active{% endif %}">
+                        <span class="texto-item">Lista Viagens</span>
+                    </a>
+                {% endif %}
             </div>
         </div>
         {% endif %}
