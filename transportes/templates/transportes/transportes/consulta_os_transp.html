@@ -159,12 +159,32 @@
         font-weight: 600;
         font-size: .9rem;
     }
+
+    .signature {
+        position: absolute;
+        top: 30px;
+        right: 20px;
+        font-weight: bold;
+        color: var(--form-titulo);
+        margin: 0;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 8;
+        background-color: #fff;
+    }
 </style>
 
 <div class="form-container">
     <div class="form-card-2col">
         <form method="POST">
-            {% include 'global/partials/_form_2col.html' %}
+            <div class="signature">
+                <a class="btn btn-primary" style="text-decoration: none;" href="{% url 'logistica:index' %}">
+                    Criar nova OS
+                </a>
+            </div>
+            {% include 'global/partials/_form_2colV2.html' %}
         </form>
     </div>
 </div>
