@@ -61,6 +61,7 @@ class PersonalPermissions(models.Model):
             ("transp_menu", "Mostrar menu transporte"),
             ("CC_admin", "Mostrar menu administrativo"),
             ("controle_chamados", "Controle de Chamados"),
+            ("transportes", "Permissão total para transporte"),
         ]
 
     def __str__(self):

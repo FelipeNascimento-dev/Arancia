@@ -1457,7 +1457,7 @@
             </div>
 
             <div class="form-group">
-                <label>Modelo</label>
+                <label>Descrição do Item</label>
                 <input type="text" name="product_model" required>
             </div>
 
@@ -1466,9 +1466,14 @@
                 <input type="text" name="item_control">
             </div>
 
-            <div class="form-group">
+            <!-- <div class="form-group">
                 <label>Client ID</label>
                 <input type="number" name="client_id" value="0" min="0">
+            </div> -->
+
+            <div class="form-group">
+                <label>Número da OS (Opcional)</label>
+                <input type="text" name="os_number" value="{{ payload.service_order.external_order_number|default:payload.service_order.order_number }}">
             </div>
 
             <div class="form-group">

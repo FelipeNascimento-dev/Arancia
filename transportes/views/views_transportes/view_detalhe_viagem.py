@@ -135,11 +135,11 @@ def detalhe_viagem(request, id_viagem):
             request_data=payload_event
         )
 
-        print(payload_event)
+        # print(payload_event)
 
         response_event = client.send_api_request()
 
-        print(response_event)
+        # print(response_event)
 
         if isinstance(response_event, dict) and "detail" in response_event:
             messages.error(request, response_event["detail"])
@@ -152,4 +152,6 @@ def detalhe_viagem(request, id_viagem):
         'titulo': titulo,
         'payload': resp,
         "travel_event_types": travel_event_types,
+        "current_parent_menu": "transportes",
+        "current_menu": "lista_viagens",
     })

@@ -176,11 +176,11 @@ def detalhe_os_transp(request, order_number):
                 except:
                     return 0.0
 
-            ex_order_number = request.POST.get("order_number")
+            ex_order_number = request.POST.get("os_number")
             serial_number = request.POST.get("serial_number")
             product_model = request.POST.get("product_model")
             created_by = request.POST.get("created_by") or "Sistema"
-            client_id = int(request.POST.get("client_id") or 0)
+            client_id = resp.get("client", {}).get("id", 0)
             service_order_id = int(request.POST.get("service_order_id") or 0)
             item_control = request.POST.get("item_control")
 
@@ -229,7 +229,7 @@ def detalhe_os_transp(request, order_number):
                 })
 
             payload_item = {
-                "order_number": ex_order_number,
+                "external_order_number": ex_order_number,
                 "serial_number": serial_number,
                 "product_model": product_model,
                 "created_by": created_by,
@@ -408,7 +408,7 @@ def detalhe_os_transp(request, order_number):
                 order_type = resp.get("service_order", {}).get(
                     "order_type", {}).get("id")
             try:
-                url = f"{TRANSP_API_URL}/order_events_types/list?cliente={client_id}&order_type={order_type}"
+                url = f"{TRANSP_API_URL}/order_events_types/list?status=true&cliente={client_id}&order_type={order_type}"
 
                 client = RequestClient(
                     method="GET",
