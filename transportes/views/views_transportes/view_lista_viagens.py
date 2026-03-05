@@ -8,6 +8,9 @@ from django.core.paginator import Paginator
 from datetime import datetime
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
+@permission_required('transportes.transportes', raise_exception=True)
 def lista_viagens(request):
     titulo = "Lista de Viagens"
     travels = []

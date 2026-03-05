@@ -3,3 +3,4 @@ from .forms_consulta_os.forms_consulta_os import ConsultaOSForm
 from .forms_tec_lista.forms_lista_tecnicos import ListaTecnicoForm
 from .forms_transporte.forms_consulta_os_transp import ConsultaOStranspForm
 from .forms_transporte.forms_lista_viagens import ListaViagensForm
+from .forms_transporte.forms_criar_os_transp import FormCriarOsTransp
