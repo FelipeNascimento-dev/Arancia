@@ -1,0 +1,46 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+    .form-card-2col {
+        height: auto;
+        margin-top: 65px;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST">
+            {% include 'global/partials/_form_2colV2.html' %}
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const clientSelect = document.getElementById("id_cliente");
+    const typeSelect = document.getElementById("id_tipo_os");
+
+    function setOrDelete(params, key, value) {
+        if (value && value !== "") params.set(key, value);
+        else params.delete(key);
+    }
+
+    function reloadWithParams() {
+
+        const params = new URLSearchParams(window.location.search);
+
+        if (clientSelect) setOrDelete(params, "cliente", clientSelect.value);
+        if (typeSelect) setOrDelete(params, "tipo_os", typeSelect.value);
+
+        window.location.search = params.toString();
+    }
+
+    if (clientSelect) clientSelect.addEventListener("change", reloadWithParams);
+    if (typeSelect) typeSelect.addEventListener("change", reloadWithParams);
+
+});
+</script>
+
+{% endblock %}

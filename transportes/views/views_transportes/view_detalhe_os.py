@@ -12,8 +12,6 @@ from django.utils.dateparse import parse_datetime
 from django.utils.timezone import localtime
 
 
-@login_required(login_url='logistica:login')
-@permission_required('logistica.acesso_arancia', raise_exception=True)
 def buscar_motoristas(request):
     nome = request.GET.get("nome", "").strip()
     carrier_id = request.GET.get("carrier_id")
@@ -55,8 +53,6 @@ def buscar_motoristas(request):
     return JsonResponse({"items": items})
 
 
-@login_required(login_url='logistica:login')
-@permission_required('logistica.acesso_arancia', raise_exception=True)
 def buscar_veiculos(request):
 
     carrier_id = request.GET.get("carrier_id")
@@ -99,6 +95,7 @@ def buscar_veiculos(request):
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.acesso_arancia', raise_exception=True)
+@permission_required('transportes.transportes', raise_exception=True)
 def detalhe_os_transp(request, order_number):
     modal_travel_events = False
     travel_event_types = []
