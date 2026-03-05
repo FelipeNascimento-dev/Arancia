@@ -1,4 +1,5 @@
-{% extends 'global/base.html' %} {% block content %}
+{% extends 'global/base.html' %}
+{% block content %}
 
 <style>
   .form-card-2col {
@@ -110,6 +111,29 @@
     color: gray;
     text-decoration: line-through;
   }
+
+  .card--araujo {
+    border: 3px solid #1e88e5;
+    animation: pulseAraujo 1.5s infinite;
+    box-shadow: 0 0 10px rgba(30,136,229,0.6);
+  }
+
+  @keyframes pulseAraujo {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 5px rgba(30,136,229,0.4);
+    }
+
+    50% {
+      transform: scale(1.03);
+      box-shadow: 0 0 20px rgba(30,136,229,0.9);
+    }
+
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 5px rgba(30,136,229,0.4);
+    }
+  }
 </style>
 
 <div class="form-container">
@@ -128,7 +152,7 @@
 {% if tabela_dados %}
 <div class="cards-container">
   {% for item in tabela_dados|dictsort:"created_at" %}
-  <div class="card">
+  <div class="card {% if item.client_name|slice:':20' == 'Drogaria Araujo L400' %}card--araujo{% endif %}">
     <div class="card-header">
       <span class="badge-num">{{ forloop.counter }}</span>
       <h3 class="card-title">
@@ -173,7 +197,13 @@
       </p>
       <p>
         <strong>Cliente:</strong> <br />
-        {{ item.client_name }}
+        {% if item.client_name|slice:":20" == "Drogaria Araujo L400" %}
+          <span style="color: #1e88e5; font-weight: 700">
+            {{ item.client_name }}
+          </span>
+        {% else %}
+          {{ item.client_name }}
+        {% endif %}
       </p>
       <p>
         <strong>CEP:</strong> <br />

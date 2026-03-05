@@ -12,11 +12,10 @@ class FormCriarOsTransp(forms.Form):
     )
 
     cliente = forms.ChoiceField(label="Cliente", required=True)
-    origem = forms.ChoiceField(label="Origem", required=True)
-    destino = forms.ChoiceField(label="Destino", required=True)
-
     tipo_os = forms.ChoiceField(label="Tipo de Serviço", required=True)
     status_os = forms.ChoiceField(label="Status", required=True)
+    origem = forms.ChoiceField(label="Origem", required=True)
+    destino = forms.ChoiceField(label="Destino", required=True)
 
     def __init__(self, *args, nome_form=None, payload=None, **kwargs):
 
