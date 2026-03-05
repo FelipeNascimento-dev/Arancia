@@ -11,7 +11,6 @@ from utils.request import RequestClient
 @permission_required('transportes.transportes', raise_exception=True)
 def criar_os_transp(request):
     titulo = "Criação de OS"
-    form = FormCriarOsTransp(request.POST or None, nome_form=titulo)
 
     url_status = f"{TRANSP_API_URL}/gai/clientes/status?cliente=arancia_client"
     client = RequestClient(
@@ -25,6 +24,9 @@ def criar_os_transp(request):
     if isinstance(resp, dict) and resp.get("detail"):
         messages.error(request, resp["detail"])
         resp = []
+
+    form = FormCriarOsTransp(request.GET or None,
+                             nome_form=titulo, payload=resp)
 
     if request.method == 'POST':
         if "enviar_evento" in request.POST:

@@ -17,4 +17,30 @@
     </div>
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const clientSelect = document.getElementById("id_cliente");
+    const typeSelect = document.getElementById("id_tipo_os");
+
+    function setOrDelete(params, key, value) {
+        if (value && value !== "") params.set(key, value);
+        else params.delete(key);
+    }
+
+    function reloadWithParams() {
+
+        const params = new URLSearchParams(window.location.search);
+
+        if (clientSelect) setOrDelete(params, "cliente", clientSelect.value);
+        if (typeSelect) setOrDelete(params, "tipo_os", typeSelect.value);
+
+        window.location.search = params.toString();
+    }
+
+    if (clientSelect) clientSelect.addEventListener("change", reloadWithParams);
+    if (typeSelect) typeSelect.addEventListener("change", reloadWithParams);
+
+});
+</script>
+
 {% endblock %}
