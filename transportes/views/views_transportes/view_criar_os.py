@@ -45,6 +45,16 @@ def criar_os_transp(request):
     )
 
     if request.method == 'POST':
+
+        extra_information = {}
+
+        keys = request.POST.getlist("extra_key[]")
+        values = request.POST.getlist("extra_value[]")
+
+        for k, v in zip(keys, values):
+            if k:
+                extra_information[k] = v
+
         if "enviar_evento" in request.POST:
             try:
                 payload = {
@@ -55,7 +65,7 @@ def criar_os_transp(request):
                     "destination_id": request.POST.get("destino"),
                     "order_type_id": request.POST.get("tipo_os"),
                     "order_state_id": request.POST.get("status_os"),
-                    "extra_information": {},
+                    "extra_information": extra_information,
                 }
 
                 print(payload)
@@ -80,7 +90,7 @@ def criar_os_transp(request):
             except:
                 messages.error(
                     request, "Erro ao criar OS. Verifique os dados e tente novamente.")
-                return redirect('transportes:criar_os')
+                return redirect('transportes:criar_os_transp')
 
     form.errors.pop("numero_os", None)
     form.errors.pop("ex_order_number", None)
@@ -91,8 +101,9 @@ def criar_os_transp(request):
     form.errors.pop("status_os", None)
 
     return render(request, 'transportes/transportes/criar_os.html', {
-        'site_title': titulo,
-        'form': form,
-        'botao_texto': 'Criar OS',
-
+        "site_title": titulo,
+        "form": form,
+        "botao_texto": "Criar OS",
+        "current_parent_menu": "transportes",
+        "current_menu": "lista_os",
     })

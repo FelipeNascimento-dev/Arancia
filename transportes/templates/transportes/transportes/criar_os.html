@@ -7,6 +7,60 @@
         height: auto;
         margin-top: 65px;
     }
+
+    .extra-info-container {
+        margin-top: 25px;
+        padding: 18px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #f8fafc;
+    }
+
+    .extra-info-title {
+        font-weight: 600;
+        font-size: 15px;
+        margin-bottom: 12px;
+    }
+
+    .extra-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .extra-row input {
+        padding: 8px;
+        border: 1px solid #d1d5db;
+        border-radius: 5px;
+    }
+
+    .btn-add-extra {
+        margin-top: 8px;
+        padding: 6px 12px;
+        background: #2563eb;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-add-extra:hover {
+        background: #1d4ed8;
+    }
+
+    .btn-remove-extra {
+        background: #ef4444;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        padding: 6px 10px;
+        cursor: pointer;
+    }
+
+    .btn-remove-extra:hover {
+        background: #dc2626;
+    }
 </style>
 
 <div class="form-container">
@@ -45,6 +99,34 @@ document.addEventListener("DOMContentLoaded", function () {
     if (typeSelect) {
         typeSelect.addEventListener("change", reloadWithParams);
     }
+
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const container = document.getElementById("extra-fields");
+    const addButton = document.getElementById("add-extra");
+
+    addButton.addEventListener("click", function () {
+
+        const row = document.createElement("div");
+        row.classList.add("extra-row");
+
+        row.innerHTML = `
+            <input type="text" name="extra_key[]" placeholder="Chave" class="form-control">
+            <input type="text" name="extra_value[]" placeholder="Valor" class="form-control">
+            <button type="button" class="btn btn-danger remove-row">X</button>
+        `;
+
+        container.appendChild(row);
+
+    });
+
+    document.addEventListener("click", function (e) {
+        if (e.target.classList.contains("remove-row")) {
+            e.target.parentElement.remove();
+        }
+    });
 
 });
 </script>
