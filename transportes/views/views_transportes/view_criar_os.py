@@ -64,9 +64,15 @@ def criar_os_transp(request):
                     "origin_id": request.POST.get("origem"),
                     "destination_id": request.POST.get("destino"),
                     "order_type_id": request.POST.get("tipo_os"),
-                    "order_state_id": request.POST.get("status_os"),
-                    "extra_information": extra_information,
                 }
+
+                status_os = request.POST.get("status_os")
+
+                if status_os:
+                    payload["order_state_id"] = status_os
+
+                if extra_information:
+                    payload["extra_information"] = extra_information
 
                 print(payload)
 
@@ -89,7 +95,7 @@ def criar_os_transp(request):
 
             except:
                 messages.error(
-                    request, "Erro ao criar OS. Verifique os dados e tente novamente.")
+                    request, result['detail'] if isinstance(result, dict) and 'detail' in result else "Erro ao criar OS.")
                 return redirect('transportes:criar_os_transp')
 
     form.errors.pop("numero_os", None)

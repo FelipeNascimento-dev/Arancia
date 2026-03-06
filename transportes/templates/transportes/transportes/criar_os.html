@@ -61,6 +61,54 @@
     .btn-remove-extra:hover {
         background: #dc2626;
     }
+
+    .autocomplete-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .autocomplete-hidden-select {
+        position: absolute !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        height: 0 !important;
+        width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .autocomplete-input {
+        width: 100%;
+    }
+
+    .search-dropdown {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        width: 100%;
+        background: #fff;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        max-height: 220px;
+        overflow-y: auto;
+        z-index: 9999;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        display: none;
+    }
+
+    .search-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1.3;
+    }
+
+    .search-item:hover {
+        background: #2563eb;
+        color: #fff;
+    }
 </style>
 
 <div class="form-container">
@@ -70,6 +118,163 @@
         </form>
     </div>
 </div>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function(){
+
+function makeSearchable(selectId) {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+
+        const parent = select.parentNode;
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "autocomplete-wrapper";
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.placeholder = "Digite para buscar...";
+        input.className = "form-control autocomplete-input";
+
+        const dropdown = document.createElement("div");
+        dropdown.className = "search-dropdown";
+
+        parent.insertBefore(wrapper, select);
+        wrapper.appendChild(input);
+        wrapper.appendChild(dropdown);
+        wrapper.appendChild(select);
+
+        select.classList.add("autocomplete-hidden-select");
+
+        const options = [...select.options]
+            .filter(o => o.value !== "")
+            .map(o => ({
+                value: o.value,
+                label: o.text.trim()
+            }));
+
+        function renderOptions(list) {
+            dropdown.innerHTML = "";
+
+            if (!list.length) {
+                dropdown.style.display = "none";
+                return;
+            }
+
+            list.slice(0, 10).forEach(opt => {
+                const item = document.createElement("div");
+                item.className = "search-item";
+                item.textContent = opt.label;
+
+                item.addEventListener("click", function () {
+                    input.value = opt.label;
+                    select.value = opt.value;
+                    dropdown.style.display = "none";
+                });
+
+                dropdown.appendChild(item);
+            });
+
+            dropdown.style.display = "block";
+        }
+
+        input.addEventListener("input", function () {
+            const query = this.value.toLowerCase().trim();
+
+            if (!query) {
+                dropdown.style.display = "none";
+                dropdown.innerHTML = "";
+                select.value = "";
+                return;
+            }
+
+            const filtered = options.filter(opt =>
+                opt.label.toLowerCase().includes(query)
+            );
+
+            renderOptions(filtered);
+        });
+
+        input.addEventListener("focus", function () {
+            const query = this.value.toLowerCase().trim();
+            const filtered = query
+                ? options.filter(opt => opt.label.toLowerCase().includes(query))
+                : options;
+
+            renderOptions(filtered);
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!wrapper.contains(e.target)) {
+                dropdown.style.display = "none";
+            }
+        });
+    }
+
+    makeSearchable("id_origem");
+    makeSearchable("id_destino");
+
+
+const clientSelect = document.getElementById("id_cliente");
+const typeSelect = document.getElementById("id_tipo_os");
+
+function setOrDelete(params, key, value){
+    if(value && value !== "") params.set(key,value);
+    else params.delete(key);
+}
+
+function reloadWithParams(){
+
+    const params = new URLSearchParams(window.location.search);
+
+    if(clientSelect) setOrDelete(params,"cliente",clientSelect.value);
+    if(typeSelect) setOrDelete(params,"tipo_os",typeSelect.value);
+
+    window.location.search = params.toString();
+}
+
+if(clientSelect){
+    clientSelect.addEventListener("change", reloadWithParams);
+}
+
+if(typeSelect){
+    typeSelect.addEventListener("change", reloadWithParams);
+}
+
+const container = document.getElementById("extra-fields");
+const addButton = document.getElementById("add-extra");
+
+if(addButton){
+
+    addButton.addEventListener("click", function(){
+
+        const row = document.createElement("div");
+        row.classList.add("extra-row");
+
+        row.innerHTML = `
+            <input type="text" name="extra_key[]" placeholder="Chave" class="form-control">
+            <input type="text" name="extra_value[]" placeholder="Valor" class="form-control">
+            <button type="button" class="btn-remove-extra remove-row">✕</button>
+        `;
+
+        container.appendChild(row);
+
+    });
+
+}
+
+document.addEventListener("click", function(e){
+
+    if(e.target.classList.contains("remove-row")){
+        e.target.parentElement.remove();
+    }
+
+});
+
+});
+
+</script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {

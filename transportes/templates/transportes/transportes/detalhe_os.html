@@ -1631,7 +1631,16 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Origem</label>
-                        <select name="origin_id" required>
+                        <input type="text"
+                            id="originSearch"
+                            placeholder="Digite origem..."
+                            autocomplete="off">
+
+                        <input type="hidden" name="origin_id" id="originId">
+
+                        <div id="originResults" class="driver-dropdown"></div>
+
+                        <!-- <select name="origin_id" required>
                             <option value="">Selecionar origem...</option>
                             {% for g in grupos %}
                             <option value="{{ g.id }}">
@@ -1645,12 +1654,20 @@
                                 {{ g.nome }}
                             </option>
                             {% endfor %}
-                        </select>
+                        </select> -->
                     </div>
 
                     <div class="form-group">
                         <label>Destino</label>
-                        <select name="destination_id" required>
+                        <input type="text"
+                            id="destinationSearch"
+                            placeholder="Digite destino..."
+                            autocomplete="off">
+
+                        <input type="hidden" name="destination_id" id="destinationId">
+
+                        <div id="destinationResults" class="driver-dropdown"></div>
+                        <!-- <select name="destination_id" required>
                             <option value="">Selecionar destino...</option>
                             {% for g in grupos %}
                             <option value="{{ g.id }}">
@@ -1664,7 +1681,7 @@
                                 {{ g.nome }}
                             </option>
                             {% endfor %}
-                        </select>
+                        </select> -->
                     </div>
 
                     <div class="form-group">
@@ -1838,6 +1855,80 @@
     </div>
 </div>
 {% endif %}
+
+<script>
+const gruposData = [
+{% for g in grupos %}
+{
+    id: "{{ g.id }}",
+    nome: "{{ g.nome|escapejs }}",
+    tipo: "{% if g.group.name == 'arancia_CD' %}CD{% elif g.group.name == 'arancia_PA' %}PA{% else %}CUSTOMER{% endif %}"
+},
+{% endfor %}
+];
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+
+    function setupSearch(inputId, resultsId, hiddenId){
+
+        const input = document.getElementById(inputId);
+        const results = document.getElementById(resultsId);
+        const hidden = document.getElementById(hiddenId);
+
+        input.addEventListener("keyup", function(){
+
+            const query = this.value.toLowerCase().trim();
+
+            results.innerHTML = "";
+
+            if(query.length < 1){
+                results.style.display = "none";
+                return;
+            }
+
+            const filtered = gruposData.filter(g =>
+                g.nome.toLowerCase().includes(query) ||
+                g.tipo.toLowerCase().includes(query)
+            );
+
+            if(!filtered.length){
+                results.style.display = "none";
+                return;
+            }
+
+            filtered.slice(0,10).forEach(g => {
+
+                const div = document.createElement("div");
+                div.classList.add("driver-item");
+
+                div.innerHTML = `[${g.tipo}] ${g.nome}`;
+
+                div.onclick = function(){
+                    input.value = `[${g.tipo}] ${g.nome}`;
+                    hidden.value = g.id;
+                    results.style.display = "none";
+                }
+
+                results.appendChild(div);
+            });
+
+            results.style.display = "block";
+        });
+
+        document.addEventListener("click", function(e){
+            if(!input.contains(e.target)){
+                results.style.display = "none";
+            }
+        });
+    }
+
+    setupSearch("originSearch","originResults","originId");
+    setupSearch("destinationSearch","destinationResults","destinationId");
+
+});
+</script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -2381,4 +2472,6 @@ document.addEventListener("DOMContentLoaded", function(){
 
 });
 </script>
+
+
 {% endblock content %}
