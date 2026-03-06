@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
+from django.db.models import Q
+from logistica.models import GroupAditionalInformation, Group
 from ...forms import FormCriarOsTransp
 from setup.local_settings import TRANSP_API_URL
 from utils.request import RequestClient
@@ -11,6 +13,16 @@ from utils.request import RequestClient
 @permission_required('transportes.transportes', raise_exception=True)
 def criar_os_transp(request):
     titulo = "Criação de OS"
+
+    grupos_base = Group.objects.filter(
+        Q(name="arancia_PA") |
+        Q(name="arancia_CD") |
+        Q(name="arancia_CUSTOMER")
+    )
+
+    grupos = GroupAditionalInformation.objects.filter(
+        group__in=grupos_base
+    ).select_related("group").order_by("nome")
 
     url_status = f"{TRANSP_API_URL}/gai/clientes/status?cliente=arancia_client"
     client = RequestClient(
@@ -25,14 +37,17 @@ def criar_os_transp(request):
         messages.error(request, resp["detail"])
         resp = []
 
-    form = FormCriarOsTransp(request.GET or None,
-                             nome_form=titulo, payload=resp)
+    form = FormCriarOsTransp(
+        request.GET if request.method == "GET" else request.POST,
+        nome_form=titulo,
+        payload=resp,
+        grupos=grupos
+    )
 
     if request.method == 'POST':
         if "enviar_evento" in request.POST:
             try:
                 payload = {
-                    "order_number": request.POST.get("numero_os"),
                     "external_order_number": request.POST.get("ex_order_number"),
                     "created_by": request.user.username,
                     "client_id": request.POST.get("cliente"),
@@ -43,6 +58,8 @@ def criar_os_transp(request):
                     "extra_information": {},
                 }
 
+                print(payload)
+
                 url = f"{TRANSP_API_URL}/service_orders/Abertura"
                 client = RequestClient(
                     url=url,
@@ -52,16 +69,26 @@ def criar_os_transp(request):
                 )
                 result = client.send_api_request()
 
+                order_number = result.get("service_order").get("order_number")
+
                 if 'detail' in result:
                     messages.error(request, result['detail'])
                 else:
                     messages.success(request, "OS criada com sucesso!")
-                    return redirect('transportes:detalhe_os_transp', order_number=payload["order_number"])
+                    return redirect('transportes:detalhe_os_transp', order_number=order_number)
 
             except:
                 messages.error(
                     request, "Erro ao criar OS. Verifique os dados e tente novamente.")
                 return redirect('transportes:criar_os')
+
+    form.errors.pop("numero_os", None)
+    form.errors.pop("ex_order_number", None)
+    form.errors.pop("cliente", None)
+    form.errors.pop("origem", None)
+    form.errors.pop("destino", None)
+    form.errors.pop("tipo_os", None)
+    form.errors.pop("status_os", None)
 
     return render(request, 'transportes/transportes/criar_os.html', {
         'site_title': titulo,
