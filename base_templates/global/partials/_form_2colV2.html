@@ -41,6 +41,24 @@
   {% endif %}
   {% endif %}
 
+  {% if request.resolver_match.url_name == 'criar_os_transp' %}
+  <div class="extra-info-container">
+    <label><strong>Adicionar Informações Extras</strong></label>
+
+    <div id="extra-fields">
+        <div class="extra-row">
+            <input type="text" name="extra_key[]" placeholder="Chave" class="form-control">
+            <input type="text" name="extra_value[]" placeholder="Valor" class="form-control">
+            <button type="button" class="btn btn-danger remove-row">X</button>
+        </div>
+    </div>
+
+    <button type="button" id="add-extra" class="btn btn-secondary">
+        + Adicionar campo
+    </button>
+  </div>
+  {% endif %}
+
   <div class="form-actions">
     {% if etapa_ativa == 'retorno_picking' or etapa_ativa == 'reserva' or etapa_ativa == 'saida_campo' or request.resolver_match.url_name == 'recebimento_remessa' or request.resolver_match.url_name == 'order_return_check'%}
     <button type="submit" class="submit-button-right push-left" name="clear_serials" value="1" formnovalidate>
