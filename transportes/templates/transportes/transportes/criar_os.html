@@ -19,6 +19,7 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
     const clientSelect = document.getElementById("id_cliente");
     const typeSelect = document.getElementById("id_tipo_os");
 
@@ -37,8 +38,13 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.search = params.toString();
     }
 
-    if (clientSelect) clientSelect.addEventListener("change", reloadWithParams);
-    if (typeSelect) typeSelect.addEventListener("change", reloadWithParams);
+    if (clientSelect) {
+        clientSelect.addEventListener("change", reloadWithParams);
+    }
+
+    if (typeSelect) {
+        typeSelect.addEventListener("change", reloadWithParams);
+    }
 
 });
 </script>

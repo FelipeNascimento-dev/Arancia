@@ -3,22 +3,18 @@ from django import forms
 
 class FormCriarOsTransp(forms.Form):
 
-    numero_os = forms.CharField(label="Número da OS", max_length=100)
-
+    cliente = forms.ChoiceField(label="Cliente", required=True)
+    tipo_os = forms.ChoiceField(label="Tipo de Serviço", required=True)
+    status_os = forms.ChoiceField(label="Status", required=True)
     ex_order_number = forms.CharField(
-        label="Número do Pedido",
+        label="Número da OS Externa",
         max_length=100,
         required=False
     )
-
-    cliente = forms.ChoiceField(label="Cliente", required=True)
     origem = forms.ChoiceField(label="Origem", required=True)
     destino = forms.ChoiceField(label="Destino", required=True)
 
-    tipo_os = forms.ChoiceField(label="Tipo de Serviço", required=True)
-    status_os = forms.ChoiceField(label="Status", required=True)
-
-    def __init__(self, *args, nome_form=None, payload=None, **kwargs):
+    def __init__(self, *args, nome_form=None, payload=None, grupos=None, **kwargs):
 
         super().__init__(*args, **kwargs)
 
@@ -31,6 +27,16 @@ class FormCriarOsTransp(forms.Form):
 
         self.fields["cliente"].choices += [
             (c["id"], c["nome"]) for c in self.payload
+        ]
+
+        self.fields["origem"].choices += [
+            (g.id, f"[{g.group.name.replace('arancia_', '')}] {g.nome}")
+            for g in grupos
+        ]
+
+        self.fields["destino"].choices += [
+            (g.id, f"[{g.group.name.replace('arancia_', '')}] {g.nome}")
+            for g in grupos
         ]
 
         if not self.is_bound:
