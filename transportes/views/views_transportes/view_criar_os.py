@@ -6,6 +6,48 @@ from logistica.models import GroupAditionalInformation, Group
 from ...forms import FormCriarOsTransp
 from setup.local_settings import TRANSP_API_URL
 from utils.request import RequestClient
+from django.http import JsonResponse
+
+
+def buscar_locais(request):
+
+    termo = request.GET.get("q", "").strip()
+
+    if len(termo) < 2:
+        return JsonResponse({"items": []})
+
+    grupos_base = Group.objects.filter(
+        Q(name="arancia_PA") |
+        Q(name="arancia_CD") |
+        Q(name="arancia_CUSTOMER")
+    )
+
+    locais = (
+        GroupAditionalInformation.objects
+        .filter(group__in=grupos_base, nome__icontains=termo)
+        .select_related("group")
+        .order_by("nome")[:10]
+    )
+
+    data = []
+
+    for l in locais:
+
+        prefix = ""
+
+        if l.group.name == "arancia_PA":
+            prefix = "[PA]"
+        elif l.group.name == "arancia_CD":
+            prefix = "[CD]"
+        elif l.group.name == "arancia_CUSTOMER":
+            prefix = "[CUSTOMER]"
+
+        data.append({
+            "id": l.id,
+            "label": f"{prefix} {l.nome}"
+        })
+
+    return JsonResponse({"items": data})
 
 
 @login_required(login_url='logistica:login')
@@ -64,9 +106,15 @@ def criar_os_transp(request):
                     "origin_id": request.POST.get("origem"),
                     "destination_id": request.POST.get("destino"),
                     "order_type_id": request.POST.get("tipo_os"),
-                    "order_state_id": request.POST.get("status_os"),
-                    "extra_information": extra_information,
                 }
+
+                status_os = request.POST.get("status_os")
+
+                if status_os:
+                    payload["order_state_id"] = status_os
+
+                if extra_information:
+                    payload["extra_information"] = extra_information
 
                 print(payload)
 
@@ -89,7 +137,7 @@ def criar_os_transp(request):
 
             except:
                 messages.error(
-                    request, "Erro ao criar OS. Verifique os dados e tente novamente.")
+                    request, result['detail'] if isinstance(result, dict) and 'detail' in result else "Erro ao criar OS.")
                 return redirect('transportes:criar_os_transp')
 
     form.errors.pop("numero_os", None)

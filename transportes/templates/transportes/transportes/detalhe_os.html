@@ -986,6 +986,13 @@
         background: #e9f7ef;
         color: #1f7a3a;
     }
+
+    .items-box {
+        grid-column: span 2;
+        max-height: 220px;
+        overflow-y: auto;
+        padding-right: 6px;
+    }
 </style>
 
 <div class="os-container">
@@ -1400,7 +1407,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button class="btn-success">✔ Aprovar Cotação</button>
+                        <button class="btn-success" onclick="abrirModal()">✔ Aprovar Cotação</button>
                     </div>
                     {% endfor %}
                 </div>
@@ -1577,7 +1584,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Valor Cobrado (R$)</label>
+                        <label>Custo Estimado (R$)</label>
                         <input type="number" name="price_charged" value="0" step="0.01" min="0">
                     </div>
                 </div>
@@ -1631,7 +1638,18 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Origem</label>
-                        <select name="origin_id" required>
+                        <input type="text" value="{{ payload.origin.nome|upper }}" disabled>
+                        <input type="hidden" name="origin_id" value="{{ payload.origin.id }}">
+                        <!-- <input type="text"
+                            id="originSearch"
+                            placeholder="Digite origem..."
+                            autocomplete="off">
+
+                        <input type="hidden" name="origin_id" id="originId">
+
+                        <div id="originResults" class="driver-dropdown"></div> -->
+
+                        <!-- <select name="origin_id" required>
                             <option value="">Selecionar origem...</option>
                             {% for g in grupos %}
                             <option value="{{ g.id }}">
@@ -1645,12 +1663,22 @@
                                 {{ g.nome }}
                             </option>
                             {% endfor %}
-                        </select>
+                        </select> -->
                     </div>
 
                     <div class="form-group">
                         <label>Destino</label>
-                        <select name="destination_id" required>
+                        <input type="text" value="{{ payload.destination.nome|upper }}" disabled>
+                        <input type="hidden" name="destination_id" value="{{ payload.destination.id }}">
+                        <!-- <input type="text"
+                            id="destinationSearch"
+                            placeholder="Digite destino..."
+                            autocomplete="off">
+
+                        <input type="hidden" name="destination_id" id="destinationId">
+
+                        <div id="destinationResults" class="driver-dropdown"></div> -->
+                        <!-- <select name="destination_id" required>
                             <option value="">Selecionar destino...</option>
                             {% for g in grupos %}
                             <option value="{{ g.id }}">
@@ -1664,7 +1692,23 @@
                                 {{ g.nome }}
                             </option>
                             {% endfor %}
-                        </select>
+                        </select> -->
+                    </div>
+
+                    <div class="items-box">
+                        <div class="items-title">Itens da Viagem</div>
+                        {% for item in payload.items %}
+                        <label class="checkbox-item">
+                            <input type="checkbox"
+                                name="items"
+                                value="{{ item.id }}"
+                                data-weight="{{ item.weight|floatformat:3 }}"
+                                data-height="{{ item.height }}"
+                                data-width="{{ item.width }}"
+                                data-length="{{ item.length }}">
+                            {{ item.product_model }} <span>({{ item.serial_number }})</span>
+                        </label>
+                        {% endfor %}
                     </div>
 
                     <div class="form-group">
@@ -1678,7 +1722,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Valor Estimado (R$)</label>
+                        <label>Valor Cobrado (R$)</label>
                         <input type="number" name="estimated_price" value="0" step="0.01" min="0" required>
                     </div>
 
@@ -1838,6 +1882,80 @@
     </div>
 </div>
 {% endif %}
+
+<script>
+const gruposData = [
+{% for g in grupos %}
+{
+    id: "{{ g.id }}",
+    nome: "{{ g.nome|escapejs }}",
+    tipo: "{% if g.group.name == 'arancia_CD' %}CD{% elif g.group.name == 'arancia_PA' %}PA{% else %}CUSTOMER{% endif %}"
+},
+{% endfor %}
+];
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+
+    function setupSearch(inputId, resultsId, hiddenId){
+
+        const input = document.getElementById(inputId);
+        const results = document.getElementById(resultsId);
+        const hidden = document.getElementById(hiddenId);
+
+        input.addEventListener("keyup", function(){
+
+            const query = this.value.toLowerCase().trim();
+
+            results.innerHTML = "";
+
+            if(query.length < 1){
+                results.style.display = "none";
+                return;
+            }
+
+            const filtered = gruposData.filter(g =>
+                g.nome.toLowerCase().includes(query) ||
+                g.tipo.toLowerCase().includes(query)
+            );
+
+            if(!filtered.length){
+                results.style.display = "none";
+                return;
+            }
+
+            filtered.slice(0,10).forEach(g => {
+
+                const div = document.createElement("div");
+                div.classList.add("driver-item");
+
+                div.innerHTML = `[${g.tipo}] ${g.nome}`;
+
+                div.onclick = function(){
+                    input.value = `[${g.tipo}] ${g.nome}`;
+                    hidden.value = g.id;
+                    results.style.display = "none";
+                }
+
+                results.appendChild(div);
+            });
+
+            results.style.display = "block";
+        });
+
+        document.addEventListener("click", function(e){
+            if(!input.contains(e.target)){
+                results.style.display = "none";
+            }
+        });
+    }
+
+    setupSearch("originSearch","originResults","originId");
+    setupSearch("destinationSearch","destinationResults","destinationId");
+
+});
+</script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -2381,4 +2499,35 @@ document.addEventListener("DOMContentLoaded", function(){
 
 });
 </script>
+
+
+<!-- CALCULO PARA ITEM -->
+<script>
+document.addEventListener("change", function(e){
+
+    if(!e.target.matches("input[name='items']")) return
+
+    let totalWeight = 0
+    let totalVolume = 0
+
+    document.querySelectorAll("input[name='items']:checked").forEach(el => {
+
+        const weight = parseFloat((el.dataset.weight || "0").replace(",", "."))
+        const h = parseFloat(el.dataset.height || 0)
+        const w = parseFloat(el.dataset.width || 0)
+        const l = parseFloat(el.dataset.length || 0)
+
+        totalWeight += weight
+
+        const volume = (h * w * l) / 1000000
+        totalVolume += volume
+
+    })
+
+    document.querySelector("input[name='total_weight']").value = totalWeight.toFixed(2)
+    document.querySelector("input[name='total_volume']").value = totalVolume.toFixed(4)
+
+})
+</script>
+
 {% endblock content %}
