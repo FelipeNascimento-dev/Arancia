@@ -120,10 +120,9 @@
 </div>
 
 <script>
+document.addEventListener("DOMContentLoaded", function () {
 
-document.addEventListener("DOMContentLoaded", function(){
-
-function makeSearchable(selectId) {
+    function makeSearchable(selectId) {
         const select = document.getElementById(selectId);
         if (!select) return;
 
@@ -134,7 +133,7 @@ function makeSearchable(selectId) {
 
         const input = document.createElement("input");
         input.type = "text";
-        input.placeholder = "Digite para buscar...";
+        input.placeholder = "Digite pelo menos 2 letras...";
         input.className = "form-control autocomplete-input";
 
         const dropdown = document.createElement("div");
@@ -147,62 +146,60 @@ function makeSearchable(selectId) {
 
         select.classList.add("autocomplete-hidden-select");
 
-        const options = [...select.options]
-            .filter(o => o.value !== "")
-            .map(o => ({
-                value: o.value,
-                label: o.text.trim()
-            }));
-
-        function renderOptions(list) {
-            dropdown.innerHTML = "";
-
-            if (!list.length) {
-                dropdown.style.display = "none";
-                return;
-            }
-
-            list.slice(0, 10).forEach(opt => {
-                const item = document.createElement("div");
-                item.className = "search-item";
-                item.textContent = opt.label;
-
-                item.addEventListener("click", function () {
-                    input.value = opt.label;
-                    select.value = opt.value;
-                    dropdown.style.display = "none";
-                });
-
-                dropdown.appendChild(item);
-            });
-
-            dropdown.style.display = "block";
-        }
+        let debounceTimer = null;
 
         input.addEventListener("input", function () {
-            const query = this.value.toLowerCase().trim();
+            const query = this.value.trim();
 
-            if (!query) {
+            if (query.length < 2) {
                 dropdown.style.display = "none";
                 dropdown.innerHTML = "";
-                select.value = "";
+                select.innerHTML = "";
                 return;
             }
 
-            const filtered = options.filter(opt =>
-                opt.label.toLowerCase().includes(query)
-            );
+            clearTimeout(debounceTimer);
 
-            renderOptions(filtered);
-        });
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const response = await fetch(
+                        "{% url 'transportes:buscar_locais' %}?q=" + encodeURIComponent(query)
+                    );
 
-        input.addEventListener("focus", function () {
-            const query = this.value.toLowerCase().trim();
-            const filtered = query
-                ? options.filter(opt => opt.label.toLowerCase().includes(query))
-                : options;
+                    const data = await response.json();
 
-            renderOptions(filtered);
+                    dropdown.innerHTML = "";
+
+                    if (!data.items || data.items.length === 0) {
+                        dropdown.style.display = "none";
+                        return;
+                    }
+
+                    data.items.forEach(opt => {
+                        const item = document.createElement("div");
+                        item.className = "search-item";
+                        item.textContent = opt.label;
+
+                        item.addEventListener("click", function () {
+                            input.value = opt.label;
+
+                            select.innerHTML = "";
+                            const option = new Option(opt.label, opt.id, true, true);
+                            select.appendChild(option);
+                            select.value = opt.id;
+
+                            dropdown.style.display = "none";
+                        });
+
+                        dropdown.appendChild(item);
+                    });
+
+                    dropdown.style.display = "block";
+                } catch (error) {
+                    console.error("Erro no autocomplete:", error);
+                    dropdown.style.display = "none";
+                }
+            }, 300);
         });
 
         document.addEventListener("click", function (e) {
@@ -215,70 +212,6 @@ function makeSearchable(selectId) {
     makeSearchable("id_origem");
     makeSearchable("id_destino");
 
-
-const clientSelect = document.getElementById("id_cliente");
-const typeSelect = document.getElementById("id_tipo_os");
-
-function setOrDelete(params, key, value){
-    if(value && value !== "") params.set(key,value);
-    else params.delete(key);
-}
-
-function reloadWithParams(){
-
-    const params = new URLSearchParams(window.location.search);
-
-    if(clientSelect) setOrDelete(params,"cliente",clientSelect.value);
-    if(typeSelect) setOrDelete(params,"tipo_os",typeSelect.value);
-
-    window.location.search = params.toString();
-}
-
-if(clientSelect){
-    clientSelect.addEventListener("change", reloadWithParams);
-}
-
-if(typeSelect){
-    typeSelect.addEventListener("change", reloadWithParams);
-}
-
-const container = document.getElementById("extra-fields");
-const addButton = document.getElementById("add-extra");
-
-if(addButton){
-
-    addButton.addEventListener("click", function(){
-
-        const row = document.createElement("div");
-        row.classList.add("extra-row");
-
-        row.innerHTML = `
-            <input type="text" name="extra_key[]" placeholder="Chave" class="form-control">
-            <input type="text" name="extra_value[]" placeholder="Valor" class="form-control">
-            <button type="button" class="btn-remove-extra remove-row">✕</button>
-        `;
-
-        container.appendChild(row);
-
-    });
-
-}
-
-document.addEventListener("click", function(e){
-
-    if(e.target.classList.contains("remove-row")){
-        e.target.parentElement.remove();
-    }
-
-});
-
-});
-
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
     const clientSelect = document.getElementById("id_cliente");
     const typeSelect = document.getElementById("id_tipo_os");
 
@@ -288,7 +221,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function reloadWithParams() {
-
         const params = new URLSearchParams(window.location.search);
 
         if (clientSelect) setOrDelete(params, "cliente", clientSelect.value);
@@ -305,27 +237,23 @@ document.addEventListener("DOMContentLoaded", function () {
         typeSelect.addEventListener("change", reloadWithParams);
     }
 
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-
     const container = document.getElementById("extra-fields");
     const addButton = document.getElementById("add-extra");
 
-    addButton.addEventListener("click", function () {
+    if (addButton && container) {
+        addButton.addEventListener("click", function () {
+            const row = document.createElement("div");
+            row.classList.add("extra-row");
 
-        const row = document.createElement("div");
-        row.classList.add("extra-row");
+            row.innerHTML = `
+                <input type="text" name="extra_key[]" placeholder="Chave" class="form-control">
+                <input type="text" name="extra_value[]" placeholder="Valor" class="form-control">
+                <button type="button" class="btn-remove-extra remove-row">✕</button>
+            `;
 
-        row.innerHTML = `
-            <input type="text" name="extra_key[]" placeholder="Chave" class="form-control">
-            <input type="text" name="extra_value[]" placeholder="Valor" class="form-control">
-            <button type="button" class="btn btn-danger remove-row">X</button>
-        `;
-
-        container.appendChild(row);
-
-    });
+            container.appendChild(row);
+        });
+    }
 
     document.addEventListener("click", function (e) {
         if (e.target.classList.contains("remove-row")) {

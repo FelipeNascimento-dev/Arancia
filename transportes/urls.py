@@ -6,7 +6,7 @@ from transportes.views.scripting_view import scripting_view
 from transportes.views.view_panel_technical import registrar_tratamento_view
 from .views import extrair_enderecos_view, gerar_etiquetas_view, dashboard_view, criar_user_view, ver_usuario_view, mover_rota_view, ordenar_rota_view
 from .views import consulta_os_pend, lista_tecnicos, consulta_os, detalhe_os, consulta_os_transp, detalhe_os_transp, buscar_motoristas, buscar_veiculos
-from .views import lista_viagens, detalhe_viagem, criar_os_transp
+from .views import lista_viagens, detalhe_viagem, criar_os_transp, buscar_locais
 
 app_name = 'transportes'
 
@@ -38,6 +38,7 @@ urlpatterns = [
     path("buscar-veiculos/", buscar_veiculos, name="buscar_veiculos"),
     path("consulta-os-transp/", consulta_os_transp, name="consulta_os_transp"),
     path("criar-os/", criar_os_transp, name="criar_os_transp"),
+    path("buscar-locais/", buscar_locais, name="buscar_locais"),
     path("lista-viagens/", lista_viagens, name="lista_viagens"),
     path("detalhe-viagem/<int:id_viagem>/",
          detalhe_viagem, name="detalhe_viagem"),
