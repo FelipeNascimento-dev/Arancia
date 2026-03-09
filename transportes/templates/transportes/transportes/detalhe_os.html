@@ -1006,13 +1006,15 @@
                         <span class="badge badge-yellow">
                             {{ payload.service_order.order_state.type }}
                         </span>
+                        {% if payload.service_order.order_type %}
+                        <span class="badge badge-yellow">
+                            Tipo: {{ payload.service_order.order_type.description }}
+                        </span>
+                        {% endif %}
                     </div>
                     <div class="subtitle">
                         {% if payload.service_order.external_order_number %}
-                            OS Externa: {{ payload.service_order.external_order_number }} •
-                        {% endif %}
-                        {% if payload.service_order.order_type %}
-                            Tipo: {{ payload.service_order.order_type.description }}
+                            OS Externa: {{ payload.service_order.external_order_number }}
                         {% endif %}
                         {% if payload.service_order.created_by %}
                             • Criado por: {{ payload.service_order.created_by }}

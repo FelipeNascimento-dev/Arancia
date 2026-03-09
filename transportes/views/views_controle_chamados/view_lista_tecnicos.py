@@ -10,8 +10,6 @@ TOKEN = "123"
 PAGE_SIZE = 25
 
 
-@login_required(login_url='logistica:login')
-@permission_required('logistica.acesso_arancia', raise_exception=True)
 def get_bases_from_arancia_pa():
     bases = []
 

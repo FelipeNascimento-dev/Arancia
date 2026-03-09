@@ -8,6 +8,12 @@ class ConsultaOStranspForm(forms.Form):
     numero_os = forms.CharField(
         label="Insira o número da OS (Opcional)", required=False)
 
+    created_at = forms.DateField(
+        label="Data de criação",
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+
     tipo_os = forms.ChoiceField(
         label="Consultar por",
         choices=[("IN", "OS Interna"), ("EX", "OS Externa")],
