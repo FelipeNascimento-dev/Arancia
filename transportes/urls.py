@@ -4,10 +4,10 @@ from transportes.views.View_session import config_context_view
 from transportes.views.iframe import painel_Dashboard_view
 from transportes.views.scripting_view import scripting_view
 from transportes.views.view_panel_technical import registrar_tratamento_view
-from .views import extrair_enderecos_view, gerar_etiquetas_view, dashboard_view, criar_user_view, ver_usuario_view, mover_rota_view, ordenar_rota_view
+from .views import extrair_enderecos_view, gerar_etiquetas_view, criar_user_view, ver_usuario_view, mover_rota_view, ordenar_rota_view
 from .views import consulta_os_pend, lista_tecnicos, consulta_os, detalhe_os, consulta_os_transp, detalhe_os_transp, buscar_motoristas, buscar_veiculos
 from .views import lista_viagens, detalhe_viagem, criar_os_transp, buscar_locais
-
+from .views.dashboard_view import dashboard_view
 app_name = 'transportes'
 
 urlpatterns = [

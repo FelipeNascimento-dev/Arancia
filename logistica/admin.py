@@ -30,8 +30,8 @@ class PontoAtendimentoInfoAdmin(admin.ModelAdmin):
 
 @admin.register(GroupAditionalInformation)
 class GroupAditionalInformationAdmin(admin.ModelAdmin):
-    list_display = ('group', 'nome', 'cidade', 'estado', 'email', 'telefone1')
-    search_fields = ('group__name', 'cidade', 'estado', 'email', 'responsavel')
+    list_display = ('group', 'nome', 'cidade', 'UF', 'email', 'telefone1')
+    search_fields = ('group__name', 'cidade', 'UF', 'email', 'responsavel')
 
 
 @admin.register(UserDesignation)
