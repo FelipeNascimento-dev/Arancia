@@ -5,6 +5,7 @@ import math
 from ...forms import ConsultaOStranspForm
 from setup.local_settings import TRANSP_API_URL
 from utils.request import RequestClient
+from datetime import datetime
 
 
 @login_required(login_url='logistica:login')
@@ -66,6 +67,10 @@ def consulta_os_transp(request):
 
     if should_query:
         params = {}
+
+        created_at = (data.get("created_at") or "").strip()
+        if created_at:
+            params["created_at"] = created_at
 
         tipo_os = (data.get("tipo_os") or "").strip().upper()
         numero_os = (data.get("numero_os") or "").strip()
@@ -151,6 +156,18 @@ def consulta_os_transp(request):
             start = max(1, page - 2)
             end = min(total_pages, page + 2)
             pages = list(range(start, end + 1))
+
+    for item in resultado_api:
+        created = item.get("created_at")
+
+        if created:
+            try:
+                dt = datetime.fromisoformat(
+                    created.replace("Z", "+00:00"))
+                item["created_at_fmt"] = dt.strftime(
+                    "%d/%m/%Y %H:%M")
+            except Exception:
+                item["created_at_fmt"] = created
 
     return render(
         request,
