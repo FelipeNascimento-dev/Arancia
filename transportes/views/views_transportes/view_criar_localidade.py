@@ -137,12 +137,10 @@ def skill_customer(request):
         "all_users": all_users,
         "form": form,
         "site_title": "Gerenciamento de Clientes",
-        "current_menu": "gestao_customer",
-        "current_parent_menu": "gerenciamento",
+        "current_parent_menu": "transportes",
+        "current_menu": "skill_customer",
     }
 
     return render(
-        request,
-        "logistica/templates_gerenciamento/gestao_skills.html",
-        context,
+        request, "transportes/transportes/criar_localidade.html", context,
     )

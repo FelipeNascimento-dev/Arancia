@@ -319,6 +319,11 @@
                     <a href="{% url 'transportes:lista_viagens' %}" class="itens-sidebar {% if current_menu == 'lista_viagens' %}active{% endif %}">
                         <span class="texto-item">Lista Viagens</span>
                     </a>
+                    {% if perms.logistica.gestao_total %}
+                    <a href="{% url 'transportes:skill_customer' %}" class="itens-sidebar {% if current_menu == 'skill_customer' %}active{% endif %}">
+                        <span class="texto-item">Criar Localidade</span>
+                    </a>
+                    {% endif %}    
                 {% endif %}
             </div>
         </div>
