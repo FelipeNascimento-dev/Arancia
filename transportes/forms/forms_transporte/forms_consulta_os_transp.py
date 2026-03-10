@@ -4,7 +4,7 @@ from django import forms
 class ConsultaOStranspForm(forms.Form):
     client = forms.ChoiceField(label="Cliente", required=False)
     order_type = forms.ChoiceField(label="Tipo de OS", required=False)
-    status = forms.ChoiceField(label="Status da OS", required=False)
+    status = forms.ChoiceField(label="Status da OS (Opcional)", required=False)
     numero_os = forms.CharField(
         label="Insira o número da OS (Opcional)", required=False)
 
