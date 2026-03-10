@@ -5,9 +5,9 @@ class FormCriarOsTransp(forms.Form):
 
     cliente = forms.ChoiceField(label="Cliente", required=True)
     tipo_os = forms.ChoiceField(label="Tipo de Serviço", required=True)
-    status_os = forms.ChoiceField(label="Status", required=False)
+    status_os = forms.ChoiceField(label="Status (Opcional)", required=False)
     ex_order_number = forms.CharField(
-        label="Número da OS Externa",
+        label="Número da OS Externa (Opcional)",
         max_length=100,
         required=False
     )

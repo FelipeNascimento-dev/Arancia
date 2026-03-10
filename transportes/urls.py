@@ -4,10 +4,10 @@ from transportes.views.View_session import config_context_view
 from transportes.views.iframe import painel_Dashboard_view
 from transportes.views.scripting_view import scripting_view
 from transportes.views.view_panel_technical import registrar_tratamento_view
-from .views import extrair_enderecos_view, gerar_etiquetas_view, dashboard_view, criar_user_view, ver_usuario_view, mover_rota_view, ordenar_rota_view
+from .views import extrair_enderecos_view, gerar_etiquetas_view, criar_user_view, ver_usuario_view, mover_rota_view, ordenar_rota_view
 from .views import consulta_os_pend, lista_tecnicos, consulta_os, detalhe_os, consulta_os_transp, detalhe_os_transp, buscar_motoristas, buscar_veiculos
-from .views import lista_viagens, detalhe_viagem, criar_os_transp, buscar_locais
-
+from .views import lista_viagens, detalhe_viagem, criar_os_transp, buscar_locais, skill_customer, skill_transport
+from .views.dashboard_view import dashboard_view
 app_name = 'transportes'
 
 urlpatterns = [
@@ -42,4 +42,6 @@ urlpatterns = [
     path("lista-viagens/", lista_viagens, name="lista_viagens"),
     path("detalhe-viagem/<int:id_viagem>/",
          detalhe_viagem, name="detalhe_viagem"),
+    path("gerenciamento/customer/", skill_customer, name="skill_customer"),
+    path("gerenciamento/transport/", skill_transport, name="skill_transport"),
 ]

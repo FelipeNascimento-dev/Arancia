@@ -15,3 +15,5 @@ from .views_transportes.view_consulta_os_transp import consulta_os_transp
 from .views_transportes.view_lista_viagens import lista_viagens
 from .views_transportes.view_detalhe_viagem import detalhe_viagem
 from .views_transportes.view_criar_os import criar_os_transp, buscar_locais
+from .views_transportes.view_criar_localidade import skill_customer
+from .views_transportes.view_criar_transportadora import skill_transport

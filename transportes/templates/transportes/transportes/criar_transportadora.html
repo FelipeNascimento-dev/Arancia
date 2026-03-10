@@ -1,16 +1,16 @@
 {% extends "global/base.html" %}
 {% block content %}
 
-<h2 class="title-skill-ger"><i class="fa-solid fa-layer-group"></i> Gestão de GAI</h2>
+<h2 class="title-skill-ger"><i class="fa-solid fa-layer-group"></i> Gestão de Transportadoras</h2>
 
 <div class="grid-container">
 
     <div class="box" id="box-group">
         <div class="box-header" style="flex-direction: column; align-items: stretch; gap: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3>GAIs Existentes</h3>
+                <h3>Transportadoras Existentes</h3>
                 <button type="button" class="btn btn-primary btn-sm" onclick="openCreateGroupModal()">
-                    <i class="fa-solid fa-plus"></i> Novo GAI
+                    <i class="fa-solid fa-plus"></i> Nova Transportadora
                 </button>
             </div>
 
@@ -18,7 +18,7 @@
                 <input
                     type="text"
                     name="gai_q"
-                    placeholder="Pesquisar GAI..."
+                    placeholder="Pesquisar transportadora..."
                     value="{{ request.GET.gai_q }}"
                     style="width: 100%; padding: 6px 8px;"
                 >
@@ -40,7 +40,7 @@
     </div>
 
     <div class="box" id="box-group2">
-        <h3>Editar GAI - {{ selected_group.nome }}</h3>
+        <h3>Editar Transportadora - {{ selected_group.nome }}</h3>
 
         <div class="tab-header">
             <button class="tab-btn active" data-tab="tab1">Informações Principais</button>
@@ -145,14 +145,14 @@
                     <i class="fa-solid fa-floppy-disk"></i> Salvar
                 </button>
 
-                <a href="{% url 'logistica:skill_ger' %}" class="btn btn-secondary">
+                <a href="{% url 'transportes:skill_transport' %}" class="btn btn-secondary">
                     <i class="fa-solid fa-xmark"></i> Cancelar
                 </a>
             </div>
         </form>
     </div>
 
-    {% if selected_group %}
+    <!-- {% if selected_group %}
     <div class="box wide">
 
         <div class="user-grid">
@@ -184,7 +184,7 @@
             </div>
         </div>
     </div>
-    {% endif %}
+    {% endif %} -->
 </div>
 
 <!-- MODAL PARA CRIAÇÃO DE G.A.I -->

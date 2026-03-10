@@ -27,7 +27,7 @@ class CreateGAIForm(forms.Form):
         label="Complemento", max_length=100, required=False)
     bairro = forms.CharField(label="Bairro", max_length=100, required=False)
     cidade = forms.CharField(label="Cidade", max_length=100, required=False)
-    estado = forms.CharField(label="Estado", max_length=50, required=False)
+    UF = forms.CharField(label="Estado", max_length=50, required=False)
     codigo_ibge = forms.CharField(
         label="Código IBGE", max_length=50, required=True)
     telefone1 = forms.CharField(

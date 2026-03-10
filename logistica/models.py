@@ -92,8 +92,6 @@ class GroupAditionalInformation(models.Model):
         max_length=2, verbose_name="Estado", blank=True, null=True)
     CEP = models.CharField(
         max_length=10, verbose_name="CEP", blank=True, null=True)
-    estado = models.CharField(
-        max_length=2, verbose_name="Estado", blank=True, null=True)
     codigo_ibge = models.CharField(
         max_length=100, verbose_name="Código IBGE", blank=True, null=True)
     telefone1 = models.CharField(
