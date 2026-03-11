@@ -155,6 +155,7 @@ def detalhe_viagem(request, id_viagem):
         'titulo': titulo,
         'payload': resp,
         "travel_event_types": travel_event_types,
+        "site_title": "Detalhe da Viagem",
         "current_parent_menu": "transportes",
         "current_menu": "lista_viagens",
     })

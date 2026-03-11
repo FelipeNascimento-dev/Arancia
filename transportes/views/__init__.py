@@ -17,3 +17,5 @@ from .views_transportes.view_detalhe_viagem import detalhe_viagem
 from .views_transportes.view_criar_os import criar_os_transp, buscar_locais
 from .views_transportes.view_criar_localidade import skill_customer
 from .views_transportes.view_criar_transportadora import skill_transport
+from .views_transportes.view_criar_motorista import driver_ger
+from .views_transportes.view_criar_veiculo import vehicle_ger

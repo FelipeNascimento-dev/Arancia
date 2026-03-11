@@ -1,0 +1,364 @@
+{% extends "global/base.html" %}
+
+{% block content %}
+
+<style>
+    .user-list-container {
+        background: #fff;
+        padding: 16px 18px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+        max-width: 1200px;
+        margin: 0 auto;
+        margin-top: 70px;
+    }
+
+    .user-table-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+    }
+
+    .user-table-header h2 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .user-table-header form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .user-table-header input {
+        height: 34px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 0 10px;
+        font-size: 13px;
+        width: 220px;
+    }
+
+    .user-table-header input:focus {
+        border-color: #2563eb;
+        outline: none;
+    }
+
+    .btn {
+        height: 34px;
+        padding: 0 14px;
+        border-radius: 6px;
+        border: none;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #1d4ed8;
+    }
+
+    .table-wrapper {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .user-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        table-layout: auto;
+    }
+
+    .user-table thead {
+        background: #f3f4f6;
+    }
+
+    .user-table th,
+    .user-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #e5e7eb;
+        text-align: left;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .user-table th {
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .user-table td:first-child {
+        white-space: normal;
+    }
+
+    .user-table th:nth-child(1) {
+        width: 220px;
+    }
+
+    .user-table th:nth-child(2) {
+        width: 140px;
+    }
+
+    .user-table th:nth-child(3) {
+        width: 100px;
+    }
+
+    .user-table th:nth-child(4) {
+        width: 120px;
+    }
+
+    .user-table th:nth-child(5) {
+        width: 150px;
+    }
+
+    .user-table th:nth-child(6) {
+        width: 220px;
+    }
+
+    .user-table th:nth-child(7) {
+        width: 100px;
+    }
+
+    .user-table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .user-table td:last-child {
+        text-align: center;
+    }
+
+    .table-wrapper {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        overflow-x: auto;
+    }
+
+    .tag {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .tag-green {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .tag-gray {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .pagination {
+        margin-top: 12px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: flex-start;
+        font-size: 13px;
+    }
+
+    .pagination a {
+        padding: 5px 10px;
+        background: #f3f4f6;
+        border-radius: 6px;
+        text-decoration: none;
+        color: #111827;
+    }
+
+    .pagination a:hover {
+        background: #e5e7eb;
+    }
+
+    .pagination span {
+        font-weight: 600;
+    }
+
+    .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .45);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .modal.show {
+        display: flex;
+    }
+
+    .modal-content {
+
+        width: 500px;
+        max-width: 95%;
+
+        background: white;
+        border-radius: 10px;
+
+        padding: 18px;
+
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
+
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .modal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .modal-grid input,
+    .modal-grid select {
+
+        height: 34px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 0 8px;
+    }
+
+    .full {
+        grid-column: span 2;
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+</style>
+
+<div class="user-list-container">
+    <div class="user-table-header">
+        <h2>
+            <i class="fa-solid fa-truck"></i>
+            Motoristas
+        </h2>
+
+        <form method="get">
+            <input name="q" value="{{ search }}" placeholder="Pesquisar">
+            <button type="button" class="btn btn-primary" onclick="openModal('modalDriver')">
+                Novo Motorista
+            </button>
+        </form>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>User</th>
+                    <th>Base</th>
+                    <th>Unidade</th>
+                    <th>Telefone</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in drivers %}
+                <tr>
+                    <td>{{ d.name }}</td>
+                    <td>{{ d.username }}</td>
+                    <td>{{ d.cod_base }}</td>
+                    <td>{{ d.nome_unidade }}</td>
+                    <td>{{ d.phone }}</td>
+                    <td>{{ d.email }}</td>
+                    <td>
+                        {% if d.profile %}
+                        <span class="tag tag-green">
+                            Ativo
+                        </span>
+                        {% else %}
+                        <span class="tag tag-gray">
+                            Sem perfil
+                        </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+<!-- MODAL -->
+<div id="modalDriver" class="modal">
+    <div class="modal-content">
+        <form method="post">
+            {% csrf_token %}
+            <h3>Novo Motorista</h3>
+            <div class="modal-grid">
+                <input name="username" placeholder="Username">
+                <input name="pwd" placeholder="Senha" type="password">
+                <input name="name" class="full" placeholder="Nome">
+                <input name="phone" placeholder="Telefone">
+                <input name="email" placeholder="Email">
+                <input name="document" placeholder="CPF">
+                <input name="nome_unidade" placeholder="Unidade">
+                <select name="gai_id" class="full" placeholder="Transportadora">
+                    <option value=""></option>
+                    {% for c in carriers %}
+                    <option value="{{ c.id }}">
+                        {{ c.nome }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" onclick="closeModal()">
+                    Cancelar
+                </button>
+                <button class="btn btn-primary">
+                    Criar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="pagination">
+    {% if has_prev %}
+    <a href="?page={{ page|add:-1 }}&q={{ search }}">
+        ← Anterior
+    </a>
+    {% endif %}
+    <span> Página {{ page }} </span>
+    {% if has_next %}
+    <a href="?page={{ page|add:1 }}&q={{ search }}">
+        Próxima →
+    </a>
+    {% endif %}
+</div>
+
+
+<script>
+function openModal() {
+    document.getElementById("modalDriver").classList.add("show")
+}
+
+function closeModal() {
+    document.getElementById("modalDriver").classList.remove("show")
+}
+</script>
+
+{% endblock %}

@@ -136,9 +136,9 @@ def skill_transport(request):
         "usuarios_vinculados": usuarios_vinculados,
         "all_users": all_users,
         "form": form,
-        "site_title": "Gerenciamento de Clientes",
+        "site_title": "Gerenciamento de Transportadoras",
         "current_parent_menu": "transportes",
-        "current_menu": "skill_customer",
+        "current_menu": "skill_transport",
     }
 
     return render(

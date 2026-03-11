@@ -60,6 +60,7 @@ class PersonalPermissions(models.Model):
             ("gerar_etiquetas", "Gerar Etiquetas"),
             ("transp_menu", "Mostrar menu transporte"),
             ("CC_admin", "Mostrar menu administrativo"),
+            ("CC_gerencial", "Controle de campo gerencial"),
             ("controle_chamados", "Controle de Chamados"),
             ("transportes", "Permissão total para transporte"),
         ]
