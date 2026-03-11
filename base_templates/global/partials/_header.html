@@ -235,31 +235,33 @@
             </button>
             <div class="dropdown-content {% if current_menu == 'controle_campo' %}show{% endif %}">
                 {% if perms.transportes.controle_campo %}
-                <h5 class="submenu-toggle {% if current_menu == 'controle_campo' %}active{% endif %}"
-                    data-target="controle-campo">
-                    Controle de Campo
-                </h5>
-                <div class="sub-submenu {% if current_menu == 'controle_campo' %}show{% endif %}"
-                    id="controle-campo">
-                    <a href="{% url 'transportes:extrair_enderecos' %}"
-                    class="{% if current_submenu == 'endereco' %}active{% endif %}">
-                        Extrair Endereços
-                    </a>
-                    <h5 class="submenu-toggle {% if current_submenu == 'painel' %}active{% endif %}"
-                        data-target="controle-campo1">
-                        Painel
+                    <h5 class="submenu-toggle {% if current_menu == 'controle_campo' %}active{% endif %}"
+                        data-target="controle-campo">
+                        Controle de Campo
                     </h5>
-                    <div class="sub-submenu {% if current_submenu == 'painel' %}show{% endif %}"
-                        id="controle-campo1">
-                        <a href="{% url 'transportes:controle' %}"
-                        class="{% if current_subsubmenu == 'controle' %}active{% endif %}">
-                            Controle
+                    <div class="sub-submenu {% if current_menu == 'controle_campo' %}show{% endif %}"
+                        id="controle-campo">
+                        {% if perms.transportes.CC_gerencial %}
+                        <a href="{% url 'transportes:extrair_enderecos' %}"
+                        class="{% if current_submenu == 'endereco' %}active{% endif %}">
+                            Extrair Endereços
                         </a>
-                        <a href="{% url 'transportes:Dashboard' %}"
-                        class="{% if current_subsubmenu == 'dashboard' %}active{% endif %}">
-                            Dashboard
-                        </a>
-                    </div>
+                        <h5 class="submenu-toggle {% if current_submenu == 'painel' %}active{% endif %}"
+                            data-target="controle-campo1">
+                            Painel
+                        </h5>
+                        <div class="sub-submenu {% if current_submenu == 'painel' %}show{% endif %}"
+                            id="controle-campo1">
+                            <a href="{% url 'transportes:controle' %}"
+                            class="{% if current_subsubmenu == 'controle' %}active{% endif %}">
+                                Controle
+                            </a>
+                            <a href="{% url 'transportes:Dashboard' %}"
+                            class="{% if current_subsubmenu == 'dashboard' %}active{% endif %}">
+                                Dashboard
+                            </a>
+                        </div>
+                        {% endif %}
                     {% if perms.transportes.CC_admin %}
                     <h5 class="submenu-toggle {% if current_submenu == 'usuarios' %}active{% endif %}"
                         data-target="Ferramentas1">
@@ -275,27 +277,29 @@
                         class="{% if current_subsubmenu == 'editar_usuario' %}active{% endif %}">
                             Editar Usuário
                         </a>
-                    </div>
+                    </div> 
                     {% endif %}
-                    <h5 class="submenu-toggle {% if current_submenu == 'rotas' %}active{% endif %}"
-                        data-target="Ferramentas2">
-                        Rotas
-                    </h5>
-                    <div class="sub-submenu {% if current_submenu == 'rotas' %}show{% endif %}"
-                        id="Ferramentas2">
-                        <a href="{% url 'transportes:scripting' %}"
-                        class="{% if current_subsubmenu == 'roteirizacao' %}active{% endif %}">
-                            Roteirização
-                        </a>
-                        <a href="{% url 'transportes:mover_rota' %}"
-                        class="{% if current_subsubmenu == 'mover_rota' %}active{% endif %}">
-                            Mover Rotas
-                        </a>
-                        <a href="{% url 'transportes:ordenar_rota' %}"
-                        class="{% if current_subsubmenu == 'ordenar_rotas' %}active{% endif %}">
-                            Ordenar Rotas
-                        </a>
-                    </div>
+                        {% if perms.transportes.CC_gerencial %}
+                        <h5 class="submenu-toggle {% if current_submenu == 'rotas' %}active{% endif %}"
+                            data-target="Ferramentas2">
+                            Rotas
+                        </h5>
+                        <div class="sub-submenu {% if current_submenu == 'rotas' %}show{% endif %}"
+                            id="Ferramentas2">
+                            <a href="{% url 'transportes:scripting' %}"
+                            class="{% if current_subsubmenu == 'roteirizacao' %}active{% endif %}">
+                                Roteirização
+                            </a>
+                            <a href="{% url 'transportes:mover_rota' %}"
+                            class="{% if current_subsubmenu == 'mover_rota' %}active{% endif %}">
+                                Mover Rotas
+                            </a>
+                            <a href="{% url 'transportes:ordenar_rota' %}"
+                            class="{% if current_subsubmenu == 'ordenar_rotas' %}active{% endif %}">
+                                Ordenar Rotas
+                            </a>
+                        </div>
+                        {% endif %}
 
                     <a href="{% url 'transportes:consulta_os_pend' %}"
                     class="itens-sidebar {% if current_submenu == 'consulta_os_pend' %}active{% endif %}">
@@ -309,7 +313,6 @@
                     class="itens-sidebar {% if current_submenu == 'lista_tecnicos' %}active{% endif %}">
                         Lista de Técnicos
                     </a>
-                    
                 </div>
                 {% endif %}
                 {% if perms.transportes.transportes %}
@@ -321,7 +324,16 @@
                     </a>
                     {% if perms.logistica.gestao_total %}
                     <a href="{% url 'transportes:skill_customer' %}" class="itens-sidebar {% if current_menu == 'skill_customer' %}active{% endif %}">
-                        <span class="texto-item">Criar Localidade</span>
+                        <span class="texto-item">Gerenciar Localidades</span>
+                    </a>
+                    <a href="{% url 'transportes:skill_transport' %}" class="itens-sidebar {% if current_menu == 'skill_transport' %}active{% endif %}">
+                        <span class="texto-item">Gerenciar Transportadoras</span>
+                    </a>
+                    <a href="{% url 'transportes:driver_ger' %}" class="itens-sidebar {% if current_menu == 'driver_ger' %}active{% endif %}">
+                        <span class="texto-item">Criar Motorista</span>
+                    </a>
+                    <a href="{% url 'transportes:vehicle_ger' %}" class="itens-sidebar {% if current_menu == 'vehicle_ger' %}active{% endif %}">
+                        <span class="texto-item">Criar Veículos</span>
                     </a>
                     {% endif %}    
                 {% endif %}

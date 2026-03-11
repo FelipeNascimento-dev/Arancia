@@ -1409,7 +1409,16 @@
                                 </div>
                             </div>
                         </div>
-                        <button class="btn-success" onclick="abrirModal()">✔ Aprovar Cotação</button>
+                        <button
+                            class="btn-success"
+                            onclick="aprovarCotacao(
+                                '{{ quote.id }}',
+                                '{{ quote.carrier.id }}',
+                                '{{ quote.estimated_price }}'
+                            )"
+                        >
+                        ✔ Aprovar Cotação
+                        </button>
                     </div>
                     {% endfor %}
                 </div>
@@ -1577,7 +1586,7 @@
 
                     <div class="form-group">
                         <label>Cotação (opcional)</label>
-                        <select name="quote_id">
+                        <select name="quote_id" id="quoteSelect">
                             <option>Selecionar cotação...</option>
                             {% for quote in payload.quotes %}
                             <option value="{{ quote.id }}">{{ quote.carrier.nome }} - R${{ quote.estimated_price }}</option>
@@ -2530,6 +2539,30 @@ document.addEventListener("change", function(e){
     document.querySelector("input[name='total_volume']").value = totalVolume.toFixed(4)
 
 })
+</script>
+
+<script>
+    window.aprovarCotacao = function (quoteId, carrierId, price) {
+
+    abrirModal()
+
+    const carrierSelect = document.getElementById("carrierSelectViagem")
+    const quoteSelect = document.getElementById("quoteSelect")
+    const priceInput = document.querySelector("input[name='price_charged']")
+
+    if (carrierSelect) {
+        carrierSelect.value = carrierId
+        carrierSelect.dispatchEvent(new Event("change"))
+    }
+
+    if (quoteSelect) {
+        quoteSelect.value = quoteId
+    }
+
+    if (priceInput && price) {
+        priceInput.value = price
+    }
+}
 </script>
 
 {% endblock content %}
