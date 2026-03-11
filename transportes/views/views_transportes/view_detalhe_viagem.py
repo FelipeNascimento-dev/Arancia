@@ -29,6 +29,8 @@ def detalhe_viagem(request, id_viagem):
         )
         resp = client.send_api_request()
 
+        print(resp)
+
         if 'detail' in resp:
             messages.error(request, resp['detail'])
 

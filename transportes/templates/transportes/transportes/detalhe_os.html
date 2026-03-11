@@ -384,9 +384,44 @@
         margin-bottom: 20px;
     }
 
-    .cotacao-title {
+    .cotacao-title badge{
         font-size: 16px;
         font-weight: 600;
+    }
+
+    .cotacao-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        position: relative;
+    }
+
+    .cotacao-status {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+    }
+
+    .badge-status {
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .badge-pendente {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-aprovado {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-rejeitado {
+        background: #fee2e2;
+        color: #7f1d1d;
     }
 
     .cotacao-sub {
@@ -993,6 +1028,118 @@
         overflow-y: auto;
         padding-right: 6px;
     }
+
+    .event-image-box {
+        margin-top: 12px;
+    }
+
+    .event-image-link {
+        display: inline-block;
+        text-decoration: none;
+    }
+
+    .event-image {
+        max-width: 220px;
+        max-height: 180px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        display: block;
+        object-fit: cover;
+        transition: .2s;
+    }
+
+    .event-image:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(0,0,0,.12);
+    }
+
+    .extra-info-container {
+        margin-top: 10px;
+        padding: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #f8fafc;
+    }
+
+    .extra-info-title {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+
+    .extra-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+
+    .extra-row input {
+        padding: 6px;
+        border: 1px solid #d1d5db;
+        border-radius: 5px;
+    }
+
+    .btn-add-extra {
+        margin-top: 6px;
+        padding: 6px 10px;
+        background: #2563eb;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-remove-extra {
+        background: #ef4444;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        padding: 6px 10px;
+        cursor: pointer;
+    }
+
+    .cotacao-actions {
+        display: flex;
+        width: 100%;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .cotacao-actions form {
+        flex: 1;
+        display: flex;
+    }
+
+    .cotacao-actions button {
+        width: 100%;
+    }
+
+    .btn-success {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: none;
+        background: #28a745;
+        color: white;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .btn-danger {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: none;
+        background: #ef4444;
+        color: white;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .btn-danger:hover {
+        background: #dc2626;
+    }
 </style>
 
 <div class="os-container">
@@ -1229,6 +1376,7 @@
                                 <th>Status</th>
                                 <th>Viagem</th>
                                 <th>Criado em</th>
+                                <th>Informações Extras</th>
                                 <th>Sub-Itens</th>
                                 <th>Eventos</th>
                             </tr>
@@ -1259,6 +1407,16 @@
                                         {{ item.created_at|slice:"8:10" }}/{{ item.created_at|slice:"5:7" }}/{{ item.created_at|slice:"0:4" }}
                                     {% else %}
                                         -
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if item.extra_information %}
+                                    <button class="btn-subitens" onclick="abrirModalInfoExtra({{ item.id }})">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    {% else %}
+                                    -
                                     {% endif %}
                                 </td>
 
@@ -1349,9 +1507,23 @@
                             <div class="timeline-item">
                                 <div class="timeline-dot"></div>
                                 <div class="timeline-card">
-                                    {{ ev.description }}
+                                    <div>{{ ev.description }}</div>
+
+                                    {% if ev.img_url %}
+                                    <div style="margin-top:12px;">
+                                        <a href="{{ ev.img_url }}" target="_blank" rel="noopener noreferrer">
+                                            <img src="{{ ev.img_url }}"
+                                                alt="Imagem do evento"
+                                                style="max-width:220px; max-height:180px; border-radius:8px; border:1px solid #ddd; display:block;">
+                                        </a>
+                                    </div>
+                                    {% endif %}
+
                                     <div class="timeline-meta">
                                         por {{ ev.created_by }}
+                                        {% if ev.created_at %}
+                                            • {{ ev.created_at|date:"d/m/Y H:i" }}
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -1376,6 +1548,19 @@
                                 <div class="cotacao-sub">
                                     Criado por {{ quote.created_by }}
                                 </div>
+                            </div>
+                            <div class="cotacao-status">
+                                <span class="badge-status
+                                    {% if quote.status.type == 'PENDENTE' %}
+                                        badge-pendente
+                                    {% elif quote.status.type == 'APROVADA' %}
+                                        badge-aprovado
+                                    {% elif quote.status.type == 'REJEITADA' %}
+                                        badge-rejeitado
+                                    {% endif %}
+                                ">
+                                    {{ quote.status.type }}
+                                </span>
                             </div>
                         </div>
 
@@ -1409,16 +1594,40 @@
                                 </div>
                             </div>
                         </div>
-                        <button
-                            class="btn-success"
-                            onclick="aprovarCotacao(
-                                '{{ quote.id }}',
-                                '{{ quote.carrier.id }}',
-                                '{{ quote.estimated_price }}'
-                            )"
-                        >
-                        ✔ Aprovar Cotação
-                        </button>
+                        <div class="cotacao-actions">
+                        {% if quote.status.type == "PENDENTE" %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="quote_id" value="{{ quote.id }}">
+                            <input type="hidden" name="carrier_id" value="{{ quote.carrier.id }}">
+                            <input type="hidden" name="price" value="{{ quote.estimated_price }}">
+                            <button
+                                type="button"
+                                class="btn-success"
+                                onclick="aprovarCotacao(
+                                    '{{ quote.id }}',
+                                    '{{ quote.carrier.id }}',
+                                    '{{ quote.estimated_price }}'
+                                )"
+                            >
+                                ✔ Aprovar
+                            </button>
+                        </form>
+
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="quote_id" value="{{ quote.id }}">
+                            <button
+                                type="submit"
+                                class="btn-danger"
+                                value="1"
+                                name="reject_button"
+                            >
+                                ✖ Rejeitar
+                            </button>
+                        </form>
+                        {% endif %}
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
@@ -1451,94 +1660,144 @@
 <form method="post">
     {% csrf_token %}
     <div class="os-modal-overlay" id="modalNovoItem">
-    <div class="os-modal os-modal-lg" id="modalItemContent">
-        <div class="os-modal-header">
-        <div class="os-modal-title">Adicionar Item</div>
-        <div class="os-modal-close" onclick="fecharModalCriarItem()">✕</div>
-        </div>
-
-        <div class="os-modal-body" id="modalItemBody">
-        <div class="os-modal-description">
-            Preencha os dados do item para a OS <b>#{{ payload.service_order.order_number }}</b>
-        </div>
-
-        <div id="itemModalAlert" class="item-alert" style="display:none;"></div>
-            <input type="hidden" name="service_order_id" value="{{ payload.service_order.id }}">
-            <input type="hidden" name="order_number"
-       value="{{ payload.service_order.external_order_number|default:payload.service_order.order_number }}">
-            <input type="hidden" name="created_by" value="{{ request.user.username }}">
-
-            <div class="form-grid">
-            <div class="form-group">
-                <label>Serial (principal)</label>
-                <input type="text" name="serial_number"required>
+        <div class="os-modal os-modal-lg" id="modalItemContent">
+            <div class="os-modal-header">
+            <div class="os-modal-title">Adicionar Item</div>
+            <div class="os-modal-close" onclick="fecharModalCriarItem()">✕</div>
             </div>
 
-            <div class="form-group">
-                <label>Descrição do Item</label>
-                <input type="text" name="product_model" required>
+            <div class="os-modal-body" id="modalItemBody">
+            <div class="os-modal-description">
+                Preencha os dados do item para a OS <b>#{{ payload.service_order.order_number }}</b>
             </div>
 
-            <div class="form-group">
-                <label>Controle do Item</label>
-                <input type="text" name="item_control">
+            <div id="itemModalAlert" class="item-alert" style="display:none;"></div>
+                <input type="hidden" name="service_order_id" value="{{ payload.service_order.id }}">
+                <input type="hidden" name="order_number"
+        value="{{ payload.service_order.external_order_number|default:payload.service_order.order_number }}">
+                <input type="hidden" name="created_by" value="{{ request.user.username }}">
+
+                <div class="form-grid">
+                <div class="form-group">
+                    <label>Serial (principal)</label>
+                    <input type="text" name="serial_number"required>
+                </div>
+
+                <div class="form-group">
+                    <label>Descrição do Item</label>
+                    <input type="text" name="product_model" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Controle do Item</label>
+                    <input type="text" name="item_control">
+                </div>
+
+                <!-- <div class="form-group">
+                    <label>Client ID</label>
+                    <input type="number" name="client_id" value="0" min="0">
+                </div> -->
+
+                <div class="form-group">
+                    <label>Número da OS (Opcional)</label>
+                    <input type="text" name="os_number" value="{{ payload.service_order.external_order_number|default:payload.service_order.order_number }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Peso (kg)</label>
+                    <input type="number" name="weight" value="0" step="0.01" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Altura (cm)</label>
+                    <input type="number" name="height" value="0" step="0.01" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Comprimento (cm)</label>
+                    <input type="number" name="length" value="0" step="0.01" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Largura (cm)</label>
+                    <input type="number" name="width" value="0" step="0.01" min="0">
+                </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom:18px;">
+                    <label>Extra Information</label>
+                    <div class="extra-info-container">
+                        <div class="extra-info-title">
+                            Campos extras
+                        </div>
+                        <div id="extra-fields"></div>
+                        <button type="button"
+                                class="btn-add-extra"
+                                id="add-extra">
+                            + Adicionar campo
+                        </button>
+                    </div>
+                </div>
+
+                <div class="items-box">
+                    <div class="items-title"
+                        style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+
+                        <span>Sub-itens</span>
+
+                        <div style="display:flex;gap:10px;align-items:center;">
+
+                            <input type="number"
+                                name="sub_qtd"
+                                min="0"
+                                value="0"
+                                placeholder="Qtd"
+                                style="width:80px;">
+
+                            <button type="button"
+                                    class="btn-primary"
+                                    style="padding:8px 12px;"
+                                    onclick="addSubItemRow()">
+
+                                + Adicionar Manual
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <div id="subItensContainer" class="subitens-container">
+                        <!-- linhas entram via JS -->
+                    </div>
+                </div>
             </div>
 
-            <!-- <div class="form-group">
-                <label>Client ID</label>
-                <input type="number" name="client_id" value="0" min="0">
-            </div> -->
-
-            <div class="form-group">
-                <label>Número da OS (Opcional)</label>
-                <input type="text" name="os_number" value="{{ payload.service_order.external_order_number|default:payload.service_order.order_number }}">
-            </div>
-
-            <div class="form-group">
-                <label>Peso (kg)</label>
-                <input type="number" name="weight" value="0" step="0.01" min="0">
-            </div>
-
-            <div class="form-group">
-                <label>Altura (cm)</label>
-                <input type="number" name="height" value="0" step="0.01" min="0">
-            </div>
-
-            <div class="form-group">
-                <label>Comprimento (cm)</label>
-                <input type="number" name="length" value="0" step="0.01" min="0">
-            </div>
-
-            <div class="form-group">
-                <label>Largura (cm)</label>
-                <input type="number" name="width" value="0" step="0.01" min="0">
-            </div>
-            </div>
-
-            <div class="form-group" style="margin-bottom:18px;">
-            <label>Extra Information (JSON)</label>
-            <textarea name="extra_information" rows="3" placeholder='{"chave":"valor"}'></textarea>
-            </div>
-
-            <div class="items-box">
-                <div class="items-title" style="display:flex;justify-content:space-between;align-items:center;">
-                    <span>Sub-itens</span>
-                    <button type="button" class="btn-primary" style="padding:8px 12px;" onclick="addSubItemRow()">
-                    + Adicionar Sub-item
+            <div class="os-modal-footer" style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <label style="font-size:13px;">Qtd</label>
+                    <input type="number"
+                        name="item_qtd"
+                        value="1"
+                        min="1"
+                        style="width:70px;height:32px;">
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button type="button"
+                            class="btn-secondary"
+                            onclick="fecharModalCriarItem()">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                            class="btn-primary"
+                            name="criar_item"
+                            value="1"
+                            id="btnSalvarItem">
+                        Salvar Item
                     </button>
                 </div>
-
-                <div id="subItensContainer" class="subitens-container">
-                    <!-- linhas entram via JS -->
-                </div>
             </div>
         </div>
-
-        <div class="os-modal-footer">
-        <button type="button" class="btn-secondary" onclick="fecharModalCriarItem()">Cancelar</button>
-        <button type="submit" class="btn-primary" name="criar_item" value="1">Salvar Item</button>
-        </div>
-    </div>
     </div>
 </form>
 
@@ -1587,7 +1846,7 @@
                     <div class="form-group">
                         <label>Cotação (opcional)</label>
                         <select name="quote_id" id="quoteSelect">
-                            <option>Selecionar cotação...</option>
+                            <option value="">Selecionar cotação...</option>
                             {% for quote in payload.quotes %}
                             <option value="{{ quote.id }}">{{ quote.carrier.nome }} - R${{ quote.estimated_price }}</option>
                             {% endfor %}
@@ -1621,7 +1880,6 @@
 <form method="post">
     {% csrf_token %}
 
-    <!-- manda a OS no POST -->
     <input type="hidden" name="service_order_id" value="{{ payload.service_order.id }}">
 
     <div class="os-modal-overlay" id="modalNovaCotacao">
@@ -1707,7 +1965,14 @@
                     </div>
 
                     <div class="items-box">
-                        <div class="items-title">Itens da Viagem</div>
+                        <div class="items-title"
+                            style="display:flex;justify-content:space-between;align-items:center;">
+                            <span>Itens da Viagem</span>
+                            <label style="font-size:13px;cursor:pointer;">
+                                <input type="checkbox" id="selectAllItems">
+                                Selecionar todos
+                            </label>
+                        </div>
                         {% for item in payload.items %}
                         <label class="checkbox-item">
                             <input type="checkbox"
@@ -1765,6 +2030,23 @@
         </div>
     </div>
 </div>
+<!-- MODAL PARA INFORMAÇÕES EXTRAS -->
+<div class="os-modal-overlay" id="modalExtraInfo">
+    <div class="os-modal" style="width:500px;">
+        <div class="os-modal-header">
+            <div class="os-modal-title">
+                Informações Extras
+            </div>
+            <div class="os-modal-close"
+                 onclick="fecharModalExtraInfo()">
+                ✕
+            </div>
+        </div>
+        <div class="os-modal-body"
+             id="modalExtraInfoBody">
+        </div>
+    </div>
+</div>
 <!-- MODAL PARA EVENTOS -->
 <div class="os-modal-overlay" id="modalEventosItem">
     <div class="os-modal" style="width:650px;">
@@ -1779,7 +2061,95 @@
         </div>
     </div>
 </div>
+<!-- MODAL PARA REJEITAR COTAÇÕES -->
+{% if modal_confirmacao %}
+<div class="os-modal-overlay show" id="modalRejeitarCotacao">
+    <div class="os-modal" style="width:420px;">
+        <div class="os-modal-header">
+            <div class="os-modal-title">
+                Confirmar rejeição
+            </div>
+            <div class="os-modal-close"
+                 onclick="fecharModalRejeitar()">
+                ✕
+            </div>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden"
+                   name="quote_id"
+                   id="rejectQuoteId">
+            <div class="os-modal-body">
+                <div style="margin-bottom:10px;">
+                    Para confirmar, digite:
+                    <b>{{ confirmation_text }}</b>
+                </div>
+                <input type="text"
+                        name="confirm_text"
+                        id="rejectConfirmInput"
+                        placeholder="Digite {{ confirmation_text }}"
+                        style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;">
+                <div id="rejectError"
+                     style="color:#dc2626;
+                            font-size:13px;
+                            margin-top:6px;
+                            display:none;">
+                    Texto incorreto
+                </div>
+            </div>
+            <div class="os-modal-footer">
+                <button type="button"
+                        class="btn-secondary"
+                        onclick="fecharModalRejeitar()">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        name="confirm_action"
+                        value="1"
+                        class="btn-danger">
+                    Confirmar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    function abrirModalRejeitar(quoteId){
 
+    document.getElementById("modalRejeitarCotacao")
+        .classList.add("show")
+
+    document.getElementById("rejectQuoteId").value = quoteId
+
+    document.getElementById("rejectConfirmInput").value = ""
+
+    document.getElementById("rejectError").style.display = "none"
+}
+
+function fecharModalRejeitar(){
+
+    document.getElementById("modalRejeitarCotacao")
+        .classList.remove("show")
+}
+
+function validarRejeicao(){
+
+    const val =
+        document.getElementById("rejectConfirmInput")
+        .value.trim()
+
+    if(val !== "{{ confirmation_text }}"){
+
+        document.getElementById("rejectError")
+            .style.display = "block"
+
+        return false
+    }
+
+    return true
+}
+</script>
+{% endif %}
 <!-- MODAL PARA CRIACAO DE EVENTOS NAS TRAVELS -->
 {% if modal_travel_events %}
 <div class="os-modal-overlay show" id="modalEventosTravel">
@@ -2255,6 +2625,16 @@ const gruposData = [
 
     container.appendChild(row);
   };
+
+  const extraInfoData = {
+
+    {% for item in payload.items %}
+        {% if item.extra_information %}
+            "{{ item.id }}": {{ item.extra_information|safe }},
+        {% endif %}
+    {% endfor %}
+
+    };
 </script>
 
 <!-- BUSCAR MOTORISTAS DIGITANDO -->
@@ -2511,17 +2891,76 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 </script>
 
+<!-- MODAL EXTRA INFORMATIONS -->
+<script>
+const modalExtraInfo = document.getElementById("modalExtraInfo");
+const modalExtraInfoBody = document.getElementById("modalExtraInfoBody");
+
+window.abrirModalInfoExtra = function(itemId){
+
+    const data = extraInfoData[itemId];
+
+    if(!data){
+        modalExtraInfoBody.innerHTML =
+            "<div>Nenhuma informação extra</div>";
+
+        modalExtraInfo.classList.add("show");
+        return;
+    }
+
+    let html = `
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="background:#0e76bd;color:white;">
+                    <th style="padding:8px;">Chave</th>
+                    <th style="padding:8px;">Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    for (const key in data){
+
+        html += `
+            <tr style="border-bottom:1px solid #eee;">
+                <td style="padding:8px;">
+                    ${key}
+                </td>
+
+                <td style="padding:8px;">
+                    ${data[key]}
+                </td>
+            </tr>
+        `;
+    }
+
+    html += "</tbody></table>";
+
+    modalExtraInfoBody.innerHTML = html;
+
+    modalExtraInfo.classList.add("show");
+}
+
+
+window.fecharModalExtraInfo = function(){
+    modalExtraInfo.classList.remove("show");
+}
+
+modalExtraInfo.addEventListener("click", function(e){
+    if(e.target === modalExtraInfo){
+        fecharModalExtraInfo();
+    }
+});
+</script>
+
 
 <!-- CALCULO PARA ITEM -->
 <script>
-document.addEventListener("change", function(e){
-
-    if(!e.target.matches("input[name='items']")) return
-
+function calcularTotais(){
     let totalWeight = 0
     let totalVolume = 0
-
-    document.querySelectorAll("input[name='items']:checked").forEach(el => {
+    const itens = document.querySelectorAll("input[name='items']:checked")
+    itens.forEach(el => {
 
         const weight = parseFloat((el.dataset.weight || "0").replace(",", "."))
         const h = parseFloat(el.dataset.height || 0)
@@ -2535,10 +2974,81 @@ document.addEventListener("change", function(e){
 
     })
 
-    document.querySelector("input[name='total_weight']").value = totalWeight.toFixed(2)
-    document.querySelector("input[name='total_volume']").value = totalVolume.toFixed(4)
+    const weightInput = document.querySelector("input[name='total_weight']")
+    const volumeInput = document.querySelector("input[name='total_volume']")
+
+    if(weightInput) weightInput.value = totalWeight.toFixed(2)
+    if(volumeInput) volumeInput.value = totalVolume.toFixed(4)
+
+}
+
+document.addEventListener("change", function(e){
+    if(e.target.matches("input[name='items']")){
+        calcularTotais()
+    }
 
 })
+
+document.addEventListener("DOMContentLoaded", function(){
+    const selectAll = document.getElementById("selectAllItems")
+    if(!selectAll) return
+    selectAll.addEventListener("change", function(){
+
+        const checked = this.checked
+
+        document
+            .querySelectorAll("input[name='items']")
+            .forEach(cb => cb.checked = checked)
+
+        calcularTotais()
+
+    })
+})
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const container = document.getElementById("extra-fields");
+    const addButton = document.getElementById("add-extra");
+
+    if (addButton && container) {
+
+        addButton.addEventListener("click", function () {
+
+            const row = document.createElement("div");
+            row.classList.add("extra-row");
+
+            row.innerHTML = `
+                <input type="text"
+                       name="extra_key[]"
+                       placeholder="Chave">
+
+                <input type="text"
+                       name="extra_value[]"
+                       placeholder="Valor">
+
+                <button type="button"
+                        class="btn-remove-extra remove-row">
+
+                    ✕
+
+                </button>
+            `;
+
+            container.appendChild(row);
+
+        });
+
+    }
+
+    document.addEventListener("click", function (e) {
+
+        if (e.target.classList.contains("remove-row")) {
+            e.target.parentElement.remove();
+        }
+
+    });
+
+});
 </script>
 
 <script>
@@ -2565,4 +3075,23 @@ document.addEventListener("change", function(e){
 }
 </script>
 
+<!-- BLOQUEIO NO BOTÃO DE SALVAR ITEM -->
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    const btn = document.getElementById("btnSalvarItem")
+    if(!btn) return
+    btn.addEventListener("click", function(e){
+        if(btn.dataset.locked === "1"){
+            e.preventDefault()
+            e.stopPropagation()
+            return false
+        }
+        btn.dataset.locked = "1"
+        setTimeout(() => {
+            btn.disabled = true
+            btn.innerText = "Salvando..."
+        }, 10)
+    })
+})
+</script>
 {% endblock content %}

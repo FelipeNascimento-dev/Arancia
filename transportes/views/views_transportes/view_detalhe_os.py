@@ -98,6 +98,10 @@ def buscar_veiculos(request):
 @permission_required('transportes.transportes', raise_exception=True)
 def detalhe_os_transp(request, order_number):
     modal_travel_events = False
+    modal_confirmacao = False
+    confirmation_text = ""
+    confirmation_action = ""
+    confirmation_id = None
     travel_event_types = []
     travel_items = []
 
@@ -115,6 +119,8 @@ def detalhe_os_transp(request, order_number):
 
     resp = client.send_api_request()
 
+    # print(resp)
+
     def convert_utc_to_local(date_str):
         if not date_str:
             return None
@@ -131,6 +137,12 @@ def detalhe_os_transp(request, order_number):
     for travel in resp.get("travels", []):
         if travel.get("created_at"):
             travel["created_at"] = convert_utc_to_local(travel["created_at"])
+
+        for ev in travel.get("travel_events", []):
+            if ev.get("created_at"):
+                ev["created_at"] = convert_utc_to_local(
+                    ev["created_at"]
+                )
 
     for event in resp.get("service_order", {}).get("service_order_events", []):
         if event.get("created_at"):
@@ -180,23 +192,23 @@ def detalhe_os_transp(request, order_number):
             client_id = resp.get("client", {}).get("id", 0)
             service_order_id = int(request.POST.get("service_order_id") or 0)
             item_control = request.POST.get("item_control")
+            item_qtd = int(request.POST.get("item_qtd") or 1)
 
             weight = to_float(request.POST.get("weight"))
             height = to_float(request.POST.get("height"))
             length = to_float(request.POST.get("length"))
             width = to_float(request.POST.get("width"))
 
-            extra_raw = request.POST.get("extra_information", "").strip()
-            if extra_raw:
-                try:
-                    extra_information = json.loads(extra_raw)
-                except json.JSONDecodeError:
-                    messages.error(
-                        request, "Extra Information precisa ser JSON válido.")
-                    return redirect('transportes:detalhe_os_transp', order_number=order_number)
-            else:
-                extra_information = {}
+            extra_keys = request.POST.getlist("extra_key[]")
+            extra_values = request.POST.getlist("extra_value[]")
 
+            extra_information = {}
+
+            for k, v in zip(extra_keys, extra_values):
+                if k:
+                    extra_information[k] = v
+
+            sub_qtd = int(request.POST.get("sub_qtd") or 0)
             sub_serials = request.POST.getlist("sub_serial[]")
             sub_models = request.POST.getlist("sub_model[]")
             sub_types = request.POST.getlist("sub_type[]")
@@ -225,49 +237,90 @@ def detalhe_os_transp(request, order_number):
                     "extra_information": {}
                 })
 
-            payload_item = {
-                "external_order_number": ex_order_number,
-                "serial_number": serial_number,
-                "product_model": product_model,
-                "created_by": created_by,
-                "client_id": client_id,
-                "service_order_id": service_order_id,
-                "item_control": item_control,
-                "weight": weight,
-                "height": height,
-                "length": length,
-                "width": width,
-                "extra_information": extra_information,
-                "sub_itens": sub_itens
-            }
+            if sub_qtd > 0:
 
-            try:
-                url_quote = f"{TRANSP_API_URL}/item/create"
-                headers = {
-                    "accept": "application/json",
-                    "Content-Type": "application/json",
+                for i in range(sub_qtd):
+
+                    sub_itens.append({
+                        "serial_number": f"{serial_number}-{i+1}",
+                        "product_model": product_model,
+                        "product_type": product_model,
+                        "item_control": f"{item_control}-{i+1}" if item_control else "",
+                        "weight": weight,
+                        "height": height,
+                        "length": length,
+                        "width": width,
+                        "extra_information": {
+                            "gerado_em_massa": True,
+                            "index": i + 1
+                        }
+                    })
+
+            erro = False
+
+            for i in range(item_qtd):
+
+                serial_loop = serial_number
+                control_loop = item_control
+
+                if item_qtd > 1:
+                    serial_loop = f"{serial_number}-{i+1}"
+
+                    if item_control:
+                        control_loop = f"{item_control}-{i+1}"
+
+                payload_item = {
+                    "external_order_number": ex_order_number,
+                    "serial_number": serial_loop,
+                    "product_model": product_model,
+                    "created_by": created_by,
+                    "client_id": client_id,
+                    "service_order_id": service_order_id,
+                    "item_control": control_loop,
+                    "weight": weight,
+                    "height": height,
+                    "length": length,
+                    "width": width,
+                    "extra_information": extra_information,
+                    "sub_itens": sub_itens
                 }
 
-                client = RequestClient(
-                    method="POST",
-                    url=url_quote,
-                    headers=headers,
-                    request_data=payload_item
-                )
+                try:
 
-                item_res = client.send_api_request()
+                    url_quote = f"{TRANSP_API_URL}/item/create"
 
-                # print(client.request_data)
+                    client = RequestClient(
+                        method="POST",
+                        url=url_quote,
+                        headers={
+                            "accept": "application/json",
+                            "Content-Type": "application/json",
+                        },
+                        request_data=payload_item
+                    )
 
-                if 'detail' in item_res:
-                    messages.error(request, item_res['detail'])
-                else:
-                    messages.success(request, "Item criado com sucesso!")
-                    return redirect('transportes:detalhe_os_transp', order_number=order_number)
-            except Exception as e:
-                messages.error(request, f"Erro ao criar cotação: {e}")
+                    item_res = client.send_api_request()
 
-            return redirect('transportes:detalhe_os_transp', order_number=order_number)
+                    # print(payload_item)
+
+                    if isinstance(item_res, dict) and "detail" in item_res:
+                        messages.error(request, item_res["detail"])
+                        erro = True
+                        break
+
+                except Exception as e:
+                    messages.error(request, str(e))
+                    erro = True
+                    break
+
+            if not erro:
+                messages.success(
+                    request, f"{item_qtd} itens criados com sucesso")
+
+            return redirect(
+                "transportes:detalhe_os_transp",
+                order_number=order_number
+            )
 
         if "criar_cotacao" in request.POST:
             service_order_id = request.POST.get("service_order_id")
@@ -515,13 +568,83 @@ def detalhe_os_transp(request, order_number):
 
             response_event = client.send_api_request()
 
-            print(response_event)
+            # print(response_event)
 
             if isinstance(response_event, dict) and "detail" in response_event:
                 messages.error(request, response_event["detail"])
             else:
                 messages.success(request, "Evento criado com sucesso!")
                 return redirect('transportes:detalhe_os_transp', order_number=order_number)
+
+        if "reject_button" in request.POST:
+            quote_id = request.POST.get("quote_id")
+            modal_confirmacao = True
+            request.session["confirm_action"] = "reject_quote"
+            request.session["confirm_id"] = request.POST.get("quote_id")
+            request.session["confirm_text"] = "REJEITAR"
+
+        if "confirm_action" in request.POST:
+
+            text = request.POST.get("confirm_text")
+
+            action = request.session.get("confirm_action")
+            obj_id = request.session.get("confirm_id")
+            expected = request.session.get("confirm_text")
+
+            if text != expected:
+
+                modal_confirmacao = True
+
+            else:
+
+                try:
+
+                    if action == "reject_quote":
+
+                        url_reject = f"{TRANSP_API_URL}/quotes/Rejeitar/cotacao?id={obj_id}"
+
+                        cliente_reject = RequestClient(
+                            method="PUT",
+                            url=url_reject,
+                            headers={
+                                "accept": "application/json",
+                                "Content-Type": "application/json",
+                            },
+                        )
+
+                        reject_resp = cliente_reject.send_api_request()
+
+                        if isinstance(reject_resp, dict) and "detail" in reject_resp:
+                            messages.error(request, reject_resp["detail"])
+                        else:
+                            messages.success(
+                                request,
+                                "Cotação rejeitada com sucesso!"
+                            )
+
+                            request.session.pop("confirm_action", None)
+                            request.session.pop("confirm_id", None)
+                            request.session.pop("confirm_text", None)
+
+                            return redirect(
+                                "transportes:detalhe_os_transp",
+                                order_number=order_number
+                            )
+
+                    elif action == "delete_travel":
+                        pass
+
+                    elif action == "delete_item":
+                        pass
+
+                except Exception as e:
+                    messages.error(request, str(e))
+                    modal_confirmacao = True
+
+    confirmation_text = request.session.get("confirm_text")
+
+    if request.method == "POST" and request.POST.get("reject_button"):
+        modal_confirmacao = True
 
     return render(request, 'transportes/transportes/detalhe_os.html', {
         "order_number": order_number,
@@ -530,6 +653,8 @@ def detalhe_os_transp(request, order_number):
         "grupos": grupos,
         "modal_travel_events": modal_travel_events,
         "travel_event_types": travel_event_types,
+        "modal_confirmacao": modal_confirmacao,
+        "confirmation_text": confirmation_text,
         "travel_items": travel_items,
         "site_title": "Detalhe da OS",
         "current_parent_menu": "transportes",
