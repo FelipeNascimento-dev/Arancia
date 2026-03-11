@@ -1205,6 +1205,7 @@
                             <th>Peso</th>
                             <th>Dimensões</th>
                             <th>Criado por</th>
+                            <th>Sub-itens</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1229,21 +1230,18 @@
                                 {{ item.height }}x{{ item.width }}x{{ item.length }}
                             </td>
                             <td>{{ item.created_by }}</td>
-                        </tr>
-
-                        {% if item.sub_itens %}
-                        <tr>
-                            <td colspan="7">
-                                <strong>Subitens:</strong>
-                                <ul>
-                                    {% for sub in item.sub_itens %}
-                                        <li>{{ sub }}</li>
-                                    {% endfor %}
-                                </ul>
+                        
+                            <td>
+                                {% if item.sub_itens %}
+                                    <button class="btn-subitens"
+                                            onclick="abrirModalFilhos({{ item.id }})">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                {% else %}
+                                    -
+                                {% endif %}
                             </td>
                         </tr>
-                        {% endif %}
-
                         {% endfor %}
                     </tbody>
                 </table>
@@ -1402,6 +1400,122 @@
         </div>
     </div>
 </form>
+
+<div class="os-modal-overlay" id="modalFilhos">
+    <div class="os-modal" style="width:600px;">
+        <div class="os-modal-header">
+            <div class="os-modal-title">
+                Seriais Filhos
+            </div>
+
+            <div class="os-modal-close"
+                 onclick="fecharModalFilhos()">
+                ✕
+            </div>
+        </div>
+
+        <div class="os-modal-body"
+             id="modalFilhosBody">
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+
+const filhosData = {
+
+{% for item in payload.items %}
+{% if item.sub_itens %}
+
+"{{ item.id }}": [
+
+    {% for sub in item.sub_itens %}
+    {
+        serial: "{{ sub.serial_number }}",
+        model: "{{ sub.product_model }}",
+        type: "{{ sub.product_type }}"
+    },
+    {% endfor %}
+
+],
+
+{% endif %}
+{% endfor %}
+
+};
+
+</script>
+
+<script>
+
+const modalFilhos = document.getElementById("modalFilhos")
+const modalFilhosBody = document.getElementById("modalFilhosBody")
+
+window.abrirModalFilhos = function(itemId){
+
+    const filhos = filhosData[itemId]
+
+    if(!filhos) return
+
+    let html = `
+        <table style="width:100%; border-collapse:collapse;">
+
+            <thead>
+                <tr style="background:#0e76bd;color:white;">
+                    <th style="padding:10px">Serial</th>
+                    <th style="padding:10px">Modelo</th>
+                    <th style="padding:10px">Tipo</th>
+                </tr>
+            </thead>
+
+            <tbody>
+    `
+
+    filhos.forEach(f => {
+
+        html += `
+            <tr style="border-bottom:1px solid #eee">
+
+                <td style="padding:10px">
+                    ${f.serial}
+                </td>
+
+                <td style="padding:10px">
+                    ${f.model}
+                </td>
+
+                <td style="padding:10px">
+                    ${f.type}
+                </td>
+
+            </tr>
+        `
+    })
+
+    html += "</tbody></table>"
+
+    modalFilhosBody.innerHTML = html
+
+    modalFilhos.classList.add("show")
+}
+
+
+window.fecharModalFilhos = function(){
+    modalFilhos.classList.remove("show")
+}
+
+
+modalFilhos.addEventListener("click", function(e){
+
+    if(e.target === modalFilhos){
+        fecharModalFilhos()
+    }
+
+})
+
+</script>
 
 <script>
 function abrirModalEventoTravel(){
