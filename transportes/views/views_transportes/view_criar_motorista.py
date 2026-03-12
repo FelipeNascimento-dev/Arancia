@@ -103,6 +103,7 @@ def driver_ger(request):
             "has_prev": has_prev,
             "site_title": "Gerenciamento de Motoristas",
             "current_parent_menu": "transportes",
-            "current_menu": "driver_ger",
+            "current_menu": "gerenciamento",
+            "current_submenu": "driver_ger",
         },
     )

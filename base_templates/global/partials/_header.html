@@ -323,19 +323,26 @@
                         <span class="texto-item">Lista Viagens</span>
                     </a>
                     {% if perms.logistica.gestao_total %}
-                    <a href="{% url 'transportes:skill_customer' %}" class="itens-sidebar {% if current_menu == 'skill_customer' %}active{% endif %}">
-                        <span class="texto-item">Gerenciar Localidades</span>
+                    <h5 class="submenu-toggle {% if current_menu == 'gerenciamento' %}active{% endif %}"
+                        data-target="gerenciamentoTransp">
+                        Gerenciamento
+                    </h5>
+                    <div class="sub-submenu {% if current_menu == 'gerenciamento' %}show{% endif %}"
+                        id="gerenciamentoTransp">
+                    <a href="{% url 'transportes:skill_customer' %}" class="{% if current_submenu == 'skill_customer' %}active{% endif %}">
+                        <span class="texto-item">Localidades</span>
                     </a>
-                    <a href="{% url 'transportes:skill_transport' %}" class="itens-sidebar {% if current_menu == 'skill_transport' %}active{% endif %}">
-                        <span class="texto-item">Gerenciar Transportadoras</span>
+                    <a href="{% url 'transportes:skill_transport' %}" class="{% if current_submenu == 'skill_transport' %}active{% endif %}">
+                        <span class="texto-item">Transportadoras</span>
                     </a>
-                    <a href="{% url 'transportes:driver_ger' %}" class="itens-sidebar {% if current_menu == 'driver_ger' %}active{% endif %}">
-                        <span class="texto-item">Criar Motorista</span>
+                    <a href="{% url 'transportes:driver_ger' %}" class="{% if current_submenu == 'driver_ger' %}active{% endif %}">
+                        <span class="texto-item">Motorista</span>
                     </a>
-                    <a href="{% url 'transportes:vehicle_ger' %}" class="itens-sidebar {% if current_menu == 'vehicle_ger' %}active{% endif %}">
-                        <span class="texto-item">Criar Veículos</span>
+                    <a href="{% url 'transportes:vehicle_ger' %}" class="{% if current_submenu == 'vehicle_ger' %}active{% endif %}">
+                        <span class="texto-item">Veículos</span>
                     </a>
-                    {% endif %}    
+                    {% endif %}  
+                    </div>  
                 {% endif %}
             </div>
         </div>

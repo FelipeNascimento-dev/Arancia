@@ -73,6 +73,7 @@ def vehicle_ger(request):
             "carriers": carriers,
             "site_title": "Gerenciamento de Veículos",
             "current_parent_menu": "transportes",
-            "current_menu": "vehicle_ger",
+            "current_menu": "gerenciamento",
+            "current_submenu": "vehicle_ger",
         },
     )

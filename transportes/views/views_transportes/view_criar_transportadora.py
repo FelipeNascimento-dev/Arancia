@@ -138,7 +138,8 @@ def skill_transport(request):
         "form": form,
         "site_title": "Gerenciamento de Transportadoras",
         "current_parent_menu": "transportes",
-        "current_menu": "skill_transport",
+        "current_menu": "gerenciamento",
+        "current_submenu": "skill_transport",
     }
 
     return render(
