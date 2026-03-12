@@ -723,6 +723,13 @@ def detalhe_os_transp(request, order_number):
             request.session["confirm_id"] = request.POST.get("delete_item")
             request.session["confirm_text"] = "DELETAR"
 
+        if "cancel_travel_button" in request.POST:
+            modal_confirmacao = True
+            request.session["confirm_action"] = "delete_travel"
+            request.session["confirm_id"] = request.POST.get(
+                "cancel_travel_id")
+            request.session["confirm_text"] = "DELETAR"
+
         if "confirm_action" in request.POST:
 
             text = request.POST.get("confirm_text")
@@ -766,13 +773,33 @@ def detalhe_os_transp(request, order_number):
                             request.session.pop("confirm_id", None)
                             request.session.pop("confirm_text", None)
 
-                            return redirect(
-                                "transportes:detalhe_os_transp",
-                                order_number=order_number
-                            )
+                            return redirect("transportes:detalhe_os_transp", order_number=order_number)
 
                     elif action == "delete_travel":
-                        pass
+                        url_cancel = f"{TRANSP_API_URL}/order_travels/delete/travel?id={obj_id}&created_by={request.user.username}"
+
+                        cliente_cancel = RequestClient(
+                            method="DELETE",
+                            url=url_cancel,
+                            headers={
+                                "accept": "application/json",
+                                "Content-Type": "application/json",
+                            },
+                        )
+
+                        cancel_resp = cliente_cancel.send_api_request()
+
+                        if isinstance(cancel_resp, dict) and "detail" in cancel_resp:
+                            messages.error(request, cancel_resp["detail"])
+                        else:
+                            messages.success(
+                                request, "Viagem cancelada com sucesso!")
+
+                            request.session.pop("confirm_action", None)
+                            request.session.pop("confirm_id", None)
+                            request.session.pop("confirm_text", None)
+
+                            return redirect("transportes:detalhe_os_transp", order_number=order_number)
 
                     elif action == "delete_item":
                         url_delete = f"{TRANSP_API_URL}/item/{obj_id}"

@@ -1494,6 +1494,18 @@
                         </div>
 
                         <div style="display:flex; align-items:center; gap:12px;">
+                            <form method="post" style="margin:0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="cancel_travel_id" value="{{ travel.id }}">
+                                <button type="submit"
+                                        class="btn-subitens"
+                                        name="cancel_travel_button"
+                                        value="1"
+                                        title="Cancelar viagem">
+                                    <i class="fa-solid fa-ban" style="color:#ef4444;"></i>
+                                </button>
+                            </form>
+
                             <button type="button"
                                     class="btn-subitens"
                                     onclick="abrirModalEditarViagem(
@@ -2124,7 +2136,7 @@
         <form method="post">
             {% csrf_token %}
             <input type="hidden"
-                   name="quote_id"
+                   name="confirm_obj_id"
                    id="rejectQuoteId">
             <div class="os-modal-body">
                 <div style="margin-bottom:10px;">
@@ -2161,39 +2173,26 @@
     </div>
 </div>
 <script>
-    function abrirModalRejeitar(quoteId){
-
-    document.getElementById("modalRejeitarCotacao")
-        .classList.add("show")
-
-    document.getElementById("rejectQuoteId").value = quoteId
-
-    document.getElementById("rejectConfirmInput").value = ""
-
-    document.getElementById("rejectError").style.display = "none"
+function abrirModalRejeitar(objId){
+    document.getElementById("modalRejeitarCotacao").classList.add("show");
+    document.getElementById("confirmObjId").value = objId;
+    document.getElementById("rejectConfirmInput").value = "";
+    document.getElementById("rejectError").style.display = "none";
 }
 
 function fecharModalRejeitar(){
-
-    document.getElementById("modalRejeitarCotacao")
-        .classList.remove("show")
+    document.getElementById("modalRejeitarCotacao").classList.remove("show");
 }
 
 function validarRejeicao(){
-
-    const val =
-        document.getElementById("rejectConfirmInput")
-        .value.trim()
+    const val = document.getElementById("rejectConfirmInput").value.trim();
 
     if(val !== "{{ confirmation_text }}"){
-
-        document.getElementById("rejectError")
-            .style.display = "block"
-
-        return false
+        document.getElementById("rejectError").style.display = "block";
+        return false;
     }
 
-    return true
+    return true;
 }
 </script>
 {% endif %}

@@ -45,6 +45,8 @@ def driver_ger(request):
 
         if 'detail' in response:
             messages.error(request, response.get('detail'))
+        else:
+            messages.success(request, "Motorista criado com sucesso!")
 
     search = request.GET.get("q", "")
     page = int(request.GET.get("page", 1))
