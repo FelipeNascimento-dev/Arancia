@@ -138,7 +138,9 @@ def skill_customer(request):
         "form": form,
         "site_title": "Gerenciamento de Clientes",
         "current_parent_menu": "transportes",
-        "current_menu": "skill_customer",
+        "current_menu": "gerenciamento",
+        "current_submenu": "skill_customer",
+
     }
 
     return render(

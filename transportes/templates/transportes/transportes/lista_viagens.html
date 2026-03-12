@@ -21,7 +21,7 @@
         border-radius: 8px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         overflow: hidden;
-        height: 370px;
+        height: 450px;
     }
 
     .card-header {
@@ -222,8 +222,6 @@
     {% for item in travels %}
     <div class="card">
         <div class="card-header">
-            <span class="badge-num">{{ forloop.counter }}</span>
-
             <a class="card-title"
             href="{% url 'transportes:detalhe_viagem' item.travel.id %}"
             target="_blank">
@@ -236,6 +234,20 @@
         </div>
 
         <div class="card-body">
+            <p>
+                <strong>Número da OS:</strong><br />
+                <span>
+                    {{ item.service_order.order_number }}
+                </span>
+            </p>
+
+            <p>
+                <strong>Número da OS Externa:</strong><br />
+                <span>
+                    {{ item.service_order.external_order_number }}
+                </span>
+            </p>
+
             <p>
                 <strong>Cliente:</strong><br />
                 <span>

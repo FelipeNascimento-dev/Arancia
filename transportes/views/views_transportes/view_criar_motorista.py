@@ -45,6 +45,8 @@ def driver_ger(request):
 
         if 'detail' in response:
             messages.error(request, response.get('detail'))
+        else:
+            messages.success(request, "Motorista criado com sucesso!")
 
     search = request.GET.get("q", "")
     page = int(request.GET.get("page", 1))
@@ -101,6 +103,7 @@ def driver_ger(request):
             "has_prev": has_prev,
             "site_title": "Gerenciamento de Motoristas",
             "current_parent_menu": "transportes",
-            "current_menu": "driver_ger",
+            "current_menu": "gerenciamento",
+            "current_submenu": "driver_ger",
         },
     )

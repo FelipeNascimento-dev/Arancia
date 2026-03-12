@@ -1266,7 +1266,7 @@
                         <div class="timeline-dot"></div>
                         <div class="timeline-card">
                             {{ event.description }}
-
+                            
                             <div class="timeline-meta">
                                 {{ event.created_at|slice:"8:10" }}/
                                 {{ event.created_at|slice:"5:7" }}/
@@ -1275,12 +1275,19 @@
                                 • por {{ event.created_by }}
                             </div>
 
-                            <!-- {% if event.img_url %}
-                            <div style="margin-top:10px;">
-                                <img src="{{ event.img_url }}"
-                                    style="max-width:220px;border-radius:8px;">
-                            </div>
-                            {% endif %} -->
+                            {% if event.img_url %}
+                            <div style="margin-top:12px;">
+                                <a href="{{ event.img_url }}" target="_blank" rel="noopener noreferrer">
+                                    <img src="{{ event.img_url }}"
+                                        alt="Imagem do evento"
+                                        style="max-width:220px; max-height:180px; border-radius:8px; border:1px solid #ddd; display:block;">
+                                    </a>
+                                </div>
+                            {% endif %}
+                            
+                            {% if event.location_lat and event.location_long %}
+                                Latitude: {{ event.location_lat }}, Longitude: {{ event.location_long }}
+                            {% endif %}
                         </div>
                     </div>
                     {% empty %}
