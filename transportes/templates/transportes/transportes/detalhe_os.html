@@ -1494,6 +1494,7 @@
                         </div>
 
                         <div style="display:flex; align-items:center; gap:12px;">
+                            {% if perms.logistica.gestao_total %}
                             <form method="post" style="margin:0;">
                                 {% csrf_token %}
                                 <input type="hidden" name="cancel_travel_id" value="{{ travel.id }}">
@@ -1520,6 +1521,7 @@
                                     )">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
+                            {% endif %}
 
                             <div class="travel-arrow" onclick="toggleTravel(this)">
                                 <i class="fa-solid fa-chevron-down"></i>
