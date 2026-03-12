@@ -1379,6 +1379,9 @@
                                 <th>Informações Extras</th>
                                 <th>Sub-Itens</th>
                                 <th>Eventos</th>
+                                {% if perms.logistica.gestao_total %}
+                                    <th>Ações</th>
+                                {% endif %}
                             </tr>
                         </thead>
                         <tbody>
@@ -1439,6 +1442,33 @@
                                     -
                                     {% endif %}
                                 </td>
+                                {% if perms.logistica.gestao_total %}
+                                    <td>
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <button type="button"
+                                                    class="btn-subitens"
+                                                    onclick="abrirModalEditarItem(
+                                                        '{{ item.id }}',
+                                                        '{{ item.serial_number }}',
+                                                        '{{ item.product_model }}',
+                                                        '{{ item.item_control }}',
+                                                        '{{ item.weight }}',
+                                                        '{{ item.height }}',
+                                                        '{{ item.length }}',
+                                                        '{{ item.width }}'
+                                                    )">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </button>
+                                            <button type="submit"
+                                                    class="btn-subitens"
+                                                    name="delete_item"
+                                                    value="{{ item.id }}">
+                                                <i class="fa-solid fa-trash" style="color:#ef4444;"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -2067,7 +2097,7 @@
     <div class="os-modal" style="width:420px;">
         <div class="os-modal-header">
             <div class="os-modal-title">
-                Confirmar rejeição
+                Essa ação é irreversível! Deseja prosseguir?
             </div>
             <div class="os-modal-close"
                  onclick="fecharModalRejeitar()">
@@ -2263,6 +2293,140 @@ function validarRejeicao(){
     </div>
 </div>
 {% endif %}
+
+<!-- MODAL EDITAR ITEM -->
+<form method="post">
+{% csrf_token %}
+
+<div class="os-modal-overlay" id="modalEditarItem">
+    <div class="os-modal os-modal-lg" id="modalEditarContent">
+        <div class="os-modal-header">
+            <div class="os-modal-title">
+                Editar Item
+            </div>
+            <div class="os-modal-close"
+                 onclick="fecharModalEditarItem()">
+                ✕
+            </div>
+        </div>
+        <div class="os-modal-body">
+            <input type="hidden" name="item_id" id="edit_item_id">
+            <input type="hidden" name="original_serial_number" id="original_serial_number">
+            <input type="hidden" name="original_product_model" id="original_product_model">
+            <input type="hidden" name="original_item_control" id="original_item_control">
+            <input type="hidden" name="original_weight" id="original_weight">
+            <input type="hidden" name="original_height" id="original_height">
+            <input type="hidden" name="original_length" id="original_length">
+            <input type="hidden" name="original_width" id="original_width">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Serial</label>
+                    <input type="text"
+                           name="serial_number"
+                           id="edit_serial">
+                </div>
+                <div class="form-group">
+                    <label>Modelo</label>
+                    <input type="text"
+                           name="product_model"
+                           id="edit_model">
+                </div>
+                <div class="form-group">
+                    <label>Controle</label>
+                    <input type="text"
+                           name="item_control"
+                           id="edit_control">
+                </div>
+                <div class="form-group">
+                    <label>Peso</label>
+                    <input type="number"
+                           step="0.01"
+                           name="weight"
+                           id="edit_weight">
+                </div>
+                <div class="form-group">
+                    <label>Altura</label>
+                    <input type="number"
+                           step="0.01"
+                           name="height"
+                           id="edit_height">
+                </div>
+                <div class="form-group">
+                    <label>Comprimento</label>
+                    <input type="number"
+                           step="0.01"
+                           name="length"
+                           id="edit_length">
+                </div>
+                <div class="form-group">
+                    <label>Largura</label>
+                    <input type="number"
+                           step="0.01"
+                           name="width"
+                           id="edit_width">
+                </div>
+            </div>
+        </div>
+        <div class="os-modal-footer">
+            <button type="button"
+                    class="btn-secondary"
+                    onclick="fecharModalEditarItem()">
+                Cancelar
+            </button>
+            <button type="submit"
+                    class="btn-primary"
+                    name="editar_item"
+                    value="1">
+
+                Salvar
+            </button>
+        </div>
+    </div>
+</div>
+</form>
+<script>
+const modalEditarItem = document.getElementById("modalEditarItem")
+
+window.abrirModalEditarItem = function(
+    id,
+    serial,
+    model,
+    control,
+    weight,
+    height,
+    length,
+    width
+){
+    document.getElementById("edit_item_id").value = id
+    document.getElementById("edit_serial").value = serial
+    document.getElementById("edit_model").value = model
+    document.getElementById("edit_control").value = control
+    document.getElementById("edit_weight").value = weight
+    document.getElementById("edit_height").value = height
+    document.getElementById("edit_length").value = length
+    document.getElementById("edit_width").value = width
+
+    document.getElementById("original_serial_number").value = serial
+    document.getElementById("original_product_model").value = model
+    document.getElementById("original_item_control").value = control
+    document.getElementById("original_weight").value = weight
+    document.getElementById("original_height").value = height
+    document.getElementById("original_length").value = length
+    document.getElementById("original_width").value = width
+
+    modalEditarItem.classList.add("show")
+}
+
+window.fecharModalEditarItem = function(){
+    modalEditarItem.classList.remove("show")
+}
+
+modalEditarItem.addEventListener("click", function(e){
+    if(e.target === modalEditarItem){
+        fecharModalEditarItem()
+    }
+})
+</script>
 
 <script>
 const gruposData = [

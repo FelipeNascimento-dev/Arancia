@@ -576,12 +576,101 @@ def detalhe_os_transp(request, order_number):
                 messages.success(request, "Evento criado com sucesso!")
                 return redirect('transportes:detalhe_os_transp', order_number=order_number)
 
+        if "editar_item" in request.POST:
+            def to_float(value):
+                if value in (None, ""):
+                    return 0.0
+                try:
+                    return float(str(value).replace(",", "."))
+                except:
+                    return 0.0
+
+            item_id = request.POST.get("item_id")
+            created_by = request.user.username
+
+            serial_number = (request.POST.get("serial_number") or "").strip()
+            product_model = (request.POST.get("product_model") or "").strip()
+            item_control = (request.POST.get("item_control") or "").strip()
+            weight = to_float(request.POST.get("weight"))
+            height = to_float(request.POST.get("height"))
+            length = to_float(request.POST.get("length"))
+            width = to_float(request.POST.get("width"))
+
+            original_serial_number = (request.POST.get(
+                "original_serial_number") or "").strip()
+            original_product_model = (request.POST.get(
+                "original_product_model") or "").strip()
+            original_item_control = (request.POST.get(
+                "original_item_control") or "").strip()
+            original_weight = to_float(request.POST.get("original_weight"))
+            original_height = to_float(request.POST.get("original_height"))
+            original_length = to_float(request.POST.get("original_length"))
+            original_width = to_float(request.POST.get("original_width"))
+
+            payload_update = {}
+
+            if serial_number != original_serial_number:
+                payload_update["serial_number"] = serial_number
+
+            if product_model != original_product_model:
+                payload_update["product_model"] = product_model
+
+            if item_control != original_item_control:
+                payload_update["item_control"] = item_control
+
+            if weight != original_weight:
+                payload_update["weight"] = weight
+
+            if height != original_height:
+                payload_update["height"] = height
+
+            if length != original_length:
+                payload_update["length"] = length
+
+            if width != original_width:
+                payload_update["width"] = width
+
+            if not payload_update:
+                messages.warning(
+                    request, "Nenhuma alteração foi feita no item.")
+                return redirect("transportes:detalhe_os_transp", order_number=order_number)
+
+            try:
+                url_update = f"{TRANSP_API_URL}/item/update/item?id={item_id}&created_by={created_by}"
+
+                client = RequestClient(
+                    method="PUT",
+                    url=url_update,
+                    headers={
+                        "accept": "application/json",
+                        "Content-Type": "application/json",
+                    },
+                    request_data=payload_update
+                )
+
+                update_resp = client.send_api_request()
+
+                if isinstance(update_resp, dict) and "detail" in update_resp:
+                    messages.error(request, update_resp["detail"])
+                else:
+                    messages.success(request, "Item atualizado com sucesso!")
+                    return redirect("transportes:detalhe_os_transp", order_number=order_number)
+
+            except Exception as e:
+                messages.error(request, f"Erro ao atualizar item: {e}")
+
         if "reject_button" in request.POST:
             quote_id = request.POST.get("quote_id")
             modal_confirmacao = True
             request.session["confirm_action"] = "reject_quote"
             request.session["confirm_id"] = request.POST.get("quote_id")
             request.session["confirm_text"] = "REJEITAR"
+
+        if "delete_item" in request.POST:
+            modal_confirmacao = True
+            request.session["confirm_action"] = "delete_item"
+            request.session["confirm_id"] = request.POST.get("delete_item")
+            request.session["confirm_text"] = "DELETAR"
 
         if "confirm_action" in request.POST:
 
@@ -635,7 +724,27 @@ def detalhe_os_transp(request, order_number):
                         pass
 
                     elif action == "delete_item":
-                        pass
+                        url_delete = f"{TRANSP_API_URL}/item/{obj_id}"
+                        cliente_delete = RequestClient(
+                            method="DELETE",
+                            url=url_delete,
+                            headers={
+                                "accept": "application/json",
+                                "Content-Type": "application/json",
+                            },
+                        )
+                        delete_resp = cliente_delete.send_api_request()
+                        if isinstance(delete_resp, dict) and "detail" in delete_resp:
+                            messages.error(request, delete_resp["detail"])
+                        else:
+                            messages.success(
+                                request, "Item deletado com sucesso!")
+
+                            request.session.pop("confirm_action", None)
+                            request.session.pop("confirm_id", None)
+                            request.session.pop("confirm_text", None)
+
+                            return redirect("transportes:detalhe_os_transp", order_number=order_number)
 
                 except Exception as e:
                     messages.error(request, str(e))
