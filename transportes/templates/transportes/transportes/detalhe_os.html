@@ -1480,8 +1480,8 @@
                 {% for travel in payload.travels %}
                 <div class="os-card travel-card">
 
-                    <div class="travel-header" onclick="toggleTravel(this)">
-                        <div>
+                    <div class="travel-header">
+                        <div onclick="toggleTravel(this)" style="flex:1; cursor:pointer;">
                             <div class="travel-title">
                                 Viagem #{{ travel.id }}
                                 <span class="badge badge-blue">
@@ -1493,8 +1493,25 @@
                             </div>
                         </div>
 
-                        <div class="travel-arrow">
-                            <i class="fa-solid fa-chevron-down"></i>
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <button type="button"
+                                    class="btn-subitens"
+                                    onclick="abrirModalEditarViagem(
+                                        '{{ travel.id }}',
+                                        '{{ travel.driver.uid|default_if_none:""|escapejs }}',
+                                        '{{ travel.carrier.id|default_if_none:""|escapejs }}',
+                                        '{{ travel.vehicle.id|default_if_none:""|escapejs }}',
+                                        '{{ travel.quote.id|default_if_none:""|escapejs }}',
+                                        '{{ travel.price_charged|default_if_none:"0" }}',
+                                        '{{ travel.driver.name|default_if_none:""|escapejs }}',
+                                        '{{ travel.vehicle.plate|default_if_none:""|escapejs }}'
+                                    )">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+
+                            <div class="travel-arrow" onclick="toggleTravel(this)">
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </div>
                         </div>
                     </div>
 
@@ -2427,6 +2444,251 @@ modalEditarItem.addEventListener("click", function(e){
     }
 })
 </script>
+
+<!-- MODAL PARA EDITAR VIAGEM -->
+<form method="post">
+    {% csrf_token %}
+
+    <div class="os-modal-overlay" id="modalEditarViagem">
+        <div class="os-modal">
+            <div class="os-modal-header">
+                <div class="os-modal-title">Editar Viagem</div>
+                <div class="os-modal-close" onclick="fecharModalEditarViagem()">✕</div>
+            </div>
+
+            <div class="os-modal-body">
+                <input type="hidden" name="travel_id" id="edit_travel_id">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Transportadora</label>
+                        <select name="carrier_id" id="edit_carrier_id" required>
+                            <option value="">Selecione uma transportadora...</option>
+                            {% for carrier in carriers %}
+                            <option value="{{ carrier.id }}">{{ carrier.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Motorista</label>
+                        <input type="text"
+                               id="editDriverSearch"
+                               placeholder="Digite o nome do motorista..."
+                               autocomplete="off">
+                        <input type="hidden" name="driver_id" id="edit_driver_id">
+                        <div id="editDriverResults" class="driver-dropdown"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Veículo</label>
+                        <input type="text"
+                               id="editVehicleSearch"
+                               placeholder="Digite a placa..."
+                               autocomplete="off">
+                        <input type="hidden" name="vehicle_id" id="edit_vehicle_id">
+                        <div id="editVehicleResults" class="driver-dropdown"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cotação</label>
+                        <select name="quote_id" id="edit_quote_id">
+                            <option value="">Selecionar cotação...</option>
+                            {% for quote in payload.quotes %}
+                            <option value="{{ quote.id }}">{{ quote.carrier.nome }} - R$ {{ quote.estimated_price }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Custo Estimado (R$)</label>
+                        <input type="number"
+                               name="price_charged"
+                               id="edit_price_charged"
+                               value="0"
+                               step="0.01"
+                               min="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="os-modal-footer">
+                <button type="button"
+                        class="btn-secondary"
+                        onclick="fecharModalEditarViagem()">
+                    Cancelar
+                </button>
+
+                <button type="submit"
+                        class="btn-primary"
+                        name="editar_viagem"
+                        value="1">
+                    Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+const modalEditarViagem = document.getElementById("modalEditarViagem");
+
+window.abrirModalEditarViagem = function(
+    travelId,
+    driverId,
+    carrierId,
+    vehicleId,
+    quoteId,
+    priceCharged,
+    driverName,
+    vehiclePlate
+) {
+    document.getElementById("edit_travel_id").value = travelId || "";
+    document.getElementById("edit_driver_id").value = driverId || "";
+    document.getElementById("edit_carrier_id").value = carrierId || "";
+    document.getElementById("edit_vehicle_id").value = vehicleId || "";
+    document.getElementById("edit_quote_id").value = quoteId || "";
+    document.getElementById("edit_price_charged").value = priceCharged || 0;
+
+    document.getElementById("editDriverSearch").value = driverName || "";
+    document.getElementById("editVehicleSearch").value = vehiclePlate || "";
+
+    modalEditarViagem.classList.add("show");
+};
+
+window.fecharModalEditarViagem = function() {
+    modalEditarViagem.classList.remove("show");
+};
+
+if (modalEditarViagem) {
+    modalEditarViagem.addEventListener("click", function(e) {
+        if (e.target === modalEditarViagem) {
+            fecharModalEditarViagem();
+        }
+    });
+}
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const input = document.getElementById("editDriverSearch");
+    const resultsBox = document.getElementById("editDriverResults");
+    const hiddenId = document.getElementById("edit_driver_id");
+    const carrierSelect = document.getElementById("edit_carrier_id");
+
+    if (!input || !resultsBox || !hiddenId || !carrierSelect) return;
+
+    let timeout = null;
+
+    input.addEventListener("keyup", function() {
+        const query = this.value.trim();
+        const carrierId = carrierSelect.value;
+
+        clearTimeout(timeout);
+
+        if (query.length < 2 || !carrierId) {
+            resultsBox.style.display = "none";
+            return;
+        }
+
+        timeout = setTimeout(() => {
+            fetch("{% url 'transportes:buscar_motoristas' %}?nome=" + encodeURIComponent(query) + "&carrier_id=" + carrierId)
+                .then(res => res.json())
+                .then(data => {
+                    resultsBox.innerHTML = "";
+
+                    if (!data.items.length) {
+                        resultsBox.style.display = "none";
+                        return;
+                    }
+
+                    data.items.forEach(driver => {
+                        const div = document.createElement("div");
+                        div.classList.add("driver-item");
+                        div.innerText = driver.name;
+
+                        div.onclick = function() {
+                            input.value = driver.name;
+                            hiddenId.value = driver.uid;
+                            resultsBox.style.display = "none";
+                        };
+
+                        resultsBox.appendChild(div);
+                    });
+
+                    resultsBox.style.display = "block";
+                });
+        }, 300);
+    });
+
+    document.addEventListener("click", function(e) {
+        if (!input.contains(e.target) && !resultsBox.contains(e.target)) {
+            resultsBox.style.display = "none";
+        }
+    });
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const input = document.getElementById("editVehicleSearch");
+    const resultsBox = document.getElementById("editVehicleResults");
+    const hiddenId = document.getElementById("edit_vehicle_id");
+    const carrierSelect = document.getElementById("edit_carrier_id");
+
+    if (!input || !resultsBox || !hiddenId || !carrierSelect) return;
+
+    let timeout = null;
+
+    input.addEventListener("keyup", function() {
+        const plate = this.value.trim();
+        const carrierId = carrierSelect.value;
+
+        clearTimeout(timeout);
+
+        if (!carrierId || plate.length < 2) {
+            resultsBox.style.display = "none";
+            return;
+        }
+
+        timeout = setTimeout(() => {
+            fetch("{% url 'transportes:buscar_veiculos' %}?carrier_id=" + carrierId + "&plate=" + encodeURIComponent(plate))
+                .then(res => res.json())
+                .then(data => {
+                    resultsBox.innerHTML = "";
+
+                    if (!data.items.length) {
+                        resultsBox.style.display = "none";
+                        return;
+                    }
+
+                    data.items.forEach(vehicle => {
+                        const div = document.createElement("div");
+                        div.classList.add("driver-item");
+                        div.innerHTML = `
+                            <strong>${vehicle.plate}</strong>
+                            <small style="color:#777;">${vehicle.model || ""}</small>
+                        `;
+
+                        div.onclick = function() {
+                            input.value = vehicle.plate + " - " + (vehicle.model || "");
+                            hiddenId.value = vehicle.id;
+                            resultsBox.style.display = "none";
+                        };
+
+                        resultsBox.appendChild(div);
+                    });
+
+                    resultsBox.style.display = "block";
+                });
+        }, 300);
+    });
+
+    document.addEventListener("click", function(e) {
+        if (!input.contains(e.target) && !resultsBox.contains(e.target)) {
+            resultsBox.style.display = "none";
+        }
+    });
+});
+</script>
+
 
 <script>
 const gruposData = [

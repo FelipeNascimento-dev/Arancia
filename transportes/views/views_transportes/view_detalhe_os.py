@@ -659,6 +659,57 @@ def detalhe_os_transp(request, order_number):
             except Exception as e:
                 messages.error(request, f"Erro ao atualizar item: {e}")
 
+        if "editar_viagem" in request.POST:
+            def to_float(value):
+                if not value:
+                    return 0.0
+                try:
+                    return float(str(value).replace(",", "."))
+                except:
+                    return 0.0
+
+            travel_id = request.POST.get("travel_id")
+            created_by = request.user.username
+
+            driver_id = int(request.POST.get("driver_id") or 0)
+            carrier_id = int(request.POST.get("carrier_id") or 0)
+            vehicle_id = int(request.POST.get("vehicle_id") or 0)
+            quote_id = int(request.POST.get("quote_id") or 0)
+            price_charged = to_float(request.POST.get("price_charged"))
+
+            payload_update = {
+                "driver_id": driver_id,
+                "carrier_id": carrier_id,
+                "vehicle_id": vehicle_id,
+                "quote_id": quote_id,
+                "price_charged": price_charged
+            }
+
+            try:
+                url_update = f"{TRANSP_API_URL}/order_travels/update/Travel?id={travel_id}&created_by={created_by}"
+
+                client = RequestClient(
+                    method="PUT",
+                    url=url_update,
+                    headers={
+                        "accept": "application/json",
+                        "Content-Type": "application/json",
+                    },
+                    request_data=payload_update
+                )
+
+                response_update = client.send_api_request()
+
+                if isinstance(response_update, dict) and "detail" in response_update:
+                    messages.error(request, response_update["detail"])
+                else:
+                    messages.success(
+                        request, "Viagem atualizada com sucesso!")
+                    return redirect("transportes:detalhe_os_transp", order_number=order_number)
+
+            except Exception as e:
+                messages.error(request, f"Erro ao atualizar viagem: {e}")
+
         if "reject_button" in request.POST:
             quote_id = request.POST.get("quote_id")
             modal_confirmacao = True
