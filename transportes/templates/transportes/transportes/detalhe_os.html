@@ -1577,7 +1577,9 @@
                                         </a>
                                     </div>
                                     {% endif %}
-
+                                    {% if ev.location_lat and ev.location_long %}
+                                        Latitude: {{ ev.location_lat }}, Longitude: {{ ev.location_long }}
+                                    {% endif %}
                                     <div class="timeline-meta">
                                         por {{ ev.created_by }}
                                         {% if ev.created_at %}
