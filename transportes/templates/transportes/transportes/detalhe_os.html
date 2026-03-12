@@ -1379,6 +1379,9 @@
                                 <th>Informações Extras</th>
                                 <th>Sub-Itens</th>
                                 <th>Eventos</th>
+                                {% if perms.logistica.gestao_total %}
+                                    <th>Ações</th>
+                                {% endif %}
                             </tr>
                         </thead>
                         <tbody>
@@ -1439,6 +1442,22 @@
                                     -
                                     {% endif %}
                                 </td>
+                                {% if perms.logistica.gestao_total %}
+                                    <td>
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <button class="btn-subitens" onclick="abrirModalEditarItem({{ item.id }})">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </button>
+                                            <button type="submit"
+                                                    class="btn-subitens"
+                                                    name="delete_item"
+                                                    value="{{ item.id }}">
+                                                <i class="fa-solid fa-trash" style="color:#ef4444;"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>

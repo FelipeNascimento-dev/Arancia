@@ -583,6 +583,12 @@ def detalhe_os_transp(request, order_number):
             request.session["confirm_id"] = request.POST.get("quote_id")
             request.session["confirm_text"] = "REJEITAR"
 
+        if "delete_item" in request.POST:
+            modal_confirmacao = True
+            request.session["confirm_action"] = "delete_item"
+            request.session["confirm_id"] = request.POST.get("delete_item")
+            request.session["confirm_text"] = "DELETAR"
+
         if "confirm_action" in request.POST:
 
             text = request.POST.get("confirm_text")
@@ -635,7 +641,27 @@ def detalhe_os_transp(request, order_number):
                         pass
 
                     elif action == "delete_item":
-                        pass
+                        url_delete = f"{TRANSP_API_URL}/item/{obj_id}"
+                        cliente_delete = RequestClient(
+                            method="DELETE",
+                            url=url_delete,
+                            headers={
+                                "accept": "application/json",
+                                "Content-Type": "application/json",
+                            },
+                        )
+                        delete_resp = cliente_delete.send_api_request()
+                        if isinstance(delete_resp, dict) and "detail" in delete_resp:
+                            messages.error(request, delete_resp["detail"])
+                        else:
+                            messages.success(
+                                request, "Item deletado com sucesso!")
+
+                            request.session.pop("confirm_action", None)
+                            request.session.pop("confirm_id", None)
+                            request.session.pop("confirm_text", None)
+
+                            return redirect("transportes:detalhe_os_transp", order_number=order_number)
 
                 except Exception as e:
                     messages.error(request, str(e))
