@@ -2,9 +2,9 @@ import re
 from utils.request import RequestClient
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from ...forms import RomaneioConsultaForm
+from ..forms import RomaneioConsultaForm
 from django.db.models.functions import Lower
-from ...models import GroupAditionalInformation, Group
+from ..models import GroupAditionalInformation, Group
 from setup.local_settings import STOCK_API_URL
 from django.contrib.auth.decorators import login_required, permission_required
 
@@ -23,7 +23,7 @@ def _extract_next(result):
 @login_required(login_url='logistica:login')
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 @permission_required('logistica.acesso_arancia', raise_exception=True)
-def consult_rom(request):
+def consult_romV2(request):
     titulo = "Consultar Romaneio"
     proximo_disponivel = None
     botao_texto = "Consultar"
@@ -94,6 +94,7 @@ def consult_rom(request):
                 origin_id = request.POST.get("origin_id")
             else:
                 origin_id = location_id
+
             destination_id = pa_tatuape.id
 
             if not origin_id or not destination_id:
@@ -104,12 +105,10 @@ def consult_rom(request):
                 payload = {
                     "created_by": request.user.username,
                     "location_id": location_id,
-                    "client_name": 'cielo',
+                    "client_name": "cielo",
                     "origin_id": int(origin_id),
                     "destination_id": int(destination_id),
                 }
-
-                print(payload)
 
                 client_post = RequestClient(
                     url=url_post,
@@ -122,15 +121,27 @@ def consult_rom(request):
 
                 if isinstance(result, dict) and result.get("romaneio"):
                     rom = result.get("romaneio")
+
                     request.session["romaneio_num"] = rom
                     request.session["result"] = result
+
+                    request.session["reverse_origin_id"] = int(origin_id)
+                    request.session["reverse_destination_id"] = int(
+                        destination_id)
+
+                    request.session["reverse_origin_label"] = result.get(
+                        "origin")
+                    request.session["reverse_destination_label"] = result.get(
+                        "destination")
+
+                    request.session.modified = True
+
                     messages.success(
                         request, f"Romaneio {rom} criado com sucesso!")
-                    return redirect("logistica:reverse_create")
+                    return redirect("logistica:reverse_createV2")
 
-                messages.error(
-                    request, f"Erro ao criar romaneio: {result}")
-                return render(request, "logistica/templates_reverse/consulta_romaneio.html", {
+                messages.error(request, f"Erro ao criar romaneio: {result}")
+                return render(request, "logistica/templatesV2/consulta_romaneioV2.html", {
                     "form": form,
                     "botao_texto": botao_texto,
                     "site_title": titulo,
@@ -138,42 +149,53 @@ def consult_rom(request):
                 })
 
         if "enviar_evento" in request.POST:
-            numero = form.cleaned_data["numero"]
-            url_get = f"{STOCK_API_URL}/v1/romaneios/{numero}?location_id={location_id}"
-            client_get = RequestClient(
-                url=url_get,
-                method="GET",
-                headers={"Accept": JSON_CT},
-            )
-            result = client_get.send_api_request()
+            if form.is_valid():
+                numero = form.cleaned_data["numero"]
+                url_get = f"{STOCK_API_URL}/v1/romaneios/{numero}?location_id={location_id}"
+                client_get = RequestClient(
+                    url=url_get,
+                    method="GET",
+                    headers={"Accept": JSON_CT},
+                )
+                result = client_get.send_api_request()
 
-            if isinstance(result, dict) and result.get("romaneio"):
-                request.session["romaneio_num"] = result.get("romaneio")
-                request.session["result"] = result
-                messages.success(
-                    request, f"Romaneio {result.get('romaneio')} encontrado!")
-                return redirect("logistica:reverse_create")
+                if isinstance(result, dict) and result.get("romaneio"):
+                    request.session["romaneio_num"] = result.get("romaneio")
+                    request.session["result"] = result
+                    request.session["reverse_origin_id"] = result.get(
+                        "origin_id")
+                    request.session["reverse_destination_id"] = result.get(
+                        "destination_id")
+                    request.session["reverse_origin_label"] = result.get(
+                        "origin")
+                    request.session["reverse_destination_label"] = result.get(
+                        "destination")
+                    request.session.modified = True
 
-            proximo_disponivel = _extract_next(result)
-            if not proximo_disponivel:
-                proximo_disponivel = numero or "AR00001"
+                    messages.success(
+                        request, f"Romaneio {result.get('romaneio')} encontrado!")
+                    return redirect("logistica:reverse_createV2")
 
-            messages.warning(
-                request,
-                f"O romaneio {numero} não existe."
-            )
-            botao_texto = "Consultar novamente"
+                proximo_disponivel = _extract_next(result)
+                if not proximo_disponivel:
+                    proximo_disponivel = numero or "AR00001"
 
-            return render(request, "logistica/templates_reverse/consulta_romaneio.html", {
-                "form": form,
-                "botao_texto": botao_texto,
-                "site_title": titulo,
-                "proximo_disponivel": proximo_disponivel,
-                "result": result
-            })
+                messages.warning(
+                    request,
+                    f"O romaneio {numero} não existe."
+                )
+                botao_texto = "Consultar novamente"
+
+                return render(request, "logistica/templatesV2/consulta_romaneioV2.html", {
+                    "form": form,
+                    "botao_texto": botao_texto,
+                    "site_title": titulo,
+                    "proximo_disponivel": proximo_disponivel,
+                    "result": result
+                })
 
     form = RomaneioConsultaForm(nome_form=titulo)
-    return render(request, "logistica/templates_reverse/consulta_romaneio.html", {
+    return render(request, "logistica/templatesV2/consulta_romaneioV2.html", {
         "form": form,
         "botao_texto": botao_texto,
         "modal_origin": modal_origin,

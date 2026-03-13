@@ -77,7 +77,7 @@
     </div>
     {% endif %}
 
-    {% if request.resolver_match.url_name == 'consultar_romaneio' %}
+    {% if request.resolver_match.url_name == 'consultar_romaneio' or request.resolver_match.url_name == 'consultar_romaneioV2' %}
     <button type="submit" class="submit-button-right btn-success" name="criar_romaneio">
       Criar romaneio
     </button>
