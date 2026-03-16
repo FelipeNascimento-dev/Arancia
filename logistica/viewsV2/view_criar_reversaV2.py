@@ -246,6 +246,9 @@ def reverse_createV2(request):
             request.session["result"] = result
             request.session.modified = True
 
+    status_romaneio = (result.get("status") or "").strip().upper()
+    disable_enviar_evento = status_romaneio != "ABERTO"
+
     volums = result.get("volums", [])
     for v in volums:
         kits = v.get("kits", [])
@@ -261,6 +264,7 @@ def reverse_createV2(request):
         "volums": volums,
         "last_kit_serial": last_kit_serial,
         "client": client_code,
+        "disable_enviar_evento": disable_enviar_evento,
         "current_parent_menu": "logistica",
         "current_menu": "lastmile",
         "current_submenu": "reverse",
