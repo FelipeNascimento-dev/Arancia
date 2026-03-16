@@ -77,6 +77,7 @@ urls_LastmileB2C = [
     path('reversa/consulta/', consult_romV2, name='consultar_romaneioV2'),
     path('reversa/criar/', reverse_createV2, name='reverse_createV2'),
     path('reversa/envio', send_quotesV2, name='send_quotesV2'),
+    path('reversa/lista-romaneios/', lista_romaneios, name='lista_romaneios'),
 ]
 
 urls_Gerenciamento = [

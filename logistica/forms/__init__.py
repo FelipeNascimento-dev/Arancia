@@ -31,3 +31,4 @@ from .forms_recebimento_estoque.forms_gerenciamento_kits import GerenciamentoKit
 from .forms_checkin_checkout.forms_checkout_reverse import CheckOutForm
 from .forms_checkin_checkout.forms_checkout_reverse_create import CheckoutReverseCreateForm
 from .forms_fluxo_entrega.forms_recebimento_insucesso import RecebimentoInsucessoForm
+from .forms_reverse.forms_lista_romaneios import ListaRomaneiosForm
