@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from datetime import datetime
 from utils.request import RequestClient
 from setup.local_settings import STOCK_API_URL
 from logistica.forms.forms_reverse.forms_lista_romaneios import ListaRomaneiosForm
@@ -39,6 +40,12 @@ def lista_romaneios(request):
                 },
             )
             result = client.send_api_request() or []
+
+            for item in result:
+                if item.get("created_at"):
+                    dt = datetime.fromisoformat(item["created_at"])
+                    item["created_at_formatado"] = dt.strftime(
+                        "%d/%m/%Y %H:%M:%S")
 
             paginator = Paginator(result, 15)
 
