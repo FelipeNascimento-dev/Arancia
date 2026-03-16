@@ -2,7 +2,13 @@
 <div id="modalCreateGroup" class="modal">
     <div class="modal-dialog">
         <div class="modal-header">
-            <h5>Criar novo GAI</h5>
+            {% if request.resolver_match.url_name == 'skill_ger' %}
+                <h5>Criar novo GAI</h5>
+            {% elif request.resolver_match.url_name == 'skill_transport'%}
+                <h5>Criar nova transportadora</h5>
+            {% elif request.resolver_match.url_name == 'skill_customer' %}
+                <h5>Criar nova localidade</h5>
+            {% endif %}
             <button class="modal-close" onclick="closeCreateGroupModal()">&times;</button>
         </div>
 

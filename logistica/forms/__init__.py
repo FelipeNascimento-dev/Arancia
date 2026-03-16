@@ -19,6 +19,7 @@ from .forms_lastmile_consultas.forms_detalhes_pedidos import OrderDetailForm
 from .forms_fluxo_retirada.forms_conferir_retirada import OrderReturnCheckForm
 from .forms_gerenciamento.forms_gestao_skills import CreateGAIForm
 from .forms_reverse.forms_criar_reversa import ReverseCreateForm
+from .forms_reverse.forms_criar_reversaV2 import ReverseCreateV2Form
 from .forms_reverse.forms_consulta_romaneio import RomaneioConsultaForm
 from .forms_fluxo_entrega.forms_insucesso import UnsuccessfulInsertForm
 from .forms_checkin_checkout.forms_checkin_iniciar import ClientSelectForm
@@ -30,3 +31,4 @@ from .forms_recebimento_estoque.forms_gerenciamento_kits import GerenciamentoKit
 from .forms_checkin_checkout.forms_checkout_reverse import CheckOutForm
 from .forms_checkin_checkout.forms_checkout_reverse_create import CheckoutReverseCreateForm
 from .forms_fluxo_entrega.forms_recebimento_insucesso import RecebimentoInsucessoForm
+from .forms_reverse.forms_lista_romaneios import ListaRomaneiosForm

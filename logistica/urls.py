@@ -3,7 +3,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth.views import LogoutView
 from django.urls import path
-from .viewsV2 import trackingIPV2
+from .viewsV2 import *
 from .views import *
 
 app_name = 'logistica'
@@ -73,6 +73,11 @@ urls_LastmileB2C = [
          name='gerenciamento_estoque'),
     path('gerenciamento-kits/', gerenciamento_kits, name='gerenciamento_kits'),
     path('transp/', transp_view, name='transp_view'),
+
+    path('reversa/consulta/', consult_romV2, name='consultar_romaneioV2'),
+    path('reversa/criar/', reverse_createV2, name='reverse_createV2'),
+    path('reversa/envio', send_quotesV2, name='send_quotesV2'),
+    path('reversa/lista-romaneios/', lista_romaneios, name='lista_romaneios'),
 ]
 
 urls_Gerenciamento = [

@@ -1,0 +1,292 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+    .form-card-2col {
+        margin-top: 65px;
+        margin-bottom: auto;
+    }
+
+    .romaneios-wrapper {
+        margin-top: 30px;
+        margin-left: 65px;
+    }
+
+    .romaneios-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 18px;
+    }
+
+    .romaneio-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s ease;
+    }
+
+    .romaneio-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.10);
+    }
+
+    .romaneio-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+        gap: 10px;
+    }
+
+    .romaneio-number {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1f2937;
+        word-break: break-word;
+    }
+
+    .romaneio-status {
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .status-aberto {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-fechado {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-default {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .romaneio-info {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .info-item {
+        font-size: 14px;
+        color: #374151;
+        line-height: 1.4;
+    }
+
+    .info-item strong {
+        color: #111827;
+    }
+
+    .rota-box {
+        margin-top: 14px;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 12px;
+        border-left: 4px solid #2563eb;
+    }
+
+    .rota-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+    }
+
+    .rota-item {
+        font-size: 14px;
+        color: #374151;
+        margin-bottom: 6px;
+    }
+
+    .empty-result {
+        margin-top: 25px;
+        padding: 18px;
+        border-radius: 12px;
+        background: #fff7ed;
+        border: 1px solid #fdba74;
+        color: #9a3412;
+        font-weight: 600;
+    }
+
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin: 30px 0;
+        flex-wrap: wrap;
+    }
+
+    .pagination-link,
+    .pagination-btn {
+        padding: 8px 14px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #374151;
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.2s ease;
+        cursor: pointer;
+    }
+
+    .pagination-link:hover,
+    .pagination-btn:hover {
+        background: #f3f4f6;
+    }
+
+    .pagination-link.active {
+        background: #2563eb;
+        color: #fff;
+        border-color: #2563eb;
+    }
+
+    .pagination-disabled {
+        padding: 8px 14px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        background: #f9fafb;
+        color: #9ca3af;
+        font-weight: 600;
+        cursor: not-allowed;
+    }
+
+    .hidden-pagination-form {
+        display: none;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST" id="romaneioForm">
+            {% csrf_token %}
+            {% include 'global/partials/_form_2col.html' %}
+        </form>
+    </div>
+</div>
+
+{% if page_obj %}
+    <div class="romaneios-wrapper">
+        <div class="romaneios-grid">
+            {% for item in page_obj %}
+                <div class="romaneio-card">
+                    <div class="romaneio-card-header">
+                        <div class="romaneio-number">
+                            {{ item.romaneio_number }}
+                        </div>
+
+                        {% if item.status_rom == 'ABERTO' %}
+                            <span class="romaneio-status status-aberto">{{ item.status_rom }}</span>
+                        {% elif item.status_rom == 'FECHADO' %}
+                            <span class="romaneio-status status-fechado">{{ item.status_rom }}</span>
+                        {% else %}
+                            <span class="romaneio-status status-default">{{ item.status_rom }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="romaneio-info">
+                        <div class="info-item">
+                            <strong>Cliente:</strong> {{ item.client_name|default:"-"|upper }}
+                        </div>
+
+                        <div class="info-item">
+                            <strong>Criado em:</strong> {{ item.created_at|default:"-" }}
+                        </div>
+
+                        <div class="info-item">
+                            <strong>Local:</strong>
+                            {% if item.location %}
+                                {{ item.location.nome|default:"-" }} ({{ item.location.gay_type|default:"-" }})
+                            {% else %}
+                                Não informado
+                            {% endif %}
+                        </div>
+
+                        <div class="rota-box">
+                            <div class="rota-title">Rota</div>
+
+                            <div class="rota-item">
+                                <strong>Origem:</strong>
+                                {% if item.origin %}
+                                    {{ item.origin.nome|default:"-" }} ({{ item.origin.gay_type|default:"-" }})
+                                {% else %}
+                                    Não informado
+                                {% endif %}
+                            </div>
+
+                            <div class="rota-item">
+                                <strong>Destino:</strong>
+                                {% if item.destination %}
+                                    {{ item.destination.nome|default:"-" }} ({{ item.destination.gay_type|default:"-" }})
+                                {% else %}
+                                    Não informado
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <form method="POST" id="paginationForm" class="hidden-pagination-form">
+            {% csrf_token %}
+            <input type="hidden" name="status_rom" value="{{ status_rom }}">
+            <input type="hidden" name="enviar_evento" value="1">
+            <input type="hidden" name="page" id="pageInput" value="{{ page_obj.number }}">
+        </form>
+
+        <div class="pagination-wrapper">
+            {% if page_obj.has_previous %}
+                <button type="submit" form="paginationForm" class="pagination-btn" onclick="document.getElementById('pageInput').value='1'">
+                    Primeira
+                </button>
+                <button type="submit" form="paginationForm" class="pagination-btn" onclick="document.getElementById('pageInput').value='{{ page_obj.previous_page_number }}'">
+                    Anterior
+                </button>
+            {% else %}
+                <span class="pagination-disabled">Primeira</span>
+                <span class="pagination-disabled">Anterior</span>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                    <span class="pagination-link active">{{ num }}</span>
+                {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                    <button type="submit" form="paginationForm" class="pagination-btn" onclick="document.getElementById('pageInput').value='{{ num }}'">
+                        {{ num }}
+                    </button>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <button type="submit" form="paginationForm" class="pagination-btn" onclick="document.getElementById('pageInput').value='{{ page_obj.next_page_number }}'">
+                    Próxima
+                </button>
+                <button type="submit" form="paginationForm" class="pagination-btn" onclick="document.getElementById('pageInput').value='{{ page_obj.paginator.num_pages }}'">
+                    Última
+                </button>
+            {% else %}
+                <span class="pagination-disabled">Próxima</span>
+                <span class="pagination-disabled">Última</span>
+            {% endif %}
+        </div>
+    </div>
+{% elif request.method == 'POST' %}
+    <div class="empty-result">
+        Nenhum romaneio encontrado.
+    </div>
+{% endif %}
+
+{% endblock %}
