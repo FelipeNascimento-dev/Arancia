@@ -120,6 +120,8 @@ def consulta_os_transp(request):
         )
         resultado_api = lista_request.send_api_request()
 
+        print(resultado_api)
+
         if isinstance(resultado_api, dict) and resultado_api.get("detail"):
             messages.error(request, resultado_api["detail"])
             resultado_api = []
