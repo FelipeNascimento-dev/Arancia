@@ -1,0 +1,607 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+    .page-wrapper-dace {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 22px;
+        margin-top: 65px;
+        padding: 0 20px 30px;
+        box-sizing: border-box;
+    }
+
+    .form-wrapper-dace,
+    .payload-wrapper-dace {
+        width: 100%;
+        max-width: 1300px;
+    }
+
+    .form-wrapper-dace .form-card-2col {
+        margin: 0;
+    }
+
+    .payload-card {
+        width: 100%;
+        background: linear-gradient(180deg, #ffffff 0%, #fcfcfc 100%);
+        border: 1px solid #e7eaf0;
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        padding: 28px;
+        box-sizing: border-box;
+    }
+
+    .payload-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 22px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #edf0f4;
+    }
+
+    .payload-title-area h4 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .payload-title-area p {
+        margin: 6px 0 0;
+        font-size: 14px;
+        color: #6b7280;
+    }
+
+    .payload-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .4px;
+        text-transform: uppercase;
+        background: #198754;
+        color: #ffffff;
+        border: 1px solid #198754;
+        white-space: nowrap;
+    }
+
+    .payload-btn {
+        border: none;
+        background: #0d6efd;
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: .2s ease;
+        box-shadow: 0 6px 16px rgba(13, 110, 253, 0.20);
+    }
+
+    .payload-btn:hover {
+        background: #0b5ed7;
+        transform: translateY(-1px);
+    }
+
+    .payload-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .payload-item {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 16px 18px;
+        min-height: 92px;
+        box-sizing: border-box;
+        transition: all .2s ease;
+    }
+
+    .payload-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .payload-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        margin-bottom: 8px;
+    }
+
+    .payload-value {
+        font-size: 15px;
+        font-weight: 600;
+        color: #111827;
+        line-height: 1.5;
+        word-break: break-word;
+    }
+
+    .payload-value.boolean-true {
+        color: #157347;
+    }
+
+    .payload-value.boolean-false {
+        color: #b02a37;
+    }
+
+    .payload-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #0d6efd;
+        text-decoration: none;
+        font-weight: 600;
+        transition: .2s ease;
+    }
+
+    .payload-link:hover {
+        color: #0a58ca;
+        text-decoration: underline;
+    }
+
+    .payload-section {
+        margin-top: 28px;
+    }
+
+    .payload-section-title {
+        margin: 0 0 14px;
+        font-size: 18px;
+        font-weight: 700;
+        color: #374151;
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .product-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+        transition: .2s ease;
+    }
+
+    .product-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    .product-card-title {
+        margin: 0 0 14px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #111827;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .product-info-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .product-info-item {
+        background: #f8fafc;
+        border: 1px solid #edf2f7;
+        border-radius: 10px;
+        padding: 12px;
+    }
+
+    .product-info-item.full {
+        grid-column: 1 / -1;
+    }
+
+    .product-info-label {
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        margin-bottom: 6px;
+    }
+
+    .product-info-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1f2937;
+        line-height: 1.5;
+        word-break: break-word;
+    }
+
+    .modal-payload-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.65);
+        z-index: 9999;
+        padding: 30px 20px;
+        box-sizing: border-box;
+        overflow-y: auto;
+    }
+
+    .modal-payload-overlay.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-payload-content {
+        width: 100%;
+        max-width: 1000px;
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        animation: modalFadeIn .2s ease;
+    }
+
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-payload-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 22px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .modal-payload-header h5 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .modal-close-btn {
+        border: none;
+        background: #e5e7eb;
+        color: #111827;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: 700;
+        transition: .2s ease;
+    }
+
+    .modal-close-btn:hover {
+        background: #d1d5db;
+    }
+
+    .modal-payload-body {
+        padding: 22px;
+    }
+
+    .json-box {
+        margin: 0;
+        background: #0f172a;
+        color: #e2e8f0;
+        border-radius: 14px;
+        padding: 18px 20px;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-size: 13px;
+        line-height: 1.65;
+        border: 1px solid #1e293b;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    @media (max-width: 1100px) {
+        .payload-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-wrapper-dace {
+            padding: 0 12px 24px;
+            gap: 18px;
+        }
+
+        .payload-card {
+            padding: 20px;
+            border-radius: 14px;
+        }
+
+        .payload-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .payload-actions {
+            width: 100%;
+        }
+
+        .payload-grid,
+        .products-grid,
+        .product-info-list {
+            grid-template-columns: 1fr;
+        }
+
+        .payload-title-area h4 {
+            font-size: 19px;
+        }
+
+        .modal-payload-body,
+        .modal-payload-header {
+            padding: 16px;
+        }
+    }
+</style>
+
+<div class="page-wrapper-dace">
+    <div class="form-wrapper-dace">
+        <div class="form-card-2col">
+            <form method="POST" id="romaneioForm" action="{{ form_action }}">
+                {% csrf_token %}
+                {% include 'global/partials/_form_2col.html' %}
+            </form>
+        </div>
+    </div>
+
+    {% if dace_data %}
+    <div class="payload-wrapper-dace">
+        <div class="payload-card">
+            <div class="payload-header">
+                <div class="payload-title-area">
+                    <h4>Resultado da DACE</h4>
+                    <p>Detalhes retornados após o processamento da solicitação.</p>
+                </div>
+
+                <div class="payload-actions">
+                    <span class="status-badge">
+                        {{ dace_data.dace_status }}
+                    </span>
+
+                    <button type="button" class="payload-btn" onclick="openPayloadModal()">
+                        Ver payload completo
+                    </button>
+                </div>
+            </div>
+
+            <div class="payload-grid">
+                <div class="payload-item">
+                    <span class="payload-label">ID</span>
+                    <div class="payload-value">{{ dace_data.id }}</div>
+                </div>
+
+                <div class="payload-item">
+                    <span class="payload-label">Status da DACE</span>
+                    <div class="payload-value">{{ dace_data.dace_status }}</div>
+                </div>
+
+                <div class="payload-item">
+                    <span class="payload-label">Pedido criado</span>
+                    <div class="payload-value {% if dace_data.order_created %}boolean-true{% else %}boolean-false{% endif %}">
+                        {% if dace_data.order_created %}
+                            Sim
+                        {% else %}
+                            Não
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="payload-item">
+                    <span class="payload-label">Documento PDF</span>
+                    <div class="payload-value">
+                        {% if dace_data.dace_url %}
+                            <a href="{{ dace_data.dace_url }}" target="_blank" class="payload-link">
+                                Abrir DACE em PDF
+                            </a>
+                        {% else %}
+                            Não disponível
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if dace_data.payload %}
+            <div class="payload-section">
+                <h5 class="payload-section-title">Informações da cotação</h5>
+
+                <div class="payload-grid">
+                    <div class="payload-item">
+                        <span class="payload-label">Tipo de envio</span>
+                        <div class="payload-value">{{ dace_data.payload.shipment_type|default:"-" }}</div>
+                    </div>
+
+                    <div class="payload-item">
+                        <span class="payload-label">Modo de cotação</span>
+                        <div class="payload-value">{{ dace_data.payload.quoting_mode|default:"-" }}</div>
+                    </div>
+
+                    <div class="payload-item">
+                        <span class="payload-label">Subtipo</span>
+                        <div class="payload-value">{{ dace_data.payload.shipment_sub_type|default:"-" }}</div>
+                    </div>
+
+                    <div class="payload-item">
+                        <span class="payload-label">Canal de vendas</span>
+                        <div class="payload-value">{{ dace_data.payload.additional_information.sales_channel|default:"-" }}</div>
+                    </div>
+
+                    <div class="payload-item">
+                        <span class="payload-label">CEP origem</span>
+                        <div class="payload-value">{{ dace_data.payload.origin_zip_code|default:"-" }}</div>
+                    </div>
+
+                    <div class="payload-item">
+                        <span class="payload-label">CEP destino</span>
+                        <div class="payload-value">{{ dace_data.payload.destination_zip_code|default:"-" }}</div>
+                    </div>
+
+                    <div class="payload-item">
+                        <span class="payload-label">Quantidade de produtos</span>
+                        <div class="payload-value">{{ dace_data.payload.products|length }}</div>
+                    </div>
+
+                    <div class="payload-item">
+                        <span class="payload-label">Rule tags</span>
+                        <div class="payload-value">
+                            {% if dace_data.payload.additional_information.rule_tags %}
+                                {{ dace_data.payload.additional_information.rule_tags|join:", " }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if dace_data.payload.products %}
+            <div class="payload-section">
+                <h5 class="payload-section-title">Produtos</h5>
+
+                <div class="products-grid">
+                    {% for product in dace_data.payload.products %}
+                    <div class="product-card">
+                        <h6 class="product-card-title">
+                            Produto {{ forloop.counter }}
+                        </h6>
+
+                        <div class="product-info-list">
+                            <div class="product-info-item full">
+                                <span class="product-info-label">Descrição</span>
+                                <div class="product-info-value">{{ product.description|default:"-" }}</div>
+                            </div>
+
+                            <div class="product-info-item">
+                                <span class="product-info-label">Categoria</span>
+                                <div class="product-info-value">{{ product.product_category|default:"-" }}</div>
+                            </div>
+
+                            <div class="product-info-item">
+                                <span class="product-info-label">Quantidade</span>
+                                <div class="product-info-value">{{ product.quantity|default:"-" }}</div>
+                            </div>
+
+                            <div class="product-info-item">
+                                <span class="product-info-label">Peso</span>
+                                <div class="product-info-value">{{ product.weight|default:"-" }}</div>
+                            </div>
+
+                            <div class="product-info-item">
+                                <span class="product-info-label">Largura</span>
+                                <div class="product-info-value">{{ product.width|default:"-" }}</div>
+                            </div>
+
+                            <div class="product-info-item">
+                                <span class="product-info-label">Altura</span>
+                                <div class="product-info-value">{{ product.height|default:"-" }}</div>
+                            </div>
+
+                            <div class="product-info-item">
+                                <span class="product-info-label">Comprimento</span>
+                                <div class="product-info-value">{{ product.length|default:"-" }}</div>
+                            </div>
+
+                            <div class="product-info-item">
+                                <span class="product-info-label">Custo da mercadoria</span>
+                                <div class="product-info-value">{{ product.cost_of_goods|default:"-" }}</div>
+                            </div>
+
+                            <div class="product-info-item full">
+                                <span class="product-info-label">Agrupável</span>
+                                <div class="product-info-value">
+                                    {% if product.can_group %}
+                                        Sim
+                                    {% else %}
+                                        Não
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="modal-payload-overlay" id="payloadModal" onclick="closePayloadModal(event)">
+        <div class="modal-payload-content" onclick="event.stopPropagation()">
+            <div class="modal-payload-header">
+                <h5>Payload completo</h5>
+                <button type="button" class="modal-close-btn" onclick="closePayloadModal()">&times;</button>
+            </div>
+            <div class="modal-payload-body">
+                <pre class="json-box">{{ dace_data.payload }}</pre>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function openPayloadModal() {
+        document.getElementById('payloadModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closePayloadModal(event) {
+        if (!event || event.target.id === 'payloadModal') {
+            document.getElementById('payloadModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const modal = document.getElementById('payloadModal');
+            if (modal && modal.classList.contains('active')) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+    });
+</script>
+
+{% endblock %}
