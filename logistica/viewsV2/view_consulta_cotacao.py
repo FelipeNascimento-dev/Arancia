@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from ..forms import ConsultaQuoteForm
 from utils.request import RequestClient
 from django.contrib import messages
+import json
 from setup.local_settings import API_URL
 from django.contrib.auth.decorators import login_required, permission_required
 
@@ -33,6 +34,15 @@ def consulta_cotacao(request):
                 messages.error(request, result.get('detail'))
             else:
                 messages.success(request, "Consulta realizada com sucesso!")
+
+            if result and result.get("payload"):
+                result["payload_pretty"] = json.dumps(
+                    result["payload"],
+                    indent=4,
+                    ensure_ascii=False
+                )
+            else:
+                result["payload_pretty"] = "{}"
 
     return render(request, "logistica/templatesV2/consulta_cotacao.html", {
         'form': form,

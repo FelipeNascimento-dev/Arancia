@@ -327,8 +327,8 @@ def _post_success_redirect(code_info: TrackingOriginalCode, numero_pedido: str) 
         "201": ("logistica:pcp_simpl", 202),
         "202": ("logistica:pcp_simpl", 203),
         "203": ("logistica:pcp_simpl", 204),
-        "204": ("logistica:consulta_etiquetas", None),
-        "205": ("logistica:pcp_simpl", 205),
+        "204": ("logistica:pcp_simpl", 205),
+        "205": ("logistica:consulta_etiquetas", None),
     }
     view_name, next_code = redirect_map.get(
         code_info.original_code,
