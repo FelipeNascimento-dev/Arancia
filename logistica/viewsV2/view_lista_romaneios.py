@@ -4,7 +4,7 @@ from datetime import datetime
 from utils.request import RequestClient
 from setup.local_settings import STOCK_API_URL
 from logistica.forms.forms_reverse.forms_lista_romaneios import ListaRomaneiosForm
-
+from django.contrib import messages
 JSON_CT = "application/json"
 
 
@@ -40,6 +40,9 @@ def lista_romaneios(request):
                 },
             )
             result = client.send_api_request() or []
+
+            if 'detail' in result:
+                messages.error(request, result('detail'))
 
             for item in result:
                 if item.get("created_at"):
