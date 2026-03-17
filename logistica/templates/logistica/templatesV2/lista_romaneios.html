@@ -166,6 +166,28 @@
     .hidden-pagination-form {
         display: none;
     }
+
+    .romaneio-link-form {
+        margin: 0;
+    }
+
+    .romaneio-link-btn {
+        border: none;
+        background: transparent;
+        padding: 0;
+        margin: 0;
+        color: #2563eb;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        transition: 0.2s ease;
+    }
+
+    .romaneio-link-btn:hover {
+        color: #1d4ed8;
+        text-decoration: underline;
+    }
 </style>
 
 <div class="form-container">
@@ -184,7 +206,18 @@
                 <div class="romaneio-card">
                     <div class="romaneio-card-header">
                         <div class="romaneio-number">
-                            {{ item.romaneio_number }}
+                            {% if item.status_rom == 'PRONTO' %}
+                                <form method="POST" action="{% url 'logistica:consulta_cotacao' %}" class="romaneio-link-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="numero_romaneio" value="{{ item.romaneio_number }}">
+                                    <input type="hidden" name="enviar_evento" value="1">
+                                    <button type="submit" class="romaneio-link-btn">
+                                        {{ item.romaneio_number }}
+                                    </button>
+                                </form>
+                            {% else %}
+                                {{ item.romaneio_number }}
+                            {% endif %}
                         </div>
 
                         {% if item.status_rom == 'ABERTO' %}

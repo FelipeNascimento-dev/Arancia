@@ -12,6 +12,7 @@ JSON_CT = "application/json"
 def consulta_cotacao(request):
     titulo = "Consulta de DACE"
     form = ConsultaQuoteForm(request.POST, nome_form=titulo)
+    result = []
 
     if request.method == 'POST':
         romaneio_number = request.POST.get('numero_romaneio')
@@ -42,7 +43,7 @@ def consulta_cotacao(request):
                     ensure_ascii=False
                 )
             else:
-                result["payload_pretty"] = "{}"
+                result["payload_pretty"] = ""
 
     return render(request, "logistica/templatesV2/consulta_cotacao.html", {
         'form': form,
