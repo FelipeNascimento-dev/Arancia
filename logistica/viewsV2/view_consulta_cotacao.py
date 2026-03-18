@@ -5,6 +5,8 @@ from django.contrib import messages
 import json
 from setup.local_settings import API_URL
 from django.contrib.auth.decorators import login_required, permission_required
+from datetime import datetime, timedelta
+from django.utils import timezone
 
 JSON_CT = "application/json"
 
@@ -33,7 +35,7 @@ def consulta_cotacao(request, numero_rom):
 
             result = client.send_api_request()
 
-           # print(result)
+            # print(result)
 
             if 'detail' in result:
                 messages.error(request, result.get('detail'))
@@ -48,6 +50,44 @@ def consulta_cotacao(request, numero_rom):
                 )
             else:
                 result["payload_pretty"] = ""
+
+            result["quote_date_formatada"] = ""
+            result["quote_hours_elapsed"] = None
+            result["bloquear_pdf_dace"] = False
+            result["aviso_impressao_dace"] = ""
+
+            quote_date_str = result.get("quote_date")
+            if quote_date_str:
+                try:
+                    quote_date = datetime.fromisoformat(quote_date_str)
+
+                    if timezone.is_naive(quote_date):
+                        quote_date = timezone.make_aware(
+                            quote_date,
+                            timezone.get_current_timezone()
+                        )
+
+                    agora = timezone.localtime()
+                    quote_date_local = timezone.localtime(quote_date)
+
+                    diff = agora - quote_date_local
+                    horas_decorridas = diff.total_seconds() / 3600
+
+                    result["quote_date_formatada"] = quote_date_local.strftime(
+                        "%d/%m/%Y %H:%M:%S")
+                    result["quote_hours_elapsed"] = round(horas_decorridas, 2)
+                    result["bloquear_pdf_dace"] = horas_decorridas >= 12
+                    result["aviso_impressao_dace"] = (
+                        "A DACE deve ser impressa em até 12 horas a partir da criação da cotação."
+                    )
+
+                except Exception:
+                    result["quote_date_formatada"] = quote_date_str
+                    result["quote_hours_elapsed"] = None
+                    result["bloquear_pdf_dace"] = True
+                    result["aviso_impressao_dace"] = (
+                        "Não foi possível validar a data da cotação. O PDF foi bloqueado por segurança."
+                    )
 
         if "cancelar_cotacao" in request.POST:
             show_cancel_modal = True
@@ -78,7 +118,7 @@ def consulta_cotacao(request, numero_rom):
             if 'detail' in cancel_result:
                 messages.error(request, cancel_result.get('detail'))
             else:
-                messages.succes(request, "Cotação cancelada com sucesso!")
+                messages.success(request, "Cotação cancelada com sucesso!")
 
     else:
         form = ConsultaQuoteForm(

@@ -692,6 +692,38 @@
             width: 100%;
         }
     }
+
+    .quote-warning-box {
+        background: #fff7ed;
+        border: 1px solid #fdba74;
+        color: #9a3412;
+        border-radius: 14px;
+        padding: 14px 16px;
+        margin-bottom: 20px;
+    }
+
+    .quote-warning-box strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+    }
+
+    .quote-warning-box p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .payload-link-disabled {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #9ca3af;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
 </style>
 
 <div class="page-wrapper-dace">
@@ -756,6 +788,13 @@
                 </div>
             </div>
 
+            {% if dace_data.aviso_impressao_dace %}
+            <div class="quote-warning-box">
+                <strong>Aviso sobre impressão da DACE</strong>
+                <p>{{ dace_data.aviso_impressao_dace }}</p>
+            </div>
+            {% endif %}
+
             <div class="payload-grid">
                 <div class="payload-item">
                     <span class="payload-label">ID</span>
@@ -783,13 +822,24 @@
                     <span class="payload-label">Documento PDF</span>
                     <div class="payload-value">
                         {% if dace_data.dace_url %}
-                        <a href="{{ dace_data.dace_url }}" target="_blank" class="payload-link">
-                            Abrir DACE em PDF
-                        </a>
+                            {% if dace_data.bloquear_pdf_dace %}
+                                <span class="payload-link-disabled" title="A DACE só pode ser impressa em até 12 horas da criação da cotação.">
+                                    PDF bloqueado após 12 horas
+                                </span>
+                            {% else %}
+                                <a href="{{ dace_data.dace_url }}" target="_blank" class="payload-link">
+                                    Abrir DACE em PDF
+                                </a>
+                            {% endif %}
                         {% else %}
-                        Não disponível
+                            Não disponível
                         {% endif %}
                     </div>
+                </div>
+
+                <div class="payload-item">
+                    <span class="payload-label">Data da cotação</span>
+                    <div class="payload-value">{{ dace_data.quote_date_formatada|default:"-" }}</div>
                 </div>
             </div>
 

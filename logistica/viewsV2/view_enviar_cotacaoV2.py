@@ -35,7 +35,7 @@ def send_quotesV2(request):
             "created_by": request.user.username if request.user.is_authenticated else "SYSTEM"
         }
 
-        url = f"{API_URL}/api/reverse-order/new/"
+        url = f"{API_URL}/api/v2/reverse/quote/new/"
         client = RequestClient(
             url=url,
             method="POST",
