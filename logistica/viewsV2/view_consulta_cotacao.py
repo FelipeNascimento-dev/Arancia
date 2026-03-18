@@ -9,9 +9,12 @@ from django.contrib.auth.decorators import login_required, permission_required
 JSON_CT = "application/json"
 
 
-def consulta_cotacao(request):
+def consulta_cotacao(request, numero_rom):
     titulo = "Consulta de DACE"
-    form = ConsultaQuoteForm(request.POST, nome_form=titulo)
+    form = ConsultaQuoteForm(request.POST,
+                             nome_form=titulo,
+                             initial={
+                                 "numero_romaneio": numero_rom})
     result = []
 
     if request.method == 'POST':
@@ -44,6 +47,12 @@ def consulta_cotacao(request):
                 )
             else:
                 result["payload_pretty"] = ""
+
+    else:
+        form = ConsultaQuoteForm(
+            initial={"numero_romaneio": numero_rom},
+            nome_form=titulo
+        )
 
     return render(request, "logistica/templatesV2/consulta_cotacao.html", {
         'form': form,
