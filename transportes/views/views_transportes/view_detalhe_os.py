@@ -833,6 +833,42 @@ def detalhe_os_transp(request, order_number):
     if request.method == "POST" and request.POST.get("reject_button"):
         modal_confirmacao = True
 
+    itens_sem_viagem = []
+
+    try:
+        service_order_id = resp.get("service_order", {}).get("id")
+
+        if service_order_id:
+            url_itens_sem_viagem = (
+                f"{TRANSP_API_URL}/item/list"
+                f"?service_order_id={service_order_id}"
+                f"&sem_travel_order=true"
+            )
+
+            client_items_free = RequestClient(
+                method="GET",
+                url=url_itens_sem_viagem,
+                headers={
+                    "accept": "application/json",
+                    "Content-Type": "application/json",
+                },
+            )
+
+            resp_items_free = client_items_free.send_api_request()
+
+            if isinstance(resp_items_free, dict):
+                itens_sem_viagem = (
+                    resp_items_free.get("items")
+                    or resp_items_free.get("results")
+                    or []
+                )
+            elif isinstance(resp_items_free, list):
+                itens_sem_viagem = resp_items_free
+
+    except Exception as e:
+        messages.warning(
+            request, f"Não foi possível carregar itens livres: {e}")
+
     return render(request, 'transportes/transportes/detalhe_os.html', {
         "order_number": order_number,
         "payload": resp,
@@ -843,6 +879,7 @@ def detalhe_os_transp(request, order_number):
         "modal_confirmacao": modal_confirmacao,
         "confirmation_text": confirmation_text,
         "travel_items": travel_items,
+        "itens_sem_viagem": itens_sem_viagem,
         "site_title": "Detalhe da OS",
         "current_parent_menu": "transportes",
         "current_menu": "lista_os",
