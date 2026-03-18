@@ -83,7 +83,7 @@ def reverse_createV2(request):
                 if len(volums) >= 10:
                     messages.error(
                         request, "Limite máximo de 10 volumes atingido!")
-                    return redirect("logistica:reverse_create")
+                    return redirect("logistica:reverse_createV2")
                 novo_numero = int(ultimo_volume["volum_number"]) + 1
                 volums.append({"volum_number": novo_numero, "kits": []})
                 ultimo_volume = volums[-1]
@@ -127,14 +127,14 @@ def reverse_createV2(request):
 
     if request.method == "POST" and form.is_valid() and "enviar_cotacao" in request.POST:
         _result = send_quotesV2(request)
-        order = _result.get('order_number')
+        order = romaneio_in
         client = 'cielo'
 
         if _result and 'detail' not in _result:
             result = _result
             request.session["result"] = result
             request.session.modified = True
-            return redirect('logistica:detalhe_pedido', order=order)
+            return redirect('logistica:consulta_cotacao', numero_rom=order)
 
     if request.method == "POST" and form.is_valid() and "finalizar_rom" in request.POST:
         if request.method == "POST" and form.is_valid() and "finalizar_rom" in request.POST:

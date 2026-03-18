@@ -97,7 +97,12 @@
         Expedição
       </a>
 
-      <a class="etapa {% if etapa_ativa == 'consulta_etiquetas' %}ativa{% endif %}" data-step="5"
+      <a class="etapa {% if etapa_ativa == 'troca_custodia' %}ativa{% endif %}" data-step="5"
+        href="{% url 'logistica:troca_custodia_simpl' 205 %}">
+        Troca de Custodia
+      </a>
+
+      <a class="etapa {% if etapa_ativa == 'consulta_etiquetas' %}ativa{% endif %}" data-step="6"
         href="{% url 'logistica:consulta_etiquetas' %}">
         Etiquetas
       </a>

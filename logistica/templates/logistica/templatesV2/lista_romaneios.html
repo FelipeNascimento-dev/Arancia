@@ -48,6 +48,10 @@
         word-break: break-word;
     }
 
+    .romaneio-number a {
+        text-decoration: none;
+    }
+
     .romaneio-status {
         padding: 6px 12px;
         border-radius: 999px;
@@ -184,7 +188,13 @@
                 <div class="romaneio-card">
                     <div class="romaneio-card-header">
                         <div class="romaneio-number">
-                            {{ item.romaneio_number }}
+                            {% if item.status_rom == 'PRONTO' %}
+                                <a href="{% url 'logistica:consulta_cotacao' item.romaneio_number %}">
+                                    {{ item.romaneio_number }}
+                                </a>
+                            {% else %}
+                                {{ item.romaneio_number }}
+                            {% endif %}
                         </div>
 
                         {% if item.status_rom == 'ABERTO' %}
