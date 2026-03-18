@@ -269,6 +269,7 @@
             opacity: 0;
             transform: translateY(12px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -325,7 +326,93 @@
         font-size: 13px;
         line-height: 1.65;
         border: 1px solid #1e293b;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .dropdown-actions {
+        position: relative;
+    }
+
+    .dropdown-toggle-btn {
+        border: none;
+        background: #111827;
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: .2s ease;
+        box-shadow: 0 6px 16px rgba(17, 24, 39, 0.20);
+    }
+
+    .dropdown-toggle-btn:hover {
+        background: #1f2937;
+        transform: translateY(-1px);
+    }
+
+    .dropdown-menu-actions {
+        display: none;
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        min-width: 220px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        box-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
+        padding: 10px;
+        z-index: 50;
+    }
+
+    .dropdown-menu-actions.show {
+        display: block;
+    }
+
+    .dropdown-action-form {
+        margin: 0;
+    }
+
+    .dropdown-action-btn {
+        width: 100%;
+        border: none;
+        background: #f8fafc;
+        color: #111827;
+        padding: 12px 14px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: left;
+        cursor: pointer;
+        transition: .2s ease;
+        margin-bottom: 8px;
+    }
+
+    .dropdown-action-btn:last-child {
+        margin-bottom: 0;
+    }
+
+    .dropdown-action-btn:hover {
+        background: #eef2f7;
+    }
+
+    .dropdown-action-btn.create-order {
+        color: #0f5132;
+        background: #e8f7ee;
+        margin-bottom: 10px;
+    }
+
+    .dropdown-action-btn.create-order:hover {
+        background: #d8f0e2;
+    }
+
+    .dropdown-action-btn.cancel-quote {
+        color: #842029;
+        background: #fbe7ea;
+    }
+
+    .dropdown-action-btn.cancel-quote:hover {
+        background: #f6d7dc;
     }
 
     @media (max-width: 1100px) {
@@ -373,6 +460,238 @@
             padding: 16px;
         }
     }
+
+    .cancel-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.68);
+        z-index: 10000;
+        padding: 24px;
+        box-sizing: border-box;
+        overflow-y: auto;
+    }
+
+    .cancel-modal-overlay.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cancel-modal-content {
+        width: 100%;
+        max-width: 560px;
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+        overflow: hidden;
+        animation: modalFadeIn .2s ease;
+        border: 1px solid #e5e7eb;
+    }
+
+    .cancel-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 20px 22px;
+        background: #fff7ed;
+        border-bottom: 1px solid #fde7cf;
+    }
+
+    .cancel-modal-title-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .cancel-modal-title {
+        margin: 0;
+        font-size: 19px;
+        font-weight: 700;
+        color: #9a3412;
+    }
+
+    .cancel-modal-subtitle {
+        margin: 0;
+        font-size: 13px;
+        color: #7c2d12;
+    }
+
+    .cancel-modal-close {
+        border: none;
+        background: #ffe4c7;
+        color: #7c2d12;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: 700;
+        transition: .2s ease;
+    }
+
+    .cancel-modal-close:hover {
+        background: #ffd7ad;
+    }
+
+    .cancel-modal-body {
+        padding: 22px;
+    }
+
+    .cancel-warning-box {
+        background: #fff1f2;
+        border: 1px solid #fecdd3;
+        color: #9f1239;
+        border-radius: 14px;
+        padding: 16px 18px;
+        margin-bottom: 18px;
+    }
+
+    .cancel-warning-box strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+    }
+
+    .cancel-warning-box p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .cancel-modal-info {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .cancel-info-item {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 14px 16px;
+    }
+
+    .cancel-info-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin-bottom: 6px;
+    }
+
+    .cancel-info-value {
+        font-size: 15px;
+        font-weight: 600;
+        color: #111827;
+        word-break: break-word;
+    }
+
+    .cancel-checkbox-box {
+        margin-top: 18px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 16px;
+    }
+
+    .cancel-checkbox-label {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        cursor: pointer;
+    }
+
+    .cancel-checkbox-label input[type="checkbox"] {
+        margin-top: 2px;
+        width: 18px;
+        height: 18px;
+        accent-color: #dc2626;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .cancel-checkbox-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .cancel-checkbox-text strong {
+        font-size: 14px;
+        color: #111827;
+    }
+
+    .cancel-checkbox-text span {
+        font-size: 13px;
+        color: #6b7280;
+        line-height: 1.5;
+    }
+
+    .cancel-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding: 18px 22px 22px;
+        border-top: 1px solid #eef2f7;
+        flex-wrap: wrap;
+    }
+
+    .cancel-btn-secondary,
+    .cancel-btn-danger {
+        border: none;
+        border-radius: 10px;
+        padding: 11px 18px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+    .cancel-btn-secondary {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+    .cancel-btn-secondary:hover {
+        background: #d1d5db;
+    }
+
+    .cancel-btn-danger {
+        background: #dc2626;
+        color: #fff;
+        box-shadow: 0 8px 18px rgba(220, 38, 38, 0.22);
+    }
+
+    .cancel-btn-danger:hover {
+        background: #b91c1c;
+    }
+
+    @media (max-width: 768px) {
+        .cancel-modal-overlay {
+            padding: 12px;
+        }
+
+        .cancel-modal-header,
+        .cancel-modal-body,
+        .cancel-modal-footer {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+
+        .cancel-modal-footer {
+            flex-direction: column;
+        }
+
+        .cancel-btn-secondary,
+        .cancel-btn-danger {
+            width: 100%;
+        }
+    }
 </style>
 
 <div class="page-wrapper-dace">
@@ -402,6 +721,38 @@
                     <button type="button" class="payload-btn" onclick="openPayloadModal()">
                         Ver payload completo
                     </button>
+
+                    {% if dace_data.dace_status == 'EMITIDA' %}
+                    <div class="dropdown-actions">
+                        <button type="button" class="dropdown-toggle-btn" onclick="toggleActionsDropdown()">
+                            Ações
+                        </button>
+
+                        <div class="dropdown-menu-actions" id="actionsDropdownMenu">
+                            <form method="POST" class="dropdown-action-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="acao" value="criar_pedido">
+                                <input type="hidden" name="quote_id" value="{{ dace_data.id }}">
+                                <input type="hidden" name="numero_romaneio"
+                                    value="{{ form.numero_romaneio.value|default:'' }}">
+                                <button type="submit" name="criar_pedido" class="dropdown-action-btn create-order">
+                                    Criar pedido
+                                </button>
+                            </form>
+
+                            <form method="POST" class="dropdown-action-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="acao" value="cancelar_cotacao">
+                                <input type="hidden" name="quote_id" value="{{ dace_data.id }}">
+                                <input type="hidden" name="numero_romaneio"
+                                    value="{{ form.numero_romaneio.value|default:'' }}">
+                                <button type="submit" name="cancelar_cotacao" class="dropdown-action-btn cancel-quote">
+                                    Cancelar cotação
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -418,11 +769,12 @@
 
                 <div class="payload-item">
                     <span class="payload-label">Pedido criado</span>
-                    <div class="payload-value {% if dace_data.order_created %}boolean-true{% else %}boolean-false{% endif %}">
+                    <div
+                        class="payload-value {% if dace_data.order_created %}boolean-true{% else %}boolean-false{% endif %}">
                         {% if dace_data.order_created %}
-                            Sim
+                        Sim
                         {% else %}
-                            Não
+                        Não
                         {% endif %}
                     </div>
                 </div>
@@ -431,11 +783,11 @@
                     <span class="payload-label">Documento PDF</span>
                     <div class="payload-value">
                         {% if dace_data.dace_url %}
-                            <a href="{{ dace_data.dace_url }}" target="_blank" class="payload-link">
-                                Abrir DACE em PDF
-                            </a>
+                        <a href="{{ dace_data.dace_url }}" target="_blank" class="payload-link">
+                            Abrir DACE em PDF
+                        </a>
                         {% else %}
-                            Não disponível
+                        Não disponível
                         {% endif %}
                     </div>
                 </div>
@@ -485,9 +837,9 @@
                         <span class="payload-label">Rule tags</span>
                         <div class="payload-value">
                             {% if dace_data.payload.additional_information.rule_tags %}
-                                {{ dace_data.payload.additional_information.rule_tags|join:", " }}
+                            {{ dace_data.payload.additional_information.rule_tags|join:", " }}
                             {% else %}
-                                -
+                            -
                             {% endif %}
                         </div>
                     </div>
@@ -551,9 +903,9 @@
                                 <span class="product-info-label">Agrupável</span>
                                 <div class="product-info-value">
                                     {% if product.can_group %}
-                                        Sim
+                                    Sim
                                     {% else %}
-                                        Não
+                                    Não
                                     {% endif %}
                                 </div>
                             </div>
@@ -580,6 +932,72 @@
     {% endif %}
 </div>
 
+{% if show_cancel_modal %}
+<div class="cancel-modal-overlay active" id="cancelModal" onclick="closeCancelModal(event)">
+    <div class="cancel-modal-content" onclick="event.stopPropagation()">
+        <div class="cancel-modal-header">
+            <div class="cancel-modal-title-wrap">
+                <h5 class="cancel-modal-title">Confirmar cancelamento</h5>
+                <p class="cancel-modal-subtitle">Revise a ação antes de continuar.</p>
+            </div>
+
+            <button type="button" class="cancel-modal-close" onclick="closeCancelModal()">&times;</button>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="acao" value="confirmar_cancelamento_cotacao">
+            <input type="hidden" name="quote_id" value="{{ dace_data.id }}">
+            <input type="hidden" name="numero_romaneio" value="{{ form.numero_romaneio.value|default:'' }}">
+
+            <div class="cancel-modal-body">
+                <div class="cancel-warning-box">
+                    <strong>Atenção</strong>
+                    <p>Essa ação é irreversível. Após confirmar, a cotação será cancelada e não poderá ser recuperada.
+                    </p>
+                </div>
+
+                <div class="cancel-modal-info">
+                    <div class="cancel-info-item">
+                        <span class="cancel-info-label">ID da cotação</span>
+                        <div class="cancel-info-value">{{ dace_data.id }}</div>
+                    </div>
+
+                    <div class="cancel-info-item">
+                        <span class="cancel-info-label">Romaneio</span>
+                        <div class="cancel-info-value">{{ form.numero_romaneio.value|default:"-" }}</div>
+                    </div>
+
+                    <div class="cancel-info-item">
+                        <span class="cancel-info-label">Status atual</span>
+                        <div class="cancel-info-value">{{ dace_data.dace_status }}</div>
+                    </div>
+                </div>
+
+                <div class="cancel-checkbox-box">
+                    <label class="cancel-checkbox-label">
+                        <input type="checkbox" name="cancelar_romaneio" value="1">
+                        <div class="cancel-checkbox-text">
+                            <strong>Cancelar romaneio junto com a cotação</strong>
+                            <span>Marcando esta opção, o romaneio também será cancelado no mesmo processo.</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="cancel-modal-footer">
+                <button type="button" class="cancel-btn-secondary" onclick="closeCancelModal()">
+                    Voltar
+                </button>
+                <button type="submit" name="confirmar_cancelamento" class="cancel-btn-danger">
+                    Confirmar cancelamento
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
 <script>
     function openPayloadModal() {
         document.getElementById('payloadModal').classList.add('active');
@@ -593,12 +1011,62 @@
         }
     }
 
-    document.addEventListener('keydown', function(event) {
+    document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape') {
             const modal = document.getElementById('payloadModal');
             if (modal && modal.classList.contains('active')) {
                 modal.classList.remove('active');
                 document.body.style.overflow = '';
+            }
+        }
+    });
+</script>
+
+<script>
+    function toggleActionsDropdown() {
+        const menu = document.getElementById('actionsDropdownMenu');
+        if (menu) {
+            menu.classList.toggle('show');
+        }
+    }
+
+    document.addEventListener('click', function (event) {
+        const dropdown = document.querySelector('.dropdown-actions');
+        const menu = document.getElementById('actionsDropdownMenu');
+
+        if (!dropdown || !menu) return;
+
+        if (!dropdown.contains(event.target)) {
+            menu.classList.remove('show');
+        }
+    });
+</script>
+
+<script>
+    function closeCancelModal(event) {
+        if (!event || event.target.id === 'cancelModal') {
+            const modal = document.getElementById('cancelModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+
+            const closeForm = document.getElementById('cancelModalCloseForm');
+            if (closeForm) {
+                closeForm.submit();
+            }
+        }
+    }
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            const modal = document.getElementById('cancelModal');
+            if (modal && modal.classList.contains('active')) {
+                modal.classList.remove('active');
+
+                const closeForm = document.getElementById('cancelModalCloseForm');
+                if (closeForm) {
+                    closeForm.submit();
+                }
             }
         }
     });

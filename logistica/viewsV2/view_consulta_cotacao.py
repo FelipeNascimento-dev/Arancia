@@ -16,6 +16,7 @@ def consulta_cotacao(request, numero_rom):
                              initial={
                                  "numero_romaneio": numero_rom})
     result = []
+    show_cancel_modal = False
 
     if request.method == 'POST':
         romaneio_number = request.POST.get('numero_romaneio')
@@ -32,7 +33,7 @@ def consulta_cotacao(request, numero_rom):
 
             result = client.send_api_request()
 
-            # print(result)
+           # print(result)
 
             if 'detail' in result:
                 messages.error(request, result.get('detail'))
@@ -48,6 +49,37 @@ def consulta_cotacao(request, numero_rom):
             else:
                 result["payload_pretty"] = ""
 
+        if "cancelar_cotacao" in request.POST:
+            show_cancel_modal = True
+
+        if "confirmar_cancelamento" in request.POST:
+            cancelar_romaneio = "cancelar_romaneio" in request.POST
+            romaneio_number = request.POST.get('numero_romaneio')
+
+            # cancel_payload = {
+            #     "romaneio_number": romaneio_number,
+            #     "cancell_rom": cancelar_romaneio,
+            # }
+
+            # print(cancel_payload)
+
+            cancel_url = f"{API_URL}/api/v2/reverse/quote/cancell/?romaneio_number={romaneio_number}&cancell_rom={cancelar_romaneio}"
+            cancel_client = RequestClient(
+                url=cancel_url,
+                method="POST",
+                headers={
+                    "Accept": JSON_CT,
+                    "Content-Type": "application/json"
+                },
+            )
+
+            cancel_result = cancel_client.send_api_request()
+
+            if 'detail' in cancel_result:
+                messages.error(request, cancel_result.get('detail'))
+            else:
+                messages.succes(request, "Cotação cancelada com sucesso!")
+
     else:
         form = ConsultaQuoteForm(
             initial={"numero_romaneio": numero_rom},
@@ -59,4 +91,5 @@ def consulta_cotacao(request, numero_rom):
         'site_title': titulo,
         'botao_texto': 'Consultar',
         'dace_data': result,
+        'show_cancel_modal': show_cancel_modal,
     })
