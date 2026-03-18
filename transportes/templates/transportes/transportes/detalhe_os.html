@@ -1924,11 +1924,15 @@
 
                 <div class="items-box">
                     <div class="items-title">Itens da Viagem</div>
-                    {% for item in payload.items %}
+                    {% for item in itens_sem_viagem %}
                     <label class="checkbox-item">
                         <input type="checkbox" name="items" value="{{ item.id }}">
-                        {{ item.description }} <span>({{ item.serial_number }})</span>
+                        {{ item.product_model }} <span>({{ item.serial_number }})</span>
                     </label>
+                    {% empty %}
+                    <div style="font-size:13px; color:#777;">
+                        Nenhum item disponível para vincular à viagem.
+                    </div>
                     {% endfor %}
                 </div>
             </div>
@@ -2036,7 +2040,7 @@
                                 Selecionar todos
                             </label>
                         </div>
-                        {% for item in payload.items %}
+                        {% for item in itens_sem_viagem %}
                         <label class="checkbox-item">
                             <input type="checkbox"
                                 name="items"
@@ -2047,6 +2051,10 @@
                                 data-length="{{ item.length }}">
                             {{ item.product_model }} <span>({{ item.serial_number }})</span>
                         </label>
+                        {% empty %}
+                        <div style="font-size:13px; color:#777;">
+                            Nenhum item disponível para cotação.
+                        </div>
                         {% endfor %}
                     </div>
 
