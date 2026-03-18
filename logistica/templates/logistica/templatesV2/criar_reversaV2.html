@@ -469,7 +469,7 @@
                 {{ result.status }}
             </div>
             {% include 'global/partials/_form_2colV2.html' %}
-            {% if result.status == 'ABERTO' %}
+            {% if result.status == 'ABERTO' or result.status == 'PRONTO' %}
             <button type="button" class="btn-actions" onclick="toggleActionsMenu()">
                 Ações ▾
             </button>
