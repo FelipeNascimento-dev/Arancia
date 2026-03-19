@@ -155,11 +155,23 @@
         text-decoration: none;
         font-weight: 600;
         transition: .2s ease;
+        word-break: break-all;
     }
 
     .payload-link:hover {
         color: #0a58ca;
         text-decoration: underline;
+    }
+
+    .payload-link-disabled {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #9ca3af;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: not-allowed;
+        pointer-events: none;
     }
 
     .payload-section {
@@ -175,7 +187,7 @@
 
     .products-grid {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 18px;
     }
 
@@ -183,6 +195,7 @@
         background: #ffffff;
         border: 1px solid #e5e7eb;
         border-radius: 16px;
+        width: 300px;
         padding: 20px;
         box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
         transition: .2s ease;
@@ -200,6 +213,25 @@
         color: #111827;
         padding-bottom: 10px;
         border-bottom: 1px solid #eef2f7;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .volume-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
     }
 
     .product-info-list {
@@ -235,6 +267,42 @@
         color: #1f2937;
         line-height: 1.5;
         word-break: break-word;
+    }
+
+    .volume-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .4px;
+        text-transform: uppercase;
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .quote-warning-box {
+        background: #fff7ed;
+        border: 1px solid #fdba74;
+        color: #9a3412;
+        border-radius: 14px;
+        padding: 14px 16px;
+        margin-bottom: 20px;
+    }
+
+    .quote-warning-box strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+    }
+
+    .quote-warning-box p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.6;
     }
 
     .modal-payload-overlay {
@@ -413,52 +481,6 @@
 
     .dropdown-action-btn.cancel-quote:hover {
         background: #f6d7dc;
-    }
-
-    @media (max-width: 1100px) {
-        .payload-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .products-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-    }
-
-    @media (max-width: 768px) {
-        .page-wrapper-dace {
-            padding: 0 12px 24px;
-            gap: 18px;
-        }
-
-        .payload-card {
-            padding: 20px;
-            border-radius: 14px;
-        }
-
-        .payload-header {
-            align-items: flex-start;
-            flex-direction: column;
-        }
-
-        .payload-actions {
-            width: 100%;
-        }
-
-        .payload-grid,
-        .products-grid,
-        .product-info-list {
-            grid-template-columns: 1fr;
-        }
-
-        .payload-title-area h4 {
-            font-size: 19px;
-        }
-
-        .modal-payload-body,
-        .modal-payload-header {
-            padding: 16px;
-        }
     }
 
     .cancel-modal-overlay {
@@ -671,7 +693,50 @@
         background: #b91c1c;
     }
 
+    @media (max-width: 1100px) {
+        .payload-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .products-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
     @media (max-width: 768px) {
+        .page-wrapper-dace {
+            padding: 0 12px 24px;
+            gap: 18px;
+        }
+
+        .payload-card {
+            padding: 20px;
+            border-radius: 14px;
+        }
+
+        .payload-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .payload-actions {
+            width: 100%;
+        }
+
+        .payload-grid,
+        .product-info-list {
+            grid-template-columns: 1fr;
+        }
+
+        .payload-title-area h4 {
+            font-size: 19px;
+        }
+
+        .modal-payload-body,
+        .modal-payload-header {
+            padding: 16px;
+        }
+
         .cancel-modal-overlay {
             padding: 12px;
         }
@@ -693,36 +758,65 @@
         }
     }
 
-    .quote-warning-box {
-        background: #fff7ed;
-        border: 1px solid #fdba74;
-        color: #9a3412;
-        border-radius: 14px;
-        padding: 14px 16px;
-        margin-bottom: 20px;
+    .product-collapse {
+        margin-top: 14px;
+        border-top: 1px solid #eef2f7;
+        padding-top: 14px;
     }
 
-    .quote-warning-box strong {
-        display: block;
-        margin-bottom: 6px;
-        font-size: 14px;
-    }
-
-    .quote-warning-box p {
-        margin: 0;
-        font-size: 14px;
-        line-height: 1.6;
-    }
-
-    .payload-link-disabled {
-        display: inline-flex;
+    .product-collapse-toggle {
+        width: 100%;
+        border: none;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px 14px;
+        display: flex;
         align-items: center;
-        gap: 8px;
-        color: #9ca3af;
-        text-decoration: none;
-        font-weight: 600;
-        cursor: not-allowed;
-        pointer-events: none;
+        justify-content: space-between;
+        gap: 12px;
+        cursor: pointer;
+        transition: .2s ease;
+        font-size: 13px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .product-collapse-toggle:hover {
+        background: #eef2f7;
+    }
+
+    .product-collapse-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-align: left;
+    }
+
+    .product-collapse-subtitle {
+        font-size: 12px;
+        font-weight: 500;
+        color: #6b7280;
+    }
+
+    .product-collapse-icon {
+        font-size: 16px;
+        line-height: 1;
+        transition: transform .25s ease;
+        color: #1f2937;
+    }
+
+    .product-collapse-toggle.active .product-collapse-icon {
+        transform: rotate(180deg);
+    }
+
+    .product-collapse-content {
+        display: none;
+        margin-top: 12px;
+    }
+
+    .product-collapse-content.show {
+        display: block;
     }
 </style>
 
@@ -747,14 +841,25 @@
 
                 <div class="payload-actions">
                     <span class="status-badge">
-                        {{ dace_data.dace_status }}
+                        {% if dace_data.volumns %}
+                        {{ dace_data.volumns.0.DACe_status|default:"SEM STATUS" }}
+                        {% else %}
+                        SEM STATUS
+                        {% endif %}
                     </span>
 
                     <button type="button" class="payload-btn" onclick="openPayloadModal()">
                         Ver payload completo
                     </button>
 
-                    {% if dace_data.dace_status == 'EMITIDA' %}
+                    <form method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="payload-btn" name="atualizar_dce">
+                            Atualizar DACE
+                        </button>
+                    </form>
+
+                    {% if dace_data.volumns and dace_data.volumns.0.DACe_status == 'EMITIDA' %}
                     <div class="dropdown-actions">
                         <button type="button" class="dropdown-toggle-btn" onclick="toggleActionsDropdown()">
                             Ações
@@ -802,8 +907,14 @@
                 </div>
 
                 <div class="payload-item">
-                    <span class="payload-label">Status da DACE</span>
-                    <div class="payload-value">{{ dace_data.dace_status }}</div>
+                    <span class="payload-label">Status geral</span>
+                    <div class="payload-value">
+                        {% if dace_data.volumns %}
+                        {{ dace_data.volumns.0.DACe_status|default:"-" }}
+                        {% else %}
+                        -
+                        {% endif %}
+                    </div>
                 </div>
 
                 <div class="payload-item">
@@ -819,146 +930,143 @@
                 </div>
 
                 <div class="payload-item">
-                    <span class="payload-label">Documento PDF</span>
-                    <div class="payload-value">
-                        {% if dace_data.dace_url %}
-                            {% if dace_data.bloquear_pdf_dace %}
-                                <span class="payload-link-disabled" title="A DACE só pode ser impressa em até 12 horas da criação da cotação.">
-                                    PDF bloqueado (tempo de impressão excedido)
-                                </span>
-                            {% else %}
-                                <a href="{{ dace_data.dace_url }}" target="_blank" class="payload-link">
-                                    Abrir DACE em PDF
-                                </a>
-                            {% endif %}
-                        {% else %}
-                            Não disponível
-                        {% endif %}
-                    </div>
+                    <span class="payload-label">Quantidade de volumes</span>
+                    <div class="payload-value">{{ dace_data.volumns|length }}</div>
                 </div>
 
                 <div class="payload-item">
                     <span class="payload-label">Data da cotação</span>
-                    <div class="payload-value">{{ dace_data.quote_date_formatada|default:"-" }}</div>
+                    <div class="payload-value">{{ dace_data.quote_date|default:"-" }}</div>
                 </div>
             </div>
 
-            {% if dace_data.payload %}
+            {% if dace_data.volumns %}
             <div class="payload-section">
-                <h5 class="payload-section-title">Informações da cotação</h5>
-
-                <div class="payload-grid">
-                    <div class="payload-item">
-                        <span class="payload-label">Tipo de envio</span>
-                        <div class="payload-value">{{ dace_data.payload.shipment_type|default:"-" }}</div>
-                    </div>
-
-                    <div class="payload-item">
-                        <span class="payload-label">Modo de cotação</span>
-                        <div class="payload-value">{{ dace_data.payload.quoting_mode|default:"-" }}</div>
-                    </div>
-
-                    <div class="payload-item">
-                        <span class="payload-label">Subtipo</span>
-                        <div class="payload-value">{{ dace_data.payload.shipment_sub_type|default:"-" }}</div>
-                    </div>
-
-                    <div class="payload-item">
-                        <span class="payload-label">Canal de vendas</span>
-                        <div class="payload-value">{{ dace_data.payload.additional_information.sales_channel|default:"-" }}</div>
-                    </div>
-
-                    <div class="payload-item">
-                        <span class="payload-label">CEP origem</span>
-                        <div class="payload-value">{{ dace_data.payload.origin_zip_code|default:"-" }}</div>
-                    </div>
-
-                    <div class="payload-item">
-                        <span class="payload-label">CEP destino</span>
-                        <div class="payload-value">{{ dace_data.payload.destination_zip_code|default:"-" }}</div>
-                    </div>
-
-                    <div class="payload-item">
-                        <span class="payload-label">Quantidade de produtos</span>
-                        <div class="payload-value">{{ dace_data.payload.products|length }}</div>
-                    </div>
-
-                    <div class="payload-item">
-                        <span class="payload-label">Rule tags</span>
-                        <div class="payload-value">
-                            {% if dace_data.payload.additional_information.rule_tags %}
-                            {{ dace_data.payload.additional_information.rule_tags|join:", " }}
-                            {% else %}
-                            -
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            {% if dace_data.payload.products %}
-            <div class="payload-section">
-                <h5 class="payload-section-title">Produtos</h5>
+                <h5 class="payload-section-title">Volumes da DACE</h5>
 
                 <div class="products-grid">
-                    {% for product in dace_data.payload.products %}
+                    {% for volume in dace_data.volumns|dictsort:"volume_number" %}
                     <div class="product-card">
                         <h6 class="product-card-title">
-                            Produto {{ forloop.counter }}
+                            <span>Volume {{ volume.volume_number|default:forloop.counter }}</span>
+                            <span class="volume-badge">{{ volume.DACe_status|default:"SEM STATUS" }}</span>
                         </h6>
 
                         <div class="product-info-list">
-                            <div class="product-info-item full">
-                                <span class="product-info-label">Descrição</span>
-                                <div class="product-info-value">{{ product.description|default:"-" }}</div>
+                            <div class="product-info-item">
+                                <span class="product-info-label">Número do volume</span>
+                                <div class="product-info-value">{{ volume.volume_number|default:"-" }}</div>
                             </div>
 
                             <div class="product-info-item">
-                                <span class="product-info-label">Categoria</span>
-                                <div class="product-info-value">{{ product.product_category|default:"-" }}</div>
-                            </div>
-
-                            <div class="product-info-item">
-                                <span class="product-info-label">Quantidade</span>
-                                <div class="product-info-value">{{ product.quantity|default:"-" }}</div>
-                            </div>
-
-                            <div class="product-info-item">
-                                <span class="product-info-label">Peso</span>
-                                <div class="product-info-value">{{ product.weight|default:"-" }}</div>
-                            </div>
-
-                            <div class="product-info-item">
-                                <span class="product-info-label">Largura</span>
-                                <div class="product-info-value">{{ product.width|default:"-" }}</div>
-                            </div>
-
-                            <div class="product-info-item">
-                                <span class="product-info-label">Altura</span>
-                                <div class="product-info-value">{{ product.height|default:"-" }}</div>
-                            </div>
-
-                            <div class="product-info-item">
-                                <span class="product-info-label">Comprimento</span>
-                                <div class="product-info-value">{{ product.length|default:"-" }}</div>
-                            </div>
-
-                            <div class="product-info-item">
-                                <span class="product-info-label">Custo da mercadoria</span>
-                                <div class="product-info-value">{{ product.cost_of_goods|default:"-" }}</div>
-                            </div>
-
-                            <div class="product-info-item full">
-                                <span class="product-info-label">Agrupável</span>
+                                <span class="product-info-label">Status</span>
                                 <div class="product-info-value">
-                                    {% if product.can_group %}
-                                    Sim
+                                    <span class="volume-status">{{ volume.DACe_status|default:"-" }}</span>
+                                </div>
+                            </div>
+
+                            <div class="product-info-item full">
+                                <span class="product-info-label">Mensagem da DACE</span>
+                                <div class="product-info-value">{{ volume.DACe_message|default:"-" }}</div>
+                            </div>
+
+                            <div class="product-info-item full">
+                                <span class="product-info-label">Documento PDF</span>
+                                <div class="product-info-value">
+                                    {% if volume.DACe_url %}
+                                    {% if dace_data.bloquear_pdf_dace %}
+                                    <span class="payload-link-disabled"
+                                        title="A DACE só pode ser impressa em até 12 horas da criação da cotação.">
+                                        PDF bloqueado
+                                    </span>
                                     {% else %}
-                                    Não
+                                    <a href="{{ volume.DACe_url }}" target="_blank" class="payload-link">
+                                        Abrir PDF do volume {{ volume.volume_number|default:forloop.counter }}
+                                    </a>
+                                    {% endif %}
+                                    {% else %}
+                                    Não disponível
                                     {% endif %}
                                 </div>
                             </div>
+
+                            {% if volume.product %}
+                            <div class="product-info-item full" style="padding: 0; border: none; background: transparent;">
+                                <div class="product-collapse">
+                                    <button
+                                        type="button"
+                                        class="product-collapse-toggle"
+                                        onclick="toggleProductCollapse(this)"
+                                    >
+                                        <div class="product-collapse-left">
+                                            <div>
+                                                <div>Produto do volume</div>
+                                                <div class="product-collapse-subtitle">
+                                                    {{ volume.product.description|default:"Sem descrição" }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <span class="product-collapse-icon">+</span>
+                                    </button>
+
+                                    <div class="product-collapse-content">
+                                        <div class="product-info-list" style="margin-top: 12px;">
+                                            <div class="product-info-item full">
+                                                <span class="product-info-label">Descrição do produto</span>
+                                                <div class="product-info-value">{{ volume.product.description|default:"-" }}</div>
+                                            </div>
+
+                                            <div class="product-info-item">
+                                                <span class="product-info-label">Categoria</span>
+                                                <div class="product-info-value">{{ volume.product.product_category|default:"-" }}</div>
+                                            </div>
+
+                                            <div class="product-info-item">
+                                                <span class="product-info-label">Quantidade</span>
+                                                <div class="product-info-value">{{ volume.product.quantity|default:"-" }}</div>
+                                            </div>
+
+                                            <div class="product-info-item">
+                                                <span class="product-info-label">Peso</span>
+                                                <div class="product-info-value">{{ volume.product.weight|default:"-" }}</div>
+                                            </div>
+
+                                            <div class="product-info-item">
+                                                <span class="product-info-label">Largura</span>
+                                                <div class="product-info-value">{{ volume.product.width|default:"-" }}</div>
+                                            </div>
+
+                                            <div class="product-info-item">
+                                                <span class="product-info-label">Altura</span>
+                                                <div class="product-info-value">{{ volume.product.height|default:"-" }}</div>
+                                            </div>
+
+                                            <div class="product-info-item">
+                                                <span class="product-info-label">Comprimento</span>
+                                                <div class="product-info-value">{{ volume.product.length|default:"-" }}</div>
+                                            </div>
+
+                                            <div class="product-info-item">
+                                                <span class="product-info-label">Custo da mercadoria</span>
+                                                <div class="product-info-value">{{ volume.product.cost_of_goods|default:"-" }}</div>
+                                            </div>
+
+                                            <div class="product-info-item full">
+                                                <span class="product-info-label">Agrupável</span>
+                                                <div class="product-info-value">
+                                                    {% if volume.product.can_group %}
+                                                        Sim
+                                                    {% else %}
+                                                        Não
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     {% endfor %}
@@ -1020,7 +1128,13 @@
 
                     <div class="cancel-info-item">
                         <span class="cancel-info-label">Status atual</span>
-                        <div class="cancel-info-value">{{ dace_data.dace_status }}</div>
+                        <div class="cancel-info-value">
+                            {% if dace_data.volumns %}
+                            {{ dace_data.volumns.0.DACe_status|default:"-" }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
 
@@ -1120,6 +1234,14 @@
             }
         }
     });
+</script>
+
+<script>
+    function toggleProductCollapse(button) {
+        const content = button.nextElementSibling;
+        button.classList.toggle('active');
+        content.classList.toggle('show');
+    }
 </script>
 
 {% endblock %}
