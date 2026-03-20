@@ -273,7 +273,7 @@ def reverse_createV2(request):
     return render(request, "logistica/templatesV2/criar_reversaV2.html", context)
 
 
-def delete_btn(request, serial):
+def delete_btnV2(request, serial):
     romaneio_in = request.session.get("romaneio_num", None)
 
     if not romaneio_in:
@@ -310,7 +310,7 @@ def delete_btn(request, serial):
     return redirect("logistica:reverse_createV2")
 
 
-def cancel_btn(request, id):
+def cancel_btnV2(request, id):
     romaneio_in = request.session.get("romaneio_num", None)
 
     if request.method != "POST":

@@ -66,13 +66,9 @@ def order_detail(request, order: str):
 
     if request.method == "POST":
         if "cancelar_pedido" in request.POST:
-            result = request.session.get("result")
+            romaneio_number = "AR1" + str(order)
 
-            if not isinstance(result, dict):
-                messages.error(request, "Erro interno ao cancelar pedido.")
-                return redirect("logistica:consultar_pedido")
-
-            url = f"{API_URL}/api/reverse-order/cancel/{order}?canceled_by={request.user.username}"
+            url = f"{API_URL}/api/v2/reverse/order/cancel/{romaneio_number}"
             client = RequestClient(
                 url=url,
                 method="POST",
@@ -87,10 +83,6 @@ def order_detail(request, order: str):
             else:
                 messages.success(
                     request, f"Pedido {order} cancelado com sucesso!")
-                result["status"] = "CANCELLED"
-                request.session["result"] = result
-                request.session.modified = True
-
             return redirect("logistica:detalhe_pedido", order=order)
 
         result = request.session.get("result")
