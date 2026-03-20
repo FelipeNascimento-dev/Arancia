@@ -213,7 +213,8 @@ def consulta_cotacao(request, numero_rom):
             quote_id = request.POST.get("quote_id")
 
             create_payload = {
-                "quote_id": quote_id
+                "quote_id": quote_id,
+                "created_by": request.user.username
             }
             create_url = f"{API_URL}/api/v2/reverse/order/new/"
             create_client = RequestClient(
@@ -228,10 +229,14 @@ def consulta_cotacao(request, numero_rom):
 
             create_result = create_client.send_api_request()
 
+            print(create_payload)
+            order = create_result.get('order_number')
+
             if 'detail' in create_result:
                 messages.error(request, create_result.get('detail'))
             else:
                 messages.success(request, "Pedido criado com sucesso!")
+                return redirect('logistica:detalhe_pedido', order=order)
 
     else:
         form = ConsultaQuoteForm(
