@@ -137,9 +137,13 @@
                     {% if perms.logistica.reverse %}
                     <h5 class="submenu-toggle {% if current_submenu == 'reverse' %}active{% endif %}" data-target="reverse-sub">Reversa</h5>
                     <div class="sub-submenu {% if current_submenu == 'reverse' %}show{% endif %}" id="reverse-sub">
-                        <a href="{% url 'logistica:consultar_romaneio' %}"
+                        <a href="{% url 'logistica:consultar_romaneioV2' %}"
                         class="{% if current_subsubmenu == 'consultar_romaneio' %}active{% endif %}">
                             Consultar Romaneio
+                        </a>
+                        <a href="{% url 'logistica:lista_romaneios' %}"
+                        class="{% if current_subsubmenu == 'lista_romaneio' %}active{% endif %}">
+                            Lista de Romaneios
                         </a>
                         <a href="{% url 'logistica:consulta_etiquetas' %}">Consulta de Etiquetas</a>
                     </div>

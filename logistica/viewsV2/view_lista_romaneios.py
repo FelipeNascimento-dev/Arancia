@@ -66,4 +66,8 @@ def lista_romaneios(request):
         'result': result,
         'page_obj': page_obj,
         'status_rom': status_rom,
+        "current_parent_menu": "logistica",
+        "current_menu": "lastmile",
+        "current_submenu": "reverse",
+        "current_subsubmenu": "lista_romaneio"
     })
