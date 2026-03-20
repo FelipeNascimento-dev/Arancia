@@ -540,7 +540,7 @@
 
                         {% if result.status == 'ABERTO' %}
                         <td>
-                            <form method="post" action="{% url 'logistica:delete_btn' kit.serial %}">
+                            <form method="post" action="{% url 'logistica:delete_btnV2' kit.serial %}">
                                 {% csrf_token %}
                                 <button type="submit" class="btn-action"
                                     onclick="return confirm('Deseja realmente excluir esse serial?')">
