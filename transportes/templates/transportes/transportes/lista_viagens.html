@@ -1,18 +1,221 @@
 {% extends 'global/base.html' %}
 
 {% block content %}
-
 <style>
-    .form-card-2col {
-        height: auto;
+    .content-wrapper,
+    .main-content,
+    .container,
+    .page-content {
+        max-width: 1350px !important;
+        width: 100% !important;
+        margin-bottom: 50px;
+    }
+
+    .toolbar {
         margin-top: 65px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .toggle-filters-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: 2px dashed #81c7d4;
+        background: #eef9fc;
+        color: #1489a3;
+        padding: 10px 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .filter-count {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #ef4444;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+    }
+
+    .page-layout {
+        display: grid;
+        grid-template-columns: 230px minmax(0, 1fr);
+        gap: 14px;
+        margin-top: 18px;
+        align-items: start;
+    }
+
+    .page-layout.filters-hidden {
+        grid-template-columns: 1fr;
+    }
+
+    .filters-sidebar {
+        position: sticky;
+        top: 90px;
+        width: 100%;
+        max-width: 230px;
+    }
+
+    .filters-sidebar.is-hidden {
+        display: none;
+    }
+
+    .filters-box {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 4px 10px rgba(0,0,0,.06);
+        margin-bottom: 20px;
+    }
+
+    .filters-box-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+
+    .filters-box-header h3 {
+        margin: 0;
+        font-size: 1.8rem;
+        color: #1f2937;
+    }
+
+    .btn-link-clear {
+        background: transparent;
+        border: none;
+        color: #0ea5b7;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .active-filters {
+        background: #fff5f5;
+        border: 1px solid #f3d3d3;
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 18px;
+    }
+
+    .active-filters-title {
+        color: #dc2626;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .filter-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        margin: 4px 6px 4px 0;
+        font-size: .88rem;
+        font-weight: 600;
+    }
+
+    .filters-section {
+        margin-bottom: 18px;
+    }
+
+    .filters-section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 10px;
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .field-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .field-wrap label {
+        font-size: .88rem;
+        font-weight: 700;
+        color: #4b5563;
+    }
+
+    .filter-input,
+    .filter-select {
+        width: 100%;
+        height: 42px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        padding: 0 12px;
+        font-size: .95rem;
+        background: #fff;
+        box-sizing: border-box;
+    }
+
+    .advanced-filters {
+        margin-top: 8px;
+    }
+
+    .advanced-filters summary {
+        cursor: pointer;
+        color: #0ea5b7;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .filters-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 18px;
+        flex-wrap: wrap;
+    }
+
+    .btn-apply {
+        flex: 1;
+        border: none;
+        background: #0ea5b7;
+        color: #fff;
+        height: 42px;
+        border-radius: 10px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .extract-balanced {
+        background: #0f9d58;
+        color: #ffffff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .results-area {
+        min-width: 0;
     }
 
     .cards-container {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(260px, 2fr));
         gap: 16px;
-        margin-top: 20px;
         align-items: start;
     }
 
@@ -31,20 +234,6 @@
         justify-content: flex-start;
         padding: 12px 14px;
         background: #f7f7f7;
-    }
-
-    .badge-num {
-        background: #4caf50;
-        color: #fff;
-        border-radius: 50%;
-        width: 28px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 0.9rem;
-        flex: 0 0 28px;
     }
 
     .card-title {
@@ -68,9 +257,24 @@
         font-size: 0.92rem;
     }
 
-    .card-body strong {
-        color: #222;
+    .status-tag {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #fff;
+        white-space: nowrap;
     }
+
+    .status-NEW { background-color: #2563eb; }
+    .status-PENDENTE { background-color: #f59e0b; }
+    .status-COLETADO { background-color: #10b981; }
+    .status-FINALIZADO { background-color: #6b7280; }
+    .status-CANCELADO { background-color: #dc2626; }
+    .status-READY_FOR_SHIPPING { background-color: #0ea5e9; }
+    .status-IN_TRANSIT { background-color: #7c3aed; }
+    .status-CLARIFY_DELIVERY_FAIL { background-color: #f97316; }
+    .status-CANCELLED { background-color: #b91c1c; }
 
     .pagination-bar {
         margin-top: 20px;
@@ -110,43 +314,12 @@
         font-size: .92rem;
         text-decoration: none;
         box-shadow: 0 1px 2px rgba(16, 24, 40, .06);
-        transition: background .15s ease, border-color .15s ease, transform .08s ease;
-        user-select: none;
-    }
-
-    .pagination-btn:hover {
-        background: #f7f8fb;
-        border-color: #d7dbe5;
-        transform: translateY(-1px);
-        text-decoration: none;
-    }
-
-    .pagination-btn:active {
-        transform: translateY(0);
-    }
-
-    .pagination-btn--prev,
-    .pagination-btn--next {
-        background: #f3f4f6;
-        border-color: #e5e7eb;
-        color: #374151;
-    }
-
-    .pagination-btn--prev:hover,
-    .pagination-btn--next:hover {
-        background: #eef0f4;
-    }
-
-    .pagination-btn--page {
-        min-width: 40px;
-        padding: 0 12px;
     }
 
     .pagination-btn--active {
         background: #2563eb;
         border-color: #2563eb;
         color: #fff;
-        cursor: default;
     }
 
     .pagination-btn--disabled {
@@ -161,210 +334,231 @@
         font-size: .9rem;
     }
 
-    .status-tag {
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #fff;
-        white-space: nowrap;
-    }
+    @media (max-width: 1100px) {
+        .page-layout {
+            grid-template-columns: 1fr;
+        }
 
-    .status-NEW {
-        background-color: #2563eb;
-    }
-
-    .status-PENDENTE {
-        background-color: #f59e0b;
-    }
-
-    .status-COLETADO {
-        background-color: #10b981;
-    }
-
-    .status-FINALIZADO {
-        background-color: #6b7280;
-    }
-
-    .status-CANCELADO {
-        background-color: #dc2626;
-    }
-
-    /* NOVOS */
-
-    .status-READY_FOR_SHIPPING {
-        background-color: #0ea5e9;
-    }
-
-    .status-IN_TRANSIT {
-        background-color: #7c3aed;
-    }
-
-    .status-CLARIFY_DELIVERY_FAIL {
-        background-color: #f97316;
-    }
-
-    .status-CANCELLED {
-        background-color: #b91c1c;
+        .filters-sidebar {
+            position: static;
+        }
     }
 </style>
 
-<div class="form-container">
-    <div class="form-card-2col">
+<div class="toolbar">
+    <button class="toggle-filters-btn" type="button" id="toggleFilters">
+        <i class="fa-solid fa-sliders"></i>
+        Ocultar filtros
+        <span class="filter-count">{{ filtros_ativos }}</span>
+    </button>
+
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" name="extrair_os" value="1" class="extract-balanced">
+            <i class="fa-solid fa-download"></i> Exportar
+        </button>
+    </form>
+</div>
+
+<div class="page-layout" id="pageLayout">
+    <aside class="filters-sidebar" id="filtersSidebar">
         <form method="POST">
-            {% include 'global/partials/_form_2col.html' %}
+            {% csrf_token %}
+            <div class="filters-box">
+                <div class="filters-box-header">
+                    <h3>Filtros</h3>
+                    <button type="submit" name="limpar_filtros" value="1" class="btn-link-clear">
+                        Limpar
+                    </button>
+                </div>
+
+                <div class="active-filters">
+                    <div class="active-filters-title">Filtros aplicados</div>
+
+                    {% for campo, valor in filtros.items %}
+                        {% if valor %}
+                            <span class="filter-chip">{{ campo }}: {{ valor }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <div class="filters-section">
+                    <div class="filters-section-title">Principais</div>
+                    <div class="filters-grid">
+                        <div class="field-wrap">
+                            <label for="{{ form.travel_id.id_for_label }}">{{ form.travel_id.label }}</label>
+                            {{ form.travel_id }}
+                        </div>
+                        <div class="field-wrap">
+                            <label for="{{ form.cliente.id_for_label }}">{{ form.cliente.label }}</label>
+                            {{ form.cliente }}
+                        </div>
+                        <div class="field-wrap">
+                            <label for="{{ form.transportadora.id_for_label }}">{{ form.transportadora.label }}</label>
+                            {{ form.transportadora }}
+                        </div>
+                        <div class="field-wrap">
+                            <label for="{{ form.pa_selecionada.id_for_label }}">{{ form.pa_selecionada.label }}</label>
+                            {{ form.pa_selecionada }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filters-section">
+                    <div class="filters-section-title">Operacionais</div>
+                    <div class="filters-grid">
+                        <div class="field-wrap">
+                            <label for="{{ form.tipo_servico.id_for_label }}">{{ form.tipo_servico.label }}</label>
+                            {{ form.tipo_servico }}
+                        </div>
+                        <div class="field-wrap">
+                            <label for="{{ form.driver_id.id_for_label }}">{{ form.driver_id.label }}</label>
+                            {{ form.driver_id }}
+                        </div>
+                        <div class="field-wrap">
+                            <label for="{{ form.status_id.id_for_label }}">{{ form.status_id.label }}</label>
+                            {{ form.status_id }}
+                        </div>
+                        <div class="field-wrap">
+                            <label for="{{ form.sem_motorista.id_for_label }}">{{ form.sem_motorista.label }}</label>
+                            {{ form.sem_motorista }}
+                        </div>
+                    </div>
+                </div>
+
+                <details class="advanced-filters">
+                    <summary>Mais filtros</summary>
+                    <div class="filters-grid">
+                        <div class="field-wrap">
+                            <label for="{{ form.status_list.id_for_label }}">{{ form.status_list.label }}</label>
+                            {{ form.status_list }}
+                        </div>
+                        <div class="field-wrap">
+                            <label for="{{ form.cep_origin.id_for_label }}">{{ form.cep_origin.label }}</label>
+                            {{ form.cep_origin }}
+                        </div>
+                        <div class="field-wrap">
+                            <label for="{{ form.cep_destin.id_for_label }}">{{ form.cep_destin.label }}</label>
+                            {{ form.cep_destin }}
+                        </div>
+                        <div class="field-wrap">
+                            <label for="{{ form.created_at.id_for_label }}">{{ form.created_at.label }}</label>
+                            {{ form.created_at }}
+                        </div>
+                        <div class="field-wrap">
+                            <label for="{{ form.designation_id.id_for_label }}">{{ form.designation_id.label }}</label>
+                            {{ form.designation_id }}
+                        </div>
+                        <div class="field-wrap">
+                            <label for="{{ form.offset.id_for_label }}">{{ form.offset.label }}</label>
+                            {{ form.offset }}
+                        </div>
+                        <div class="field-wrap">
+                            <label for="{{ form.limit.id_for_label }}">{{ form.limit.label }}</label>
+                            {{ form.limit }}
+                        </div>
+                    </div>
+                </details>
+
+                <div class="filters-actions">
+                    <button type="submit" name="enviar_evento" value="1" class="btn-apply">
+                        Consultar
+                    </button>
+                </div>
+            </div>
         </form>
-    </div>
-</div>
+    </aside>
 
-{% if travels %}
-<div class="cards-container">
-    {% for item in travels %}
-    <div class="card">
-        <div class="card-header">
-            <a class="card-title"
-            href="{% url 'transportes:detalhe_viagem' item.travel.id %}"
-            target="_blank">
-                {{ item.travel.id }}
-            </a>
-
-            <span class="status-tag status-{{ item.travel.status.type }}">
-                {{ item.travel.status.type }}
-            </span>
-        </div>
-
-        <div class="card-body">
-            <p>
-                <strong>Número da OS:</strong><br />
-                <span>
-                    {{ item.service_order.order_number }}
-                </span>
-            </p>
-
-            <p>
-                <strong>Número da OS Externa:</strong><br />
-                <span>
-                    {{ item.service_order.external_order_number }}
-                </span>
-            </p>
-
-            <p>
-                <strong>Cliente:</strong><br />
-                <span>
-                    {{ item.service_order.client.nome }}
-                </span>
-            </p>
-
-            <p>
-                <strong>Transportadora:</strong><br />
-                <span>
-                    {{ item.travel.carrier.nome }}
-                </span>
-            </p>
-
-            <p>
-                <strong>Origem:</strong><br />
-                {{ item.service_order.origin.nome }}
-                <br>
-                <small>{{ item.service_order.origin.endereco }}</small>
-            </p>
-
-            <p>
-                <strong>Destino:</strong><br />
-                {{ item.service_order.destination.nome }}
-                <br>
-                <small>{{ item.service_order.destination.endereco }}</small>
-            </p>
-
-            <p>
-                <strong>Prazo Final:</strong><br />
-                {% if item.travel.end_date_formatada %}
-                    {{ item.travel.end_date_formatada }}
-                {% else %}
-                    Em andamento
-                {% endif %}
-            </p>
-
-        </div>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
-{% if travels.has_other_pages %}
-<div class="pagination-bar">
-    <div class="pagination-row">
-
-        {% if travels.has_previous %}
-            <a class="pagination-btn pagination-btn--prev"
-               href="?page={{ travels.previous_page_number }}">
-                ◀ Anterior
-            </a>
-        {% else %}
-            <span class="pagination-btn pagination-btn--prev pagination-btn--disabled">
-                ◀ Anterior
-            </span>
-        {% endif %}
-
-        <div class="pagination-pages">
-            {% for num in travels.paginator.page_range %}
-                {% if num == travels.number %}
-                    <span class="pagination-btn pagination-btn--page pagination-btn--active">
-                        {{ num }}
-                    </span>
-                {% else %}
-                    <a class="pagination-btn pagination-btn--page"
-                       href="?page={{ num }}">
-                        {{ num }}
+    <main class="results-area">
+        {% if travels %}
+        <div class="cards-container">
+            {% for item in travels %}
+            <div class="card">
+                <div class="card-header">
+                    <a class="card-title"
+                    href="{% url 'transportes:detalhe_viagem' item.travel.id %}"
+                    target="_blank">
+                        {{ item.travel.id }}
                     </a>
-                {% endif %}
+
+                    <span class="status-tag status-{{ item.travel.status.type }}">
+                        {{ item.travel.status.type }}
+                    </span>
+                </div>
+
+                <div class="card-body">
+                    <p><strong>Número da OS:</strong><br>{{ item.service_order.order_number }}</p>
+                    <p><strong>Número da OS Externa:</strong><br>{{ item.service_order.external_order_number }}</p>
+                    <p><strong>Cliente:</strong><br>{{ item.service_order.client.nome }}</p>
+                    <p><strong>Transportadora:</strong><br>{{ item.travel.carrier.nome }}</p>
+                    <p><strong>Origem:</strong><br>CEP: {{ item.service_order.origin.CEP }}<br><small>{{ item.service_order.origin.endereco }}</small></p>
+                    <p><strong>Destino:</strong><br>CEP: {{ item.service_order.destination.CEP }}<br><small>{{ item.service_order.destination.endereco }}</small></p>
+                    <p>
+                        <strong>Prazo Final:</strong><br>
+                        {% if item.travel.end_date_formatada %}
+                            {{ item.travel.end_date_formatada }}
+                        {% else %}
+                            Em andamento
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
             {% endfor %}
         </div>
-
-        {% if travels.has_next %}
-            <a class="pagination-btn pagination-btn--next"
-               href="?page={{ travels.next_page_number }}">
-                Próxima ▶
-            </a>
-        {% else %}
-            <span class="pagination-btn pagination-btn--next pagination-btn--disabled">
-                Próxima ▶
-            </span>
         {% endif %}
 
-    </div>
+        {% if travels.has_other_pages %}
+        <div class="pagination-bar">
+            <div class="pagination-row">
+                {% if travels.has_previous %}
+                    <a class="pagination-btn" href="?page={{ travels.previous_page_number }}">◀ Anterior</a>
+                {% else %}
+                    <span class="pagination-btn pagination-btn--disabled">◀ Anterior</span>
+                {% endif %}
 
-    <div class="pagination-info">
-        Página {{ travels.number }} de {{ travels.paginator.num_pages }}
-        ({{ travels.paginator.count }} viagens)
-    </div>
+                <div class="pagination-pages">
+                    {% for num in travels.paginator.page_range %}
+                        {% if num == travels.number %}
+                            <span class="pagination-btn pagination-btn--active">{{ num }}</span>
+                        {% else %}
+                            <a class="pagination-btn" href="?page={{ num }}">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                {% if travels.has_next %}
+                    <a class="pagination-btn" href="?page={{ travels.next_page_number }}">Próxima ▶</a>
+                {% else %}
+                    <span class="pagination-btn pagination-btn--disabled">Próxima ▶</span>
+                {% endif %}
+            </div>
+
+            <div class="pagination-info">
+                Página {{ travels.number }} de {{ travels.paginator.num_pages }}
+                ({{ travels.paginator.count }} viagens)
+            </div>
+        </div>
+        {% endif %}
+    </main>
 </div>
-{% endif %}
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        const toggleBtn = document.getElementById("toggleFilters");
+        const sidebar = document.getElementById("filtersSidebar");
+        const layout = document.getElementById("pageLayout");
 
-        const clientSelect = document.getElementById("id_client");
-        const orderTypeSelect = document.getElementById("id_order_type");
+        if (toggleBtn && sidebar && layout) {
+            toggleBtn.addEventListener("click", function () {
+                sidebar.classList.toggle("is-hidden");
+                layout.classList.toggle("filters-hidden");
 
-        function setOrDelete(params, key, value) {
-            if (value && value !== "") params.set(key, value);
-            else params.delete(key);
+                const hidden = sidebar.classList.contains("is-hidden");
+                this.innerHTML = hidden
+                    ? '<i class="fa-solid fa-sliders"></i> Mostrar filtros <span class="filter-count">{{ filtros_ativos }}</span>'
+                    : '<i class="fa-solid fa-sliders"></i> Ocultar filtros <span class="filter-count">{{ filtros_ativos }}</span>';
+            });
         }
-
-        function reloadWithParams() {
-            const params = new URLSearchParams(window.location.search);
-
-            if (clientSelect) setOrDelete(params, "client", clientSelect.value);
-            if (orderTypeSelect) setOrDelete(params, "order_type", orderTypeSelect.value);
-
-            window.location.search = params.toString();
-        }
-
-        if (clientSelect) clientSelect.addEventListener("change", reloadWithParams);
-        if (orderTypeSelect) orderTypeSelect.addEventListener("change", reloadWithParams);
-
     });
 </script>
-
 {% endblock %}
