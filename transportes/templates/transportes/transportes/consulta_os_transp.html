@@ -174,6 +174,25 @@
         z-index: 8;
         background-color: #fff;
     }
+
+    .extract-balanced {
+        background: #0f9d58;
+        color: #ffffff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: 0.2s;
+    }
+
+    .extract-balanced:hover {
+        background: #0c7c45;
+    }
 </style>
 
 <div class="form-container">
@@ -185,6 +204,12 @@
                 </a>
             </div>
             {% include 'global/partials/_form_2colV2.html' %}
+        </form>
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit" name="extrair_os" value="1" class="extract-balanced">
+                <i class="fa-solid fa-download"></i> Exportar
+            </button>
         </form>
     </div>
 </div>
@@ -231,12 +256,12 @@
 
             <p>
                 <strong>Origem:</strong>
-                {{ item.origin }}
+                {{ item.origin.nome }}
             </p>
 
             <p>
                 <strong>Destino:</strong>
-                {{ item.destination }}
+                {{ item.destination.nome }}
             </p>
 
             <p>

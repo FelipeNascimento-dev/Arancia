@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect
 from ...forms import ListaViagensForm
-from django.contrib import messages
 from setup.local_settings import TRANSP_API_URL
 from utils.request import RequestClient
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from datetime import datetime
+from urllib.parse import urlencode
 
 
 @login_required(login_url='logistica:login')
@@ -14,6 +14,24 @@ from datetime import datetime
 def lista_viagens(request):
     titulo = "Lista de Viagens"
     travels = []
+
+    filtro_campos = [
+        "travel_id",
+        "cliente",
+        "transportadora",
+        "pa_selecionada",
+        "tipo_servico",
+        "driver_id",
+        "status_id",
+        "sem_motorista",
+        "status_list",
+        "cep_origin",
+        "cep_destin",
+        "offset",
+        "limit",
+        "created_at",
+        "designation_id",
+    ]
 
     url_cliente = f"{TRANSP_API_URL}/gai/clientes/status?cliente=arancia_client"
     client = RequestClient(
@@ -37,33 +55,45 @@ def lista_viagens(request):
     if isinstance(resp_transportadora, dict) and resp_transportadora.get("detail"):
         resp_transportadora = []
 
-    if request.method == "POST" and "enviar_evento" in request.POST:
-        cliente = request.POST.get("cliente")
-        transportadora = request.POST.get("transportadora")
+    if request.method == "POST" and "limpar_filtros" in request.POST:
+        request.session["filtro_viagem"] = {}
+        return redirect("transportes:lista_viagens")
 
+    if request.method == "POST" and "enviar_evento" in request.POST:
         request.session["filtro_viagem"] = {
-            "cliente": cliente,
-            "transportadora": transportadora
+            campo: request.POST.get(campo, "")
+            for campo in filtro_campos
         }
 
     filtros = request.session.get("filtro_viagem", {})
 
-    cliente = filtros.get("cliente")
-    transportadora = filtros.get("transportadora")
-
     form = ListaViagensForm(
-        initial={
-            "cliente": cliente,
-            "transportadora": transportadora
-        },
+        initial={campo: filtros.get(campo, "") for campo in filtro_campos},
         nome_form=titulo,
         clientes=resp,
-        transportadoras=resp_transportadora
+        transportadoras=resp_transportadora,
+        user=request.user,
     )
 
-    if cliente or transportadora:
+    filtros_ativos = sum(
+        1 for campo in filtro_campos
+        if filtros.get(campo) not in [None, ""]
+    )
+
+    if filtros_ativos:
         try:
-            url_travel = f"{TRANSP_API_URL}/order_travels/list/general?cliente={cliente}&transportadora={transportadora}"
+            params = {}
+
+            for campo in filtro_campos:
+                valor = filtros.get(campo)
+                if valor not in [None, ""]:
+                    if campo == "pa_selecionada":
+                        params["designation_id"] = valor
+                    else:
+                        params[campo] = valor
+
+            url_travel = f"{TRANSP_API_URL}/order_travels/list/general?{urlencode(params)}"
+
             client = RequestClient(
                 method="get",
                 url=url_travel,
@@ -97,10 +127,12 @@ def lista_viagens(request):
     page_obj = paginator.get_page(page_number)
 
     return render(request, 'transportes/transportes/lista_viagens.html', {
-        "botao_texto": 'Consultar',
+        "botao_texto": "Consultar",
         "current_parent_menu": "transportes",
         "current_menu": "lista_viagens",
         "site_title": titulo,
         "form": form,
         "travels": page_obj,
+        "filtros_ativos": filtros_ativos,
+        "filtros": filtros,
     })
