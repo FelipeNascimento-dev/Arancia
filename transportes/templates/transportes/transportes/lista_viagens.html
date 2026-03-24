@@ -381,13 +381,6 @@
         Ocultar filtros
         <span class="filter-count">{{ filtros_ativos }}</span>
     </button>
-
-    <form method="POST">
-        {% csrf_token %}
-        <button type="submit" name="extrair_travels" value="1" class="extract-balanced">
-            <i class="fa-solid fa-download"></i> Exportar
-        </button>
-    </form>
 </div>
 
 <div class="page-layout" id="pageLayout">
@@ -481,6 +474,10 @@
                 <div class="filters-actions">
                     <button type="submit" name="enviar_evento" value="1" class="btn-apply">
                         Consultar
+                    </button>
+
+                    <button type="submit" name="extrair_travels" value="1" class="extract-balanced">
+                        <i class="fa-solid fa-download"></i> Exportar
                     </button>
                 </div>
             </div>

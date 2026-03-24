@@ -135,7 +135,7 @@ def lista_viagens(request):
         request.session["filtro_viagem"] = {}
         return redirect("transportes:lista_viagens")
 
-    if request.method == "POST" and "enviar_evento" in request.POST:
+    if request.method == "POST" and ("enviar_evento" in request.POST or "extrair_travels" in request.POST):
         request.session["filtro_viagem"] = {
             campo: request.POST.get(campo, "")
             for campo in filtro_campos
@@ -180,7 +180,7 @@ def lista_viagens(request):
     for cliente in resp:
         for ot in cliente.get("OrderType", []) or []:
             tipo_id = str(ot.get("id"))
-            tipo_label = ot.get("type") or ot.get("description") or tipo_id
+            tipo_label = ot.get("description") or ot.get("type") or tipo_id
 
             tipos_map[tipo_id] = tipo_label
             tipo_api_map[tipo_id] = ot.get("type", "")
@@ -238,7 +238,7 @@ def lista_viagens(request):
             resp_travel = client.send_api_request()
 
             if 'detail' in resp_travel:
-                messages.error(request, resp_travel('detail'))
+                messages.error(request, resp_travel.get('detail'))
             else:
                 messages.success(request, "Consulta realizada com sucesso!")
 
@@ -332,7 +332,73 @@ def lista_viagens(request):
 
     if request.method == 'POST':
         if "extrair_travels" in request.POST:
-            messages.error(request, "comeram a bundinha do fefe")
+            try:
+                extract_params = {}
+
+                travel_id = filtros.get("travel_id")
+                if travel_id not in [None, "", [], ()]:
+                    extract_params["travel_id"] = travel_id
+
+                cliente = filtros.get("cliente")
+                if cliente not in [None, "", [], ()]:
+                    extract_params["cliente"] = cliente
+
+                transportadora = filtros.get("transportadora")
+                if transportadora not in [None, "", [], ()]:
+                    extract_params["transportadora"] = transportadora
+
+                pa_selecionada = filtros.get("pa_selecionada")
+                if pa_selecionada not in [None, "", [], ()]:
+                    extract_params["designation_id"] = pa_selecionada
+
+                tipo_servico = filtros.get("tipo_servico")
+                if tipo_servico not in [None, "", [], ()]:
+                    extract_params["tipo_servico"] = tipos_map.get(
+                        str(tipo_servico), tipo_servico)
+
+                driver_id = filtros.get("driver_id")
+                if driver_id not in [None, "", [], ()]:
+                    extract_params["driver_id"] = driver_id
+
+                sem_motorista = filtros.get("sem_motorista")
+                if sem_motorista not in [None, "", [], ()]:
+                    extract_params["sem_motorista"] = sem_motorista
+
+                status_list = filtros.get("status_list")
+                if status_list not in [None, "", [], ()]:
+                    extract_params["status_list"] = status_api_map.get(
+                        str(status_list), status_list)
+
+                cep_origin = filtros.get("cep_origin")
+                if cep_origin not in [None, "", [], ()]:
+                    extract_params["cep_origin"] = cep_origin
+
+                cep_destin = filtros.get("cep_destin")
+                if cep_destin not in [None, "", [], ()]:
+                    extract_params["cep_destin"] = cep_destin
+
+                url_extract = f"{TRANSP_API_URL}/v2/order_travel/export/general/excel?{urlencode(extract_params)}"
+
+                client = RequestClient(
+                    method="get",
+                    url=url_extract,
+                    headers={
+                        "accept": "application/json",
+                        "Content-Type": "application/json",
+                    },
+                )
+
+                resp_extract = client.send_api_request()
+
+                if 'detail' in resp_extract:
+                    messages.error(request, resp_extract.get('detail'))
+                else:
+                    messages.success(request, "Extração realizada!")
+
+            except Exception as e:
+                messages.error(
+                    request, f"Erro ao extrair travels: {str(e)}")
+                return redirect("transportes:lista_viagens")
 
     return render(request, 'transportes/transportes/lista_viagens.html', {
         "botao_texto": "Consultar",
