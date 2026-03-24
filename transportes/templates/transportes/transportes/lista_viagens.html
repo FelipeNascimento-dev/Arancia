@@ -8,7 +8,7 @@
     .page-content {
         max-width: 1350px !important;
         width: 100% !important;
-        margin-bottom: 50px;
+        margin-bottom: 150px;
     }
 
     .toolbar {
@@ -343,6 +343,36 @@
             position: static;
         }
     }
+
+    .driver-results {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(0,0,0,.08);
+        max-height: 220px;
+        overflow-y: auto;
+        z-index: 50;
+        display: none;
+    }
+
+    .driver-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: .92rem;
+    }
+
+    .driver-item:last-child {
+        border-bottom: none;
+    }
+
+    .driver-item:hover {
+        background: #f8fafc;
+    }
 </style>
 
 <div class="toolbar">
@@ -354,7 +384,7 @@
 
     <form method="POST">
         {% csrf_token %}
-        <button type="submit" name="extrair_os" value="1" class="extract-balanced">
+        <button type="submit" name="extrair_travels" value="1" class="extract-balanced">
             <i class="fa-solid fa-download"></i> Exportar
         </button>
     </form>
@@ -375,10 +405,8 @@
                 <div class="active-filters">
                     <div class="active-filters-title">Filtros aplicados</div>
 
-                    {% for campo, valor in filtros.items %}
-                        {% if valor %}
-                            <span class="filter-chip">{{ campo }}: {{ valor }}</span>
-                        {% endif %}
+                    {% for filtro in filtros_exibicao %}
+                        <span class="filter-chip">{{ filtro.campo }}: {{ filtro.valor }}</span>
                     {% endfor %}
                 </div>
 
@@ -411,17 +439,22 @@
                             <label for="{{ form.tipo_servico.id_for_label }}">{{ form.tipo_servico.label }}</label>
                             {{ form.tipo_servico }}
                         </div>
+
                         <div class="field-wrap">
-                            <label for="{{ form.driver_id.id_for_label }}">{{ form.driver_id.label }}</label>
-                            {{ form.driver_id }}
+                            <label for="{{ form.status_list.id_for_label }}">{{ form.status_list.label }}</label>
+                            {{ form.status_list }}
                         </div>
-                        <div class="field-wrap">
-                            <label for="{{ form.status_id.id_for_label }}">{{ form.status_id.label }}</label>
-                            {{ form.status_id }}
-                        </div>
+
                         <div class="field-wrap">
                             <label for="{{ form.sem_motorista.id_for_label }}">{{ form.sem_motorista.label }}</label>
                             {{ form.sem_motorista }}
+                        </div>
+
+                        <div class="field-wrap" style="position: relative;">
+                            <label for="{{ form.driver_nome.id_for_label }}">{{ form.driver_nome.label }}</label>
+                            {{ form.driver_nome }}
+                            {{ form.driver_id }}
+                            <div id="driverResults" class="driver-results"></div>
                         </div>
                     </div>
                 </div>
@@ -429,10 +462,6 @@
                 <details class="advanced-filters">
                     <summary>Mais filtros</summary>
                     <div class="filters-grid">
-                        <div class="field-wrap">
-                            <label for="{{ form.status_list.id_for_label }}">{{ form.status_list.label }}</label>
-                            {{ form.status_list }}
-                        </div>
                         <div class="field-wrap">
                             <label for="{{ form.cep_origin.id_for_label }}">{{ form.cep_origin.label }}</label>
                             {{ form.cep_origin }}
@@ -445,21 +474,10 @@
                             <label for="{{ form.created_at.id_for_label }}">{{ form.created_at.label }}</label>
                             {{ form.created_at }}
                         </div>
-                        <div class="field-wrap">
-                            <label for="{{ form.designation_id.id_for_label }}">{{ form.designation_id.label }}</label>
-                            {{ form.designation_id }}
-                        </div>
-                        <div class="field-wrap">
-                            <label for="{{ form.offset.id_for_label }}">{{ form.offset.label }}</label>
-                            {{ form.offset }}
-                        </div>
-                        <div class="field-wrap">
-                            <label for="{{ form.limit.id_for_label }}">{{ form.limit.label }}</label>
-                            {{ form.limit }}
-                        </div>
                     </div>
                 </details>
-
+                {{ tipos_por_cliente|json_script:"tipos-por-cliente" }}
+                {{ status_por_tipo|json_script:"status-por-tipo" }}
                 <div class="filters-actions">
                     <button type="submit" name="enviar_evento" value="1" class="btn-apply">
                         Consultar
@@ -532,11 +550,6 @@
                     <span class="pagination-btn pagination-btn--disabled">Próxima ▶</span>
                 {% endif %}
             </div>
-
-            <div class="pagination-info">
-                Página {{ travels.number }} de {{ travels.paginator.num_pages }}
-                ({{ travels.paginator.count }} viagens)
-            </div>
         </div>
         {% endif %}
     </main>
@@ -560,5 +573,180 @@
             });
         }
     });
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const tiposPorCliente = JSON.parse(document.getElementById("tipos-por-cliente").textContent);
+    const statusPorTipo = JSON.parse(document.getElementById("status-por-tipo").textContent);
+
+    const clienteSelect = document.getElementById("id_cliente");
+    const tipoServicoSelect = document.getElementById("id_tipo_servico");
+    const statusSelect = document.getElementById("id_status_list");
+
+    if (!clienteSelect || !tipoServicoSelect || !statusSelect) return;
+
+    function preencherTipos(clienteId, tipoSelecionado = "") {
+        tipoServicoSelect.innerHTML = '<option value="">Selecione</option>';
+        statusSelect.innerHTML = '<option value="">Selecione</option>';
+
+        const tipos = tiposPorCliente[clienteId] || [];
+
+        tipos.forEach(item => {
+            const option = document.createElement("option");
+            option.value = item.id;
+            option.textContent = item.description && item.description !== item.type
+                ? `${item.type} - ${item.description}`
+                : item.type;
+
+            if (String(item.id) === String(tipoSelecionado)) {
+                option.selected = true;
+            }
+
+            tipoServicoSelect.appendChild(option);
+        });
+    }
+
+    function preencherStatus(tipoId, statusSelecionado = "") {
+        statusSelect.innerHTML = '<option value="">Selecione</option>';
+
+        const statuses = statusPorTipo[tipoId] || [];
+
+        statuses.forEach(item => {
+            const option = document.createElement("option");
+            option.value = item.id;
+            option.textContent = item.description && item.description !== item.type
+                ? `${item.type} - ${item.description}`
+                : item.type;
+
+            if (String(item.id) === String(statusSelecionado)) {
+                option.selected = true;
+            }
+
+            statusSelect.appendChild(option);
+        });
+    }
+
+    const clienteInicial = clienteSelect.value;
+    const tipoInicial = tipoServicoSelect.value;
+    const statusInicial = statusSelect.value;
+
+    if (clienteInicial) {
+        preencherTipos(clienteInicial, tipoInicial);
+        if (tipoInicial) {
+            preencherStatus(tipoInicial, statusInicial);
+        }
+    }
+
+    clienteSelect.addEventListener("change", function () {
+        preencherTipos(this.value);
+    });
+
+    tipoServicoSelect.addEventListener("change", function () {
+        preencherStatus(this.value);
+    });
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("id_driver_nome");
+    const resultsBox = document.getElementById("driverResults");
+    const hiddenId = document.getElementById("id_driver_id");
+    const carrierSelect = document.getElementById("id_transportadora");
+
+    if (!input || !resultsBox || !hiddenId) return;
+
+    let timeout = null;
+
+    function limparResultados() {
+        resultsBox.innerHTML = "";
+        resultsBox.style.display = "none";
+    }
+
+    input.addEventListener("keyup", function () {
+        const query = this.value.trim();
+        const carrierId = carrierSelect ? carrierSelect.value : "";
+
+        clearTimeout(timeout);
+
+        if (query.length < 2) {
+            hiddenId.value = "";
+            limparResultados();
+            return;
+        }
+
+        timeout = setTimeout(() => {
+            const url = "{% url 'transportes:buscar_motoristas_travels' %}?nome=" +
+                encodeURIComponent(query) +
+                "&carrier_id=" +
+                encodeURIComponent(carrierId);
+
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    console.log("Motoristas retornados:", data);
+                    resultsBox.innerHTML = "";
+
+                    if (!data.items || !data.items.length) {
+                        limparResultados();
+                        return;
+                    }
+
+                    data.items.forEach(driver => {
+                        const div = document.createElement("div");
+                        div.classList.add("driver-item");
+                        div.innerText = driver.name || "Motorista";
+
+                        div.addEventListener("mousedown", function (e) {
+                            e.preventDefault();
+                            input.value = driver.name || "";
+                            hiddenId.value = driver.uid || "";
+                            console.log("UID selecionado:", hiddenId.value);
+                            limparResultados();
+                        });
+
+                        resultsBox.appendChild(div);
+                    });
+
+                    resultsBox.style.display = "block";
+                })
+                .catch((err) => {
+                    console.error("Erro ao buscar motoristas:", err);
+                    limparResultados();
+                });
+        }, 300);
+    });
+
+    input.addEventListener("input", function () {
+        if (!this.value.trim()) {
+            hiddenId.value = "";
+            limparResultados();
+        }
+    });
+
+    input.addEventListener("blur", function () {
+        setTimeout(() => {
+            if (!hiddenId.value) {
+                input.value = "";
+            }
+            limparResultados();
+        }, 150);
+    });
+
+    if (carrierSelect) {
+        carrierSelect.addEventListener("change", function () {
+            input.value = "";
+            hiddenId.value = "";
+            limparResultados();
+        });
+    }
+
+    document.addEventListener("click", function (e) {
+        if (!resultsBox.contains(e.target) && e.target !== input) {
+            limparResultados();
+        }
+    });
+});
 </script>
 {% endblock %}

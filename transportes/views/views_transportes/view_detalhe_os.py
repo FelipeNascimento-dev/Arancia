@@ -415,7 +415,7 @@ def detalhe_os_transp(request, order_number):
                 "items": items
             }
 
-            # print(payload_travel)
+            print(payload_travel)
 
             try:
                 url = f"{TRANSP_API_URL}/order_travels/create"
