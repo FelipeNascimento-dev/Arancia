@@ -343,6 +343,36 @@
             position: static;
         }
     }
+
+    .driver-results {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(0,0,0,.08);
+        max-height: 220px;
+        overflow-y: auto;
+        z-index: 50;
+        display: none;
+    }
+
+    .driver-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: .92rem;
+    }
+
+    .driver-item:last-child {
+        border-bottom: none;
+    }
+
+    .driver-item:hover {
+        background: #f8fafc;
+    }
 </style>
 
 <div class="toolbar">
@@ -375,10 +405,8 @@
                 <div class="active-filters">
                     <div class="active-filters-title">Filtros aplicados</div>
 
-                    {% for campo, valor in filtros.items %}
-                        {% if valor %}
-                            <span class="filter-chip">{{ campo }}: {{ valor }}</span>
-                        {% endif %}
+                    {% for filtro in filtros_exibicao %}
+                        <span class="filter-chip">{{ filtro.campo }}: {{ filtro.valor }}</span>
                     {% endfor %}
                 </div>
 
@@ -416,12 +444,15 @@
                             {{ form.driver_id }}
                         </div>
                         <div class="field-wrap">
-                            <label for="{{ form.status_id.id_for_label }}">{{ form.status_id.label }}</label>
-                            {{ form.status_id }}
+                            <label for="{{ form.status_list.id_for_label }}">{{ form.status_list.label }}</label>
+                            {{ form.status_list }}
                         </div>
-                        <div class="field-wrap">
-                            <label for="{{ form.sem_motorista.id_for_label }}">{{ form.sem_motorista.label }}</label>
-                            {{ form.sem_motorista }}
+                        <div class="field-wrap" style="position: relative;">
+                            <label for="{{ form.driver_nome.id_for_label }}">{{ form.driver_nome.label }}</label>
+                            {{ form.driver_nome }}
+                            {{ form.driver_id }}
+
+                            <div id="driverResults" class="driver-results"></div>
                         </div>
                     </div>
                 </div>
@@ -429,10 +460,6 @@
                 <details class="advanced-filters">
                     <summary>Mais filtros</summary>
                     <div class="filters-grid">
-                        <div class="field-wrap">
-                            <label for="{{ form.status_list.id_for_label }}">{{ form.status_list.label }}</label>
-                            {{ form.status_list }}
-                        </div>
                         <div class="field-wrap">
                             <label for="{{ form.cep_origin.id_for_label }}">{{ form.cep_origin.label }}</label>
                             {{ form.cep_origin }}
@@ -445,21 +472,10 @@
                             <label for="{{ form.created_at.id_for_label }}">{{ form.created_at.label }}</label>
                             {{ form.created_at }}
                         </div>
-                        <div class="field-wrap">
-                            <label for="{{ form.designation_id.id_for_label }}">{{ form.designation_id.label }}</label>
-                            {{ form.designation_id }}
-                        </div>
-                        <div class="field-wrap">
-                            <label for="{{ form.offset.id_for_label }}">{{ form.offset.label }}</label>
-                            {{ form.offset }}
-                        </div>
-                        <div class="field-wrap">
-                            <label for="{{ form.limit.id_for_label }}">{{ form.limit.label }}</label>
-                            {{ form.limit }}
-                        </div>
                     </div>
                 </details>
-
+                {{ tipos_por_cliente|json_script:"tipos-por-cliente" }}
+                {{ status_por_tipo|json_script:"status-por-tipo" }}
                 <div class="filters-actions">
                     <button type="submit" name="enviar_evento" value="1" class="btn-apply">
                         Consultar
@@ -532,11 +548,6 @@
                     <span class="pagination-btn pagination-btn--disabled">Próxima ▶</span>
                 {% endif %}
             </div>
-
-            <div class="pagination-info">
-                Página {{ travels.number }} de {{ travels.paginator.num_pages }}
-                ({{ travels.paginator.count }} viagens)
-            </div>
         </div>
         {% endif %}
     </main>
@@ -560,5 +571,164 @@
             });
         }
     });
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const tiposPorCliente = JSON.parse(document.getElementById("tipos-por-cliente").textContent);
+    const statusPorTipo = JSON.parse(document.getElementById("status-por-tipo").textContent);
+
+    const clienteSelect = document.getElementById("id_cliente");
+    const tipoServicoSelect = document.getElementById("id_tipo_servico");
+    const statusSelect = document.getElementById("id_status_list");
+
+    if (!clienteSelect || !tipoServicoSelect || !statusSelect) return;
+
+    function preencherTipos(clienteId, tipoSelecionado = "") {
+        tipoServicoSelect.innerHTML = '<option value="">Selecione</option>';
+        statusSelect.innerHTML = '<option value="">Selecione</option>';
+
+        const tipos = tiposPorCliente[clienteId] || [];
+
+        tipos.forEach(item => {
+            const option = document.createElement("option");
+            option.value = item.id;
+            option.textContent = item.description && item.description !== item.type
+                ? `${item.type} - ${item.description}`
+                : item.type;
+
+            if (String(item.id) === String(tipoSelecionado)) {
+                option.selected = true;
+            }
+
+            tipoServicoSelect.appendChild(option);
+        });
+    }
+
+    function preencherStatus(tipoId, statusSelecionado = "") {
+        statusSelect.innerHTML = '<option value="">Selecione</option>';
+
+        const statuses = statusPorTipo[tipoId] || [];
+
+        statuses.forEach(item => {
+            const option = document.createElement("option");
+            option.value = item.id;
+            option.textContent = item.description && item.description !== item.type
+                ? `${item.type} - ${item.description}`
+                : item.type;
+
+            if (String(item.id) === String(statusSelecionado)) {
+                option.selected = true;
+            }
+
+            statusSelect.appendChild(option);
+        });
+    }
+
+    const clienteInicial = clienteSelect.value;
+    const tipoInicial = tipoServicoSelect.value;
+    const statusInicial = statusSelect.value;
+
+    if (clienteInicial) {
+        preencherTipos(clienteInicial, tipoInicial);
+        if (tipoInicial) {
+            preencherStatus(tipoInicial, statusInicial);
+        }
+    }
+
+    clienteSelect.addEventListener("change", function () {
+        preencherTipos(this.value);
+    });
+
+    tipoServicoSelect.addEventListener("change", function () {
+        preencherStatus(this.value);
+    });
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("id_driver_nome");
+    const resultsBox = document.getElementById("driverResults");
+    const hiddenId = document.getElementById("id_driver_id");
+    const carrierSelect = document.getElementById("id_transportadora");
+
+    if (!input || !resultsBox || !hiddenId) return;
+
+    let timeout = null;
+
+    input.addEventListener("keyup", function () {
+        const query = this.value.trim();
+        const carrierId = carrierSelect ? carrierSelect.value : "";
+
+        hiddenId.value = "";
+
+        clearTimeout(timeout);
+
+        if (query.length < 2) {
+            resultsBox.innerHTML = "";
+            resultsBox.style.display = "none";
+            return;
+        }
+
+        timeout = setTimeout(() => {
+            const url = "{% url 'transportes:buscar_motoristas' %}?nome=" + encodeURIComponent(query) + "&carrier_id=" + encodeURIComponent(carrierId);
+
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    resultsBox.innerHTML = "";
+
+                    if (!data.items || !data.items.length) {
+                        resultsBox.style.display = "none";
+                        return;
+                    }
+
+                    data.items.forEach(driver => {
+                        const div = document.createElement("div");
+                        div.classList.add("driver-item");
+                        div.innerText = driver.name || driver.nome || "Motorista";
+
+                        div.onclick = function () {
+                            input.value = driver.name || driver.nome || "";
+                            hiddenId.value = driver.uid || driver.id || "";
+                            resultsBox.style.display = "none";
+                        };
+
+                        resultsBox.appendChild(div);
+                    });
+
+                    resultsBox.style.display = "block";
+                })
+                .catch(() => {
+                    resultsBox.innerHTML = "";
+                    resultsBox.style.display = "none";
+                });
+        }, 300);
+    });
+
+    input.addEventListener("input", function () {
+        if (!this.value.trim()) {
+            hiddenId.value = "";
+            resultsBox.innerHTML = "";
+            resultsBox.style.display = "none";
+        }
+    });
+
+    if (carrierSelect) {
+        carrierSelect.addEventListener("change", function () {
+            input.value = "";
+            hiddenId.value = "";
+            resultsBox.innerHTML = "";
+            resultsBox.style.display = "none";
+        });
+    }
+
+    document.addEventListener("click", function (e) {
+        if (!resultsBox.contains(e.target) && e.target !== input) {
+            resultsBox.style.display = "none";
+        }
+    });
+});
 </script>
 {% endblock %}

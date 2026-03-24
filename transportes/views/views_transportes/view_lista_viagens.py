@@ -6,6 +6,41 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from datetime import datetime
 from urllib.parse import urlencode
+from django.http import JsonResponse
+
+
+def buscar_motoristas(request):
+    nome = request.GET.get("nome", "").strip()
+    carrier_id = request.GET.get("carrier_id", "").strip()
+
+    if not nome:
+        return JsonResponse({"items": []})
+
+    params_url = f"?Nome={nome}&limit=10"
+    if carrier_id:
+        params_url += f"&carrier_id={carrier_id}"
+
+    url = f"{TRANSP_API_URL}/Carriers/driver/list{params_url}"
+
+    client = RequestClient(
+        method="get",
+        url=url,
+        headers={
+            "accept": "application/json",
+            "Content-Type": "application/json",
+        },
+    )
+
+    response_moto = client.send_api_request()
+
+    items = []
+    if isinstance(response_moto, dict):
+        items = response_moto.get(
+            "items") or response_moto.get("results") or []
+    elif isinstance(response_moto, list):
+        items = response_moto
+
+    return JsonResponse({"items": items})
 
 
 @login_required(login_url='logistica:login')
@@ -21,6 +56,7 @@ def lista_viagens(request):
         "transportadora",
         "pa_selecionada",
         "tipo_servico",
+        "driver_nome",
         "driver_id",
         "status_id",
         "sem_motorista",
@@ -43,6 +79,38 @@ def lista_viagens(request):
     resp = client.send_api_request()
     if isinstance(resp, dict) and resp.get("detail"):
         resp = []
+
+    clientes_map = {
+        str(c.get("id")): c.get("nome") or c.get("name") or str(c.get("id"))
+        for c in resp
+    }
+
+    tipos_por_cliente = {}
+    status_por_tipo = {}
+
+    for cliente in resp:
+        cliente_id = str(cliente.get("id"))
+        order_types = cliente.get("OrderType", []) or []
+
+        tipos_por_cliente[cliente_id] = [
+            {
+                "id": str(ot.get("id")),
+                "type": ot.get("type", ""),
+                "description": ot.get("description", "") or ot.get("type", ""),
+            }
+            for ot in order_types
+        ]
+
+        for ot in order_types:
+            tipo_id = str(ot.get("id"))
+            status_por_tipo[tipo_id] = [
+                {
+                    "id": str(st.get("id")),
+                    "type": st.get("type", ""),
+                    "description": st.get("description", "") or st.get("type", ""),
+                }
+                for st in (ot.get("status", []) or [])
+            ]
 
     url_transportadora = f"{TRANSP_API_URL}/Carriers/list"
     client = RequestClient(
@@ -75,6 +143,27 @@ def lista_viagens(request):
         user=request.user,
     )
 
+    cliente_selecionado = str(filtros.get("cliente", "")).strip()
+    tipo_servico_selecionado = str(filtros.get("tipo_servico", "")).strip()
+
+    if "tipo_servico" in form.fields:
+        tipos_choices = [("", "Selecione")]
+        for item in tipos_por_cliente.get(cliente_selecionado, []):
+            label = item["type"]
+            if item["description"] and item["description"] != item["type"]:
+                label = f'{item["type"]} - {item["description"]}'
+            tipos_choices.append((item["id"], label))
+        form.fields["tipo_servico"].choices = tipos_choices
+
+    if "status_list" in form.fields:
+        status_choices = [("", "Selecione")]
+        for item in status_por_tipo.get(tipo_servico_selecionado, []):
+            label = item["type"]
+            if item["description"] and item["description"] != item["type"]:
+                label = f'{item["type"]} - {item["description"]}'
+            status_choices.append((item["id"], label))
+        form.fields["status_list"].choices = status_choices
+
     filtros_ativos = sum(
         1 for campo in filtro_campos
         if filtros.get(campo) not in [None, ""]
@@ -86,19 +175,34 @@ def lista_viagens(request):
 
             for campo in filtro_campos:
                 valor = filtros.get(campo)
-                if valor not in [None, ""]:
-                    if campo == "pa_selecionada":
-                        params["designation_id"] = valor
-                    else:
-                        params[campo] = valor
+
+                if valor in [None, ""]:
+                    continue
+
+                if campo == "pa_selecionada":
+                    params["designation_id"] = valor
+
+                elif campo == "tipo_servico":
+                    params[campo] = tipo_api_map.get(str(valor), valor)
+
+                elif campo == "status_list":
+                    params[campo] = status_api_map.get(str(valor), valor)
+
+                elif campo in ["designation_id", "driver_nome"]:
+                    continue
+
+                else:
+                    params[campo] = valor
 
             url_travel = f"{TRANSP_API_URL}/order_travels/list/general?{urlencode(params)}"
 
             client = RequestClient(
                 method="get",
                 url=url_travel,
-                headers={"accept": "application/json",
-                         "Content-Type": "application/json"},
+                headers={
+                    "accept": "application/json",
+                    "Content-Type": "application/json",
+                },
             )
             resp_travel = client.send_api_request()
 
@@ -126,6 +230,91 @@ def lista_viagens(request):
     page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
 
+    filtros_exibicao = []
+
+    mapa_campos = {
+        "travel_id": "Travel",
+        "cliente": "Cliente",
+        "transportadora": "Transportadora",
+        "pa_selecionada": "PA",
+        "tipo_servico": "Tipo servico",
+        "driver_id": "Motorista",
+        "driver_nome": "Motorista",
+        "status_id": "Status",
+        "sem_motorista": "Sem motorista",
+        "status_list": "Lista status",
+        "cep_origin": "CEP origem",
+        "cep_destin": "CEP destino",
+        "created_at": "Data criação",
+        "designation_id": "Designation",
+    }
+
+    clientes_map = {
+        str(c.get("id")): c.get("nome") or c.get("name") or str(c.get("id"))
+        for c in resp
+    }
+
+    transportadoras_map = {
+        str(t.get("id")): t.get("name") or t.get("nome") or str(t.get("id"))
+        for t in resp_transportadora
+    }
+
+    tipos_map = {}
+    status_map = {}
+    tipo_api_map = {}
+    status_api_map = {}
+
+    for cliente in resp:
+        for ot in cliente.get("OrderType", []) or []:
+            tipo_id = str(ot.get("id"))
+            tipo_label = ot.get("type") or ot.get("description") or tipo_id
+
+            tipos_map[tipo_id] = tipo_label
+            tipo_api_map[tipo_id] = ot.get("type", "")
+
+            for st in ot.get("status", []) or []:
+                status_id = str(st.get("id"))
+                status_label = st.get("type") or st.get(
+                    "description") or status_id
+
+                status_map[status_id] = status_label
+                status_api_map[status_id] = st.get("type", "")
+
+    for campo in filtro_campos:
+        valor = filtros.get(campo)
+
+        if valor in [None, "", [], ()]:
+            continue
+
+        if campo == "driver_id":
+            continue
+
+        valor_exibicao = valor
+
+        if campo == "cliente":
+            valor_exibicao = clientes_map.get(str(valor), valor)
+
+        elif campo == "transportadora":
+            valor_exibicao = transportadoras_map.get(str(valor), valor)
+
+        elif campo == "tipo_servico":
+            valor_exibicao = tipos_map.get(str(valor), valor)
+
+        elif campo == "status_list":
+            valor_exibicao = status_map.get(str(valor), valor)
+
+        elif campo == "sem_motorista":
+            valor_exibicao = "Sim" if str(valor).lower() in [
+                "true", "1", "on"] else "Não"
+
+        elif isinstance(valor, str):
+            valor_exibicao = valor.strip().capitalize()
+
+        filtros_exibicao.append({
+            "campo": mapa_campos.get(campo, campo.replace("_", " ").capitalize()),
+            "valor": valor_exibicao,
+        })
+
     return render(request, 'transportes/transportes/lista_viagens.html', {
         "botao_texto": "Consultar",
         "current_parent_menu": "transportes",
@@ -135,4 +324,7 @@ def lista_viagens(request):
         "travels": page_obj,
         "filtros_ativos": filtros_ativos,
         "filtros": filtros,
+        "filtros_exibicao": filtros_exibicao,
+        "tipos_por_cliente": tipos_por_cliente,
+        "status_por_tipo": status_por_tipo,
     })
