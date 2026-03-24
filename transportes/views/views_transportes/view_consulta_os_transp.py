@@ -24,6 +24,12 @@ def consulta_os_transp(request):
     )
     resp = client.send_api_request()
 
+    print(resp)
+
+    for item in resp:
+        for type in item['OrderType']:
+            type['status'].append(item['status_base'])
+
     if isinstance(resp, dict) and resp.get("detail"):
         messages.error(request, resp["detail"])
         resp = []
@@ -102,7 +108,21 @@ def consulta_os_transp(request):
 
         status_id = (data.get("status") or "").strip()
         if status_id:
-            params["status_id"] = status_id
+            status_texto = None
+
+            for cliente in resp:
+                for order_type_item in cliente.get("OrderType", []):
+                    for status_item in order_type_item.get("status", []):
+                        if str(status_item.get("id")) == str(status_id):
+                            status_texto = status_item.get("description")
+                            break
+                    if status_texto:
+                        break
+                if status_texto:
+                    break
+
+            if status_texto:
+                params["status"] = status_texto
 
         order_type = (data.get("order_type") or "").strip()
         if order_type:

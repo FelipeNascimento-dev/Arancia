@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from ...forms import ListaViagensForm
 from setup.local_settings import TRANSP_API_URL
+from django.contrib import messages
 from utils.request import RequestClient
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
@@ -32,7 +33,6 @@ def buscar_motoristas_travels(request):
     )
 
     response_moto = client.send_api_request()
-    print("RESPONSE MOTORISTAS:", response_moto)
 
     raw_items = []
     if isinstance(response_moto, dict):
@@ -227,8 +227,6 @@ def lista_viagens(request):
 
             url_travel = f"{TRANSP_API_URL}/v2/order_travel/list/general?{urlencode(params)}"
 
-            print(url_travel)
-
             client = RequestClient(
                 method="get",
                 url=url_travel,
@@ -239,9 +237,10 @@ def lista_viagens(request):
             )
             resp_travel = client.send_api_request()
 
-            print("FILTROS:", filtros)
-            print("PARAMS:", params)
-            print("URL FINAL:", url_travel)
+            if 'detail' in resp_travel:
+                messages.error(request, resp_travel('detail'))
+            else:
+                messages.success(request, "Consulta realizada com sucesso!")
 
             if isinstance(resp_travel, list):
                 travels = resp_travel
@@ -330,6 +329,10 @@ def lista_viagens(request):
             "campo": mapa_campos.get(campo, campo.replace("_", " ").capitalize()),
             "valor": valor_exibicao,
         })
+
+    if request.method == 'POST':
+        if "extrair_travels" in request.POST:
+            messages.error(request, "comeram a bundinha do fefe")
 
     return render(request, 'transportes/transportes/lista_viagens.html', {
         "botao_texto": "Consultar",
