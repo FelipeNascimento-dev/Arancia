@@ -9,7 +9,7 @@ from urllib.parse import urlencode
 from django.http import JsonResponse
 
 
-def buscar_motoristas(request):
+def buscar_motoristas_travels(request):
     nome = request.GET.get("nome", "").strip()
     carrier_id = request.GET.get("carrier_id", "").strip()
 
@@ -32,13 +32,21 @@ def buscar_motoristas(request):
     )
 
     response_moto = client.send_api_request()
+    print("RESPONSE MOTORISTAS:", response_moto)
 
-    items = []
+    raw_items = []
     if isinstance(response_moto, dict):
-        items = response_moto.get(
+        raw_items = response_moto.get(
             "items") or response_moto.get("results") or []
     elif isinstance(response_moto, list):
-        items = response_moto
+        raw_items = response_moto
+
+    items = []
+    for item in raw_items:
+        items.append({
+            "uid": item.get("uid", ""),
+            "name": item.get("name") or item.get("nome") or "",
+        })
 
     return JsonResponse({"items": items})
 
@@ -164,6 +172,27 @@ def lista_viagens(request):
             status_choices.append((item["id"], label))
         form.fields["status_list"].choices = status_choices
 
+    tipos_map = {}
+    status_map = {}
+    tipo_api_map = {}
+    status_api_map = {}
+
+    for cliente in resp:
+        for ot in cliente.get("OrderType", []) or []:
+            tipo_id = str(ot.get("id"))
+            tipo_label = ot.get("type") or ot.get("description") or tipo_id
+
+            tipos_map[tipo_id] = tipo_label
+            tipo_api_map[tipo_id] = ot.get("type", "")
+
+            for st in ot.get("status", []) or []:
+                status_id = str(st.get("id"))
+                status_label = st.get("type") or st.get(
+                    "description") or status_id
+
+                status_map[status_id] = status_label
+                status_api_map[status_id] = st.get("type", "")
+
     filtros_ativos = sum(
         1 for campo in filtro_campos
         if filtros.get(campo) not in [None, ""]
@@ -176,25 +205,29 @@ def lista_viagens(request):
             for campo in filtro_campos:
                 valor = filtros.get(campo)
 
-                if valor in [None, ""]:
+                if valor in [None, "", [], ()]:
+                    continue
+
+                if campo in ["designation_id", "driver_nome", "created_at", "offset", "limit", "status_id"]:
                     continue
 
                 if campo == "pa_selecionada":
                     params["designation_id"] = valor
 
                 elif campo == "tipo_servico":
-                    params[campo] = tipo_api_map.get(str(valor), valor)
+                    params["tipo_servico"] = tipo_api_map.get(
+                        str(valor), valor)
 
                 elif campo == "status_list":
-                    params[campo] = status_api_map.get(str(valor), valor)
-
-                elif campo in ["designation_id", "driver_nome"]:
-                    continue
+                    params["status_list"] = status_api_map.get(
+                        str(valor), valor)
 
                 else:
                     params[campo] = valor
 
-            url_travel = f"{TRANSP_API_URL}/order_travels/list/general?{urlencode(params)}"
+            url_travel = f"{TRANSP_API_URL}/v2/order_travel/list/general?{urlencode(params)}"
+
+            print(url_travel)
 
             client = RequestClient(
                 method="get",
@@ -205,6 +238,10 @@ def lista_viagens(request):
                 },
             )
             resp_travel = client.send_api_request()
+
+            print("FILTROS:", filtros)
+            print("PARAMS:", params)
+            print("URL FINAL:", url_travel)
 
             if isinstance(resp_travel, list):
                 travels = resp_travel
@@ -258,27 +295,6 @@ def lista_viagens(request):
         str(t.get("id")): t.get("name") or t.get("nome") or str(t.get("id"))
         for t in resp_transportadora
     }
-
-    tipos_map = {}
-    status_map = {}
-    tipo_api_map = {}
-    status_api_map = {}
-
-    for cliente in resp:
-        for ot in cliente.get("OrderType", []) or []:
-            tipo_id = str(ot.get("id"))
-            tipo_label = ot.get("type") or ot.get("description") or tipo_id
-
-            tipos_map[tipo_id] = tipo_label
-            tipo_api_map[tipo_id] = ot.get("type", "")
-
-            for st in ot.get("status", []) or []:
-                status_id = str(st.get("id"))
-                status_label = st.get("type") or st.get(
-                    "description") or status_id
-
-                status_map[status_id] = status_label
-                status_api_map[status_id] = st.get("type", "")
 
     for campo in filtro_campos:
         valor = filtros.get(campo)

@@ -5,7 +5,7 @@ from transportes.views.iframe import painel_Dashboard_view
 from transportes.views.scripting_view import scripting_view
 from transportes.views.view_panel_technical import registrar_tratamento_view
 from .views import extrair_enderecos_view, gerar_etiquetas_view, criar_user_view, ver_usuario_view, mover_rota_view, ordenar_rota_view
-from .views import consulta_os_pend, lista_tecnicos, consulta_os, detalhe_os, consulta_os_transp, detalhe_os_transp, buscar_motoristas, buscar_veiculos
+from .views import consulta_os_pend, lista_tecnicos, consulta_os, detalhe_os, consulta_os_transp, detalhe_os_transp, buscar_motoristas, buscar_motoristas_travels, buscar_veiculos
 from .views import lista_viagens, detalhe_viagem, criar_os_transp, buscar_locais, skill_customer, skill_transport, driver_ger, vehicle_ger
 from .views.dashboard_view import dashboard_view
 app_name = 'transportes'
@@ -46,4 +46,6 @@ urlpatterns = [
     path("gerenciamento/transport/", skill_transport, name="skill_transport"),
     path("gerenciamento/drivers/", driver_ger, name="driver_ger"),
     path("gerenciamento/veiculos/", vehicle_ger, name="vehicle_ger"),
+    path("buscar-motoristas/travels", buscar_motoristas_travels,
+         name="buscar_motoristas_travels"),
 ]

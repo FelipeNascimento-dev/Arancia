@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Q
 from django.db.models.functions import Lower
 from logistica.models import GroupAditionalInformation, Group
 
@@ -126,26 +127,21 @@ class ListaViagensForm(forms.Form):
 
         pa_choices = [("", "Selecione uma PA")]
 
-        try:
-            grupo_pa = Group.objects.get(name="arancia_PA")
-            pa_qs = (
-                GroupAditionalInformation.objects
-                .filter(group=grupo_pa)
-                .annotate(nome_lower=Lower("nome"))
-                .order_by("nome_lower")
-                .values_list("id", "nome")
+        pa_qs = (
+            GroupAditionalInformation.objects
+            .filter(
+                Q(group__name="arancia_PA") |
+                Q(group__name="arancia_TRANSPORT", nome="C-TRENDS")
             )
-            pa_choices += [(str(pa_id), nome) for pa_id, nome in pa_qs]
-        except Group.DoesNotExist:
-            pass
+            .annotate(nome_lower=Lower("nome"))
+            .order_by("nome_lower")
+            .values_list("id", "nome")
+            .distinct()
+        )
+
+        pa_choices += [(str(pa_id), nome) for pa_id, nome in pa_qs]
 
         self.fields["pa_selecionada"].choices = pa_choices
-
-        for field_name, field in self.fields.items():
-            css = "filter-input"
-            if isinstance(field.widget, forms.Select):
-                css = "filter-select"
-            field.widget.attrs["class"] = css
 
         for field_name, field in self.fields.items():
             if isinstance(field.widget, forms.HiddenInput):

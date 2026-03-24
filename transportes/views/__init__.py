@@ -12,7 +12,7 @@ from .views_controle_chamados.view_consulta_os import consulta_os
 from .views_controle_chamados.view_detalhe_os import detalhe_os
 from .views_transportes.view_detalhe_os import detalhe_os_transp, buscar_motoristas, buscar_veiculos
 from .views_transportes.view_consulta_os_transp import consulta_os_transp
-from .views_transportes.view_lista_viagens import lista_viagens
+from .views_transportes.view_lista_viagens import lista_viagens, buscar_motoristas_travels
 from .views_transportes.view_detalhe_viagem import detalhe_viagem
 from .views_transportes.view_criar_os import criar_os_transp, buscar_locais
 from .views_transportes.view_criar_localidade import skill_customer

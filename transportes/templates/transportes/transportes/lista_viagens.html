@@ -439,19 +439,21 @@
                             <label for="{{ form.tipo_servico.id_for_label }}">{{ form.tipo_servico.label }}</label>
                             {{ form.tipo_servico }}
                         </div>
-                        <div class="field-wrap">
-                            <label for="{{ form.driver_id.id_for_label }}">{{ form.driver_id.label }}</label>
-                            {{ form.driver_id }}
-                        </div>
+
                         <div class="field-wrap">
                             <label for="{{ form.status_list.id_for_label }}">{{ form.status_list.label }}</label>
                             {{ form.status_list }}
                         </div>
+
+                        <div class="field-wrap">
+                            <label for="{{ form.sem_motorista.id_for_label }}">{{ form.sem_motorista.label }}</label>
+                            {{ form.sem_motorista }}
+                        </div>
+
                         <div class="field-wrap" style="position: relative;">
                             <label for="{{ form.driver_nome.id_for_label }}">{{ form.driver_nome.label }}</label>
                             {{ form.driver_nome }}
                             {{ form.driver_id }}
-
                             <div id="driverResults" class="driver-results"></div>
                         </div>
                     </div>
@@ -657,52 +659,61 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let timeout = null;
 
+    function limparResultados() {
+        resultsBox.innerHTML = "";
+        resultsBox.style.display = "none";
+    }
+
     input.addEventListener("keyup", function () {
         const query = this.value.trim();
         const carrierId = carrierSelect ? carrierSelect.value : "";
 
-        hiddenId.value = "";
-
         clearTimeout(timeout);
 
         if (query.length < 2) {
-            resultsBox.innerHTML = "";
-            resultsBox.style.display = "none";
+            hiddenId.value = "";
+            limparResultados();
             return;
         }
 
         timeout = setTimeout(() => {
-            const url = "{% url 'transportes:buscar_motoristas' %}?nome=" + encodeURIComponent(query) + "&carrier_id=" + encodeURIComponent(carrierId);
+            const url = "{% url 'transportes:buscar_motoristas_travels' %}?nome=" +
+                encodeURIComponent(query) +
+                "&carrier_id=" +
+                encodeURIComponent(carrierId);
 
             fetch(url)
                 .then(res => res.json())
                 .then(data => {
+                    console.log("Motoristas retornados:", data);
                     resultsBox.innerHTML = "";
 
                     if (!data.items || !data.items.length) {
-                        resultsBox.style.display = "none";
+                        limparResultados();
                         return;
                     }
 
                     data.items.forEach(driver => {
                         const div = document.createElement("div");
                         div.classList.add("driver-item");
-                        div.innerText = driver.name || driver.nome || "Motorista";
+                        div.innerText = driver.name || "Motorista";
 
-                        div.onclick = function () {
-                            input.value = driver.name || driver.nome || "";
-                            hiddenId.value = driver.uid || driver.id || "";
-                            resultsBox.style.display = "none";
-                        };
+                        div.addEventListener("mousedown", function (e) {
+                            e.preventDefault();
+                            input.value = driver.name || "";
+                            hiddenId.value = driver.uid || "";
+                            console.log("UID selecionado:", hiddenId.value);
+                            limparResultados();
+                        });
 
                         resultsBox.appendChild(div);
                     });
 
                     resultsBox.style.display = "block";
                 })
-                .catch(() => {
-                    resultsBox.innerHTML = "";
-                    resultsBox.style.display = "none";
+                .catch((err) => {
+                    console.error("Erro ao buscar motoristas:", err);
+                    limparResultados();
                 });
         }, 300);
     });
@@ -710,23 +721,30 @@ document.addEventListener("DOMContentLoaded", function () {
     input.addEventListener("input", function () {
         if (!this.value.trim()) {
             hiddenId.value = "";
-            resultsBox.innerHTML = "";
-            resultsBox.style.display = "none";
+            limparResultados();
         }
+    });
+
+    input.addEventListener("blur", function () {
+        setTimeout(() => {
+            if (!hiddenId.value) {
+                input.value = "";
+            }
+            limparResultados();
+        }, 150);
     });
 
     if (carrierSelect) {
         carrierSelect.addEventListener("change", function () {
             input.value = "";
             hiddenId.value = "";
-            resultsBox.innerHTML = "";
-            resultsBox.style.display = "none";
+            limparResultados();
         });
     }
 
     document.addEventListener("click", function (e) {
         if (!resultsBox.contains(e.target) && e.target !== input) {
-            resultsBox.style.display = "none";
+            limparResultados();
         }
     });
 });
