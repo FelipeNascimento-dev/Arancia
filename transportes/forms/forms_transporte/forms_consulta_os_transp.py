@@ -3,10 +3,22 @@ from django import forms
 
 class ConsultaOStranspForm(forms.Form):
     client = forms.ChoiceField(label="Cliente", required=False)
-    order_type = forms.ChoiceField(label="Tipo de OS", required=False)
-    status = forms.ChoiceField(label="Status da OS (Opcional)", required=False)
+
+    order_type = forms.MultipleChoiceField(
+        label="Tipo de OS",
+        required=False,
+        widget=forms.SelectMultiple
+    )
+
+    status = forms.MultipleChoiceField(
+        label="Status da OS (Opcional)",
+        required=False,
+        widget=forms.SelectMultiple
+    )
+
     numero_os = forms.CharField(
-        label="Insira o número da OS (Opcional)", required=False)
+        label="Insira o número da OS (Opcional)", required=False
+    )
 
     created_at = forms.DateField(
         label="Data de criação",
@@ -28,8 +40,8 @@ class ConsultaOStranspForm(forms.Form):
         self.payload = payload or []
 
         self.fields["client"].choices = [("", "Selecione um cliente")]
-        self.fields["order_type"].choices = [("", "Selecione o tipo")]
-        self.fields["status"].choices = [("", "Selecione o status")]
+        self.fields["order_type"].choices = []
+        self.fields["status"].choices = []
 
         self.fields["client"].choices += [
             (c["id"], c["nome"]) for c in self.payload
@@ -39,33 +51,37 @@ class ConsultaOStranspForm(forms.Form):
             return
 
         selected_client = self.data.get("client")
-        selected_type = self.data.get("order_type")
+        selected_types = self.data.getlist("order_type")
 
         if selected_client:
             cliente = next(
-                (c for c in self.payload if str(c["id"]) == selected_client),
+                (c for c in self.payload if str(
+                    c["id"]) == str(selected_client)),
                 None,
             )
 
             if cliente:
                 order_types = cliente.get("OrderType", [])
 
-                self.fields["order_type"].choices += [
-                    (ot["id"], ot["type"])
+                self.fields["order_type"].choices = [
+                    (str(ot["id"]), ot["type"])
                     for ot in order_types
                 ]
 
-                if selected_type:
-                    order_type = next(
-                        (
-                            ot for ot in order_types
-                            if str(ot["id"]) == selected_type
-                        ),
-                        None,
-                    )
+                status_choices = []
+                for ot in order_types:
+                    if str(ot["id"]) in [str(x) for x in selected_types]:
+                        status_choices.extend([
+                            (str(st["id"]), st["type"])
+                            for st in ot.get("status", [])
+                        ])
 
-                    if order_type:
-                        self.fields["status"].choices += [
-                            (st["id"], st["type"])
-                            for st in order_type.get("status", [])
-                        ]
+                # remove duplicados
+                vistos = set()
+                status_unicos = []
+                for sid, stype in status_choices:
+                    if sid not in vistos:
+                        vistos.add(sid)
+                        status_unicos.append((sid, stype))
+
+                self.fields["status"].choices = status_unicos
