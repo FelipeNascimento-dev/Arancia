@@ -379,21 +379,7 @@ def lista_viagens(request):
 
                 url_extract = f"{TRANSP_API_URL}/v2/order_travel/export/general/excel?{urlencode(extract_params)}"
 
-                client = RequestClient(
-                    method="get",
-                    url=url_extract,
-                    headers={
-                        "accept": "application/json",
-                        "Content-Type": "application/json",
-                    },
-                )
-
-                resp_extract = client.send_api_request()
-
-                if 'detail' in resp_extract:
-                    messages.error(request, resp_extract.get('detail'))
-                else:
-                    messages.success(request, "Extração realizada!")
+                return redirect(url_extract)
 
             except Exception as e:
                 messages.error(

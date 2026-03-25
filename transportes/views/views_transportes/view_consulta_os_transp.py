@@ -111,6 +111,10 @@ def consulta_os_transp(request):
             if cliente_obj and cliente_obj.get("nome"):
                 params["cliente"] = cliente_obj["nome"]
 
+        pa_id = (data.get("pa_selecionada") or "").strip()
+        if pa_id:
+            params["designation_id"] = pa_id
+
         status_ids = [s.strip() for s in data.getlist("status") if s.strip()]
         if status_ids:
             status_textos = []

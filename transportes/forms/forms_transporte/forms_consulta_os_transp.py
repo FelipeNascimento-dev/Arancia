@@ -1,4 +1,7 @@
 from django import forms
+from django.db.models import Q
+from django.db.models.functions import Lower
+from logistica.models import GroupAditionalInformation, Group
 
 
 class ConsultaOStranspForm(forms.Form):
@@ -31,6 +34,12 @@ class ConsultaOStranspForm(forms.Form):
         choices=[("IN", "OS Interna"), ("EX", "OS Externa")],
         widget=forms.RadioSelect,
         required=False,
+    )
+
+    pa_selecionada = forms.ChoiceField(
+        label="PA Responsável",
+        choices=[],
+        required=False
     )
 
     def __init__(self, *args, nome_form=None, payload=None, **kwargs):
@@ -85,3 +94,30 @@ class ConsultaOStranspForm(forms.Form):
                         status_unicos.append((sid, stype))
 
                 self.fields["status"].choices = status_unicos
+
+        pa_choices = [("", "Selecione uma PA")]
+
+        pa_qs = (
+            GroupAditionalInformation.objects
+            .filter(
+                Q(group__name="arancia_PA") |
+                Q(group__name="arancia_TRANSPORT", nome="C-TRENDS")
+            )
+            .annotate(nome_lower=Lower("nome"))
+            .order_by("nome_lower")
+            .values_list("id", "nome")
+            .distinct()
+        )
+
+        pa_choices += [(str(pa_id), nome) for pa_id, nome in pa_qs]
+
+        self.fields["pa_selecionada"].choices = pa_choices
+
+        for field_name, field in self.fields.items():
+            if isinstance(field.widget, forms.HiddenInput):
+                continue
+
+            css = "filter-input"
+            if isinstance(field.widget, forms.Select):
+                css = "filter-select"
+            field.widget.attrs["class"] = css
