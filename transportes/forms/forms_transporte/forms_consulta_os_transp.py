@@ -4,6 +4,10 @@ from django import forms
 class ConsultaOStranspForm(forms.Form):
     client = forms.ChoiceField(label="Cliente", required=False)
 
+    numero_os = forms.CharField(
+        label="Insira o número da OS (Opcional)", required=False
+    )
+
     order_type = forms.MultipleChoiceField(
         label="Tipo de OS",
         required=False,
@@ -14,10 +18,6 @@ class ConsultaOStranspForm(forms.Form):
         label="Status da OS (Opcional)",
         required=False,
         widget=forms.SelectMultiple
-    )
-
-    numero_os = forms.CharField(
-        label="Insira o número da OS (Opcional)", required=False
     )
 
     created_at = forms.DateField(
