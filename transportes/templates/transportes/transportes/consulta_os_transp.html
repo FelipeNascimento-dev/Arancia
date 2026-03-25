@@ -326,7 +326,6 @@
     document.addEventListener("DOMContentLoaded", function () {
 
         const clientSelect = document.getElementById("id_client");
-        const orderTypeSelect = document.getElementById("id_order_type");
 
         function setOrDelete(params, key, value) {
             if (value && value !== "") params.set(key, value);
@@ -337,13 +336,11 @@
             const params = new URLSearchParams(window.location.search);
 
             if (clientSelect) setOrDelete(params, "client", clientSelect.value);
-            if (orderTypeSelect) setOrDelete(params, "order_type", orderTypeSelect.value);
 
             window.location.search = params.toString();
         }
 
         if (clientSelect) clientSelect.addEventListener("change", reloadWithParams);
-        if (orderTypeSelect) orderTypeSelect.addEventListener("change", reloadWithParams);
 
     });
 </script>
