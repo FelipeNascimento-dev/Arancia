@@ -1616,7 +1616,9 @@
                                 <span class="badge-status
                                     {% if quote.status.type == 'PENDENTE' %}
                                         badge-pendente
-                                    {% elif quote.status.type == 'APROVADA' %}
+                                    {% elif quote.status.type == 'APROVADA MULTIPLA' %}
+                                        badge-aprovado
+                                    {% elif quote.status.type == 'APROVADA UNICA' %}
                                         badge-aprovado
                                     {% elif quote.status.type == 'REJEITADA' %}
                                         badge-rejeitado
@@ -1658,7 +1660,7 @@
                             </div>
                         </div>
                         <div class="cotacao-actions">
-                        {% if quote.status.type == "PENDENTE" %}
+                        {% if quote.status.type != "REJEITADA" %}
                         <form method="post">
                             {% csrf_token %}
                             <input type="hidden" name="quote_id" value="{{ quote.id }}">
@@ -1910,9 +1912,26 @@
                         <label>Cotação (opcional)</label>
                         <select name="quote_id" id="quoteSelect">
                             <option value="">Selecionar cotação...</option>
-                            {% for quote in payload.quotes %}
-                            <option value="{{ quote.id }}">{{ quote.carrier.nome }} - R${{ quote.estimated_price }}</option>
-                            {% endfor %}
+
+                            {% if quotes_aprovadas_unicas %}
+                            <optgroup label="Aprovadas Únicas">
+                                {% for quote in quotes_aprovadas_unicas %}
+                                <option value="{{ quote.id }}">
+                                    #{{ quote.id }} - {{ quote.carrier.nome }} - R$ {{ quote.estimated_price }}
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                            {% endif %}
+
+                            {% if quotes_aprovadas_multiplas %}
+                            <optgroup label="Aprovadas Múltiplas">
+                                {% for quote in quotes_aprovadas_multiplas %}
+                                <option value="{{ quote.id }}">
+                                    #{{ quote.id }} - {{ quote.carrier.nome }} - R$ {{ quote.estimated_price }}
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                            {% endif %}
                         </select>
                     </div>
 
@@ -1924,6 +1943,10 @@
 
                 <div class="items-box">
                     <div class="items-title">Itens da Viagem</div>
+                    <label style="font-size:13px;cursor:pointer;">
+                        <input type="checkbox" id="selectAllItems">
+                        Selecionar todos
+                    </label>
                     {% for item in itens_sem_viagem %}
                     <label class="checkbox-item">
                         <input type="checkbox" name="items" value="{{ item.id }}">
@@ -2505,9 +2528,26 @@ modalEditarItem.addEventListener("click", function(e){
                         <label>Cotação</label>
                         <select name="quote_id" id="edit_quote_id">
                             <option value="">Selecionar cotação...</option>
-                            {% for quote in payload.quotes %}
-                            <option value="{{ quote.id }}">{{ quote.carrier.nome }} - R$ {{ quote.estimated_price }}</option>
-                            {% endfor %}
+
+                            {% if quotes_aprovadas_unicas %}
+                            <optgroup label="Aprovadas Únicas">
+                                {% for quote in quotes_aprovadas_unicas %}
+                                <option value="{{ quote.id }}">
+                                    #{{ quote.id }} - {{ quote.carrier.nome }} - R$ {{ quote.estimated_price }}
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                            {% endif %}
+
+                            {% if quotes_aprovadas_multiplas %}
+                            <optgroup label="Aprovadas Múltiplas">
+                                {% for quote in quotes_aprovadas_multiplas %}
+                                <option value="{{ quote.id }}">
+                                    #{{ quote.id }} - {{ quote.carrier.nome }} - R$ {{ quote.estimated_price }}
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                            {% endif %}
                         </select>
                     </div>
 
