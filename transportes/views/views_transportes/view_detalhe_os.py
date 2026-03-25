@@ -12,6 +12,53 @@ from django.utils.dateparse import parse_datetime
 from django.utils.timezone import localtime
 
 
+def _get_items_from_response(response):
+    if isinstance(response, dict):
+        return response.get("items") or response.get("results") or []
+    elif isinstance(response, list):
+        return response
+    return []
+
+
+def _normalizar_texto(valor):
+    return str(valor or "").strip().upper()
+
+
+def _filtrar_quotes_por_status(quotes):
+    quotes_rejeitadas = []
+    quotes_aprovadas_unicas = []
+    quotes_aprovadas_multiplas = []
+    quotes_aprovadas = []
+
+    for quote in quotes:
+        status_obj = quote.get("status") or {}
+
+        status_nome = _normalizar_texto(
+            status_obj.get("type")
+            or status_obj.get("nome")
+            or status_obj.get("description")
+            or status_obj.get("status")
+        )
+
+        if "REJEIT" in status_nome:
+            quotes_rejeitadas.append(quote)
+
+        elif "APROV" in status_nome and "UNIC" in status_nome:
+            quotes_aprovadas_unicas.append(quote)
+            quotes_aprovadas.append(quote)
+
+        elif "APROV" in status_nome and ("MULT" in status_nome or "MULTIP" in status_nome):
+            quotes_aprovadas_multiplas.append(quote)
+            quotes_aprovadas.append(quote)
+
+    return {
+        "quotes_rejeitadas": quotes_rejeitadas,
+        "quotes_aprovadas_unicas": quotes_aprovadas_unicas,
+        "quotes_aprovadas_multiplas": quotes_aprovadas_multiplas,
+        "quotes_aprovadas": quotes_aprovadas,
+    }
+
+
 def buscar_motoristas(request):
     nome = request.GET.get("nome", "").strip()
     carrier_id = request.GET.get("carrier_id")
@@ -118,6 +165,9 @@ def detalhe_os_transp(request, order_number):
     )
 
     resp = client.send_api_request()
+
+    quotes_data = resp.get("quotes", []) or []
+    quotes_filtradas = _filtrar_quotes_por_status(quotes_data)
 
     # print(resp)
 
@@ -880,6 +930,10 @@ def detalhe_os_transp(request, order_number):
         "confirmation_text": confirmation_text,
         "travel_items": travel_items,
         "itens_sem_viagem": itens_sem_viagem,
+        "quotes_rejeitadas": quotes_filtradas["quotes_rejeitadas"],
+        "quotes_aprovadas_unicas": quotes_filtradas["quotes_aprovadas_unicas"],
+        "quotes_aprovadas_multiplas": quotes_filtradas["quotes_aprovadas_multiplas"],
+        "quotes_aprovadas": quotes_filtradas["quotes_aprovadas"],
         "site_title": "Detalhe da OS",
         "current_parent_menu": "transportes",
         "current_menu": "lista_os",

@@ -24,7 +24,7 @@ def consulta_os_transp(request):
     )
     resp = client.send_api_request()
 
-    print(resp)
+    # print(resp)
 
     for item in resp:
         for type in item['OrderType']:

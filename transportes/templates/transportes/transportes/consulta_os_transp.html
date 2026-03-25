@@ -216,7 +216,7 @@
 
 {% if orders %}
 <div class="cards-container">
-    {% for item in orders|dictsort:"created_at" %}
+    {% for item in orders %}
     <div class="card">
         <div class="card-header">
             <span class="badge-num">{{ forloop.counter }}</span>
