@@ -38,9 +38,14 @@ def consulta_os_transp(request):
     if request.method == "POST":
         data = request.POST.copy()
         data.pop("csrfmiddlewaretoken", None)
+
         for k in list(data.keys()):
-            if data.get(k) in (None, "", "None"):
-                data.pop(k, None)
+            valores = [v for v in data.getlist(
+                k) if v not in (None, "", "None")]
+            data.pop(k, None)
+            for valor in valores:
+                data.appendlist(k, valor)
+
         return redirect(f"{request.path}?{data.urlencode()}")
 
     data = request.GET
@@ -106,27 +111,26 @@ def consulta_os_transp(request):
             if cliente_obj and cliente_obj.get("nome"):
                 params["cliente"] = cliente_obj["nome"]
 
-        status_id = (data.get("status") or "").strip()
-        if status_id:
-            status_texto = None
+        status_ids = [s.strip() for s in data.getlist("status") if s.strip()]
+        if status_ids:
+            status_textos = []
 
             for cliente in resp:
                 for order_type_item in cliente.get("OrderType", []):
                     for status_item in order_type_item.get("status", []):
-                        if str(status_item.get("id")) == str(status_id):
-                            status_texto = status_item.get("description")
-                            break
-                    if status_texto:
-                        break
-                if status_texto:
-                    break
+                        if str(status_item.get("id")) in status_ids:
+                            valor = status_item.get(
+                                "type") or status_item.get("type")
+                            if valor and valor not in status_textos:
+                                status_textos.append(valor)
 
-            if status_texto:
-                params["status"] = status_texto
+            if status_textos:
+                params["status"] = ",".join(status_textos)
 
-        order_type = (data.get("order_type") or "").strip()
-        if order_type:
-            params["order_type"] = order_type
+        order_type_ids = [ot.strip()
+                          for ot in data.getlist("order_type") if ot.strip()]
+        if order_type_ids:
+            params["order_type"] = ",".join(order_type_ids)
 
         params["limit"] = limit
         params["offset"] = offset
@@ -140,7 +144,7 @@ def consulta_os_transp(request):
         )
         resultado_api = lista_request.send_api_request()
 
-        print(resultado_api)
+        # print(resultado_api)
 
         if isinstance(resultado_api, dict) and resultado_api.get("detail"):
             messages.error(request, resultado_api["detail"])
