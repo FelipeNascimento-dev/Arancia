@@ -100,11 +100,18 @@ class ConsultaOStranspForm(forms.Form):
             for ot in order_types:
                 for st in ot.get("status", []):
                     sid = str(st["id"])
-                    stype = st["type"]
+                    stype = (st.get("type") or "").strip()
 
-                    if sid not in vistos:
-                        vistos.add(sid)
+                    if not stype:
+                        continue
+
+                    chave = stype.lower()
+
+                    if chave not in vistos:
+                        vistos.add(chave)
                         status_unicos.append((sid, stype))
+
+            self.fields["status"].choices = status_unicos
 
             self.fields["status"].choices = status_unicos
 

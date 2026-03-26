@@ -2001,11 +2001,14 @@
                 </div>
 
                 <div class="items-box">
-                    <div class="items-title">Itens da Viagem</div>
-                    <label style="font-size:13px;cursor:pointer;">
-                        <input type="checkbox" id="selectAllItems">
-                        Selecionar todos
-                    </label>
+                    <div class="items-title"
+                        style="display:flex;justify-content:space-between;align-items:center;">
+                        <span>Itens da Viagem</span>
+                        <label style="font-size:13px;cursor:pointer;">
+                            <input type="checkbox" id="selectAllItemsViagem">
+                            Selecionar todos
+                        </label>
+                    </div>
                     {% for item in itens_sem_viagem %}
                     <label class="checkbox-item">
                         <input type="checkbox" name="items" value="{{ item.id }}">
@@ -2118,7 +2121,7 @@
                             style="display:flex;justify-content:space-between;align-items:center;">
                             <span>Itens da Viagem</span>
                             <label style="font-size:13px;cursor:pointer;">
-                                <input type="checkbox" id="selectAllItems">
+                                <input type="checkbox" id="selectAllItemsCotacao">
                                 Selecionar todos
                             </label>
                         </div>
@@ -2157,7 +2160,7 @@
 
                     <div class="form-group">
                         <label>Prazo (dias)</label>
-                        <input type="number" name="estimated_deadline" value="0" step="1" min="0" required>
+                        <input type="number" name="estimated_deadline" value="3" step="1" min="3" required="True">
                     </div>
                 </div>
             </div>
@@ -3826,5 +3829,107 @@ document.addEventListener("DOMContentLoaded", function(){
         }, 10)
     })
 })
+</script>
+
+<!-- MODAL PARA SELECIONAR TODOS -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modalViagem = document.getElementById("modalNovaViagem");
+    const modalCotacao = document.getElementById("modalNovaCotacao");
+
+    const selectAllViagem = document.getElementById("selectAllItemsViagem");
+    const selectAllCotacao = document.getElementById("selectAllItemsCotacao");
+
+    function getItensViagem() {
+        if (!modalViagem) return [];
+        return modalViagem.querySelectorAll("input[name='items']");
+    }
+
+    function getItensCotacao() {
+        if (!modalCotacao) return [];
+        return modalCotacao.querySelectorAll("input[name='items']");
+    }
+
+    function atualizarTotaisCotacaoScoped() {
+        if (!modalCotacao) return;
+
+        let totalWeight = 0;
+        let totalVolume = 0;
+
+        const itensMarcados = modalCotacao.querySelectorAll("input[name='items']:checked");
+
+        itensMarcados.forEach(el => {
+            const weight = parseFloat((el.dataset.weight || "0").replace(",", "."));
+            const h = parseFloat(el.dataset.height || 0);
+            const w = parseFloat(el.dataset.width || 0);
+            const l = parseFloat(el.dataset.length || 0);
+
+            totalWeight += weight;
+            totalVolume += (h * w * l) / 1000000;
+        });
+
+        const weightInput = modalCotacao.querySelector("input[name='total_weight']");
+        const volumeInput = modalCotacao.querySelector("input[name='total_volume']");
+
+        if (weightInput) weightInput.value = totalWeight.toFixed(2);
+        if (volumeInput) volumeInput.value = totalVolume.toFixed(4);
+    }
+
+    function sincronizarSelectAllViagem() {
+        if (!selectAllViagem) return;
+        const itens = [...getItensViagem()];
+        if (!itens.length) {
+            selectAllViagem.checked = false;
+            return;
+        }
+        selectAllViagem.checked = itens.every(cb => cb.checked);
+    }
+
+    function sincronizarSelectAllCotacao() {
+        if (!selectAllCotacao) return;
+        const itens = [...getItensCotacao()];
+        if (!itens.length) {
+            selectAllCotacao.checked = false;
+            return;
+        }
+        selectAllCotacao.checked = itens.every(cb => cb.checked);
+    }
+
+    if (selectAllViagem) {
+        selectAllViagem.addEventListener("change", function () {
+            const checked = this.checked;
+            getItensViagem().forEach(cb => {
+                cb.checked = checked;
+            });
+        });
+    }
+
+    if (selectAllCotacao) {
+        selectAllCotacao.addEventListener("change", function () {
+            const checked = this.checked;
+            getItensCotacao().forEach(cb => {
+                cb.checked = checked;
+            });
+            atualizarTotaisCotacaoScoped();
+        });
+    }
+
+    if (modalViagem) {
+        modalViagem.addEventListener("change", function (e) {
+            if (e.target.matches("input[name='items']")) {
+                sincronizarSelectAllViagem();
+            }
+        });
+    }
+
+    if (modalCotacao) {
+        modalCotacao.addEventListener("change", function (e) {
+            if (e.target.matches("input[name='items']")) {
+                sincronizarSelectAllCotacao();
+                atualizarTotaisCotacaoScoped();
+            }
+        });
+    }
+});
 </script>
 {% endblock content %}

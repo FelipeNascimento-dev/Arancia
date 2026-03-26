@@ -29,16 +29,36 @@ def consulta_os_transp(request):
 
     for item in resp:
         status_base = item.get("status_base")
+
         for order_type in item.get("OrderType", []):
-            statuses = order_type.get("status", [])
+            statuses = order_type.get("status", []) or []
 
             if status_base:
-                ja_existe = any(str(s.get("id")) == str(
-                    status_base.get("id")) for s in statuses)
-                if not ja_existe:
+                status_base_type = (status_base.get("type")
+                                    or "").strip().lower()
+                ja_existe = any(
+                    (s.get("type") or "").strip().lower() == status_base_type
+                    for s in statuses
+                )
+                if status_base_type and not ja_existe:
                     statuses.append(status_base)
 
-            order_type["status"] = statuses
+            status_filtrados = []
+            vistos = set()
+
+            for st in statuses:
+                stype = (st.get("type") or "").strip()
+                if not stype:
+                    continue
+
+                chave = stype.lower()
+                if chave in vistos:
+                    continue
+
+                vistos.add(chave)
+                status_filtrados.append(st)
+
+            order_type["status"] = status_filtrados
 
     if isinstance(resp, dict) and resp.get("detail"):
         messages.error(request, resp["detail"])
