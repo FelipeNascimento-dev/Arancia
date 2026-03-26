@@ -760,6 +760,47 @@ def detalhe_os_transp(request, order_number):
             except Exception as e:
                 messages.error(request, f"Erro ao atualizar viagem: {e}")
 
+        if "atrelar_motorista_viagens" in request.POST:
+            driver_id = request.POST.get("driver_id")
+            carrier_id = request.POST.get("carrier_id")
+            travel_ids = request.POST.getlist("travel_ids")
+
+            created_by = request.user.username
+
+            update_driver_payload = [
+                {
+                    "travels_ids": [int(i) for i in travel_ids],
+                    "driver_id": int(driver_id)
+                }
+            ]
+
+            try:
+                update_driver_url = f"{TRANSP_API_URL}/v2/order_travel/driver/updated?created_by={created_by}"
+
+                update_driver_client = RequestClient(
+                    method="POST",
+                    url=update_driver_url,
+                    headers={
+                        "accept": "application/json",
+                        "Content-Type": "application/json",
+                    },
+                    request_data=update_driver_payload
+                )
+
+                print(update_driver_payload)
+
+                update_driver_response = update_driver_client.send_api_request()
+
+                if 'detail' in update_driver_response:
+                    messages.error(
+                        request, update_driver_response.get('detail'))
+                else:
+                    messages.success(
+                        request, "Viagens atualizadas com sucesso!")
+                    return redirect("transportes:detalhe_os_transp", order_number=order_number)
+            except Exception as e:
+                messages.error(request, f"Erro ao consultar eventos: {e}")
+
         if "reject_button" in request.POST:
             quote_id = request.POST.get("quote_id")
             modal_confirmacao = True
