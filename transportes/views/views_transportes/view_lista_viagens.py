@@ -8,6 +8,18 @@ from django.core.paginator import Paginator
 from datetime import datetime
 from urllib.parse import urlencode
 from django.http import JsonResponse
+from datetime import datetime
+
+
+def formatar_data(data_str, com_hora=True):
+    if not data_str or data_str == "None":
+        return None
+
+    try:
+        dt = datetime.fromisoformat(str(data_str).replace("Z", "+00:00"))
+        return dt.strftime("%d/%m/%Y %H:%M" if com_hora else "%d/%m/%Y")
+    except Exception:
+        return data_str
 
 
 def buscar_motoristas_travels(request):
@@ -245,19 +257,18 @@ def lista_viagens(request):
             if isinstance(resp_travel, list):
                 travels = resp_travel
 
-                for t in travels:
-                    end_date = t.get("travel", {}).get("end_date")
+            for t in travels:
+                travel_data = t.get("travel", {})
 
-                    if end_date and end_date != "None":
-                        try:
-                            dt = datetime.fromisoformat(
-                                end_date.replace("Z", "+00:00"))
-                            t["travel"]["end_date_formatada"] = dt.strftime(
-                                "%d/%m/%Y %H:%M")
-                        except Exception:
-                            t["travel"]["end_date_formatada"] = end_date
-                    else:
-                        t["travel"]["end_date_formatada"] = None
+                travel_data["start_date_formatada"] = formatar_data(
+                    travel_data.get("start_date")
+                )
+                travel_data["end_date_formatada"] = formatar_data(
+                    travel_data.get("end_date")
+                )
+                travel_data["created_at_formatada"] = formatar_data(
+                    travel_data.get("created_at")
+                )
 
         except Exception:
             travels = []
