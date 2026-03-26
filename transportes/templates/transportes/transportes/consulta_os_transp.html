@@ -204,9 +204,6 @@
                 </a>
             </div>
             {% include 'global/partials/_form_2colV2.html' %}
-        </form>
-        <form method="POST">
-            {% csrf_token %}
             <button type="submit" name="extrair_os" value="1" class="extract-balanced">
                 <i class="fa-solid fa-download"></i> Exportar
             </button>
@@ -324,7 +321,6 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-
         const clientSelect = document.getElementById("id_client");
 
         function setOrDelete(params, key, value) {
@@ -332,16 +328,23 @@
             else params.delete(key);
         }
 
-        function reloadWithParams() {
+        function reloadWithClient() {
             const params = new URLSearchParams(window.location.search);
 
-            if (clientSelect) setOrDelete(params, "client", clientSelect.value);
+            if (clientSelect) {
+                setOrDelete(params, "client", clientSelect.value);
+            }
+
+            params.delete("order_type");
+            params.delete("status");
+            params.delete("page");
 
             window.location.search = params.toString();
         }
 
-        if (clientSelect) clientSelect.addEventListener("change", reloadWithParams);
-
+        if (clientSelect) {
+            clientSelect.addEventListener("change", reloadWithClient);
+        }
     });
 </script>
 

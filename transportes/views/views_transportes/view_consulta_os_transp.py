@@ -6,6 +6,7 @@ from ...forms import ConsultaOStranspForm
 from setup.local_settings import TRANSP_API_URL
 from utils.request import RequestClient
 from datetime import datetime
+from urllib.parse import urlencode
 
 
 @login_required(login_url='logistica:login')
@@ -27,8 +28,17 @@ def consulta_os_transp(request):
     # print(resp)
 
     for item in resp:
-        for type in item['OrderType']:
-            type['status'].append(item['status_base'])
+        status_base = item.get("status_base")
+        for order_type in item.get("OrderType", []):
+            statuses = order_type.get("status", [])
+
+            if status_base:
+                ja_existe = any(str(s.get("id")) == str(
+                    status_base.get("id")) for s in statuses)
+                if not ja_existe:
+                    statuses.append(status_base)
+
+            order_type["status"] = statuses
 
     if isinstance(resp, dict) and resp.get("detail"):
         messages.error(request, resp["detail"])
@@ -36,6 +46,68 @@ def consulta_os_transp(request):
 
     form = ConsultaOStranspForm(request.GET or None, payload=resp)
     if request.method == "POST":
+        if "extrair_os" in request.POST:
+            data = request.POST.copy()
+            data.pop("csrfmiddlewaretoken", None)
+
+            extract_params = {}
+
+            created_at = (data.get("created_at") or "").strip()
+            if created_at:
+                extract_params["created_at"] = created_at
+
+            tipo_os = (data.get("tipo_os") or "").strip().upper()
+            numero_os = (data.get("numero_os") or "").strip()
+
+            if numero_os and not tipo_os:
+                messages.error(
+                    request, "Selecione o tipo da OS (IN/EX) para pesquisar pelo número.")
+                numero_os = ""
+            elif tipo_os and not numero_os:
+                messages.error(
+                    request, "Informe o número da OS para pesquisar.")
+                tipo_os = ""
+
+            if numero_os:
+                if tipo_os == "IN":
+                    extract_params["IN"] = numero_os
+                elif tipo_os == "EX":
+                    extract_params["EX"] = numero_os
+
+            cliente_id = (data.get("client") or "").strip()
+            if cliente_id:
+                cliente_obj = next((c for c in resp if str(
+                    c.get("id")) == str(cliente_id)), None)
+                if cliente_obj and cliente_obj.get("nome"):
+                    extract_params["cliente"] = cliente_obj["nome"]
+
+            pa_id = (data.get("pa_selecionada") or "").strip()
+            if pa_id:
+                extract_params["designation_id"] = pa_id
+
+            status_ids = [s.strip()
+                          for s in data.getlist("status") if s.strip()]
+            if status_ids:
+                status_textos = []
+                for cliente in resp:
+                    for order_type_item in cliente.get("OrderType", []):
+                        for status_item in order_type_item.get("status", []):
+                            if str(status_item.get("id")) in status_ids:
+                                valor = status_item.get("type")
+                                if valor and valor not in status_textos:
+                                    status_textos.append(valor)
+
+                if status_textos:
+                    extract_params["status"] = ",".join(status_textos)
+
+            order_type_ids = [ot.strip()
+                              for ot in data.getlist("order_type") if ot.strip()]
+            if order_type_ids:
+                extract_params["order_type"] = ",".join(order_type_ids)
+
+            url_extract = f"{TRANSP_API_URL}/service_orders/export/excel?{urlencode(extract_params)}"
+            return redirect(url_extract)
+
         data = request.POST.copy()
         data.pop("csrfmiddlewaretoken", None)
 

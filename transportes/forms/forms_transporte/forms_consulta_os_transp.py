@@ -1,7 +1,7 @@
 from django import forms
 from django.db.models import Q
 from django.db.models.functions import Lower
-from logistica.models import GroupAditionalInformation, Group
+from logistica.models import GroupAditionalInformation
 
 
 class ConsultaOStranspForm(forms.Form):
@@ -53,50 +53,10 @@ class ConsultaOStranspForm(forms.Form):
         self.fields["status"].choices = []
 
         self.fields["client"].choices += [
-            (c["id"], c["nome"]) for c in self.payload
+            (str(c["id"]), c["nome"]) for c in self.payload
         ]
 
-        if not self.is_bound:
-            return
-
-        selected_client = self.data.get("client")
-        selected_types = self.data.getlist("order_type")
-
-        if selected_client:
-            cliente = next(
-                (c for c in self.payload if str(
-                    c["id"]) == str(selected_client)),
-                None,
-            )
-
-            if cliente:
-                order_types = cliente.get("OrderType", [])
-
-                self.fields["order_type"].choices = [
-                    (str(ot["id"]), ot["type"])
-                    for ot in order_types
-                ]
-
-                status_choices = []
-                for ot in order_types:
-                    if str(ot["id"]) in [str(x) for x in selected_types]:
-                        status_choices.extend([
-                            (str(st["id"]), st["type"])
-                            for st in ot.get("status", [])
-                        ])
-
-                # remove duplicados
-                vistos = set()
-                status_unicos = []
-                for sid, stype in status_choices:
-                    if sid not in vistos:
-                        vistos.add(sid)
-                        status_unicos.append((sid, stype))
-
-                self.fields["status"].choices = status_unicos
-
         pa_choices = [("", "Selecione uma PA")]
-
         pa_qs = (
             GroupAditionalInformation.objects
             .filter(
@@ -108,10 +68,45 @@ class ConsultaOStranspForm(forms.Form):
             .values_list("id", "nome")
             .distinct()
         )
-
         pa_choices += [(str(pa_id), nome) for pa_id, nome in pa_qs]
-
         self.fields["pa_selecionada"].choices = pa_choices
+
+        selected_client = None
+        selected_client_id = None
+
+        if self.is_bound:
+            selected_client_id = self.data.get("client")
+        else:
+            selected_client_id = self.initial.get("client")
+
+        if selected_client_id:
+            selected_client = next(
+                (c for c in self.payload if str(
+                    c["id"]) == str(selected_client_id)),
+                None
+            )
+
+        if selected_client:
+            order_types = selected_client.get("OrderType", [])
+
+            self.fields["order_type"].choices = [
+                (str(ot["id"]), ot["type"])
+                for ot in order_types
+            ]
+
+            status_unicos = []
+            vistos = set()
+
+            for ot in order_types:
+                for st in ot.get("status", []):
+                    sid = str(st["id"])
+                    stype = st["type"]
+
+                    if sid not in vistos:
+                        vistos.add(sid)
+                        status_unicos.append((sid, stype))
+
+            self.fields["status"].choices = status_unicos
 
         for field_name, field in self.fields.items():
             if isinstance(field.widget, forms.HiddenInput):
