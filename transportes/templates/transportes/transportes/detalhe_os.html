@@ -1140,6 +1140,61 @@
     .btn-danger:hover {
         background: #dc2626;
     }
+
+    .travel-link-driver-box {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 15px;
+        background: #f9fafc;
+        max-height: 320px;
+        overflow-y: auto;
+    }
+
+    .travel-link-driver-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px;
+        border: 1px solid #ececec;
+        border-radius: 10px;
+        background: #fff;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .travel-link-driver-item:hover {
+        background: #f4f6f9;
+        border-color: #d9e4f2;
+    }
+
+    .travel-link-driver-item input[type="checkbox"] {
+        margin-top: 3px;
+    }
+
+    .travel-link-driver-content {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .travel-link-driver-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #222;
+    }
+
+    .travel-link-driver-sub {
+        font-size: 12px;
+        color: #666;
+        line-height: 1.4;
+    }
+
+    .travel-link-driver-empty {
+        font-size: 13px;
+        color: #777;
+        padding: 8px 0;
+    }
 </style>
 
 <div class="os-container">
@@ -1190,6 +1245,10 @@
 
                     <div class="dropdown-item" onclick="abrirModal()">
                         <i class="fa-solid fa-truck"></i> Criar Viagem
+                    </div>
+
+                    <div class="dropdown-item" onclick="abrirModalAtrelarMotorista()">
+                        <i class="fa-solid fa-user-plus"></i> Atrelar Motorista às Viagens
                     </div>
 
                     <!-- <div class="dropdown-divider"></div>
@@ -2739,6 +2798,203 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 </script>
+
+<!-- MODAL PARA ATRELAR MOTORISTAS A VIAGENS -->
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="service_order_id" value="{{ payload.service_order.id }}">
+
+    <div class="os-modal-overlay" id="modalAtrelarMotorista">
+        <div class="os-modal">
+            <div class="os-modal-header">
+                <div class="os-modal-title">Atrelar Motorista às Viagens</div>
+                <div class="os-modal-close" onclick="fecharModalAtrelarMotorista()">✕</div>
+            </div>
+
+            <div class="os-modal-body">
+                <div class="os-modal-description">
+                    Selecione o motorista e as viagens que deseja atualizar.
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Transportadora</label>
+                        <select name="carrier_id" id="carrierSelectAtrelarMotorista" required>
+                            <option value="">Selecione uma transportadora...</option>
+                            {% for carrier in carriers %}
+                            <option value="{{ carrier.id }}">{{ carrier.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Motorista</label>
+                        <input type="text"
+                               id="driverSearchAtrelar"
+                               placeholder="Digite o nome do motorista..."
+                               autocomplete="off">
+                        <input type="hidden" name="driver_id" id="driverIdAtrelar">
+                        <div id="driverResultsAtrelar" class="driver-dropdown"></div>
+                    </div>
+                </div>
+
+                <div class="travel-link-driver-box">
+                    <div class="items-title"
+                         style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <span>Viagens disponíveis</span>
+                        <label style="font-size:13px;cursor:pointer;">
+                            <input type="checkbox" id="selectAllTravelsDriver">
+                            Selecionar todas
+                        </label>
+                    </div>
+
+                    {% for travel in payload.travels %}
+                    <label class="travel-link-driver-item">
+                        <input type="checkbox" name="travel_ids" value="{{ travel.id }}">
+                        <div class="travel-link-driver-content">
+                            <div class="travel-link-driver-title">
+                                Viagem #{{ travel.id }}
+                                <span class="badge badge-blue">{{ travel.status.type }}</span>
+                            </div>
+                            <div class="travel-link-driver-sub">
+                                {% if travel.carrier %}
+                                    Transportadora: {{ travel.carrier.nome }}
+                                {% else %}
+                                    Transportadora: Não informada
+                                {% endif %}
+                                <br>
+                                {% if travel.driver and travel.driver.name %}
+                                    Motorista atual: {{ travel.driver.name }}
+                                {% else %}
+                                    Motorista atual: Não vinculado
+                                {% endif %}
+                                <br>
+                                {% if travel.created_at %}
+                                    Criada em: {{ travel.created_at|date:"d/m/Y H:i" }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </label>
+                    {% empty %}
+                    <div class="travel-link-driver-empty">
+                        Nenhuma viagem disponível para atualização.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="os-modal-footer">
+                <button type="button"
+                        class="btn-secondary"
+                        onclick="fecharModalAtrelarMotorista()">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="btn-primary"
+                        name="atrelar_motorista_viagens"
+                        value="1">
+                    Salvar vínculo
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modalAtrelarMotorista = document.getElementById("modalAtrelarMotorista");
+
+    window.abrirModalAtrelarMotorista = function () {
+        modalAtrelarMotorista.classList.add("show");
+    };
+
+    window.fecharModalAtrelarMotorista = function () {
+        modalAtrelarMotorista.classList.remove("show");
+    };
+
+    if (modalAtrelarMotorista) {
+        modalAtrelarMotorista.addEventListener("click", function (e) {
+            if (e.target === modalAtrelarMotorista) {
+                fecharModalAtrelarMotorista();
+            }
+        });
+    }
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("driverSearchAtrelar");
+    const resultsBox = document.getElementById("driverResultsAtrelar");
+    const hiddenId = document.getElementById("driverIdAtrelar");
+    const carrierSelect = document.getElementById("carrierSelectAtrelarMotorista");
+
+    if (!input || !resultsBox || !hiddenId || !carrierSelect) return;
+
+    let timeout = null;
+
+    input.addEventListener("keyup", function () {
+        const query = this.value.trim();
+        const carrierId = carrierSelect.value;
+
+        clearTimeout(timeout);
+
+        if (query.length < 2 || !carrierId) {
+            resultsBox.style.display = "none";
+            return;
+        }
+
+        timeout = setTimeout(() => {
+            fetch("{% url 'transportes:buscar_motoristas' %}?nome=" + encodeURIComponent(query) + "&carrier_id=" + carrierId)
+                .then(res => res.json())
+                .then(data => {
+                    resultsBox.innerHTML = "";
+
+                    if (!data.items.length) {
+                        resultsBox.style.display = "none";
+                        return;
+                    }
+
+                    data.items.forEach(driver => {
+                        const div = document.createElement("div");
+                        div.classList.add("driver-item");
+                        div.innerText = driver.name;
+
+                        div.onclick = function () {
+                            input.value = driver.name;
+                            hiddenId.value = driver.uid;
+                            resultsBox.style.display = "none";
+                        };
+
+                        resultsBox.appendChild(div);
+                    });
+
+                    resultsBox.style.display = "block";
+                });
+        }, 300);
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!input.contains(e.target) && !resultsBox.contains(e.target)) {
+            resultsBox.style.display = "none";
+        }
+    });
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const selectAllTravels = document.getElementById("selectAllTravelsDriver");
+
+    if (!selectAllTravels) return;
+
+    selectAllTravels.addEventListener("change", function () {
+        const checked = this.checked;
+
+        document
+            .querySelectorAll("#modalAtrelarMotorista input[name='travel_ids']")
+            .forEach(cb => cb.checked = checked);
+    });
+});
+</script>
+
 
 
 <script>
