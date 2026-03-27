@@ -348,4 +348,139 @@
     });
 </script>
 
+<script>
+    function makeSearchable(selectId) {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+
+        const parent = select.parentNode;
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "autocomplete-wrapper";
+        wrapper.style.position = "relative";
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.placeholder = "Digite pelo menos 2 letras...";
+        input.className = "filter-input autocomplete-input";
+
+        const dropdown = document.createElement("div");
+        dropdown.className = "search-dropdown";
+        dropdown.style.display = "none";
+        dropdown.style.position = "absolute";
+        dropdown.style.top = "100%";
+        dropdown.style.left = "0";
+        dropdown.style.right = "0";
+        dropdown.style.background = "#fff";
+        dropdown.style.border = "1px solid #ddd";
+        dropdown.style.borderRadius = "8px";
+        dropdown.style.maxHeight = "220px";
+        dropdown.style.overflowY = "auto";
+        dropdown.style.zIndex = "9999";
+        dropdown.style.boxShadow = "0 4px 10px rgba(0,0,0,0.08)";
+
+        parent.insertBefore(wrapper, select);
+        wrapper.appendChild(input);
+        wrapper.appendChild(dropdown);
+        wrapper.appendChild(select);
+
+        select.style.display = "none";
+
+        if (select.options.length && select.value) {
+            const selectedOption = select.options[select.selectedIndex];
+            if (selectedOption) {
+                input.value = selectedOption.text;
+            }
+        }
+
+        let debounceTimer = null;
+
+        input.addEventListener("input", function () {
+            const query = this.value.trim();
+
+            if (query.length < 2) {
+                dropdown.style.display = "none";
+                dropdown.innerHTML = "";
+                return;
+            }
+
+            clearTimeout(debounceTimer);
+
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const response = await fetch(
+                        "{% url 'transportes:buscar_locais' %}?q=" + encodeURIComponent(query),
+                        {
+                            headers: {
+                                "X-Requested-With": "XMLHttpRequest"
+                            }
+                        }
+                    );
+
+                    const data = await response.json();
+                    dropdown.innerHTML = "";
+
+                    if (!data.items || data.items.length === 0) {
+                        dropdown.style.display = "none";
+                        return;
+                    }
+
+                    data.items.forEach(opt => {
+                        const item = document.createElement("div");
+                        item.className = "search-item";
+                        item.textContent = opt.label;
+                        item.style.padding = "10px 12px";
+                        item.style.cursor = "pointer";
+                        item.style.borderBottom = "1px solid #f0f0f0";
+
+                        item.addEventListener("click", function () {
+                            input.value = opt.label;
+
+                            select.innerHTML = "";
+                            const option = new Option(opt.label, opt.id, true, true);
+                            select.appendChild(option);
+                            select.value = String(opt.id);
+
+                            dropdown.style.display = "none";
+                        });
+
+                        item.addEventListener("mouseenter", function () {
+                            item.style.background = "#f5f7fb";
+                        });
+
+                        item.addEventListener("mouseleave", function () {
+                            item.style.background = "#fff";
+                        });
+
+                        dropdown.appendChild(item);
+                    });
+
+                    dropdown.style.display = "block";
+                } catch (error) {
+                    console.error("Erro no autocomplete:", error);
+                    dropdown.style.display = "none";
+                }
+            }, 300);
+        });
+
+        input.addEventListener("blur", function () {
+            if (!input.value.trim()) {
+                select.innerHTML = '<option value="">Selecione</option>';
+                select.value = "";
+            }
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!wrapper.contains(e.target)) {
+                dropdown.style.display = "none";
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        makeSearchable("id_origem");
+        makeSearchable("id_destino");
+    });
+</script>
+
 {% endblock %}

@@ -1,6 +1,5 @@
 from django import forms
 from django.db.models import Q
-from django.db.models.functions import Lower
 from logistica.models import GroupAditionalInformation
 
 
@@ -23,8 +22,14 @@ class ConsultaOStranspForm(forms.Form):
         widget=forms.SelectMultiple
     )
 
-    created_at = forms.DateField(
-        label="Data de criação",
+    data_inicial = forms.DateField(
+        label="Data inicial",
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+
+    data_final = forms.DateField(
+        label="Data final",
         required=False,
         widget=forms.DateInput(attrs={"type": "date"}),
     )
@@ -42,6 +47,18 @@ class ConsultaOStranspForm(forms.Form):
         required=False
     )
 
+    origem = forms.ChoiceField(
+        label="Origem",
+        choices=[],
+        required=False
+    )
+
+    destino = forms.ChoiceField(
+        label="Destino",
+        choices=[],
+        required=False
+    )
+
     def __init__(self, *args, nome_form=None, payload=None, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -51,25 +68,80 @@ class ConsultaOStranspForm(forms.Form):
         self.fields["client"].choices = [("", "Selecione um cliente")]
         self.fields["order_type"].choices = []
         self.fields["status"].choices = []
+        self.fields["origem"].choices = [("", "Selecione a origem")]
+        self.fields["destino"].choices = [("", "Selecione o destino")]
 
         self.fields["client"].choices += [
             (str(c["id"]), c["nome"]) for c in self.payload
         ]
 
-        pa_choices = [("", "Selecione uma PA")]
         pa_qs = (
             GroupAditionalInformation.objects
             .filter(
                 Q(group__name="arancia_PA") |
                 Q(group__name="arancia_TRANSPORT", nome="C-TRENDS")
             )
-            .annotate(nome_lower=Lower("nome"))
-            .order_by("nome_lower")
-            .values_list("id", "nome")
+            .select_related("group")
+            .order_by("nome")
             .distinct()
         )
-        pa_choices += [(str(pa_id), nome) for pa_id, nome in pa_qs]
+
+        pa_choices = [("", "Selecione uma PA")]
+        pa_choices += [(str(pa.id), pa.nome) for pa in pa_qs]
         self.fields["pa_selecionada"].choices = pa_choices
+
+        locais_qs = (
+            GroupAditionalInformation.objects
+            .filter(
+                Q(group__name="arancia_PA") |
+                Q(group__name="arancia_CD") |
+                Q(group__name="arancia_CUSTOMER")
+            )
+            .select_related("group")
+            .order_by("nome")
+            .distinct()
+        )
+
+        def formatar_label(g):
+            prefix = g.group.name.replace("arancia_", "")
+            return f"[{prefix}] {g.nome}"
+
+        base_choices = [(str(g.id), formatar_label(g))
+                        for g in locais_qs[:100]]
+        self.fields["origem"].choices += base_choices
+        self.fields["destino"].choices += base_choices
+
+        origem_id = None
+        destino_id = None
+
+        if self.is_bound:
+            origem_id = self.data.get("origem")
+            destino_id = self.data.get("destino")
+        else:
+            origem_id = self.initial.get("origem")
+            destino_id = self.initial.get("destino")
+
+        ids_extra = [x for x in [origem_id, destino_id] if x]
+
+        if ids_extra:
+            extras = (
+                GroupAditionalInformation.objects
+                .filter(id__in=ids_extra)
+                .select_related("group")
+            )
+
+            extras_choices = [(str(g.id), formatar_label(g)) for g in extras]
+
+            existentes_origem = {valor for valor,
+                                 _ in self.fields["origem"].choices}
+            existentes_destino = {valor for valor,
+                                  _ in self.fields["destino"].choices}
+
+            for valor, label in extras_choices:
+                if valor not in existentes_origem:
+                    self.fields["origem"].choices.append((valor, label))
+                if valor not in existentes_destino:
+                    self.fields["destino"].choices.append((valor, label))
 
         selected_client = None
         selected_client_id = None
@@ -106,12 +178,9 @@ class ConsultaOStranspForm(forms.Form):
                         continue
 
                     chave = stype.lower()
-
                     if chave not in vistos:
                         vistos.add(chave)
                         status_unicos.append((sid, stype))
-
-            self.fields["status"].choices = status_unicos
 
             self.fields["status"].choices = status_unicos
 
