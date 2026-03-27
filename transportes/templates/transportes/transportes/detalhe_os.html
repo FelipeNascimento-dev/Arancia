@@ -375,31 +375,52 @@
         width: 100%;
         max-width: 400px;
         margin-bottom: 20px;
-    }
-
-    .cotacao-header {
-        display: flex;
-        gap: 15px;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .cotacao-title badge{
-        font-size: 16px;
-        font-weight: 600;
+        position: relative;
     }
 
     .cotacao-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        position: relative;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .cotacao-header-left {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .cotacao-header-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
     }
 
     .cotacao-status {
-        position: absolute;
-        top: 12px;
-        right: 12px;
+        position: static;
+    }
+
+    .btn-edit-cotacao {
+        width: 28px;
+        height: 28px;
+        border: none;
+        border-radius: 8px;
+        background: #f4f6f9;
+        color: #0e76bd;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        transition: 0.2s;
+        flex-shrink: 0;
+    }
+
+    .btn-edit-cotacao:hover {
+        background: #e8f2ff;
+        color: #0b5f97;
     }
 
     .badge-status {
@@ -407,6 +428,10 @@
         border-radius: 8px;
         font-size: 11px;
         font-weight: 600;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .badge-pendente {
@@ -1195,6 +1220,12 @@
         color: #777;
         padding: 8px 0;
     }
+    .cotacao-card {
+        width: 100%;
+        max-width: 400px;
+        margin-bottom: 20px;
+        position: relative;
+    }
 </style>
 
 <div class="os-container">
@@ -1663,7 +1694,7 @@
                     {% for quote in payload.quotes %}
                     <div class="os-card cotacao-card">
                         <div class="cotacao-header">
-                            <div>
+                            <div class="cotacao-header-left">
                                 <div class="cotacao-title">
                                     Cotação #{{ quote.id }}
                                 </div>
@@ -1671,20 +1702,44 @@
                                     Criado por {{ quote.created_by }}
                                 </div>
                             </div>
-                            <div class="cotacao-status">
-                                <span class="badge-status
-                                    {% if quote.status.type == 'PENDENTE' %}
-                                        badge-pendente
-                                    {% elif quote.status.type == 'APROVADA MULTIPLA' %}
-                                        badge-aprovado
-                                    {% elif quote.status.type == 'APROVADA UNICA' %}
-                                        badge-aprovado
-                                    {% elif quote.status.type == 'REJEITADA' %}
-                                        badge-rejeitado
-                                    {% endif %}
-                                ">
-                                    {{ quote.status.type }}
-                                </span>
+
+                            <div class="cotacao-header-right">
+                                <div class="cotacao-status">
+                                    <span class="badge-status
+                                        {% if quote.status.type == 'PENDENTE' %}
+                                            badge-pendente
+                                        {% elif quote.status.type == 'APROVADA MULTIPLA' %}
+                                            badge-aprovado
+                                        {% elif quote.status.type == 'APROVADA UNICA' %}
+                                            badge-aprovado
+                                        {% elif quote.status.type == 'REJEITADA' %}
+                                            badge-rejeitado
+                                        {% endif %}
+                                    ">
+                                        {{ quote.status.type }}
+                                    </span>
+                                </div>
+                                {% if perms.logistica.gestao_total %}
+                                <button
+                                    type="button"
+                                    class="btn-edit-cotacao"
+                                    title="Editar cotação"
+                                    onclick="abrirModalEditarCotacao(
+                                        '{{ quote.id|default_if_none:"" }}',
+                                        '{{ quote.carrier.id|default_if_none:"" }}',
+                                        '{{ quote.estimated_price|default_if_none:"0" }}',
+                                        '{{ quote.estimated_deadline|default_if_none:"0" }}',
+                                        '{{ quote.total_weight|default_if_none:"0" }}',
+                                        '{{ quote.total_volume|default_if_none:"0" }}',
+                                        '{{ quote.origin.id|default_if_none:payload.origin.id }}',
+                                        '{{ quote.destination.id|default_if_none:payload.destination.id }}',
+                                        '{{ quote.destination_cep|default_if_none:payload.destination.CEP|default_if_none:"" }}',
+                                        '{{ quote.status.type|default_if_none:"" }}'
+                                    )"
+                                >
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                {% endif %}
                             </div>
                         </div>
 
@@ -1719,38 +1774,38 @@
                             </div>
                         </div>
                         <div class="cotacao-actions">
-                        {% if quote.status.type != "REJEITADA" %}
-                        <form method="post">
-                            {% csrf_token %}
-                            <input type="hidden" name="quote_id" value="{{ quote.id }}">
-                            <input type="hidden" name="carrier_id" value="{{ quote.carrier.id }}">
-                            <input type="hidden" name="price" value="{{ quote.estimated_price }}">
-                            <button
-                                type="button"
-                                class="btn-success"
-                                onclick="aprovarCotacao(
-                                    '{{ quote.id }}',
-                                    '{{ quote.carrier.id }}',
-                                    '{{ quote.estimated_price }}'
-                                )"
-                            >
-                                ✔ Aprovar
-                            </button>
-                        </form>
+                            {% if quote.status.type != "REJEITADA" %}
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="quote_id" value="{{ quote.id }}">
+                                <input type="hidden" name="carrier_id" value="{{ quote.carrier.id }}">
+                                <input type="hidden" name="price" value="{{ quote.estimated_price }}">
+                                <button
+                                    type="button"
+                                    class="btn-success"
+                                    onclick="aprovarCotacao(
+                                        '{{ quote.id }}',
+                                        '{{ quote.carrier.id }}',
+                                        '{{ quote.estimated_price }}'
+                                    )"
+                                >
+                                    ✔ Aprovar
+                                </button>
+                            </form>
 
-                        <form method="POST">
-                            {% csrf_token %}
-                            <input type="hidden" name="quote_id" value="{{ quote.id }}">
-                            <button
-                                type="submit"
-                                class="btn-danger"
-                                value="1"
-                                name="reject_button"
-                            >
-                                ✖ Rejeitar
-                            </button>
-                        </form>
-                        {% endif %}
+                            <form method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="quote_id" value="{{ quote.id }}">
+                                <button
+                                    type="submit"
+                                    class="btn-danger"
+                                    value="1"
+                                    name="reject_button"
+                                >
+                                    ✖ Rejeitar
+                                </button>
+                            </form>
+                            {% endif %}
                         </div>
                     </div>
                     {% endfor %}
@@ -2800,6 +2855,149 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 });
+</script>
+
+<!-- MODAL PARA EDITAR COTAÇÃO -->
+<form method="post">
+    {% csrf_token %}
+
+    <div class="os-modal-overlay" id="modalEditarCotacao">
+        <div class="os-modal">
+            <div class="os-modal-header">
+                <div class="os-modal-title">Editar Cotação</div>
+                <div class="os-modal-close" onclick="fecharModalEditarCotacao()">✕</div>
+            </div>
+
+            <div class="os-modal-body">
+                <input type="hidden" name="quote_id" id="edit_quote_modal_id">
+                <input type="hidden" name="origin_id" id="edit_quote_origin_id">
+                <input type="hidden" name="destination_id" id="edit_quote_destination_id">
+                <input type="hidden" name="destination_cep" id="edit_quote_destination_cep">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label>Transportadora</label>
+                    <select name="carrier_id" id="edit_quote_carrier_id" required>
+                        <option value="">Selecione uma transportadora...</option>
+                        {% for carrier in carriers %}
+                        <option value="{{ carrier.id }}">{{ carrier.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Peso Total (kg)</label>
+                        <input type="number"
+                               name="total_weight"
+                               id="edit_quote_total_weight"
+                               value="0"
+                               step="0.01"
+                               min="0"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Volume Total (m³)</label>
+                        <input type="number"
+                               name="total_volume"
+                               id="edit_quote_total_volume"
+                               value="0"
+                               step="0.0001"
+                               min="0"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Valor Cobrado (R$)</label>
+                        <input type="number"
+                               name="estimated_price"
+                               id="edit_quote_estimated_price"
+                               value="0"
+                               step="0.01"
+                               min="0"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Prazo (dias)</label>
+                        <input type="number"
+                               name="estimated_deadline"
+                               id="edit_quote_estimated_deadline"
+                               value="3"
+                               step="1"
+                               min="1"
+                               required>
+                    </div>
+
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Status</label>
+                        <select name="status" id="edit_quote_status" required>
+                            <option value="PENDENTE">PENDENTE</option>
+                            <option value="APROVADA MULTIPLA">APROVADA MULTIPLA</option>
+                            <option value="APROVADA UNICA">APROVADA UNICA</option>
+                            <option value="REJEITADA">REJEITADA</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="os-modal-footer">
+                <button type="button"
+                        class="btn-secondary"
+                        onclick="fecharModalEditarCotacao()">
+                    Cancelar
+                </button>
+
+                <button type="submit"
+                        class="btn-primary"
+                        name="editar_cotacao"
+                        value="1">
+                    Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+const modalEditarCotacao = document.getElementById("modalEditarCotacao");
+
+window.abrirModalEditarCotacao = function (
+    quoteId,
+    carrierId,
+    estimatedPrice,
+    estimatedDeadline,
+    totalWeight,
+    totalVolume,
+    originId,
+    destinationId,
+    destinationCep,
+    status
+) {
+    document.getElementById("edit_quote_modal_id").value = String(quoteId || "").trim();
+    document.getElementById("edit_quote_carrier_id").value = String(carrierId || "").trim();
+    document.getElementById("edit_quote_estimated_price").value = String(estimatedPrice || "0").trim().replace(",", ".");
+    document.getElementById("edit_quote_estimated_deadline").value = String(estimatedDeadline || "0").trim();
+    document.getElementById("edit_quote_total_weight").value = String(totalWeight || "0").trim().replace(",", ".");
+    document.getElementById("edit_quote_total_volume").value = String(totalVolume || "0").trim().replace(",", ".");
+
+    document.getElementById("edit_quote_origin_id").value = String(originId || "").trim();
+    document.getElementById("edit_quote_destination_id").value = String(destinationId || "").trim();
+    document.getElementById("edit_quote_destination_cep").value = String(destinationCep || "").trim();
+    document.getElementById("edit_quote_status").value = String(status || "").trim();
+
+    modalEditarCotacao.classList.add("show");
+};
+
+window.fecharModalEditarCotacao = function () {
+    modalEditarCotacao.classList.remove("show");
+};
+
+if (modalEditarCotacao) {
+    modalEditarCotacao.addEventListener("click", function (e) {
+        if (e.target === modalEditarCotacao) {
+            fecharModalEditarCotacao();
+        }
+    });
+}
 </script>
 
 <!-- MODAL PARA ATRELAR MOTORISTAS A VIAGENS -->

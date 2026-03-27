@@ -801,6 +801,67 @@ def detalhe_os_transp(request, order_number):
             except Exception as e:
                 messages.error(request, f"Erro ao consultar eventos: {e}")
 
+        if "editar_cotacao" in request.POST:
+            def to_float(value):
+                if not value:
+                    return 0.0
+                try:
+                    return float(str(value).replace(",", "."))
+                except:
+                    return 0.0
+
+            def to_int(value):
+                if not value:
+                    return 0
+                try:
+                    return int(value)
+                except:
+                    return 0
+
+            quote_id = request.POST.get("quote_id")
+            carrier_id = to_int(request.POST.get("carrier_id"))
+            total_weight = to_float(request.POST.get("total_weight"))
+            total_volume = to_float(request.POST.get("total_volume"))
+            estimated_price = to_float(request.POST.get("estimated_price"))
+            estimated_deadline = to_int(request.POST.get("estimated_deadline"))
+            status = (request.POST.get("status") or "").strip()
+
+            payload_update_quote = {
+                "carrier_id": carrier_id,
+                "total_weight": total_weight,
+                "total_volume": total_volume,
+                "estimated_price": estimated_price,
+                "estimated_deadline": estimated_deadline,
+                "status": status,
+            }
+
+            print(payload_update_quote)
+
+            try:
+                url_update_quote = f"{TRANSP_API_URL}/quotes/update/cotacao?id={quote_id}"
+
+                update_quote_client = RequestClient(
+                    method="PUT",
+                    url=url_update_quote,
+                    headers={
+                        "accept": "application/json",
+                        "Content-Type": "application/json",
+                    },
+                    request_data=payload_update_quote
+                )
+
+                response_update_quote = update_quote_client.send_api_request()
+
+                if isinstance(response_update_quote, dict) and "detail" in response_update_quote:
+                    messages.error(request, response_update_quote["detail"])
+                else:
+                    messages.success(
+                        request, "Cotação atualizada com sucesso!")
+                    return redirect("transportes:detalhe_os_transp", order_number=order_number)
+
+            except Exception as e:
+                messages.error(request, f"Erro ao atualizar cotação: {e}")
+
         if "reject_button" in request.POST:
             quote_id = request.POST.get("quote_id")
             modal_confirmacao = True
