@@ -87,6 +87,7 @@ def lista_viagens(request):
         "limit",
         "created_at",
         "designation_id",
+        "atrasado"
     ]
 
     url_cliente = f"{TRANSP_API_URL}/gai/clientes/status?cliente=arancia_client"
@@ -234,6 +235,9 @@ def lista_viagens(request):
                     params["status_list"] = status_api_map.get(
                         str(valor), valor)
 
+                elif campo == "atrasado":
+                    params["atrasado"] = str(valor).lower()
+
                 else:
                     params[campo] = valor
 
@@ -294,6 +298,7 @@ def lista_viagens(request):
         "cep_destin": "CEP destino",
         "created_at": "Data criação",
         "designation_id": "Designation",
+        "atrasado": "Atrasadas",
     }
 
     clientes_map = {
@@ -329,7 +334,7 @@ def lista_viagens(request):
         elif campo == "status_list":
             valor_exibicao = status_map.get(str(valor), valor)
 
-        elif campo == "sem_motorista":
+        elif campo in ["sem_motorista", "atrasado"]:
             valor_exibicao = "Sim" if str(valor).lower() in [
                 "true", "1", "on"] else "Não"
 
@@ -374,6 +379,10 @@ def lista_viagens(request):
                 sem_motorista = filtros.get("sem_motorista")
                 if sem_motorista not in [None, "", [], ()]:
                     extract_params["sem_motorista"] = sem_motorista
+
+                atrasado = filtros.get("atrasado")
+                if atrasado not in [None, "", [], ()]:
+                    extract_params["atrasado"] = str(atrasado).lower()
 
                 status_list = filtros.get("status_list")
                 if status_list not in [None, "", [], ()]:
