@@ -2,11 +2,71 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
 import math
+from django.db.models import Q
+from logistica.models import GroupAditionalInformation, Group
 from ...forms import ConsultaOStranspForm
 from setup.local_settings import TRANSP_API_URL
 from utils.request import RequestClient
 from datetime import datetime
 from urllib.parse import urlencode
+from django.http import JsonResponse
+
+
+def buscar_locais(request):
+
+    termo = request.GET.get("q", "").strip()
+
+    if len(termo) < 2:
+        return JsonResponse({"items": []})
+
+    grupos_base = Group.objects.filter(
+        Q(name="arancia_PA") |
+        Q(name="arancia_CD") |
+        Q(name="arancia_CUSTOMER")
+    )
+
+    locais = (
+        GroupAditionalInformation.objects
+        .filter(group__in=grupos_base, nome__icontains=termo)
+        .select_related("group")
+        .order_by("nome")[:10]
+    )
+
+    data = []
+
+    for l in locais:
+
+        prefix = ""
+
+        if l.group.name == "arancia_PA":
+            prefix = "[PA]"
+        elif l.group.name == "arancia_CD":
+            prefix = "[CD]"
+        elif l.group.name == "arancia_CUSTOMER":
+            prefix = "[CUSTOMER]"
+
+        data.append({
+            "id": l.id,
+            "label": f"{prefix} {l.nome}"
+        })
+
+    return JsonResponse({"items": data})
+
+
+def aplicar_filtro_data(data_source, params):
+    created_at = (data_source.get("created_at") or "").strip()
+    data_inicial = (data_source.get("data_inicial") or "").strip()
+    data_final = (data_source.get("data_final") or "").strip()
+
+    if data_inicial and data_final:
+        params["data_inicial"] = data_inicial
+        params["data_final"] = data_final
+    elif data_inicial:
+        params["created_at"] = data_inicial
+    elif data_final:
+        params["created_at"] = data_final
+    elif created_at:
+        params["created_at"] = created_at
 
 
 @login_required(login_url='logistica:login')
@@ -72,9 +132,7 @@ def consulta_os_transp(request):
 
             extract_params = {}
 
-            created_at = (data.get("created_at") or "").strip()
-            if created_at:
-                extract_params["created_at"] = created_at
+            aplicar_filtro_data(data, extract_params)
 
             tipo_os = (data.get("tipo_os") or "").strip().upper()
             numero_os = (data.get("numero_os") or "").strip()
@@ -104,6 +162,14 @@ def consulta_os_transp(request):
             pa_id = (data.get("pa_selecionada") or "").strip()
             if pa_id:
                 extract_params["designation_id"] = pa_id
+
+            origem_id = (data.get("origem") or "").strip()
+            if origem_id:
+                extract_params["origin_id"] = origem_id
+
+            destino_id = (data.get("destino") or "").strip()
+            if destino_id:
+                extract_params["destin_id"] = destino_id
 
             status_ids = [s.strip()
                           for s in data.getlist("status") if s.strip()]
@@ -171,9 +237,7 @@ def consulta_os_transp(request):
     if should_query:
         params = {}
 
-        created_at = (data.get("created_at") or "").strip()
-        if created_at:
-            params["created_at"] = created_at
+        aplicar_filtro_data(data, params)
 
         tipo_os = (data.get("tipo_os") or "").strip().upper()
         numero_os = (data.get("numero_os") or "").strip()
@@ -206,6 +270,14 @@ def consulta_os_transp(request):
         pa_id = (data.get("pa_selecionada") or "").strip()
         if pa_id:
             params["designation_id"] = pa_id
+
+        origem_id = (data.get("origem") or "").strip()
+        if origem_id:
+            params["origin_id"] = origem_id
+
+        destino_id = (data.get("destino") or "").strip()
+        if destino_id:
+            params["destin_id"] = destino_id
 
         status_ids = [s.strip() for s in data.getlist("status") if s.strip()]
         if status_ids:
@@ -290,6 +362,9 @@ def consulta_os_transp(request):
                     "%d/%m/%Y %H:%M")
             except Exception:
                 item["created_at_fmt"] = created
+
+    form.errors.pop("origem", None)
+    form.errors.pop("destino", None)
 
     return render(
         request,
