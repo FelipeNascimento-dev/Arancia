@@ -468,6 +468,10 @@
                             <label for="{{ form.created_at.id_for_label }}">{{ form.created_at.label }}</label>
                             {{ form.created_at }}
                         </div>
+                        <div class="field-wrap">
+                            <label for="{{ form.atrasado.id_for_label }}">{{ form.atrasado.label }}</label>
+                            {{ form.atrasado }}
+                        </div>
                     </div>
                 </details>
                 {{ tipos_por_cliente|json_script:"tipos-por-cliente" }}

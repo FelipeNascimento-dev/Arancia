@@ -80,6 +80,12 @@ class ListaViagensForm(forms.Form):
         widget=forms.DateInput(attrs={"type": "date"})
     )
 
+    atrasado = forms.ChoiceField(
+        label="Atrasadas",
+        required=False,
+        choices=BOOL_CHOICES
+    )
+
     designation_id = forms.CharField(label="Designation ID", required=False)
 
     def __init__(
