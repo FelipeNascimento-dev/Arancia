@@ -2027,6 +2027,16 @@
                         <select name="quote_id" id="quoteSelect">
                             <option value="">Selecionar cotação...</option>
 
+                            {% if quotes_pendentes %}
+                            <optgroup label="Cotações Pendentes">
+                                {% for quote in quotes_pendentes %}
+                                <option value="{{ quote.id }}">
+                                    #{{ quote.id }} - {{ quote.carrier.nome }} - R$ {{ quote.estimated_price }}
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                            {% endif %}
+
                             {% if quotes_aprovadas_unicas %}
                             <optgroup label="Aprovadas Únicas">
                                 {% for quote in quotes_aprovadas_unicas %}
