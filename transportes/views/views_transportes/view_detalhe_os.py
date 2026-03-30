@@ -29,6 +29,7 @@ def _filtrar_quotes_por_status(quotes):
     quotes_aprovadas_unicas = []
     quotes_aprovadas_multiplas = []
     quotes_aprovadas = []
+    quotes_pendentes = []
 
     for quote in quotes:
         status_obj = quote.get("status") or {}
@@ -51,11 +52,15 @@ def _filtrar_quotes_por_status(quotes):
             quotes_aprovadas_multiplas.append(quote)
             quotes_aprovadas.append(quote)
 
+        elif "PEND" in status_nome:
+            quotes_pendentes.append(quote)
+
     return {
         "quotes_rejeitadas": quotes_rejeitadas,
         "quotes_aprovadas_unicas": quotes_aprovadas_unicas,
         "quotes_aprovadas_multiplas": quotes_aprovadas_multiplas,
         "quotes_aprovadas": quotes_aprovadas,
+        "quotes_pendentes": quotes_pendentes,
     }
 
 
@@ -1036,6 +1041,7 @@ def detalhe_os_transp(request, order_number):
         "quotes_aprovadas_unicas": quotes_filtradas["quotes_aprovadas_unicas"],
         "quotes_aprovadas_multiplas": quotes_filtradas["quotes_aprovadas_multiplas"],
         "quotes_aprovadas": quotes_filtradas["quotes_aprovadas"],
+        "quotes_pendentes": quotes_filtradas["quotes_pendentes"],
         "site_title": "Detalhe da OS",
         "current_parent_menu": "transportes",
         "current_menu": "lista_os",
