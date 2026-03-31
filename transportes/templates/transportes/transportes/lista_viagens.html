@@ -1,7 +1,7 @@
 {% extends 'global/base.html' %}
 
 {% block content %}
-<style> 
+<style>
     .content-wrapper,
     .main-content,
     .container,
@@ -47,7 +47,7 @@
 
     .page-layout {
         display: grid;
-        grid-template-columns: 230px minmax(0, 1fr);
+        grid-template-columns: 300px minmax(0, 1fr);
         gap: 14px;
         margin-top: 18px;
         align-items: start;
@@ -60,8 +60,8 @@
     .filters-sidebar {
         position: sticky;
         top: 90px;
-        width: 100%;
-        max-width: 230px;
+        width: 300px;
+        max-width: 300px;
     }
 
     .filters-sidebar.is-hidden {
@@ -79,23 +79,57 @@
 
     .filters-box-header {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: space-between;
+        gap: 12px;
         margin-bottom: 16px;
     }
 
     .filters-box-header h3 {
         margin: 0;
-        font-size: 1.8rem;
+        font-size: 1.5rem;
         color: #1f2937;
+        line-height: 1.2;
     }
 
-    .btn-link-clear {
-        background: transparent;
-        border: none;
-        color: #0ea5b7;
+    .filters-header-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .btn-header-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 36px;
+        padding: 0 12px;
+        border-radius: 10px;
+        border: 1px solid #dbe3ea;
+        background: #f8fafc;
+        color: #334155;
+        font-size: .86rem;
         font-weight: 700;
         cursor: pointer;
+        transition: .2s ease;
+    }
+
+    .btn-header-action:hover {
+        background: #eef2f7;
+        border-color: #cbd5e1;
+    }
+
+    .btn-header-action--danger {
+        background: #fff5f5;
+        border-color: #fecaca;
+        color: #b91c1c;
+    }
+
+    .btn-header-action--danger:hover {
+        background: #fee2e2;
+        border-color: #fca5a5;
     }
 
     .active-filters {
@@ -177,35 +211,65 @@
     }
 
     .filters-actions {
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 10px;
         margin-top: 18px;
-        flex-wrap: wrap;
     }
 
-    .btn-apply {
-        flex: 1;
+    .filters-actions .btn-main {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        min-height: 44px;
         border: none;
+        border-radius: 10px;
+        font-size: .92rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .2s ease;
+        padding: 0 14px;
+    }
+
+    .btn-main--primary {
         background: #0ea5b7;
         color: #fff;
-        height: 42px;
-        border-radius: 10px;
-        font-weight: 700;
-        cursor: pointer;
+        grid-column: 1 / -1;
     }
 
-    .extract-balanced {
+    .btn-main--primary:hover {
+        background: #0b90a0;
+    }
+
+    .btn-main--favorite {
+        background: #fff7ed;
+        color: #c2410c;
+        border: 1px solid #fdba74;
+    }
+
+    .btn-main--favorite:hover {
+        background: #ffedd5;
+    }
+
+    .btn-main--default {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #93c5fd;
+    }
+
+    .btn-main--default:hover {
+        background: #dbeafe;
+    }
+
+    .btn-main--export {
         background: #0f9d58;
-        color: #ffffff;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 700;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        color: #fff;
+    }
+
+    .btn-main--export:hover {
+        background: #0b7f47;
     }
 
     .results-area {
@@ -336,16 +400,6 @@
         font-size: .9rem;
     }
 
-    @media (max-width: 1100px) {
-        .page-layout {
-            grid-template-columns: 1fr;
-        }
-
-        .filters-sidebar {
-            position: static;
-        }
-    }
-
     .driver-results {
         position: absolute;
         top: calc(100% + 4px);
@@ -375,6 +429,41 @@
     .driver-item:hover {
         background: #f8fafc;
     }
+
+    @media (max-width: 1100px) {
+        .page-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .filters-sidebar {
+            position: static;
+            width: 100%;
+            max-width: 100%;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .filters-box-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filters-header-actions {
+            justify-content: stretch;
+        }
+
+        .filters-header-actions button {
+            flex: 1;
+        }
+
+        .filters-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-main--primary {
+            grid-column: auto;
+        }
+    }
 </style>
 
 <div class="toolbar">
@@ -392,9 +481,18 @@
             <div class="filters-box">
                 <div class="filters-box-header">
                     <h3>Filtros</h3>
-                    <button type="submit" name="limpar_filtros" value="1" class="btn-link-clear">
-                        Limpar
-                    </button>
+
+                    <div class="filters-header-actions">
+                        <button type="submit" name="limpar_filtros" value="1" class="btn-header-action">
+                            <i class="fa-solid fa-eraser"></i>
+                            Limpar tela
+                        </button>
+
+                        <button type="submit" name="remover_favorito" value="1" class="btn-header-action btn-header-action--danger">
+                            <i class="fa-solid fa-trash-can"></i>
+                            Remover favorito
+                        </button>
+                    </div>
                 </div>
 
                 <div class="active-filters">
@@ -478,12 +576,24 @@
                 {{ tipos_por_cliente|json_script:"tipos-por-cliente" }}
                 {{ status_por_tipo|json_script:"status-por-tipo" }}
                 <div class="filters-actions">
-                    <button type="submit" name="enviar_evento" value="1" class="btn-apply">
+                    <button type="submit" name="enviar_evento" value="1" class="btn-main btn-main--primary">
+                        <i class="fa-solid fa-magnifying-glass"></i>
                         Consultar
                     </button>
 
-                    <button type="submit" name="extrair_travels" value="1" class="extract-balanced">
-                        <i class="fa-solid fa-download"></i> Exportar
+                    <button type="submit" name="salvar_favorito" value="1" class="btn-main btn-main--favorite">
+                        <i class="fa-solid fa-star"></i>
+                        Salvar favorito
+                    </button>
+
+                    <button type="submit" name="usar_padrao" value="1" class="btn-main btn-main--default">
+                        <i class="fa-solid fa-sliders"></i>
+                        Usar padrão
+                    </button>
+
+                    <button type="submit" name="extrair_travels" value="1" class="btn-main btn-main--export">
+                        <i class="fa-solid fa-download"></i>
+                        Exportar
                     </button>
                 </div>
             </div>

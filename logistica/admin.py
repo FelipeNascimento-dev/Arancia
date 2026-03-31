@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django import forms
 from .models import PontoAtendimentoInfo, GroupAditionalInformation, UserDesignation, GroupAditionalInformationLegacy
+from transportes.models import FiltroPadraoTela, FiltroFavoritoUsuario
 
 
 class PontoAtendimentoInfoAdminForm(forms.ModelForm):
@@ -45,3 +46,18 @@ class UserDesignationAdmin(admin.ModelAdmin):
 class GroupAditionalInformationLegacyAdmin(admin.ModelAdmin):
     list_display = ('gaiid', 'cod_contato')
     search_fields = ('gaiid__nome', 'cod_contato')
+
+
+@admin.register(FiltroPadraoTela)
+class FiltroPadraoTelaAdmin(admin.ModelAdmin):
+    list_display = ("chave_tela", "nome", "ativo", "atualizado_em")
+    search_fields = ("chave_tela", "nome")
+    list_filter = ("ativo",)
+
+
+@admin.register(FiltroFavoritoUsuario)
+class FiltroFavoritoUsuarioAdmin(admin.ModelAdmin):
+    list_display = ("usuario", "chave_tela", "nome",
+                    "favorito", "ativo", "atualizado_em")
+    search_fields = ("usuario__username", "chave_tela", "nome")
+    list_filter = ("favorito", "ativo", "chave_tela")

@@ -2,6 +2,7 @@ import httpx
 from datetime import datetime
 from setup.local_settings import status_labels, TOKEN, API_BASE
 from django.db import models
+from django.conf import settings
 
 
 def auth_headers():
@@ -67,3 +68,49 @@ class PersonalPermissions(models.Model):
 
     def __str__(self):
         return "Personal Permissions"
+
+
+class FiltroFavoritoUsuario(models.Model):
+    TELA_CONSULTA_OS = "consulta_os_transp"
+    TELA_LISTA_VIAGENS = "lista_viagens"
+
+    CHOICES_TELA = [
+        (TELA_CONSULTA_OS, "Consulta OS"),
+        (TELA_LISTA_VIAGENS, "Lista de Viagens"),
+    ]
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="filtros_favoritos"
+    )
+    chave_tela = models.CharField(max_length=100, choices=CHOICES_TELA)
+    nome = models.CharField(max_length=100, default="Meu filtro favorito")
+    filtros = models.JSONField(default=dict, blank=True)
+    favorito = models.BooleanField(default=True)
+    ativo = models.BooleanField(default=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Filtro favorito do usuário"
+        verbose_name_plural = "Filtros favoritos dos usuários"
+        unique_together = ("usuario", "chave_tela", "nome")
+
+    def __str__(self):
+        return f"{self.usuario} - {self.chave_tela} - {self.nome}"
+
+
+class FiltroPadraoTela(models.Model):
+    chave_tela = models.CharField(max_length=100, unique=True)
+    nome = models.CharField(max_length=100, default="Padrão do sistema")
+    filtros = models.JSONField(default=dict, blank=True)
+    ativo = models.BooleanField(default=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Filtro padrão da tela"
+        verbose_name_plural = "Filtros padrão das telas"
+
+    def __str__(self):
+        return f"{self.chave_tela} - {self.nome}"

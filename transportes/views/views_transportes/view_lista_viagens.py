@@ -8,7 +8,13 @@ from django.core.paginator import Paginator
 from datetime import datetime
 from urllib.parse import urlencode
 from django.http import JsonResponse
-from datetime import datetime
+
+from transportes.models import FiltroPadraoTela, FiltroFavoritoUsuario
+from transportes.utils.filtros import (
+    obter_filtros_tela,
+    salvar_filtro_favorito,
+    limpar_filtro_favorito,
+)
 
 
 def formatar_data(data_str, com_hora=True):
@@ -20,6 +26,18 @@ def formatar_data(data_str, com_hora=True):
         return dt.strftime("%d/%m/%Y %H:%M" if com_hora else "%d/%m/%Y")
     except Exception:
         return data_str
+
+
+def montar_filtros_lista_viagens(post_data, filtro_campos):
+    filtros = {}
+
+    for campo in filtro_campos:
+        valor = post_data.get(campo, "")
+        if isinstance(valor, str):
+            valor = valor.strip()
+        filtros[campo] = valor
+
+    return filtros
 
 
 def buscar_motoristas_travels(request):
@@ -68,6 +86,7 @@ def buscar_motoristas_travels(request):
 @permission_required('transportes.transportes', raise_exception=True)
 def lista_viagens(request):
     titulo = "Lista de Viagens"
+    chave_tela = FiltroFavoritoUsuario.TELA_LISTA_VIAGENS
     travels = []
 
     filtro_campos = [
@@ -100,11 +119,6 @@ def lista_viagens(request):
     resp = client.send_api_request()
     if isinstance(resp, dict) and resp.get("detail"):
         resp = []
-
-    clientes_map = {
-        str(c.get("id")): c.get("nome") or c.get("name") or str(c.get("id"))
-        for c in resp
-    }
 
     tipos_por_cliente = {}
     status_por_tipo = {}
@@ -144,17 +158,46 @@ def lista_viagens(request):
     if isinstance(resp_transportadora, dict) and resp_transportadora.get("detail"):
         resp_transportadora = []
 
-    if request.method == "POST" and "limpar_filtros" in request.POST:
-        request.session["filtro_viagem"] = {}
-        return redirect("transportes:lista_viagens")
+    # ----------------------------
+    # TRATAMENTO DOS BOTÕES
+    # ----------------------------
+    if request.method == "POST":
+        if "limpar_filtros" in request.POST:
+            limpar_filtro_favorito(request.user, chave_tela)
+            messages.success(request, "Filtros favoritos removidos.")
+            return redirect("transportes:lista_viagens")
 
-    if request.method == "POST" and ("enviar_evento" in request.POST or "extrair_travels" in request.POST):
-        request.session["filtro_viagem"] = {
-            campo: request.POST.get(campo, "")
-            for campo in filtro_campos
-        }
+        filtros_post = montar_filtros_lista_viagens(
+            request.POST, filtro_campos)
 
-    filtros = request.session.get("filtro_viagem", {})
+        if "salvar_favorito" in request.POST:
+            salvar_filtro_favorito(
+                usuario=request.user,
+                chave_tela=chave_tela,
+                filtros=filtros_post,
+            )
+            messages.success(request, "Filtro favorito salvo com sucesso.")
+            return redirect("transportes:lista_viagens")
+
+        if "usar_padrao" in request.POST:
+            filtro_padrao = FiltroPadraoTela.objects.filter(
+                chave_tela=chave_tela,
+                ativo=True
+            ).first()
+
+            if filtro_padrao and filtro_padrao.filtros:
+                filtros = filtro_padrao.filtros
+                messages.success(request, "Filtro padrão aplicado.")
+            else:
+                filtros = {}
+                messages.warning(
+                    request, "Nenhum filtro padrão cadastrado para esta tela.")
+        elif "enviar_evento" in request.POST or "extrair_travels" in request.POST:
+            filtros = filtros_post
+        else:
+            filtros = obter_filtros_tela(request.user, chave_tela)
+    else:
+        filtros = obter_filtros_tela(request.user, chave_tela)
 
     form = ListaViagensForm(
         initial={campo: filtros.get(campo, "") for campo in filtro_campos},
@@ -253,26 +296,24 @@ def lista_viagens(request):
             )
             resp_travel = client.send_api_request()
 
-            if 'detail' in resp_travel:
-                messages.error(request, resp_travel.get('detail'))
+            if isinstance(resp_travel, dict) and resp_travel.get("detail"):
+                messages.error(request, resp_travel.get("detail"))
             else:
-                messages.success(request, "Consulta realizada com sucesso!")
+                if request.method == "POST" and "enviar_evento" in request.POST:
+                    messages.success(
+                        request, "Consulta realizada com sucesso!")
 
             if isinstance(resp_travel, list):
                 travels = resp_travel
 
             for t in travels:
                 travel_data = t.get("travel", {})
-
                 travel_data["start_date_formatada"] = formatar_data(
-                    travel_data.get("start_date")
-                )
+                    travel_data.get("start_date"))
                 travel_data["end_date_formatada"] = formatar_data(
-                    travel_data.get("end_date")
-                )
+                    travel_data.get("end_date"))
                 travel_data["created_at_formatada"] = formatar_data(
-                    travel_data.get("created_at")
-                )
+                    travel_data.get("created_at"))
 
         except Exception:
             travels = []
@@ -324,20 +365,15 @@ def lista_viagens(request):
 
         if campo == "cliente":
             valor_exibicao = clientes_map.get(str(valor), valor)
-
         elif campo == "transportadora":
             valor_exibicao = transportadoras_map.get(str(valor), valor)
-
         elif campo == "tipo_servico":
             valor_exibicao = tipos_map.get(str(valor), valor)
-
         elif campo == "status_list":
             valor_exibicao = status_map.get(str(valor), valor)
-
         elif campo in ["sem_motorista", "atrasado"]:
             valor_exibicao = "Sim" if str(valor).lower() in [
                 "true", "1", "on"] else "Não"
-
         elif isinstance(valor, str):
             valor_exibicao = valor.strip().capitalize()
 
@@ -346,65 +382,62 @@ def lista_viagens(request):
             "valor": valor_exibicao,
         })
 
-    if request.method == 'POST':
-        if "extrair_travels" in request.POST:
-            try:
-                extract_params = {}
+    if request.method == "POST" and "extrair_travels" in request.POST:
+        try:
+            extract_params = {}
 
-                travel_id = filtros.get("travel_id")
-                if travel_id not in [None, "", [], ()]:
-                    extract_params["travel_id"] = travel_id
+            travel_id = filtros.get("travel_id")
+            if travel_id not in [None, "", [], ()]:
+                extract_params["travel_id"] = travel_id
 
-                cliente = filtros.get("cliente")
-                if cliente not in [None, "", [], ()]:
-                    extract_params["cliente"] = cliente
+            cliente = filtros.get("cliente")
+            if cliente not in [None, "", [], ()]:
+                extract_params["cliente"] = cliente
 
-                transportadora = filtros.get("transportadora")
-                if transportadora not in [None, "", [], ()]:
-                    extract_params["transportadora"] = transportadora
+            transportadora = filtros.get("transportadora")
+            if transportadora not in [None, "", [], ()]:
+                extract_params["transportadora"] = transportadora
 
-                pa_selecionada = filtros.get("pa_selecionada")
-                if pa_selecionada not in [None, "", [], ()]:
-                    extract_params["designation_id"] = pa_selecionada
+            pa_selecionada = filtros.get("pa_selecionada")
+            if pa_selecionada not in [None, "", [], ()]:
+                extract_params["designation_id"] = pa_selecionada
 
-                tipo_servico = filtros.get("tipo_servico")
-                if tipo_servico not in [None, "", [], ()]:
-                    extract_params["tipo_servico"] = tipos_map.get(
-                        str(tipo_servico), tipo_servico)
+            tipo_servico = filtros.get("tipo_servico")
+            if tipo_servico not in [None, "", [], ()]:
+                extract_params["tipo_servico"] = tipo_api_map.get(
+                    str(tipo_servico), tipo_servico)
 
-                driver_id = filtros.get("driver_id")
-                if driver_id not in [None, "", [], ()]:
-                    extract_params["driver_id"] = driver_id
+            driver_id = filtros.get("driver_id")
+            if driver_id not in [None, "", [], ()]:
+                extract_params["driver_id"] = driver_id
 
-                sem_motorista = filtros.get("sem_motorista")
-                if sem_motorista not in [None, "", [], ()]:
-                    extract_params["sem_motorista"] = sem_motorista
+            sem_motorista = filtros.get("sem_motorista")
+            if sem_motorista not in [None, "", [], ()]:
+                extract_params["sem_motorista"] = sem_motorista
 
-                atrasado = filtros.get("atrasado")
-                if atrasado not in [None, "", [], ()]:
-                    extract_params["atrasado"] = str(atrasado).lower()
+            atrasado = filtros.get("atrasado")
+            if atrasado not in [None, "", [], ()]:
+                extract_params["atrasado"] = str(atrasado).lower()
 
-                status_list = filtros.get("status_list")
-                if status_list not in [None, "", [], ()]:
-                    extract_params["status_list"] = status_api_map.get(
-                        str(status_list), status_list)
+            status_list = filtros.get("status_list")
+            if status_list not in [None, "", [], ()]:
+                extract_params["status_list"] = status_api_map.get(
+                    str(status_list), status_list)
 
-                cep_origin = filtros.get("cep_origin")
-                if cep_origin not in [None, "", [], ()]:
-                    extract_params["cep_origin"] = cep_origin
+            cep_origin = filtros.get("cep_origin")
+            if cep_origin not in [None, "", [], ()]:
+                extract_params["cep_origin"] = cep_origin
 
-                cep_destin = filtros.get("cep_destin")
-                if cep_destin not in [None, "", [], ()]:
-                    extract_params["cep_destin"] = cep_destin
+            cep_destin = filtros.get("cep_destin")
+            if cep_destin not in [None, "", [], ()]:
+                extract_params["cep_destin"] = cep_destin
 
-                url_extract = f"{TRANSP_API_URL}/v2/order_travel/export/general/excel?{urlencode(extract_params)}"
+            url_extract = f"{TRANSP_API_URL}/v2/order_travel/export/general/excel?{urlencode(extract_params)}"
+            return redirect(url_extract)
 
-                return redirect(url_extract)
-
-            except Exception as e:
-                messages.error(
-                    request, f"Erro ao extrair travels: {str(e)}")
-                return redirect("transportes:lista_viagens")
+        except Exception as e:
+            messages.error(request, f"Erro ao extrair travels: {str(e)}")
+            return redirect("transportes:lista_viagens")
 
     return render(request, 'transportes/transportes/lista_viagens.html', {
         "botao_texto": "Consultar",
