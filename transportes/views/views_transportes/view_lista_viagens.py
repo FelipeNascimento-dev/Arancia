@@ -87,6 +87,7 @@ def buscar_motoristas_travels(request):
 def lista_viagens(request):
     titulo = "Lista de Viagens"
     chave_tela = FiltroFavoritoUsuario.TELA_LISTA_VIAGENS
+    modal_travel_event = False
     travels = []
 
     filtro_campos = [
@@ -439,6 +440,12 @@ def lista_viagens(request):
             messages.error(request, f"Erro ao extrair travels: {str(e)}")
             return redirect("transportes:lista_viagens")
 
+    if request.method == "POST" and "criar_eventos_cards" in request.POST:
+        ids_selecionados = request.POST.getlist("travels_selecionadas")
+        modal_travel_event = True
+        if ids_selecionados:
+            messages.warning(request, ids_selecionados)
+
     return render(request, 'transportes/transportes/lista_viagens.html', {
         "botao_texto": "Consultar",
         "current_parent_menu": "transportes",
@@ -451,4 +458,5 @@ def lista_viagens(request):
         "filtros_exibicao": filtros_exibicao,
         "tipos_por_cliente": tipos_por_cliente,
         "status_por_tipo": status_por_tipo,
+        "modal_travel_event": modal_travel_event,
     })
