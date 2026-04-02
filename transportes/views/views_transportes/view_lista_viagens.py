@@ -1,4 +1,8 @@
+from urllib import request
+
 from django.shortcuts import render, redirect
+
+from transportes.utils import filtros
 from ...forms import ListaViagensForm
 from setup.local_settings import TRANSP_API_URL
 from django.contrib import messages
@@ -89,6 +93,9 @@ def lista_viagens(request):
     chave_tela = FiltroFavoritoUsuario.TELA_LISTA_VIAGENS
     modal_travel_event = False
     travels = []
+    selected_travel_ids = []
+    travel_event_types = []
+    travel_items = []
 
     filtro_campos = [
         "travel_id",
@@ -441,10 +448,110 @@ def lista_viagens(request):
             return redirect("transportes:lista_viagens")
 
     if request.method == "POST" and "criar_eventos_cards" in request.POST:
-        ids_selecionados = request.POST.getlist("travels_selecionadas")
+        selected_travel_ids = request.POST.getlist("travels_selecionadas")
         modal_travel_event = True
-        if ids_selecionados:
-            messages.warning(request, ids_selecionados)
+
+        if selected_travel_ids:
+            try:
+                client_id = request.POST.get(
+                    "cliente") or filtros.get("cliente")
+                tipo_servico = request.POST.get(
+                    "tipo_servico") or filtros.get("tipo_servico")
+
+                cliente_nome = ""
+                if client_id not in [None, ""]:
+                    for c in resp:
+                        if str(c.get("id")) == str(client_id):
+                            cliente_nome = c.get("nome") or c.get("name") or ""
+                            break
+
+                order_type_id = tipo_servico if tipo_servico not in [
+                    None, ""] else ""
+
+                if cliente_nome and order_type_id:
+                    url = f"{TRANSP_API_URL}/order_events_types/list?status=true&cliente={cliente_nome}&order_type={order_type_id}"
+
+                    client = RequestClient(
+                        method="GET",
+                        url=url,
+                        headers={
+                            "accept": "application/json",
+                            "Content-Type": "application/json",
+                        },
+                    )
+
+                    response_travel = client.send_api_request()
+
+                    if isinstance(response_travel, list):
+                        travel_event_types = [
+                            ev for ev in response_travel
+                            if ev.get("active") is True
+                        ]
+
+                    elif isinstance(response_travel, dict) and "detail" in response_travel:
+                        messages.error(request, response_travel["detail"])
+                else:
+                    messages.warning(
+                        request, "Selecione cliente e tipo de serviço para carregar os tipos de evento.")
+
+            except Exception as e:
+                messages.error(request, f"Erro ao consultar eventos: {e}")
+
+    if request.method == "POST" and "criar_evento_travel_lote" in request.POST:
+        selected_travel_ids = request.POST.getlist("travels_selecionadas")
+
+        try:
+            event_type_id = int(request.POST.get("event_type_id"))
+        except:
+            messages.error(request, "Selecione um tipo de evento.")
+            return redirect("transportes:lista_viagens")
+
+        description = (request.POST.get("description") or "").strip()
+        created_by = request.user.username
+        location_lat = (request.POST.get("location_lat") or "").strip()
+        location_long = (request.POST.get("location_long") or "").strip()
+
+        payload_event = {
+            "event_type_id": event_type_id,
+            "created_by": created_by,
+        }
+
+        if description:
+            payload_event["description"] = description
+        if location_lat:
+            payload_event["location_lat"] = location_lat
+        if location_long:
+            payload_event["location_long"] = location_long
+
+        try:
+            headers_api = {
+                "accept": "application/json",
+                "Content-Type": "application/json",
+            }
+
+            ids_limpos = [str(i)
+                          for i in selected_travel_ids if str(i).strip()]
+            query_ids = "&".join([f"ids={i}" for i in ids_limpos])
+
+            url = f"{TRANSP_API_URL}/v2/order_tracking/create?destination=travel&{query_ids}"
+
+            client = RequestClient(
+                method="POST",
+                url=url,
+                headers=headers_api,
+                request_data=payload_event
+            )
+
+            response_event = client.send_api_request()
+
+            if isinstance(response_event, dict) and "detail" in response_event:
+                messages.error(request, response_event["detail"])
+            else:
+                messages.success(request, "Eventos criados com sucesso!")
+                return redirect("transportes:lista_viagens")
+
+        except Exception as e:
+            messages.error(request, f"Erro ao criar evento: {e}")
 
     return render(request, 'transportes/transportes/lista_viagens.html', {
         "botao_texto": "Consultar",
@@ -459,4 +566,7 @@ def lista_viagens(request):
         "tipos_por_cliente": tipos_por_cliente,
         "status_por_tipo": status_por_tipo,
         "modal_travel_event": modal_travel_event,
+        "selected_travel_ids": selected_travel_ids,
+        "travel_event_types": travel_event_types,
+        "travel_items": travel_items,
     })
