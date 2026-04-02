@@ -1567,10 +1567,22 @@
             </div>
 
             <div class="tab-pane" id="viagens">
+                <div id="travelSelectionActions" style="display:none; margin-bottom:15px; text-align:right;">
+                    <button type="button" class="btn-primary" id="btnCriarEventoSelecionadas">
+                        Criar eventos para selecionadas
+                    </button>
+                </div>
+                
                 {% for travel in payload.travels %}
                 <div class="os-card travel-card">
 
                     <div class="travel-header">
+                        <div style="display:flex; align-items:center; margin-right:12px;">
+                            <input type="checkbox"
+                                class="travel-checkbox"
+                                value="{{ travel.id }}"
+                                onclick="event.stopPropagation();">
+                        </div>
                         <div onclick="toggleTravel(this)" style="flex:1; cursor:pointer;">
                             <div class="travel-title">
                                 Viagem #{{ travel.id }}
@@ -1706,13 +1718,13 @@
                             <div class="cotacao-header-right">
                                 <div class="cotacao-status">
                                     <span class="badge-status
-                                        {% if quote.status.type == 'PENDENTE' %}
+                                        {% if quote.status.type == 'PENDING' %}
                                             badge-pendente
-                                        {% elif quote.status.type == 'APROVADA MULTIPLA' %}
+                                        {% elif quote.status.type == 'APPROVED MULTIPLE' %}
                                             badge-aprovado
-                                        {% elif quote.status.type == 'APROVADA UNICA' %}
+                                        {% elif quote.status.type == 'APPROVED SINGLE' %}
                                             badge-aprovado
-                                        {% elif quote.status.type == 'REJEITADA' %}
+                                        {% elif quote.status.type == 'REJECTED' %}
                                             badge-rejeitado
                                         {% endif %}
                                     ">
@@ -2374,9 +2386,19 @@ function validarRejeicao(){
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
 
-                <input type="hidden" name="travel_id" value="{{ request.POST.travel_id }}">
+                <input type="hidden" name="travel_id" value="{{ request.POST.travel_id|default:'' }}">
 
-               <div class="form-group">
+                {% for selected_id in selected_travel_ids %}
+                    <input type="hidden" name="travel_ids" value="{{ selected_id }}">
+                {% endfor %}
+
+                <div class="form-group">
+                    {% if selected_travel_ids %}
+                    <div style="margin-bottom:15px; padding:10px 12px; border-radius:8px; background:#f4f6f9; font-size:14px;">
+                        Evento será criado para as viagens:
+                        <b>{{ selected_travel_ids|join:", " }}</b>
+                    </div>
+                    {% endif %}
                     <label>Tipo de Evento</label>
                     <input type="hidden" name="event_type_id" id="eventTypeId">
                     <div class="custom-select" id="eventTypeSelect">
@@ -4138,6 +4160,60 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+});
+</script>
+
+<!-- SCRIPT PARA CHECKBOX DE EVENTOS VIAGENS -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const actionBox = document.getElementById("travelSelectionActions");
+    const btnCriar = document.getElementById("btnCriarEventoSelecionadas");
+    const checkboxes = document.querySelectorAll(".travel-checkbox");
+
+    function atualizarBotaoViagens() {
+        const selecionadas = document.querySelectorAll(".travel-checkbox:checked");
+        actionBox.style.display = selecionadas.length > 0 ? "block" : "none";
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener("change", atualizarBotaoViagens);
+    });
+
+    btnCriar.addEventListener("click", function () {
+        const ids = [...document.querySelectorAll(".travel-checkbox:checked")]
+            .map(cb => cb.value);
+
+        if (!ids.length) return;
+
+        const form = document.createElement("form");
+        form.method = "post";
+
+        const csrf = document.querySelector("[name=csrfmiddlewaretoken]");
+        if (csrf) {
+            const csrfInput = document.createElement("input");
+            csrfInput.type = "hidden";
+            csrfInput.name = "csrfmiddlewaretoken";
+            csrfInput.value = csrf.value;
+            form.appendChild(csrfInput);
+        }
+
+        const openInput = document.createElement("input");
+        openInput.type = "hidden";
+        openInput.name = "travel_events_bulk";
+        openInput.value = "1";
+        form.appendChild(openInput);
+
+        ids.forEach(id => {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "travel_ids";
+            input.value = id;
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+    });
 });
 </script>
 {% endblock content %}

@@ -464,6 +464,133 @@
             grid-column: auto;
         }
     }
+
+    .bulk-actions-bar {
+        position: sticky;
+        top: 78px;
+        z-index: 40;
+        margin-left: 65px;
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        background-color: #fff;
+        color: #000000;
+        padding: 14px 16px;
+        border-radius: 14px;
+        margin-bottom: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,.18);
+    }
+
+    .bulk-actions-bar.is-visible {
+        display: flex;
+    }
+
+    .bulk-actions-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+    }
+
+    .bulk-actions-count {
+        min-width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        background: #ef4444;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .9rem;
+    }
+
+    .bulk-actions-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-bulk {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px;
+        padding: 0 14px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: .92rem;
+        transition: .2s ease;
+    }
+
+    .btn-bulk--primary {
+        background: #10b981;
+        color: #fff;
+    }
+
+    .btn-bulk--primary:hover {
+        background: #059669;
+    }
+
+    .btn-bulk--ghost {
+        background: rgb(122, 122, 122);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,.18);
+    }
+
+    .btn-bulk--ghost:hover {
+        background: rgb(77, 77, 77);
+    }
+
+    .card {
+        position: relative;
+        border: 2px solid transparent;
+        transition: .2s ease;
+    }
+
+    .card.is-selected {
+        border-color: #2563eb;
+        box-shadow: 0 10px 25px rgba(37, 99, 235, .18);
+    }
+
+    .card-select-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+    }
+
+    .card-select-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .card-select-label {
+        font-size: .85rem;
+        font-weight: 700;
+        color: #374151;
+        cursor: pointer;
+        user-select: none;
+        border-radius: 100%;
+    }
+
+    @media (max-width: 700px) {
+        .bulk-actions-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .bulk-actions-buttons {
+            width: 100%;
+        }
+
+        .btn-bulk {
+            width: 100%;
+        }
+    }
 </style>
 
 <div class="toolbar">
@@ -602,57 +729,92 @@
 
     <main class="results-area">
         {% if travels %}
-        <div class="cards-container">
-            {% for item in travels %}
-            <div class="card">
-                <div class="card-header">
-                    <a class="card-title"
-                    href="{% url 'transportes:detalhe_viagem' item.travel.id %}"
-                    target="_blank">
-                        {{ item.travel.id }}
-                    </a>
+        <form method="POST" id="bulkEventForm">
+            {% csrf_token %}
 
-                    <span class="status-tag status-{{ item.travel.status.type }}">
-                        {{ item.travel.status.type }}
-                    </span>
+            <div class="bulk-actions-bar" id="bulkActionsBar">
+                <div class="bulk-actions-info">
+                    <i class="fa-solid fa-check-double"></i>
+                    <span>Selecionados</span>
+                    <span class="bulk-actions-count" id="selectedCardsCount">0</span>
                 </div>
 
-                <div class="card-body">
-                    <p><strong>Número da OS:</strong><br>{{ item.service_order.order_number }}</p>
-                    <p><strong>Número da OS Externa:</strong><br>{{ item.service_order.external_order_number }}</p>
-                    <p><strong>Cliente:</strong><br>{{ item.service_order.client.nome }}</p>
-                    <p><strong>Transportadora:</strong><br>{{ item.travel.carrier.nome }}</p>
-                    <p><strong>Origem:</strong><br>CEP: {{ item.service_order.origin.CEP }}<br><small>{{ item.service_order.origin.endereco }}</small></p>
-                    <p><strong>Destino:</strong><br>CEP: {{ item.service_order.destination.CEP }}<br><small>{{ item.service_order.destination.endereco }}</small></p>
-                    <p>
-                        <strong>Prazo Final:</strong><br>
-                        {% if item.travel.end_date_formatada %}
-                            {{ item.travel.end_date_formatada }}
-                        {% else %}
-                            Em andamento
-                        {% endif %}
-                    </p>
-                    <p>
-                        <strong>Data Inicial:</strong><br>
-                        {% if item.travel.start_date_formatada %}
-                            {{ item.travel.start_date_formatada }}
-                        {% else %}
-                            -
-                        {% endif %}
-                    </p>
+                <div class="bulk-actions-buttons">
+                    <button type="submit" name="criar_eventos_cards" value="1" class="btn-bulk btn-bulk--primary">
+                        <i class="fa-solid fa-calendar-plus"></i>
+                        Criar eventos
+                    </button>
 
-                    <p>
-                        <strong>Data Final:</strong><br>
-                        {% if item.travel.end_date_formatada %}
-                            {{ item.travel.end_date_formatada }}
-                        {% else %}
-                            Em andamento
-                        {% endif %}
-                    </p>
+                    <button type="button" id="clearCardSelection" class="btn-bulk btn-bulk--ghost">
+                        <i class="fa-solid fa-xmark"></i>
+                        Limpar seleção
+                    </button>
                 </div>
             </div>
-            {% endfor %}
-        </div>
+            <div class="cards-container">
+                {% for item in travels %}
+                <div class="card" data-card-id="{{ item.travel.id }}">
+                    <div class="card-header">
+                        <div class="card-select-wrap">
+                            <input
+                                type="checkbox"
+                                class="card-select-checkbox"
+                                id="travel_{{ item.travel.id }}"
+                                name="travels_selecionadas"
+                                value="{{ item.travel.id }}"
+                            >
+                            <label class="card-select-label" for="travel_{{ item.travel.id }}"></label>
+                        </div>
+
+                        <a class="card-title"
+                        href="{% url 'transportes:detalhe_viagem' item.travel.id %}"
+                        target="_blank">
+                            {{ item.travel.id }}
+                        </a>
+
+                        <span class="status-tag status-{{ item.travel.status.type }}">
+                            {{ item.travel.status.type }}
+                        </span>
+                       
+                    </div>
+
+                    <div class="card-body">
+                        <p><strong>Número da OS:</strong><br>{{ item.service_order.order_number }}</p>
+                        <p><strong>Número da OS Externa:</strong><br>{{ item.service_order.external_order_number }}</p>
+                        <p><strong>Cliente:</strong><br>{{ item.service_order.client.nome }}</p>
+                        <p><strong>Transportadora:</strong><br>{{ item.travel.carrier.nome }}</p>
+                        <p><strong>Origem:</strong><br>CEP: {{ item.service_order.origin.CEP }}<br><small>{{ item.service_order.origin.endereco }}</small></p>
+                        <p><strong>Destino:</strong><br>CEP: {{ item.service_order.destination.CEP }}<br><small>{{ item.service_order.destination.endereco }}</small></p>
+                        <p>
+                            <strong>Prazo Final:</strong><br>
+                            {% if item.travel.end_date_formatada %}
+                                {{ item.travel.end_date_formatada }}
+                            {% else %}
+                                Em andamento
+                            {% endif %}
+                        </p>
+                        <p>
+                            <strong>Data Inicial:</strong><br>
+                            {% if item.travel.start_date_formatada %}
+                                {{ item.travel.start_date_formatada }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </p>
+
+                        <p>
+                            <strong>Data Final:</strong><br>
+                            {% if item.travel.end_date_formatada %}
+                                {{ item.travel.end_date_formatada }}
+                            {% else %}
+                                Em andamento
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </form>
         {% endif %}
 
         {% if travels.has_other_pages %}
@@ -877,6 +1039,53 @@ document.addEventListener("DOMContentLoaded", function () {
             limparResultados();
         }
     });
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const checkboxes = document.querySelectorAll(".card-select-checkbox");
+    const bulkBar = document.getElementById("bulkActionsBar");
+    const countEl = document.getElementById("selectedCardsCount");
+    const clearBtn = document.getElementById("clearCardSelection");
+
+    function updateSelectedState() {
+        let selectedCount = 0;
+
+        checkboxes.forEach((checkbox) => {
+            const card = checkbox.closest(".card");
+
+            if (checkbox.checked) {
+                selectedCount++;
+                card?.classList.add("is-selected");
+            } else {
+                card?.classList.remove("is-selected");
+            }
+        });
+
+        if (countEl) {
+            countEl.textContent = selectedCount;
+        }
+
+        if (bulkBar) {
+            bulkBar.classList.toggle("is-visible", selectedCount > 0);
+        }
+    }
+
+    checkboxes.forEach((checkbox) => {
+        checkbox.addEventListener("change", updateSelectedState);
+    });
+
+    if (clearBtn) {
+        clearBtn.addEventListener("click", function () {
+            checkboxes.forEach((checkbox) => {
+                checkbox.checked = false;
+            });
+            updateSelectedState();
+        });
+    }
+
+    updateSelectedState();
 });
 </script>
 {% endblock %}
