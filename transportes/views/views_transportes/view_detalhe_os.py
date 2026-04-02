@@ -538,10 +538,56 @@ def detalhe_os_transp(request, order_number):
             except Exception as e:
                 messages.error(request, f"Erro ao consultar eventos: {e}")
 
+        if "travel_events_bulk" in request.POST:
+            modal_travel_events = True
+
+            travel_ids = request.POST.getlist("travel_ids")
+            travel_ids = [str(i) for i in travel_ids if str(i).strip()]
+
+            travel_items = []
+
+            if travel_ids:
+                travel_items = [
+                    item for item in resp.get("items", [])
+                    if str(item.get("travel_order_id")) in travel_ids
+                ]
+
+            client_id = resp.get("client", {}).get("nome")
+            order_type = resp.get("service_order", {}).get(
+                "order_type", {}).get("id")
+
+            try:
+                url = f"{TRANSP_API_URL}/order_events_types/list?status=true&cliente={client_id}&order_type={order_type}"
+
+                client = RequestClient(
+                    method="GET",
+                    url=url,
+                    headers={
+                        "accept": "application/json",
+                        "Content-Type": "application/json",
+                    },
+                )
+
+                response_travel = client.send_api_request()
+
+                if isinstance(response_travel, list):
+                    travel_event_types = [
+                        ev for ev in response_travel
+                        if ev.get("active") is True
+                    ]
+
+                elif isinstance(response_travel, dict) and "detail" in response_travel:
+                    messages.error(request, response_travel["detail"])
+
+            except Exception as e:
+                messages.error(request, f"Erro ao consultar eventos: {e}")
+
         UPLOAD_API_URL = f"http://192.168.0.216/RetencaoAPI/api/v3/upload/upload/Firebase/"
 
         if "criar_evento_travel" in request.POST:
-            travel_id = int(request.POST.get("travel_id"))
+            travel_id_raw = request.POST.get("travel_id")
+            travel_ids = request.POST.getlist("travel_ids")
+
             event_type_id = int(request.POST.get("event_type_id"))
             description = (request.POST.get("description") or "").strip()
             created_by = request.user.username
@@ -562,8 +608,11 @@ def detalhe_os_transp(request, order_number):
                 payload_event["location_lat"] = location_lat
             if location_long:
                 payload_event["location_long"] = location_long
+
             if selected_items:
-                payload_event["extra_information"] = {"items": selected_items}
+                payload_event["extra_information"] = {
+                    "items": selected_items
+                }
 
             file_obj = request.FILES.get("event_image")
 
@@ -604,32 +653,57 @@ def detalhe_os_transp(request, order_number):
                     else:
                         messages.error(
                             request, "Upload retornou resposta inválida.")
+                        return redirect("transportes:detalhe_os_transp", order_number=order_number)
 
                 except Exception as e:
                     messages.error(request, f"Falha ao enviar imagem: {e}")
-                    return redirect('transportes:detalhe_os_transp', order_number=order_number)
+                    return redirect("transportes:detalhe_os_transp", order_number=order_number)
 
-            url = f"{TRANSP_API_URL}/order_tracking_events/create?id={travel_id}&destination=travel"
-
-            client = RequestClient(
-                method="POST",
-                url=url,
-                headers={
+            try:
+                headers_api = {
                     "accept": "application/json",
                     "Content-Type": "application/json",
-                },
-                request_data=payload_event
-            )
+                }
 
-            response_event = client.send_api_request()
+                # fluxo em lote
+                if travel_ids:
+                    ids_limpos = [str(i) for i in travel_ids if str(i).strip()]
 
-            # print(response_event)
+                    query_ids = "&".join([f"ids={i}" for i in ids_limpos])
+                    url = f"{TRANSP_API_URL}/v2/order_tracking/create?destination=travel&{query_ids}"
 
-            if isinstance(response_event, dict) and "detail" in response_event:
-                messages.error(request, response_event["detail"])
-            else:
-                messages.success(request, "Evento criado com sucesso!")
-                return redirect('transportes:detalhe_os_transp', order_number=order_number)
+                    client = RequestClient(
+                        method="POST",
+                        url=url,
+                        headers=headers_api,
+                        request_data=payload_event
+                    )
+
+                    response_event = client.send_api_request()
+
+                # fluxo individual
+                else:
+                    travel_id = int(travel_id_raw)
+
+                    url = f"{TRANSP_API_URL}/order_tracking_events/create?id={travel_id}&destination=travel"
+
+                    client = RequestClient(
+                        method="POST",
+                        url=url,
+                        headers=headers_api,
+                        request_data=payload_event
+                    )
+
+                    response_event = client.send_api_request()
+
+                if isinstance(response_event, dict) and "detail" in response_event:
+                    messages.error(request, response_event["detail"])
+                else:
+                    messages.success(request, "Evento criado com sucesso!")
+                    return redirect("transportes:detalhe_os_transp", order_number=order_number)
+
+            except Exception as e:
+                messages.error(request, f"Erro ao criar evento: {e}")
 
         if "editar_item" in request.POST:
             def to_float(value):
@@ -1026,6 +1100,10 @@ def detalhe_os_transp(request, order_number):
         messages.warning(
             request, f"Não foi possível carregar itens livres: {e}")
 
+    selected_travel_ids = []
+    if request.method == "POST":
+        selected_travel_ids = request.POST.getlist("travel_ids")
+
     return render(request, 'transportes/transportes/detalhe_os.html', {
         "order_number": order_number,
         "payload": resp,
@@ -1045,4 +1123,5 @@ def detalhe_os_transp(request, order_number):
         "site_title": "Detalhe da OS",
         "current_parent_menu": "transportes",
         "current_menu": "lista_os",
+        "selected_travel_ids": selected_travel_ids,
     })

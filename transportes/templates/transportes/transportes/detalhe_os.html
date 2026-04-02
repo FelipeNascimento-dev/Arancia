@@ -2386,9 +2386,19 @@ function validarRejeicao(){
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
 
-                <input type="hidden" name="travel_id" value="{{ request.POST.travel_id }}">
+                <input type="hidden" name="travel_id" value="{{ request.POST.travel_id|default:'' }}">
 
-               <div class="form-group">
+                {% for selected_id in selected_travel_ids %}
+                    <input type="hidden" name="travel_ids" value="{{ selected_id }}">
+                {% endfor %}
+
+                <div class="form-group">
+                    {% if selected_travel_ids %}
+                    <div style="margin-bottom:15px; padding:10px 12px; border-radius:8px; background:#f4f6f9; font-size:14px;">
+                        Evento será criado para as viagens:
+                        <b>{{ selected_travel_ids|join:", " }}</b>
+                    </div>
+                    {% endif %}
                     <label>Tipo de Evento</label>
                     <input type="hidden" name="event_type_id" id="eventTypeId">
                     <div class="custom-select" id="eventTypeSelect">
@@ -4173,7 +4183,36 @@ document.addEventListener("DOMContentLoaded", function () {
         const ids = [...document.querySelectorAll(".travel-checkbox:checked")]
             .map(cb => cb.value);
 
-        console.log("Viagens selecionadas:", ids);
+        if (!ids.length) return;
+
+        const form = document.createElement("form");
+        form.method = "post";
+
+        const csrf = document.querySelector("[name=csrfmiddlewaretoken]");
+        if (csrf) {
+            const csrfInput = document.createElement("input");
+            csrfInput.type = "hidden";
+            csrfInput.name = "csrfmiddlewaretoken";
+            csrfInput.value = csrf.value;
+            form.appendChild(csrfInput);
+        }
+
+        const openInput = document.createElement("input");
+        openInput.type = "hidden";
+        openInput.name = "travel_events_bulk";
+        openInput.value = "1";
+        form.appendChild(openInput);
+
+        ids.forEach(id => {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "travel_ids";
+            input.value = id;
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
     });
 });
 </script>
