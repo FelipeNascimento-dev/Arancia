@@ -1567,10 +1567,22 @@
             </div>
 
             <div class="tab-pane" id="viagens">
+                <div id="travelSelectionActions" style="display:none; margin-bottom:15px; text-align:right;">
+                    <button type="button" class="btn-primary" id="btnCriarEventoSelecionadas">
+                        Criar eventos para selecionadas
+                    </button>
+                </div>
+                
                 {% for travel in payload.travels %}
                 <div class="os-card travel-card">
 
                     <div class="travel-header">
+                        <div style="display:flex; align-items:center; margin-right:12px;">
+                            <input type="checkbox"
+                                class="travel-checkbox"
+                                value="{{ travel.id }}"
+                                onclick="event.stopPropagation();">
+                        </div>
                         <div onclick="toggleTravel(this)" style="flex:1; cursor:pointer;">
                             <div class="travel-title">
                                 Viagem #{{ travel.id }}
@@ -1706,13 +1718,13 @@
                             <div class="cotacao-header-right">
                                 <div class="cotacao-status">
                                     <span class="badge-status
-                                        {% if quote.status.type == 'PENDENTE' %}
+                                        {% if quote.status.type == 'PENDING' %}
                                             badge-pendente
-                                        {% elif quote.status.type == 'APROVADA MULTIPLA' %}
+                                        {% elif quote.status.type == 'APPROVED MULTIPLE' %}
                                             badge-aprovado
-                                        {% elif quote.status.type == 'APROVADA UNICA' %}
+                                        {% elif quote.status.type == 'APPROVED SINGLE' %}
                                             badge-aprovado
-                                        {% elif quote.status.type == 'REJEITADA' %}
+                                        {% elif quote.status.type == 'REJECTED' %}
                                             badge-rejeitado
                                         {% endif %}
                                     ">
@@ -4138,6 +4150,31 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+});
+</script>
+
+<!-- SCRIPT PARA CHECKBOX DE EVENTOS VIAGENS -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const actionBox = document.getElementById("travelSelectionActions");
+    const btnCriar = document.getElementById("btnCriarEventoSelecionadas");
+    const checkboxes = document.querySelectorAll(".travel-checkbox");
+
+    function atualizarBotaoViagens() {
+        const selecionadas = document.querySelectorAll(".travel-checkbox:checked");
+        actionBox.style.display = selecionadas.length > 0 ? "block" : "none";
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener("change", atualizarBotaoViagens);
+    });
+
+    btnCriar.addEventListener("click", function () {
+        const ids = [...document.querySelectorAll(".travel-checkbox:checked")]
+            .map(cb => cb.value);
+
+        console.log("Viagens selecionadas:", ids);
+    });
 });
 </script>
 {% endblock content %}

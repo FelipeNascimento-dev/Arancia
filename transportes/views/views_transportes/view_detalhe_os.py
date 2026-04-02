@@ -41,14 +41,14 @@ def _filtrar_quotes_por_status(quotes):
             or status_obj.get("status")
         )
 
-        if "REJEIT" in status_nome:
+        if "REJEC" in status_nome:
             quotes_rejeitadas.append(quote)
 
-        elif "APROV" in status_nome and "UNIC" in status_nome:
+        elif "APPROV" in status_nome and "ONLY" in status_nome:
             quotes_aprovadas_unicas.append(quote)
             quotes_aprovadas.append(quote)
 
-        elif "APROV" in status_nome and ("MULT" in status_nome or "MULTIP" in status_nome):
+        elif "APPROV" in status_nome and ("MULT" in status_nome or "MULTIP" in status_nome):
             quotes_aprovadas_multiplas.append(quote)
             quotes_aprovadas.append(quote)
 
