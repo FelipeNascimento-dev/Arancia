@@ -1,4 +1,5 @@
 from .view_base import index
+from .view_senhas_privilegiadas import senhas_privilegiadas
 from .views_user.logout_view import logout_view
 from .views_user.logout_confirm_view import logout_confirm_view
 from .view_fullfilment.view_consulta_id import consulta_id_form, consulta_id_table
