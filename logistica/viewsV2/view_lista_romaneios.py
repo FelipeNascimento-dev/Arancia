@@ -41,11 +41,22 @@ def lista_romaneios(request):
             )
             result = client.send_api_request() or []
 
-            if 'detail' in result:
-                messages.error(request, result('detail'))
+            if isinstance(result, dict):
+                if 'detail' in result:
+                    messages.error(request, result.get('detail'))
+                    result = []
+                elif 'results' in result and isinstance(result.get('results'), list):
+                    result = result.get('results', [])
+                elif 'items' in result and isinstance(result.get('items'), list):
+                    result = result.get('items', [])
+                else:
+                    result = []
+
+            if not isinstance(result, list):
+                result = []
 
             for item in result:
-                if item.get("created_at"):
+                if isinstance(item, dict) and item.get("created_at"):
                     dt = datetime.fromisoformat(item["created_at"])
                     item["created_at_formatado"] = dt.strftime(
                         "%d/%m/%Y %H:%M:%S")

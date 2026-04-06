@@ -10,6 +10,8 @@ app_name = 'logistica'
 
 urls_User = [
     path('', index, name='index'),
+    path('senhas-privilegiadas/', senhas_privilegiadas,
+         name='senhas_privilegiadas'),
     path('toggle-db/', toggle_db, name='toggle_db'),
     path('login/', UserLoginView.as_view(), name='login'),
     path('register/', registrar_usuario, name='register'),

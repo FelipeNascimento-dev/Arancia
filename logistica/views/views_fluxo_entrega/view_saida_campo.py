@@ -190,7 +190,7 @@ def saida_campo(request, tp_reg: str):
                 messages.success(request, 'Mensagem enviada com sucesso')
             except Exception as e:
                 messages.error(request, f"Erro ao enviar requisição: {e}")
-                return render(request, 'logistica/saida_campo.html', {
+                return render(request, 'logistica/templates_fluxo_entreg/saida_campo.html', {
                     'form': SaidaCampoForm(nome_form=titulo, initial={'gtec': gtec, 'origem_os': origem_os}),
                     'etapa_ativa': 'saida_campo',
                     'botao_texto': 'Enviar',

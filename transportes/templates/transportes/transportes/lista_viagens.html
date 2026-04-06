@@ -591,6 +591,226 @@
             width: 100%;
         }
     }
+    
+    .os-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+    }
+
+    .os-modal-overlay.show {
+        display: flex;
+    }
+
+    .os-modal {
+        background: white;
+        width: 650px;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+        animation: modalFade 0.2s ease-in-out;
+    }
+
+    @keyframes modalFade {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .os-modal-header {
+        padding: 18px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eee;
+    }
+
+    .os-modal-title {
+        font-weight: 600;
+        font-size: 18px;
+    }
+
+    .os-modal-close {
+        cursor: pointer;
+        font-size: 18px;
+        color: #777;
+    }
+
+    .os-modal-body {
+        padding: 20px;
+    }
+
+    .os-modal-description {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    .os-modal-footer {
+        padding: 15px 20px;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        font-size: 13px;
+        color: #555;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .form-group select,
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+    }
+
+    .custom-select {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .custom-select-trigger {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 12px;
+        background: #fff;
+        font-size: 14px;
+    }
+
+    .custom-select-dropdown {
+        position: absolute;
+        top: 105%;
+        left: 0;
+        width: 100%;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        max-height: 280px;
+        overflow-y: auto;
+        display: none;
+        z-index: 9999;
+    }
+
+    .custom-option {
+        position: relative;
+        padding: 14px;
+        border-bottom: 1px solid #f1f1f1;
+        transition: 0.2s;
+    }
+
+    .custom-option:hover {
+        background: #f4f6f9;
+    }
+
+    .option-content {
+        position: relative;
+        padding-top: 22px;
+    }
+
+    .option-text {
+        font-size: 14px;
+        line-height: 1.4;
+        word-break: break-word;
+    }
+
+    .option-tags {
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: flex;
+        gap: 6px;
+    }
+
+    .tag {
+        font-size: 8px;
+        padding: 4px 8px;
+        border-radius: 20px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .tag-status {
+        background: #e8f2ff;
+        color: #0e76bd;
+    }
+
+    .tag-final {
+        background: #e9f7ef;
+        color: #1f7a3a;
+    }
+
+    .items-box {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 15px;
+        background: #f9fafc;
+        max-height: 220px;
+        overflow-y: auto;
+        padding-right: 6px;
+    }
+
+    .items-title {
+        font-weight: 500;
+        margin-bottom: 10px;
+    }
+
+    .checkbox-item {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .checkbox-item span {
+        color: #777;
+    }
+
+    .btn-primary {
+        background: #1e90ff;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .btn-secondary {
+        background: #bebebe;
+        border: 1px solid #ddd;
+        padding: 8px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
 </style>
 
 <div class="toolbar">
@@ -731,6 +951,8 @@
         {% if travels %}
         <form method="POST" id="bulkEventForm">
             {% csrf_token %}
+            <input type="hidden" name="cliente" value="{{ filtros.cliente|default:'' }}">
+            <input type="hidden" name="tipo_servico" value="{{ filtros.tipo_servico|default:'' }}">
 
             <div class="bulk-actions-bar" id="bulkActionsBar">
                 <div class="bulk-actions-info">
@@ -846,6 +1068,139 @@
         {% endif %}
     </main>
 </div>
+
+{% if modal_travel_event %}
+<div class="os-modal-overlay show" id="modalEventosTravel">
+    <div class="os-modal" style="width:700px;">
+        <div class="os-modal-header">
+            <div class="os-modal-title">
+                Eventos das Viagens Selecionadas
+            </div>
+            <div class="os-modal-close" onclick="fecharModalEventosTravel()">✕</div>
+        </div>
+
+        <div class="os-modal-body">
+            <form method="post">
+                {% csrf_token %}
+
+                {% for selected_id in selected_travel_ids %}
+                    <input type="hidden" name="travels_selecionadas" value="{{ selected_id }}">
+                {% endfor %}
+
+                {% if selected_travel_ids %}
+                <div style="margin-bottom:15px; padding:10px 12px; border-radius:8px; background:#f4f6f9; font-size:14px;">
+                    Evento será criado para as viagens:
+                    <b>{{ selected_travel_ids|join:", " }}</b>
+                </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label>Tipo de Evento</label>
+                    <input type="hidden" name="event_type_id" id="eventTypeId">
+                    <div class="custom-select" id="eventTypeSelect">
+                        <div class="custom-select-trigger">
+                            Selecione um tipo...
+                        </div>
+
+                        <div class="custom-select-dropdown">
+                            {% for ev in travel_event_types %}
+                            <div class="custom-option"
+                                 data-id="{{ ev.id }}">
+                                <div class="option-content">
+                                    <div class="option-tags">
+                                        {% if ev.status %}
+                                            <span class="tag tag-status">
+                                                {{ ev.status.type }}
+                                            </span>
+                                        {% endif %}
+                                        {% if ev.status and ev.status.finished %}
+                                            <span class="tag tag-final">
+                                                Finalizador
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="option-text">
+                                        {{ ev.description }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top:15px;">
+                    <label>Descrição (opcional)</label>
+                    <textarea name="description" rows="3" placeholder="Observações adicionais..."></textarea>
+                </div>
+
+                <div class="form-grid" style="margin-top:15px;">
+                    <div class="form-group">
+                        <label>Latitude</label>
+                        <input type="text" name="location_lat" placeholder="-23.550520">
+                    </div>
+                    <div class="form-group">
+                        <label>Longitude</label>
+                        <input type="text" name="location_long" placeholder="-46.633308">
+                    </div>
+                </div>
+
+                <div style="margin-top:20px; text-align:right;">
+                    <button type="submit"
+                            class="btn-primary"
+                            name="criar_evento_travel_lote"
+                            value="1">
+                        Criar Evento
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modalEventosTravel = document.getElementById("modalEventosTravel");
+
+    if (modalEventosTravel) {
+        window.fecharModalEventosTravel = function () {
+            modalEventosTravel.classList.remove("show");
+        };
+
+        modalEventosTravel.addEventListener("click", function (e) {
+            if (e.target === modalEventosTravel) {
+                fecharModalEventosTravel();
+            }
+        });
+    }
+
+    const select = document.getElementById("eventTypeSelect");
+    if (!select) return;
+
+    const trigger = select.querySelector(".custom-select-trigger");
+    const dropdown = select.querySelector(".custom-select-dropdown");
+    const hiddenInput = document.getElementById("eventTypeId");
+
+    trigger.addEventListener("click", function (e) {
+        e.stopPropagation();
+        dropdown.style.display =
+            dropdown.style.display === "block" ? "none" : "block";
+    });
+
+    select.querySelectorAll(".custom-option").forEach(option => {
+        option.addEventListener("click", function () {
+            hiddenInput.value = this.dataset.id;
+            trigger.innerHTML = this.innerHTML;
+            dropdown.style.display = "none";
+        });
+    });
+
+    document.addEventListener("click", function () {
+        dropdown.style.display = "none";
+    });
+});
+</script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {

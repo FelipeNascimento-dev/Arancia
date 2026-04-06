@@ -405,6 +405,19 @@
                 <a href="http://192.168.0.214/site/Index.aspx" target="_blank">Gerencial</a>
             </div>
         </div>
+
+        <div class="dropdown {% if current_parent_menu == 'seguranca_informacao' %}active{% endif %}">
+            <button type="button" class="dropbtn itens-sidebar">
+                <i class="fa-solid fa-lock"></i>
+                <span class="texto-item">&nbsp; Políticas de Segurança da Informação</span>
+            </button>
+            <div class="dropdown-content">
+                <a href="{% url 'logistica:senhas_privilegiadas' %}"
+                class="{% if current_menu == 'senhas_privilegiadas' %}active{% endif %}">
+                    Senhas Privilegiadas
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 

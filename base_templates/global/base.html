@@ -5,6 +5,36 @@
     {% include 'global/partials/_head.html' %}
 </head>
 
+<style>
+    .password-warning {
+        background: #153e70;
+        border-left: 6px solid #4da3ff;
+        color: #ffffff;
+        padding: 18px 22px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    }
+
+    .password-warning h3 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #ffffff;
+    }
+
+    .password-warning p {
+        margin: 0;
+        line-height: 1.7;
+        font-size: 15px;
+        color: #eaf2ff;
+    }
+
+    .password-warning strong {
+        color: #ffffff;
+    }
+</style>
+
 <body>
     {% include 'global/partials/_nav_usuario.html' %}
     {% include 'global/partials/_header.html' %}
@@ -50,6 +80,16 @@
                     <li>⚙️ <strong>Perfil & Ajuda</strong>: no seu avatar, acesse configurações e materiais de suporte.
                     </li>
                 </ul>
+
+                <hr>
+
+                <div class="password-warning">
+                    <h3>🔐 Aviso Importante de Segurança</h3>
+                    <p>
+                        Informamos que, por política de segurança da informação, <strong>o sistema exigirá obrigatoriamente a troca de senha a cada 02 meses</strong> e/ou <strong>no retorno do período de férias</strong>.
+                        Essa medida é necessária para reforçar a proteção da sua conta e dos dados acessados na plataforma.
+                    </p>
+                </div>
 
                 <hr>
 
