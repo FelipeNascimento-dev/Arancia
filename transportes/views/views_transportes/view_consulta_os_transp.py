@@ -153,7 +153,7 @@ def consulta_os_transp(request):
         filtros_post = montar_filtros_consulta_os(request.POST)
 
         if "limpar_filtros" in request.POST:
-            return redirect(request.path)
+            return redirect(f"{request.path}?limpo=1")
 
         if "remover_favorito" in request.POST:
             limpar_filtro_favorito(request.user, chave_tela)
@@ -260,7 +260,13 @@ def consulta_os_transp(request):
     # ----------------------------
     data = request.GET.copy()
 
-    if not data:
+    limpou_tela = data.get("limpo") == "1"
+
+    if limpou_tela:
+        data = data.copy()
+        data.pop("limpo", None)
+
+    elif not data:
         filtros_iniciais = obter_filtros_tela(request.user, chave_tela)
         if filtros_iniciais:
             return redirect(f"{request.path}?{urlencode(filtros_iniciais, doseq=True)}")
