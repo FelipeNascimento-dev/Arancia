@@ -169,11 +169,11 @@ def lista_viagens(request):
     # ----------------------------
     # TRATAMENTO DOS BOTÕES
     # ----------------------------
+    filtros = {}
+
     if request.method == "POST":
         if "limpar_filtros" in request.POST:
-            limpar_filtro_favorito(request.user, chave_tela)
-            messages.success(request, "Filtros favoritos removidos.")
-            return redirect("transportes:lista_viagens")
+            return redirect(f"{request.path}?limpo=1")
 
         filtros_post = montar_filtros_lista_viagens(
             request.POST, filtro_campos)
@@ -199,13 +199,22 @@ def lista_viagens(request):
             else:
                 filtros = {}
                 messages.warning(
-                    request, "Nenhum filtro padrão cadastrado para esta tela.")
+                    request, "Nenhum filtro padrão cadastrado para esta tela."
+                )
+
         elif "enviar_evento" in request.POST or "extrair_travels" in request.POST:
             filtros = filtros_post
+
         else:
-            filtros = obter_filtros_tela(request.user, chave_tela)
+            filtros = obter_filtros_tela(request.user, chave_tela) or {}
+
     else:
-        filtros = obter_filtros_tela(request.user, chave_tela)
+        limpou_tela = request.GET.get("limpo") == "1"
+
+        if limpou_tela:
+            filtros = {}
+        else:
+            filtros = obter_filtros_tela(request.user, chave_tela) or {}
 
     form = ListaViagensForm(
         initial={campo: filtros.get(campo, "") for campo in filtro_campos},

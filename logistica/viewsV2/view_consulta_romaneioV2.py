@@ -73,12 +73,12 @@ def consult_romV2(request):
 
     try:
         pa_tatuape = GroupAditionalInformation.objects.get(
-            nome__iexact="Tatuapé"
+            nome__iexact="PA CTB Tatuapé"
         )
 
         destination_choices.append({
             "id": pa_tatuape.id,
-            "label": "PA Tatuapé"
+            "label": "PA CTB Tatuapé"
         })
 
     except GroupAditionalInformation.DoesNotExist:
