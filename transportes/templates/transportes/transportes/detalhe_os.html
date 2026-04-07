@@ -2244,7 +2244,7 @@
 
             <div class="os-modal-footer">
                 <button type="button" class="btn-secondary" onclick="fecharModalCotacao()">Cancelar</button>
-                <button type="submit" class="btn-primary" name="criar_cotacao" value="1">Criar Cotação</button>
+                <button type="submit" class="btn-primary" id="criarCotacaoBtn" name="criar_cotacao" value="1">Criar Cotação</button>
             </div>
         </div>
     </div>
@@ -4041,7 +4041,7 @@ document.addEventListener("DOMContentLoaded", function () {
 }
 </script>
 
-<!-- BLOQUEIO NO BOTÃO DE SALVAR ITEM -->
+<!-- BLOQUEIO DE BOTOES -->
 <script>
 document.addEventListener("DOMContentLoaded", function(){
     const btn = document.getElementById("btnSalvarItem")
@@ -4056,6 +4056,25 @@ document.addEventListener("DOMContentLoaded", function(){
         setTimeout(() => {
             btn.disabled = true
             btn.innerText = "Salvando..."
+        }, 10)
+    })
+})
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    const btn = document.getElementById("criarCotacaoBtn")
+    if(!btn) return
+    btn.addEventListener("click", function(e){
+        if(btn.dataset.locked === "1"){
+            e.preventDefault()
+            e.stopPropagation()
+            return false
+        }
+        btn.dataset.locked = "1"
+        setTimeout(() => {
+            btn.disabled = true
+            btn.innerText = "Criando..."
         }, 10)
     })
 })
