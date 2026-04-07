@@ -184,10 +184,15 @@ def saida_campo(request, tp_reg: str):
             )
             try:
                 resp = request_client.send_api_request()
-                if not isinstance(resp, list):
-                    if isinstance(resp, dict) and resp.get("detail"):
-                        raise Exception(resp)
-                messages.success(request, 'Mensagem enviada com sucesso')
+
+                if 'detail' in resp:
+                    messages.error(request, resp.get('detail'))
+                else:
+                    messages.success(request, 'Requisição enviada com sucesso')
+                # if not isinstance(resp, list):
+                #     if isinstance(resp, dict) and resp.get("detail"):
+                #         raise Exception(resp)
+                # messages.success(request, 'Mensagem enviada com sucesso')
             except Exception as e:
                 messages.error(request, f"Erro ao enviar requisição: {e}")
                 return render(request, 'logistica/templates_fluxo_entreg/saida_campo.html', {

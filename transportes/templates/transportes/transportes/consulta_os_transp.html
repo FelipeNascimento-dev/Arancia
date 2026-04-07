@@ -735,6 +735,26 @@
             grid-column: auto;
         }
     }
+
+    .status-finished {
+        color: #16a34a;
+        font-weight: bold;
+    }
+
+    .status-pending {
+        color: #f59e0b;
+        font-weight: bold;
+    }
+
+    .status-awaiting {
+        color: #2563eb;
+        font-weight: bold;
+    }
+
+    .status-unknown {
+        color: #6b7280;
+        font-weight: bold;
+    }
 </style>
 
 <div class="toolbar">
@@ -905,10 +925,14 @@
 
                         <p>
                             <strong>Status:</strong><br>
-                            {% if item.order_state.finished %}
+                            {% if item.order_state.type == "COLLECTED" %}
                                 <span class="status-finished">{{ item.order_state.type }}</span>
-                            {% else %}
+                            {% elif item.order_state.type == "PENDING" %}
                                 <span class="status-pending">{{ item.order_state.type }}</span>
+                            {% elif item.order_state.type == "AWAITING QUOTE" %}
+                                <span class="status-awaiting">{{ item.order_state.type }}</span>
+                            {% else %}
+                                <span class="status-unknown">{{ item.order_state.type|default:"-" }}</span>
                             {% endif %}
                         </p>
 
