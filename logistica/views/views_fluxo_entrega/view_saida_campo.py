@@ -169,8 +169,13 @@ def saida_campo(request, tp_reg: str):
                 else None
             )
 
+            usuarios_com_lock_ip_false = {"ARC0050", "ARC0007"}
+
+            username = getattr(request.user, "username", "")
+            query = "?lock_ip=false" if username in usuarios_com_lock_ip_false else ""
+
             request_client = RequestClient(
-                url=f'http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ec/{tp_reg_new}/list',
+                url=f"http://192.168.0.214/IntegrationXmlAPI/api/v2/clo/ec/{tp_reg_new}/list{query}",
                 method='POST',
                 headers={'Content-Type': 'application/json'},
                 request_data={
@@ -182,6 +187,7 @@ def saida_campo(request, tp_reg: str):
                     "origem_os": origem_os,
                 }
             )
+
             try:
                 resp = request_client.send_api_request()
 
