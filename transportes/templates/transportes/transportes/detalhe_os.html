@@ -1226,6 +1226,203 @@
         margin-bottom: 20px;
         position: relative;
     }
+    .service-extra-card {
+        margin-bottom: 25px;
+        border: 1px solid #dbeafe;
+        background: #f8fbff;
+    }
+
+    .service-extra-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .service-extra-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #e8f2ff;
+        color: #0e76bd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+
+    .service-extra-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .service-extra-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(260px, 1fr));
+        gap: 14px;
+    }
+
+    .service-extra-item {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 12px 14px;
+    }
+
+    .service-extra-label {
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        font-weight: 600;
+    }
+
+    .service-extra-value {
+        font-size: 14px;
+        color: #111827;
+        font-weight: 500;
+        word-break: break-word;
+    }
+
+    .service-extra-item.highlight {
+        border: 1px solid #f59e0b;
+        background: #fffaf0;
+    }
+
+    .service-extra-item.highlight .service-extra-label {
+        color: #92400e;
+    }
+
+    .service-extra-item.highlight .service-extra-value {
+        color: #7c2d12;
+        font-weight: 700;
+    }
+
+    .extra-collapse-card {
+        margin-bottom: 25px;
+        background: #ffffff;
+        overflow: hidden;
+    }
+
+    .extra-collapse-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 18px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .extra-collapse-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .extra-collapse-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #e8f2ff;
+        color: #0e76bd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .extra-collapse-title-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .extra-collapse-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .extra-collapse-subtitle {
+        font-size: 13px;
+        color: #64748b;
+        word-break: break-word;
+    }
+
+    .extra-collapse-arrow {
+        font-size: 16px;
+        color: #64748b;
+        transition: transform 0.25s ease;
+        flex-shrink: 0;
+    }
+
+    .extra-collapse-card.active .extra-collapse-arrow {
+        transform: rotate(180deg);
+    }
+
+    .extra-collapse-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        opacity: 0;
+        padding: 0 18px;
+    }
+
+    .extra-collapse-card.active .extra-collapse-body {
+        max-height: 1000px;
+        opacity: 1;
+        padding: 0 18px 18px 18px;
+    }
+
+    .service-extra-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(260px, 1fr));
+        gap: 14px;
+        margin-top: 8px;
+    }
+
+    .service-extra-item {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 12px 14px;
+    }
+
+    .service-extra-label {
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        font-weight: 600;
+    }
+
+    .service-extra-value {
+        font-size: 14px;
+        color: #111827;
+        font-weight: 500;
+        word-break: break-word;
+    }
+
+    .service-extra-item.highlight {
+        border: 1px solid #f59e0b;
+        background: #fffaf0;
+    }
+
+    .service-extra-item.highlight .service-extra-label {
+        color: #92400e;
+    }
+
+    .service-extra-item.highlight .service-extra-value {
+        color: #7c2d12;
+        font-weight: 700;
+    }
 </style>
 
 <div class="os-container">
@@ -1301,6 +1498,184 @@
                 </div>
             </div>
         </div>
+
+        {% if payload.service_order.extra_information %}
+        <div class="os-card extra-collapse-card" id="serviceExtraCard">
+            <div class="extra-collapse-header" onclick="toggleExtraInfoCard()">
+                <div class="extra-collapse-left">
+                    <div class="extra-collapse-icon">
+                        <i class="fa-solid fa-file-invoice"></i>
+                    </div>
+
+                    <div class="extra-collapse-title-wrap">
+                        <div class="extra-collapse-title">
+                            Informações Extras da Ordem de Serviço
+                        </div>
+                        <div class="extra-collapse-subtitle">
+                            <strong>Invoice Key:</strong>
+                            {{ payload.service_order.extra_information.invoice_key|default:"NÃO INFORMADO" }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="extra-collapse-arrow">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
+            </div>
+
+            <div class="extra-collapse-body">
+                <div class="service-extra-grid">
+                    <div class="service-extra-item highlight">
+                        <div class="service-extra-label">Chave da Nota Fiscal</div>
+                        <div class="service-extra-value">
+                            {{ payload.service_order.extra_information.invoice_key|default:"NÃO INFORMADO" }}
+                        </div>
+                    </div>
+
+                    {% if payload.service_order.extra_information.sales_order_number %}
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">Pedido de Venda</div>
+                        <div class="service-extra-value">
+                            {{ payload.service_order.extra_information.sales_order_number }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if payload.service_order.extra_information.sales_channel %}
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">Canal de Venda</div>
+                        <div class="service-extra-value">
+                            {{ payload.service_order.extra_information.sales_channel }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if payload.service_order.extra_information.shipment_order_type %}
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">Tipo do Shipment</div>
+                        <div class="service-extra-value">
+                            {{ payload.service_order.extra_information.shipment_order_type }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if payload.service_order.extra_information.delivery_method_id %}
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">Delivery Method ID</div>
+                        <div class="service-extra-value">
+                            {{ payload.service_order.extra_information.delivery_method_id }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if payload.service_order.extra_information.logistic_provider_id %}
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">Logistic Provider ID</div>
+                        <div class="service-extra-value">
+                            {{ payload.service_order.extra_information.logistic_provider_id }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if payload.service_order.extra_information.intelipost_pre_shipment_list %}
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">Pré-Shipment Intelipost</div>
+                        <div class="service-extra-value">
+                            {{ payload.service_order.extra_information.intelipost_pre_shipment_list }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if payload.service_order.extra_information.payload_completo_id %}
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">Payload Completo ID</div>
+                        <div class="service-extra-value">
+                            {{ payload.service_order.extra_information.payload_completo_id }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">Agendado</div>
+                        <div class="service-extra-value">
+                            {% if payload.service_order.extra_information.scheduled %}
+                                Sim
+                            {% else %}
+                                Não
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if payload.service_order.extra_information.end_customer %}
+                <div class="service-extra-grid" style="margin-top:14px;">
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">Destinatário</div>
+                        <div class="service-extra-value">
+                            {{ payload.service_order.extra_information.end_customer.first_name }}
+                            {{ payload.service_order.extra_information.end_customer.last_name }}
+                        </div>
+                    </div>
+
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">Empresa</div>
+                        <div class="service-extra-value">
+                            {% if payload.service_order.extra_information.end_customer.is_company %}
+                                Sim
+                            {% else %}
+                                Não
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">Telefone</div>
+                        <div class="service-extra-value">
+                            {{ payload.service_order.extra_information.end_customer.phone|default:"Não informado" }}
+                        </div>
+                    </div>
+
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">CPF/CNPJ</div>
+                        <div class="service-extra-value">
+                            {{ payload.service_order.extra_information.end_customer.federal_tax_payer_id|default:"Não informado" }}
+                        </div>
+                    </div>
+
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">Endereço</div>
+                        <div class="service-extra-value">
+                            {{ payload.service_order.extra_information.end_customer.shipping_address }},
+                            {{ payload.service_order.extra_information.end_customer.shipping_number }}
+                        </div>
+                    </div>
+
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">Bairro</div>
+                        <div class="service-extra-value">
+                            {{ payload.service_order.extra_information.end_customer.shipping_quarter|default:"Não informado" }}
+                        </div>
+                    </div>
+
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">Cidade / UF</div>
+                        <div class="service-extra-value">
+                            {{ payload.service_order.extra_information.end_customer.shipping_city }}
+                            / {{ payload.service_order.extra_information.end_customer.shipping_state_code }}
+                        </div>
+                    </div>
+
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">CEP</div>
+                        <div class="service-extra-value">
+                            {{ payload.service_order.extra_information.end_customer.shipping_zip_code|default:"Não informado" }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
 
         <div class="summary-grid">
             <div class="os-card summary">
@@ -4234,5 +4609,14 @@ document.addEventListener("DOMContentLoaded", function () {
         form.submit();
     });
 });
+</script>
+
+<script>
+function toggleExtraInfoCard() {
+    const card = document.getElementById("serviceExtraCard");
+    if (card) {
+        card.classList.toggle("active");
+    }
+}
 </script>
 {% endblock content %}
