@@ -9,6 +9,7 @@
         max-width: 1350px !important;
         width: 100% !important;
         margin-bottom: 150px;
+        box-sizing: border-box;
     }
 
     .toolbar {
@@ -87,10 +88,11 @@
     .filters-sidebar {
         position: sticky;
         top: 90px;
-        width: 300px;
+        width: 100%;
+        min-width: 0;
         max-width: 300px;
         overflow-y: auto;
-        max-height: 650px;
+        max-height: calc(100vh - 110px);
     }
 
     .filters-sidebar.is-hidden {
@@ -404,8 +406,8 @@
         border-radius: 8px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         overflow: hidden;
-        height: 500px;
-        max-height: 500px;
+        height: auto;
+        min-height: 320px;
     }
 
     .card-header {
@@ -903,6 +905,153 @@
         border: 1px dashed #d1d5db;
         border-radius: 12px;
         background: #fafafa;
+    }
+
+    @media (max-width: 1100px) {
+        .content-wrapper,
+        .main-content,
+        .container,
+        .page-content {
+            max-width: 800px !important;
+            width: 100% !important;
+            margin-bottom: 150px;
+            box-sizing: border-box;
+        }
+
+        .toggle-filters-btn,
+        .btn-primary-toolbar {
+            width: 600px;
+            justify-content: center;
+        }
+
+        .toolbar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+
+        .toolbar-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .btn-primary-toolbar,
+        .toggle-filters-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .page-layout {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .page-layout.filters-hidden {
+            grid-template-columns: 1fr;
+        }
+
+        .filters-sidebar {
+            position: static;
+            width: 80%;
+            max-width: 100%;
+            max-height: 500px;
+            overflow: auto;
+            margin-left: 85px;
+        }
+
+        .results-area {
+            width: 100%;
+        }
+
+        .cards-container {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .toolbar {
+            margin-top: 55px;
+        }
+
+        .filters-box {
+            padding: 14px;
+        }
+
+        .filters-box-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filters-header-actions {
+            width: 100%;
+            justify-content: stretch;
+        }
+
+        .filters-header-actions .btn-header-action {
+            flex: 1 1 100%;
+            width: 100%;
+        }
+
+        .filters-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-main--primary {
+            grid-column: auto;
+        }
+
+        .cards-container {
+            grid-template-columns: 1fr;
+        }
+
+        .card {
+            min-height: auto;
+        }
+
+        .card-header {
+            align-items: flex-start;
+        }
+
+        .card-title {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
+            word-break: break-word;
+        }
+
+        .pagination-row {
+            flex-direction: column;
+        }
+
+        .pagination-pages {
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .toggle-filters-btn,
+        .btn-primary-toolbar,
+        .btn-main,
+        .btn-header-action {
+            font-size: .88rem;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .filters-box-header h3 {
+            font-size: 1.25rem;
+        }
+
+        .card-body p {
+            font-size: .88rem;
+        }
+
+        .badge-num {
+            width: 24px;
+            height: 24px;
+            font-size: .8rem;
+            flex: 0 0 24px;
+        }
     }
 </style>
 
