@@ -146,9 +146,6 @@ def consulta_os_transp(request):
         messages.error(request, resp["detail"])
         resp = []
 
-    # ----------------------------
-    # TRATAMENTO DOS FILTROS
-    # ----------------------------
     if request.method == "POST":
         filtros_post = montar_filtros_consulta_os(request.POST)
 
@@ -252,12 +249,8 @@ def consulta_os_transp(request):
             url_extract = f"{TRANSP_API_URL}/service_orders/export/excel?{urlencode(extract_params)}"
             return redirect(url_extract)
 
-        # consultar / submit normal
         return redirect(f"{request.path}?{urlencode(filtros_post, doseq=True)}")
 
-    # ----------------------------
-    # GET: carrega favorito/padrão
-    # ----------------------------
     data = request.GET.copy()
 
     limpou_tela = data.get("limpo") == "1"
@@ -390,7 +383,7 @@ def consulta_os_transp(request):
         params["limit"] = limit
         params["offset"] = offset
 
-        url_lista = f"{TRANSP_API_URL}/service_orders/list"
+        url_lista = f"{TRANSP_API_URL}/v2/service_order/list"
         lista_request = RequestClient(
             method="get",
             url=url_lista,
