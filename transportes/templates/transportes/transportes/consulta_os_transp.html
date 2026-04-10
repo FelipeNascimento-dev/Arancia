@@ -404,7 +404,8 @@
         border-radius: 8px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         overflow: hidden;
-        min-height: 430px;
+        height: 480px;
+        max-height: 480px;
     }
 
     .card-header {
@@ -923,6 +924,11 @@
                         <p>
                             <strong>Tipo de OS:</strong><br>
                             {{ item.order_type.type|default:"-" }}
+                        </p>
+
+                        <p>
+                            <strong>Total de viagens:</strong><br>
+                            {{ item.total_travels }}
                         </p>
 
                         <p>
