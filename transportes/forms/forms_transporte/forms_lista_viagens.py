@@ -10,6 +10,11 @@ BOOL_CHOICES = [
     ("false", "Não"),
 ]
 
+RESPONSE_CHOICES = (
+    ("resume", "Resumido"),
+    ("detailed", "Detalhado"),
+)
+
 
 class ListaViagensForm(forms.Form):
     travel_id = forms.CharField(label="ID da Viagem", required=False)
@@ -157,3 +162,11 @@ class ListaViagensForm(forms.Form):
             if isinstance(field.widget, forms.Select):
                 css = "filter-select"
             field.widget.attrs["class"] = css
+
+        self.fields["Response"] = forms.ChoiceField(
+            label="Response",
+            choices=RESPONSE_CHOICES,
+            required=False,
+            initial="resume",
+            widget=forms.Select(attrs={"class": "filter-select"})
+        )
