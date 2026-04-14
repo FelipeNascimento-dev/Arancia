@@ -1422,14 +1422,14 @@
                         <p><strong>Transportadora:</strong><br>{{ item.travel.carrier.nome }}</p>
                         <p><strong>Origem:</strong><br>CEP: {{ item.service_order.origin.CEP }}<br><small>{{ item.service_order.origin.endereco }}</small></p>
                         <p><strong>Destino:</strong><br>CEP: {{ item.service_order.destination.CEP }}<br><small>{{ item.service_order.destination.endereco }}</small></p>
-                        <p>
+                        <!-- <p>
                             <strong>Prazo Final:</strong><br>
                             {% if item.travel.end_date_formatada %}
                                 {{ item.travel.end_date_formatada }}
                             {% else %}
                                 Em andamento
                             {% endif %}
-                        </p>
+                        </p> -->
                         <p>
                             <strong>Data Inicial:</strong><br>
                             {% if item.travel.start_date_formatada %}
