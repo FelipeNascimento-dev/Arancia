@@ -12,6 +12,7 @@ from django.core.paginator import Paginator
 from datetime import datetime
 from urllib.parse import urlencode
 from django.http import JsonResponse
+import json
 
 from transportes.models import FiltroPadraoTela, FiltroFavoritoUsuario
 from transportes.utils.filtros import (
@@ -114,7 +115,8 @@ def lista_viagens(request):
         "limit",
         "created_at",
         "designation_id",
-        "atrasado"
+        "atrasado",
+        "Response",   # NOVO CAMPO
     ]
 
     url_cliente = f"{TRANSP_API_URL}/gai/clientes/status?cliente=arancia_client"
@@ -166,9 +168,6 @@ def lista_viagens(request):
     if isinstance(resp_transportadora, dict) and resp_transportadora.get("detail"):
         resp_transportadora = []
 
-    # ----------------------------
-    # TRATAMENTO DOS BOTÕES
-    # ----------------------------
     filtros = {}
 
     if request.method == "POST":
@@ -177,6 +176,10 @@ def lista_viagens(request):
 
         filtros_post = montar_filtros_lista_viagens(
             request.POST, filtro_campos)
+
+        # garante default
+        if not filtros_post.get("Response"):
+            filtros_post["Response"] = "resume"
 
         if "salvar_favorito" in request.POST:
             salvar_filtro_favorito(
@@ -195,26 +198,28 @@ def lista_viagens(request):
 
             if filtro_padrao and filtro_padrao.filtros:
                 filtros = filtro_padrao.filtros
+                filtros["Response"] = filtros.get("Response") or "resume"
                 messages.success(request, "Filtro padrão aplicado.")
             else:
-                filtros = {}
+                filtros = {"Response": "resume"}
                 messages.warning(
-                    request, "Nenhum filtro padrão cadastrado para esta tela."
-                )
+                    request, "Nenhum filtro padrão cadastrado para esta tela.")
 
         elif "enviar_evento" in request.POST or "extrair_travels" in request.POST:
             filtros = filtros_post
 
         else:
             filtros = obter_filtros_tela(request.user, chave_tela) or {}
+            filtros["Response"] = filtros.get("Response") or "resume"
 
     else:
         limpou_tela = request.GET.get("limpo") == "1"
 
         if limpou_tela:
-            filtros = {}
+            filtros = {"Response": "resume"}
         else:
             filtros = obter_filtros_tela(request.user, chave_tela) or {}
+            filtros["Response"] = filtros.get("Response") or "resume"
 
     form = ListaViagensForm(
         initial={campo: filtros.get(campo, "") for campo in filtro_campos},
@@ -268,15 +273,21 @@ def lista_viagens(request):
 
     filtros_ativos = sum(
         1 for campo in filtro_campos
-        if filtros.get(campo) not in [None, ""]
+        if campo != "Response" and filtros.get(campo) not in [None, ""]
     )
 
-    if filtros_ativos:
+    response_mode = filtros.get("Response") or "resume"
+
+    if filtros_ativos or response_mode:
         try:
             params = {}
 
             for campo in filtro_campos:
                 valor = filtros.get(campo)
+
+                if campo == "Response":
+                    params["Response"] = valor or "resume"
+                    continue
 
                 if valor in [None, "", [], ()]:
                     continue
@@ -286,20 +297,20 @@ def lista_viagens(request):
 
                 if campo == "pa_selecionada":
                     params["designation_id"] = valor
-
                 elif campo == "tipo_servico":
                     params["tipo_servico"] = tipo_api_map.get(
                         str(valor), valor)
-
                 elif campo == "status_list":
                     params["status_list"] = status_api_map.get(
                         str(valor), valor)
-
                 elif campo == "atrasado":
                     params["atrasado"] = str(valor).lower()
-
                 else:
                     params[campo] = valor
+
+            # garante default mesmo sem selecionar
+            if "Response" not in params:
+                params["Response"] = "resume"
 
             url_travel = f"{TRANSP_API_URL}/v2/order_travel/list/general?{urlencode(params)}"
 
@@ -332,6 +343,25 @@ def lista_viagens(request):
                 travel_data["created_at_formatada"] = formatar_data(
                     travel_data.get("created_at"))
 
+                eventos = t.get("travel_events", []) or []
+
+                for ev in eventos:
+                    ev["created_at_formatada"] = formatar_data(
+                        ev.get("created_at"))
+                    evento_info = ev.get("evento", {}) or {}
+
+                    ev["evento_nome"] = evento_info.get("name", "")
+                    ev["evento_descricao"] = evento_info.get("description", "")
+                    ev["evento_tipo"] = evento_info.get("type", "")
+
+                # ordena por data crescente para timeline
+                eventos.sort(key=lambda x: x.get("created_at") or "")
+
+                t["travel_events"] = eventos
+                t["travel_events_count"] = len(eventos)
+                t["travel_events_json"] = json.dumps(
+                    eventos, ensure_ascii=False, default=str)
+
         except Exception:
             travels = []
 
@@ -357,6 +387,7 @@ def lista_viagens(request):
         "created_at": "Data criação",
         "designation_id": "Designation",
         "atrasado": "Atrasadas",
+        "Response": "Response",
     }
 
     clientes_map = {
@@ -391,6 +422,9 @@ def lista_viagens(request):
         elif campo in ["sem_motorista", "atrasado"]:
             valor_exibicao = "Sim" if str(valor).lower() in [
                 "true", "1", "on"] else "Não"
+        elif campo == "Response":
+            valor_exibicao = "Detalhado" if str(
+                valor).lower() == "detailed" else "Resumido"
         elif isinstance(valor, str):
             valor_exibicao = valor.strip().capitalize()
 
@@ -449,6 +483,8 @@ def lista_viagens(request):
             if cep_destin not in [None, "", [], ()]:
                 extract_params["cep_destin"] = cep_destin
 
+            extract_params["Response"] = filtros.get("Response") or "resume"
+
             url_extract = f"{TRANSP_API_URL}/v2/order_travel/export/general/excel?{urlencode(extract_params)}"
             return redirect(url_extract)
 
@@ -493,9 +529,7 @@ def lista_viagens(request):
 
                     if isinstance(response_travel, list):
                         travel_event_types = [
-                            ev for ev in response_travel
-                            if ev.get("active") is True
-                        ]
+                            ev for ev in response_travel if ev.get("active") is True]
 
                     elif isinstance(response_travel, dict) and "detail" in response_travel:
                         messages.error(request, response_travel["detail"])
@@ -578,4 +612,5 @@ def lista_viagens(request):
         "selected_travel_ids": selected_travel_ids,
         "travel_event_types": travel_event_types,
         "travel_items": travel_items,
+        "response_mode": response_mode,
     })

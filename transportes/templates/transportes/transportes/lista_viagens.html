@@ -290,8 +290,8 @@
         border-radius: 8px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         overflow: hidden;
-        height: 520px;
-        min-height: 520px;
+        height: 570px;
+        min-height: 570px;
     }
 
     .card-header {
@@ -813,6 +813,415 @@
         border-radius: 6px;
         cursor: pointer;
     }
+
+    .events-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .event-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 14px;
+        background: #f9fafb;
+    }
+
+    .event-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+    }
+
+    .event-card-title {
+        font-weight: 700;
+        color: #1f2937;
+        font-size: .95rem;
+    }
+
+    .event-card-meta {
+        font-size: .84rem;
+        color: #6b7280;
+    }
+
+    .event-card-body p {
+        margin: 5px 0;
+        font-size: .9rem;
+        color: #374151;
+        word-break: break-word;
+    }
+
+    .empty-events {
+        padding: 18px;
+        border: 1px dashed #d1d5db;
+        border-radius: 12px;
+        text-align: center;
+        color: #6b7280;
+        background: #f8fafc;
+    }
+
+    .travel-events-modal {
+        width: 900px;
+        max-width: 96vw;
+        max-height: 88vh;
+        overflow: hidden;
+    }
+
+    #travelEventsModalContent {
+        max-height: 68vh;
+        overflow-y: auto;
+        padding-right: 6px;
+    }
+
+    .occurrences-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .occurrence-item {
+        position: relative;
+        display: grid;
+        grid-template-columns: 52px 1fr;
+        gap: 14px;
+        padding: 14px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        background: #f8fafc;
+    }
+
+    .occurrence-item:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        left: 25px;
+        top: 52px;
+        bottom: -18px;
+        width: 2px;
+        background: #d1d5db;
+    }
+
+    .occurrence-icon-wrap {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        position: relative;
+        z-index: 1;
+    }
+
+    .occurrence-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #22c55e;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        box-shadow: 0 2px 8px rgba(34, 197, 94, .25);
+    }
+
+    .occurrence-content {
+        min-width: 0;
+    }
+
+    .occurrence-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+    }
+
+    .occurrence-title-block {
+        min-width: 0;
+    }
+
+    .occurrence-title {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #1f2937;
+        margin-bottom: 4px;
+    }
+
+    .occurrence-subtitle {
+        font-size: .9rem;
+        color: #475569;
+    }
+
+    .occurrence-date {
+        font-size: .85rem;
+        font-weight: 700;
+        color: #64748b;
+        white-space: nowrap;
+        background: #e2e8f0;
+        padding: 6px 10px;
+        border-radius: 999px;
+    }
+
+    .occurrence-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 16px;
+        margin-top: 10px;
+    }
+
+    .occurrence-field {
+        font-size: .9rem;
+        color: #334155;
+        word-break: break-word;
+    }
+
+    .occurrence-field strong {
+        color: #0f172a;
+    }
+
+    .occurrence-img {
+        margin-top: 12px;
+    }
+
+    .occurrence-img img {
+        max-width: 220px;
+        border-radius: 10px;
+        border: 1px solid #dbe3ea;
+    }
+
+    .empty-events {
+        border: 1px dashed #cbd5e1;
+        border-radius: 14px;
+        padding: 24px;
+        text-align: center;
+        color: #64748b;
+        background: #f8fafc;
+        font-weight: 600;
+    }
+
+    .card {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-body {
+        flex: 1;
+    }
+
+    .card-footer-actions {
+        padding: 0 14px 14px;
+        margin-top: auto;
+    }
+
+    .btn-events-minimal {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 34px;
+        padding: 0 12px;
+        border: 1px solid #dbe3ea;
+        border-radius: 999px;
+        background: #fff;
+        color: #475569;
+        font-size: .84rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .2s ease;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+    }
+
+    .btn-events-minimal:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #0f172a;
+    }
+
+    .btn-events-minimal i {
+        font-size: .78rem;
+        color: #64748b;
+    }
+
+    .btn-events-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: #eef2f7;
+        color: #334155;
+        font-size: .72rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    @media (max-width: 700px) {
+        .occurrence-item {
+            grid-template-columns: 40px 1fr;
+            gap: 10px;
+        }
+
+        .occurrence-item:not(:last-child)::after {
+            left: 19px;
+        }
+
+        .occurrence-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .occurrence-date {
+            white-space: normal;
+        }
+    }
+
+    @media (max-width: 1100px) {
+        .content-wrapper,
+        .main-content,
+        .container,
+        .page-content {
+            max-width: 800px !important;
+            width: 100% !important;
+            margin-bottom: 150px;
+            box-sizing: border-box;
+        }
+
+        .toggle-filters-btn,
+        .btn-primary-toolbar {
+            width: 600px;
+            justify-content: center;
+        }
+
+        .toolbar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+
+        .toolbar-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .btn-primary-toolbar,
+        .toggle-filters-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .page-layout {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .page-layout.filters-hidden {
+            grid-template-columns: 1fr;
+        }
+
+        .filters-sidebar {
+            position: static;
+            width: 80%;
+            max-width: 100%;
+            max-height: 500px;
+            overflow: auto;
+            margin-left: 85px;
+        }
+
+        .results-area {
+            width: 100%;
+        }
+
+        .cards-container {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .toolbar {
+            margin-top: 55px;
+        }
+
+        .filters-box {
+            padding: 14px;
+        }
+
+        .filters-box-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filters-header-actions {
+            width: 100%;
+            justify-content: stretch;
+        }
+
+        .filters-header-actions .btn-header-action {
+            flex: 1 1 100%;
+            width: 100%;
+        }
+
+        .filters-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-main--primary {
+            grid-column: auto;
+        }
+
+        .cards-container {
+            grid-template-columns: 1fr;
+        }
+
+        .card {
+            min-height: auto;
+        }
+
+        .card-header {
+            align-items: flex-start;
+        }
+
+        .card-title {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
+            word-break: break-word;
+        }
+
+        .pagination-row {
+            flex-direction: column;
+        }
+
+        .pagination-pages {
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .toggle-filters-btn,
+        .btn-primary-toolbar,
+        .btn-main,
+        .btn-header-action {
+            font-size: .88rem;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .filters-box-header h3 {
+            font-size: 1.25rem;
+        }
+
+        .card-body p {
+            font-size: .88rem;
+        }
+
+        .badge-num {
+            width: 24px;
+            height: 24px;
+            font-size: .8rem;
+            flex: 0 0 24px;
+        }
+    }
 </style>
 
 <div class="toolbar">
@@ -919,6 +1328,10 @@
                         <div class="field-wrap">
                             <label for="{{ form.atrasado.id_for_label }}">{{ form.atrasado.label }}</label>
                             {{ form.atrasado }}
+                        </div>
+                        <div class="field-wrap">
+                            <label for="{{ form.Response.id_for_label }}">{{ form.Response.label }}</label>
+                            {{ form.Response }}
                         </div>
                     </div>
                 </details>
@@ -1035,6 +1448,24 @@
                             {% endif %}
                         </p>
                     </div>
+                    {% if response_mode == "detailed" and item.travel_events %}
+                        <div class="card-footer-actions">
+                            <button
+                                type="button"
+                                class="btn-open-events-modal btn-events-minimal"
+                                data-travel-id="{{ item.travel.id }}"
+                                data-events-target="travel-events-{{ item.travel.id }}"
+                            >
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                <span>Ocorrências</span>
+                                <span class="btn-events-count">{{ item.travel_events_count }}</span>
+                            </button>
+                        </div>
+
+                        <script type="application/json" id="travel-events-{{ item.travel.id }}">
+                            {{ item.travel_events_json|safe }}
+                        </script>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
@@ -1070,6 +1501,150 @@
         {% endif %}
     </main>
 </div>
+
+<div class="os-modal-overlay" id="travelEventsDetailModal">
+    <div class="os-modal travel-events-modal">
+        <div class="os-modal-header">
+            <div class="os-modal-title" id="travelEventsModalTitle">
+                Ocorrências da viagem
+            </div>
+            <div class="os-modal-close" id="closeTravelEventsDetailModal">✕</div>
+        </div>
+
+        <div class="os-modal-body">
+            <div id="travelEventsModalContent"></div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("travelEventsDetailModal");
+    const closeBtn = document.getElementById("closeTravelEventsDetailModal");
+    const content = document.getElementById("travelEventsModalContent");
+    const title = document.getElementById("travelEventsModalTitle");
+    const openButtons = document.querySelectorAll(".btn-open-events-modal");
+
+    if (!modal || !content || !title) return;
+
+    function closeModal() {
+        modal.classList.remove("show");
+    }
+
+    function safe(value) {
+        if (value === null || value === undefined || value === "") return "-";
+        return String(value);
+    }
+
+    function buildOccurrence(evento) {
+        const nome = evento.evento_nome || (evento.evento && evento.evento.name) || "Evento";
+        const descricao = evento.evento_descricao || (evento.evento && evento.evento.description) || evento.description || "-";
+        const data = evento.created_at_formatada || evento.created_at || "-";
+        const criadoPor = evento.created_by || "-";
+        const lat = evento.location_lat || "-";
+        const lng = evento.location_long || "-";
+        const imgUrl = evento.img_url || "";
+        const eventId = evento.id || "-";
+
+        return `
+            <div class="occurrence-item">
+                <div class="occurrence-icon-wrap">
+                    <div class="occurrence-icon">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                </div>
+
+                <div class="occurrence-content">
+                    <div class="occurrence-top">
+                        <div class="occurrence-title-block">
+                            <div class="occurrence-title">${safe(nome)}</div>
+                            <div class="occurrence-subtitle">${safe(descricao)}</div>
+                        </div>
+
+                        <div class="occurrence-date">${safe(data)}</div>
+                    </div>
+
+                    <div class="occurrence-grid">
+                        <div class="occurrence-field">
+                            <strong>ID evento:</strong> ${safe(eventId)}
+                        </div>
+
+                        <div class="occurrence-field">
+                            <strong>Criado por:</strong> ${safe(criadoPor)}
+                        </div>
+
+                        <div class="occurrence-field">
+                            <strong>Latitude:</strong> ${safe(lat)}
+                        </div>
+
+                        <div class="occurrence-field">
+                            <strong>Longitude:</strong> ${safe(lng)}
+                        </div>
+                    </div>
+
+                    ${
+                        imgUrl && imgUrl !== "string"
+                            ? `
+                            <div class="occurrence-img">
+                                <strong>Imagem:</strong><br>
+                                <a href="${imgUrl}" target="_blank">
+                                    <img src="${imgUrl}" alt="Imagem do evento">
+                                </a>
+                            </div>
+                            `
+                            : ""
+                    }
+                </div>
+            </div>
+        `;
+    }
+
+    openButtons.forEach((button) => {
+        button.addEventListener("click", function () {
+            const travelId = this.dataset.travelId;
+            const targetId = this.dataset.eventsTarget;
+            const jsonEl = document.getElementById(targetId);
+
+            let events = [];
+
+            console.log("travelId:", travelId);
+            console.log("targetId:", targetId);
+            console.log("jsonEl:", jsonEl);
+
+            try {
+                events = jsonEl ? JSON.parse(jsonEl.textContent.trim()) : [];
+                console.log("Eventos carregados:", events);
+            } catch (e) {
+                console.error("Erro ao converter eventos:", e);
+                events = [];
+            }
+
+            title.textContent = `Ocorrências da viagem ${travelId}`;
+
+            if (!events.length) {
+                content.innerHTML = `<div class="empty-events">Nenhuma ocorrência encontrada para esta viagem.</div>`;
+            } else {
+                content.innerHTML = `
+                    <div class="occurrences-list">
+                        ${events.map(buildOccurrence).join("")}
+                    </div>
+                `;
+            }
+
+            modal.classList.add("show");
+        });
+    });
+
+    if (closeBtn) {
+        closeBtn.addEventListener("click", closeModal);
+    }
+
+    modal.addEventListener("click", function (e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+});
+</script>
 
 {% if modal_travel_event %}
 <div class="os-modal-overlay show" id="modalEventosTravel">
