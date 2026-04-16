@@ -1423,6 +1423,21 @@
         color: #7c2d12;
         font-weight: 700;
     }
+
+    .custom-select-trigger {
+        width: 100%;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 12px;
+        background: #fff;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .custom-select-trigger:focus {
+        border-color: #0e76bd;
+        box-shadow: 0 0 0 3px rgba(14, 118, 189, 0.12);
+    }
 </style>
 
 <div class="os-container">
@@ -2626,7 +2641,7 @@
 </form>
 <!-- MODAL PARA SUB-ITENS -->
 <div class="os-modal-overlay" id="modalFilhos">
-    <div class="os-modal" style="width:600px;">
+    <div class="os-modal" style="width:600px; height:600px; overflow-y:auto;">
         <div class="os-modal-header">
             <div class="os-modal-title">
                 Seriais Filhos
@@ -2774,18 +2789,24 @@ function validarRejeicao(){
                         <b>{{ selected_travel_ids|join:", " }}</b>
                     </div>
                     {% endif %}
+
                     <label>Tipo de Evento</label>
                     <input type="hidden" name="event_type_id" id="eventTypeId">
-                    <div class="custom-select" id="eventTypeSelect">
-                        <div class="custom-select-trigger">
-                            Selecione um tipo...
-                        </div>
 
-                        <div class="custom-select-dropdown">
+                    <div class="custom-select" id="eventTypeSelect">
+                        <input type="text"
+                            id="eventTypeSearch"
+                            class="custom-select-trigger"
+                            placeholder="Digite para buscar o tipo de evento..."
+                            autocomplete="off">
+
+                        <div class="custom-select-dropdown" id="eventTypeDropdown">
                             {% for ev in travel_event_types %}
                             <div class="custom-option"
                                 data-id="{{ ev.id }}"
-                                data-required="{{ ev.required_items|yesno:'true,false' }}">
+                                data-required="{{ ev.required_items|yesno:'true,false' }}"
+                                data-label="{{ ev.description|lower }}"
+                                data-status="{% if ev.status %}{{ ev.status.type|lower }}{% endif %}">
                                 <div class="option-content">
                                     <div class="option-tags">
                                         {% if ev.status %}
@@ -4169,66 +4190,104 @@ document.addEventListener("DOMContentLoaded", function(){
 </script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function(){
-
+document.addEventListener("DOMContentLoaded", function () {
     const select = document.getElementById("eventTypeSelect");
-    const trigger = select.querySelector(".custom-select-trigger");
-    const dropdown = select.querySelector(".custom-select-dropdown");
+    if (!select) return;
+
+    const searchInput = document.getElementById("eventTypeSearch");
+    const dropdown = document.getElementById("eventTypeDropdown");
     const hiddenInput = document.getElementById("eventTypeId");
     const itemsBox = document.getElementById("eventItemsBox");
+    const options = dropdown.querySelectorAll(".custom-option");
 
-    trigger.addEventListener("click", function(e){
+    function normalizeText(value) {
+        return (value || "")
+            .toString()
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim();
+    }
+
+    function filtrarOpcoes() {
+        const termo = normalizeText(searchInput.value);
+        let visibleCount = 0;
+
+        options.forEach(option => {
+            const texto = normalizeText(option.dataset.label);
+            const status = normalizeText(option.dataset.status);
+            const match = !termo || texto.includes(termo) || status.includes(termo);
+
+            option.style.display = match ? "block" : "none";
+
+            if (match) visibleCount++;
+        });
+
+        dropdown.style.display = visibleCount > 0 ? "block" : "none";
+    }
+
+    searchInput.addEventListener("focus", function (e) {
         e.stopPropagation();
-        dropdown.style.display =
-            dropdown.style.display === "block" ? "none" : "block";
+        filtrarOpcoes();
     });
 
-    select.querySelectorAll(".custom-option").forEach(option => {
+    searchInput.addEventListener("click", function (e) {
+        e.stopPropagation();
+        filtrarOpcoes();
+    });
 
-        option.addEventListener("click", function(){
+    searchInput.addEventListener("input", function () {
+        hiddenInput.value = "";
+        filtrarOpcoes();
+    });
 
+    options.forEach(option => {
+        option.addEventListener("click", function () {
             const id = this.dataset.id;
             const required = this.dataset.required === "true";
+            const description = this.querySelector(".option-text")?.innerText?.trim() || "";
 
             hiddenInput.value = id;
-            trigger.innerHTML = this.innerHTML;
+            searchInput.value = description;
             dropdown.style.display = "none";
 
-            if(required){
+            if (required) {
                 itemsBox.style.display = "block";
             } else {
                 itemsBox.style.display = "none";
-
                 itemsBox.querySelectorAll("input[type='checkbox']")
-                        .forEach(cb => cb.checked = false);
+                    .forEach(cb => cb.checked = false);
             }
         });
     });
 
-    document.addEventListener("click", function(){
-        dropdown.style.display = "none";
+    document.addEventListener("click", function (e) {
+        if (!select.contains(e.target)) {
+            dropdown.style.display = "none";
+        }
     });
-
 });
+</script>
 
-document.addEventListener("DOMContentLoaded", function(){
-
+<script>
+document.addEventListener("DOMContentLoaded", function () {
     const modalEventosTravel = document.getElementById("modalEventosTravel");
 
-    if(modalEventosTravel){
+    if (!modalEventosTravel) return;
 
-        window.fecharModalEventosTravel = function(){
-            modalEventosTravel.classList.remove("show");
-        };
+    window.fecharModalEventosTravel = function () {
+        modalEventosTravel.classList.remove("show");
+    };
 
-        modalEventosTravel.addEventListener("click", function(e){
-            if(e.target === modalEventosTravel){
-                fecharModalEventosTravel();
-            }
-        });
+    window.abrirModalEventosTravel = function () {
+        modalEventosTravel.classList.add("show");
+    };
 
-    }
-
+    modalEventosTravel.addEventListener("click", function (e) {
+        if (e.target === modalEventosTravel) {
+            fecharModalEventosTravel();
+        }
+    });
 });
 </script>
 
