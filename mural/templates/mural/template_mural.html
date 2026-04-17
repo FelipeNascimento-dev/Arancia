@@ -1,0 +1,851 @@
+{% extends 'global/base.html' %}
+{% block content %}
+
+<style>
+    :root {
+        --bg: #eef2f6;
+        --surface: #ffffff;
+        --surface-soft: #f8fafc;
+        --border: #d9e2ec;
+        --text: #0f172a;
+        --muted: #64748b;
+        --primary: #22c55e;
+        --primary-dark: #16a34a;
+        --primary-soft: #ecfdf3;
+        --danger: #dc2626;
+        --danger-dark: #b91c1c;
+        --danger-soft: #fef2f2;
+        --warning: #f59e0b;
+        --warning-soft: #fffbeb;
+        --info: #2563eb;
+        --info-soft: #eff6ff;
+        --shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
+        --radius-xl: 22px;
+        --radius-lg: 16px;
+        --radius-md: 12px;
+    }
+
+    .container {
+        max-width: 100% !important;
+        width: 100%;
+    }
+
+    .page {
+        max-width: 1550px;
+        margin-top: 50px;
+        margin-left: 65px;
+        padding: 28px;
+        font-family: "Inter", sans-serif;
+    }
+
+    .mural-shell {
+        background: rgba(255, 255, 255, 0.74);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(217, 226, 236, 0.9);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .mural-topbar {
+        padding: 28px 30px 22px;
+        background:
+            radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 28%),
+            linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .mural-head {
+        display: grid;
+        grid-template-columns: 1.8fr 1fr;
+        gap: 18px;
+        align-items: start;
+    }
+
+    .kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: var(--primary-soft);
+        color: var(--primary-dark);
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 14px;
+    }
+
+    .mural-title {
+        margin: 0;
+        font-size: 34px;
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+        color: var(--text);
+    }
+
+    .mural-subtitle {
+        margin: 12px 0 0;
+        max-width: 850px;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.65;
+    }
+
+    .mural-overview {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .overview-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        min-height: 98px;
+    }
+
+    .overview-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 10px;
+    }
+
+    .overview-value {
+        font-size: 28px;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 8px;
+        color: var(--text);
+    }
+
+    .overview-help {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .mural-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        padding: 18px 30px;
+        background: var(--surface-soft);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .toolbar-left,
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        position: relative;
+        min-width: 300px;
+        flex: 1;
+    }
+
+    .search-box i {
+        position: absolute;
+        top: 50%;
+        left: 14px;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+
+    .search-box input {
+        width: 100%;
+        border: 1px solid var(--border);
+        background: #fff;
+        border-radius: 12px;
+        padding: 12px 14px 12px 40px;
+        font-size: 14px;
+        outline: none;
+        transition: 0.2s ease;
+    }
+
+    .search-box input:focus,
+    .filter-btn:focus,
+    .action-btn:focus,
+    .card-btn:focus {
+        border-color: #86efac;
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+        outline: none;
+    }
+
+    .filter-btn,
+    .action-btn,
+    .card-btn {
+        border: 1px solid var(--border);
+        background: #fff;
+        color: #334155;
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .filter-btn:hover,
+    .action-btn:hover,
+    .card-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
+    }
+
+    .filter-btn.active {
+        background: var(--primary-soft);
+        color: var(--primary-dark);
+        border-color: #bbf7d0;
+    }
+
+    .action-btn.primary,
+    .card-btn.primary {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border-color: transparent;
+        color: white;
+    }
+
+    .action-btn.dark {
+        background: #0f172a;
+        border-color: #0f172a;
+        color: #fff;
+    }
+
+    .mural-body {
+        padding: 28px 30px 30px;
+        display: grid;
+        gap: 28px;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+    }
+
+    .section-title {
+        margin: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 21px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        color: var(--text);
+    }
+
+    .section-title small {
+        font-size: 13px;
+        color: var(--muted);
+        font-weight: 600;
+    }
+
+    .section-link {
+        color: var(--primary-dark);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .critical-stack,
+    .card-grid,
+    .manual-grid {
+        display: grid;
+        gap: 16px;
+    }
+
+    .card-grid,
+    .manual-grid {
+        grid-template-columns: repeat(auto-fit, minmax(295px, 1fr));
+    }
+
+    .critical-card {
+        position: relative;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 1.7fr auto;
+        gap: 18px;
+        align-items: center;
+        padding: 22px;
+        border-radius: 20px;
+        color: #fff;
+        background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%);
+        box-shadow: 0 18px 35px rgba(185, 28, 28, 0.2);
+    }
+
+    .critical-card::after {
+        content: "";
+        position: absolute;
+        right: -60px;
+        top: -70px;
+        width: 180px;
+        height: 180px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 50%;
+    }
+
+    .critical-card h3,
+    .notice-card h3,
+    .manual-card h3 {
+        margin: 10px 0 8px;
+        font-size: 22px;
+        line-height: 1.2;
+        position: relative;
+        z-index: 1;
+    }
+
+    .critical-card p,
+    .notice-card p,
+    .manual-card p {
+        margin: 0;
+        line-height: 1.6;
+        position: relative;
+        z-index: 1;
+    }
+
+    .critical-card p {
+        color: rgba(255, 255, 255, 0.92);
+        max-width: 820px;
+    }
+
+    .badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 1;
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        padding: 6px 11px;
+        font-size: 12px;
+        font-weight: 800;
+        line-height: 1;
+        border: 1px solid transparent;
+    }
+
+    .badge.white {
+        background: rgba(255, 255, 255, 0.14);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .badge.green {
+        background: var(--primary-soft);
+        color: var(--primary-dark);
+    }
+
+    .badge.orange {
+        background: var(--warning-soft);
+        color: #b45309;
+    }
+
+    .badge.blue {
+        background: var(--info-soft);
+        color: var(--info);
+    }
+
+    .card-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 16px;
+        color: inherit;
+        opacity: 0.92;
+        font-size: 13px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .card-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .critical-actions,
+    .card-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .critical-actions .card-btn {
+        background: rgba(255, 255, 255, 0.13);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .critical-actions .card-btn.primary {
+        background: #fff;
+        color: var(--danger-dark);
+    }
+
+    .notice-card,
+    .manual-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 18px;
+        transition: 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        min-height: 255px;
+    }
+
+    .notice-card:hover,
+    .manual-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    .notice-card.pinned {
+        border-left: 5px solid var(--warning);
+        background: linear-gradient(180deg, #fffef9 0%, #ffffff 100%);
+    }
+
+    .manual-card {
+        background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+    }
+
+    .card-head {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .severity-pill {
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .severity-informational {
+        background: var(--info-soft);
+        color: var(--info);
+    }
+
+    .severity-moderate {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .severity-important {
+        background: var(--warning-soft);
+        color: #b45309;
+    }
+
+    .severity-critical {
+        background: var(--danger-soft);
+        color: var(--danger-dark);
+    }
+
+    .card-footer {
+        margin-top: auto;
+        padding-top: 16px;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .card-link {
+        text-decoration: none;
+        color: var(--primary-dark);
+        font-weight: 800;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .empty-state {
+        text-align: center;
+        background: #fff;
+        border: 1px dashed #cbd5e1;
+        border-radius: 18px;
+        padding: 44px 22px;
+        color: var(--muted);
+    }
+
+    .empty-state i {
+        font-size: 32px;
+        margin-bottom: 12px;
+        color: #94a3b8;
+    }
+
+    .empty-state h3 {
+        margin: 0 0 6px;
+        color: var(--text);
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    @media (max-width: 1080px) {
+        .mural-head {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 820px) {
+        .page {
+            padding: 14px;
+        }
+
+        .mural-topbar,
+        .mural-toolbar,
+        .mural-body {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+
+        .mural-title {
+            font-size: 28px;
+        }
+
+        .mural-overview {
+            grid-template-columns: 1fr;
+        }
+
+        .critical-card {
+            grid-template-columns: 1fr;
+        }
+
+        .search-box {
+            min-width: 100%;
+        }
+    }
+</style>
+
+<div class="page">
+    <section class="mural-shell">
+        <header class="mural-topbar">
+            <div class="mural-head">
+                <div>
+                    <span class="kicker"><i class="fa-solid fa-bullhorn"></i> comunicação interna</span>
+                    <h1 class="mural-title">Mural de notificações, avisos, manuais e materiais</h1>
+                    <p class="mural-subtitle">
+                        Centralize comunicados operacionais, documentos de apoio, scripts, manuais e alertas importantes
+                        em um único lugar.
+                        O foco é dar visibilidade, rastreabilidade e acesso rápido ao que realmente precisa chegar ao
+                        usuário.
+                    </p>
+                </div>
+
+                <div class="mural-overview">
+                    <div class="overview-card">
+                        <span class="overview-label">Críticos</span>
+                        <div class="overview-value" id="count-critical">0</div>
+                        <div class="overview-help">Itens com leitura obrigatória e maior destaque visual.</div>
+                    </div>
+                    <div class="overview-card">
+                        <span class="overview-label">Fixados</span>
+                        <div class="overview-value" id="count-pinned">0</div>
+                        <div class="overview-help">Comunicados priorizados para toda a operação.</div>
+                    </div>
+                    <div class="overview-card">
+                        <span class="overview-label">Total visível</span>
+                        <div class="overview-value" id="count-total">0</div>
+                        <div class="overview-help">Avisos, manuais, scripts e demais materiais disponíveis.</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="mural-toolbar">
+            <div class="toolbar-left">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Pesquisar por título, resumo ou tipo..." />
+                </div>
+            </div>
+
+            <div class="toolbar-right">
+                <button class="filter-btn active" data-filter="all">Todos</button>
+                <button class="filter-btn" data-filter="announcement">Comunicados</button>
+                <button class="filter-btn" data-filter="notice">Avisos</button>
+                <button class="filter-btn" data-filter="script">Scripts</button>
+                <button class="filter-btn" data-filter="manual">Manuais</button>
+                <button class="action-btn dark" id="toggleReadBtn">
+                    <i class="fa-regular fa-circle-check"></i>
+                    Ocultar lidos
+                </button>
+            </div>
+        </div>
+
+        <section class="mural-body">
+            <section id="criticalSection">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fa-solid fa-triangle-exclamation" style="color: var(--danger);"></i>
+                        Alertas críticos
+                        <small>Leitura obrigatória</small>
+                    </h2>
+                    <a href="#" class="section-link">Ver histórico</a>
+                </div>
+                <div class="critical-stack" id="criticalList"></div>
+            </section>
+
+            <section id="pinnedSection">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fa-solid fa-thumbtack" style="color: var(--warning);"></i>
+                        Fixados
+                        <small>Conteúdo prioritário</small>
+                    </h2>
+                    <a href="#" class="section-link">Gerenciar destaques</a>
+                </div>
+                <div class="card-grid" id="pinnedList"></div>
+            </section>
+
+            <section id="materialsSection">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fa-regular fa-folder-open" style="color: var(--primary-dark);"></i>
+                        Atualizações e materiais
+                        <small>Documentos e orientações</small>
+                    </h2>
+                    <a href="#" class="section-link">Ver biblioteca completa</a>
+                </div>
+                <div class="manual-grid" id="generalList"></div>
+            </section>
+        </section>
+    </section>
+</div>
+
+{{ mural_data|json_script:"mural-data" }}
+
+<script>
+    const muralPayload = JSON.parse(document.getElementById('mural-data').textContent);
+    const muralItems = muralPayload.items || [];
+
+    const searchInput = document.getElementById('searchInput');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const toggleReadBtn = document.getElementById('toggleReadBtn');
+    const criticalList = document.getElementById('criticalList');
+    const pinnedList = document.getElementById('pinnedList');
+    const generalList = document.getElementById('generalList');
+    const criticalSection = document.getElementById('criticalSection');
+    const pinnedSection = document.getElementById('pinnedSection');
+    const materialsSection = document.getElementById('materialsSection');
+
+    let activeFilter = 'all';
+    let hideRead = true;
+
+    function severityClass(severity) {
+        return `severity-${severity}`;
+    }
+
+    function createCriticalCard(item) {
+        return `
+        <article class="critical-card" data-type="${item.item_type}" data-read="${item.is_read}">
+          <div>
+            <div class="badges">
+              <span class="badge white"><i class="fa-solid fa-bolt"></i> ${item.severity_label}</span>
+              <span class="badge white"><i class="fa-regular fa-folder-open"></i> ${item.item_type_label}</span>
+              ${item.until_read ? '<span class="badge white"><i class="fa-regular fa-eye"></i> Leitura obrigatória</span>' : ''}
+            </div>
+            <h3>${item.title}</h3>
+            <p>${item.summary}</p>
+            <div class="card-meta">
+              <span><i class="fa-regular fa-calendar"></i> ${item.starts_at}</span>
+              <span><i class="fa-solid fa-user-check"></i> Até ciência do usuário</span>
+            </div>
+          </div>
+          <div class="critical-actions">
+            <a href="${item.link}" class="card-btn primary">Abrir</a>
+            <button class="card-btn js-mark-read" data-id="${item.id}">
+              <i class="fa-regular fa-circle-check"></i> Marcar como lido
+            </button>
+          </div>
+        </article>
+      `;
+    }
+
+    function createNoticeCard(item, pinned = false) {
+        return `
+        <article class="notice-card ${pinned ? 'pinned' : ''}" data-type="${item.item_type}" data-read="${item.is_read}">
+          <div class="card-head">
+            <div class="badges">
+              ${pinned ? '<span class="badge orange"><i class="fa-solid fa-thumbtack"></i> Fixado</span>' : ''}
+              <span class="badge green"><i class="fa-regular fa-file-lines"></i> ${item.item_type_label}</span>
+            </div>
+            <span class="severity-pill ${severityClass(item.severity)}">${item.severity_label}</span>
+          </div>
+          <h3>${item.title}</h3>
+          <p>${item.summary}</p>
+          <div class="card-meta" style="color: var(--muted); margin-top: 14px;">
+            <span><i class="fa-regular fa-clock"></i> ${item.starts_at}</span>
+            ${item.is_indefinite ? '<span><i class="fa-solid fa-infinity"></i> Prazo indefinido</span>' : ''}
+            ${item.is_read ? '<span><i class="fa-solid fa-check"></i> Lido</span>' : '<span><i class="fa-regular fa-bell"></i> Pendente</span>'}
+          </div>
+          <div class="card-footer">
+            <a href="${item.link}" class="card-link">Visualizar <i class="fa-solid fa-arrow-right"></i></a>
+            <div class="card-actions">
+              ${!item.is_read ? `<button class="card-btn js-mark-read" data-id="${item.id}">Marcar como lido</button>` : ''}
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function createManualCard(item) {
+        return `
+        <article class="manual-card" data-type="${item.item_type}" data-read="${item.is_read}">
+          <div class="card-head">
+            <div class="badges">
+              <span class="badge blue"><i class="fa-solid fa-book-open"></i> ${item.item_type_label}</span>
+            </div>
+            <span class="severity-pill ${severityClass(item.severity)}">${item.severity_label}</span>
+          </div>
+          <h3>${item.title}</h3>
+          <p>${item.summary}</p>
+          <div class="card-meta" style="color: var(--muted); margin-top: 14px;">
+            <span><i class="fa-regular fa-calendar"></i> ${item.starts_at}</span>
+            ${item.is_read ? '<span><i class="fa-solid fa-check"></i> Lido</span>' : '<span><i class="fa-regular fa-bookmark"></i> Disponível</span>'}
+          </div>
+          <div class="card-footer">
+            <a href="${item.link}" class="card-link">Abrir material <i class="fa-solid fa-arrow-right"></i></a>
+            <div class="card-actions">
+              ${!item.is_read ? `<button class="card-btn js-mark-read" data-id="${item.id}">Marcar como lido</button>` : ''}
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function filterItems(items) {
+        const search = searchInput.value.trim().toLowerCase();
+
+        return items.filter(item => {
+            const matchesType = activeFilter === 'all' || item.item_type === activeFilter;
+            const matchesRead = hideRead ? !item.is_read : true;
+            const text = `${item.title} ${item.summary} ${item.item_type_label} ${item.severity_label}`.toLowerCase();
+            const matchesSearch = !search || text.includes(search);
+            return matchesType && matchesRead && matchesSearch;
+        });
+    }
+
+    function renderEmpty(container, title, text) {
+        container.innerHTML = `
+        <div class="empty-state">
+          <i class="fa-regular fa-folder-open"></i>
+          <h3>${title}</h3>
+          <p>${text}</p>
+        </div>
+      `;
+    }
+
+    function renderMural() {
+        const filtered = filterItems(muralItems);
+        const criticalItems = filtered.filter(item => item.severity === 'critical');
+        const pinnedItems = filtered.filter(item => item.is_pinned && item.severity !== 'critical');
+        const generalItems = filtered.filter(item => !item.is_pinned && item.severity !== 'critical');
+
+        document.getElementById('count-critical').textContent =
+            muralItems.filter(item => item.severity === 'critical' && (!hideRead || !item.is_read)).length;
+
+        document.getElementById('count-pinned').textContent =
+            muralItems.filter(item => item.is_pinned && item.severity !== 'critical' && (!hideRead || !item.is_read)).length;
+
+        document.getElementById('count-total').textContent =
+            muralItems.filter(item => (!hideRead || !item.is_read)).length;
+
+        if (criticalItems.length) {
+            criticalSection.classList.remove('hidden');
+            criticalList.innerHTML = criticalItems.map(createCriticalCard).join('');
+        } else {
+            criticalSection.classList.add('hidden');
+        }
+
+        if (pinnedItems.length) {
+            pinnedSection.classList.remove('hidden');
+            pinnedList.innerHTML = pinnedItems.map(item => createNoticeCard(item, true)).join('');
+        } else {
+            pinnedSection.classList.add('hidden');
+        }
+
+        if (generalItems.length) {
+            materialsSection.classList.remove('hidden');
+            generalList.innerHTML = generalItems.map(item => {
+                if (item.item_type === 'manual' || item.item_type === 'script') {
+                    return createManualCard(item);
+                }
+                return createNoticeCard(item, false);
+            }).join('');
+        } else {
+            materialsSection.classList.remove('hidden');
+            renderEmpty(generalList, 'Nenhum conteúdo encontrado', 'Tente mudar os filtros ou limpar a pesquisa para visualizar mais itens.');
+        }
+
+        bindReadButtons();
+    }
+
+    function bindReadButtons() {
+        document.querySelectorAll('.js-mark-read').forEach(button => {
+            button.addEventListener('click', () => {
+                const id = Number(button.dataset.id);
+                const item = muralItems.find(entry => entry.id === id);
+                if (!item) return;
+                item.is_read = true;
+                renderMural();
+            });
+        });
+    }
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            activeFilter = button.dataset.filter;
+            renderMural();
+        });
+    });
+
+    searchInput.addEventListener('input', renderMural);
+
+    toggleReadBtn.addEventListener('click', () => {
+        hideRead = !hideRead;
+        toggleReadBtn.innerHTML = hideRead
+            ? '<i class="fa-regular fa-circle-check"></i> Ocultar lidos'
+            : '<i class="fa-solid fa-eye"></i> Mostrar lidos';
+        renderMural();
+    });
+
+    renderMural();
+</script>
+{% endblock %}

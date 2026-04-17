@@ -922,11 +922,18 @@
     }
 
     .custom-select-trigger {
+        width: 100%;
         border: 1px solid #ddd;
         border-radius: 10px;
         padding: 12px;
         background: #fff;
         font-size: 14px;
+        outline: none;
+    }
+
+    .custom-select-trigger:focus {
+        border-color: #0e76bd;
+        box-shadow: 0 0 0 3px rgba(14, 118, 189, 0.12);
     }
 
     .custom-select-dropdown {
@@ -1322,15 +1329,19 @@
                     <input type="hidden" name="event_type_id" id="eventTypeId">
 
                     <div class="custom-select" id="eventTypeSelect">
-                        <div class="custom-select-trigger">
-                            Selecione um tipo...
-                        </div>
+                        <input type="text"
+                            id="eventTypeSearch"
+                            class="custom-select-trigger"
+                            placeholder="Digite para buscar o tipo de evento..."
+                            autocomplete="off">
 
-                        <div class="custom-select-dropdown">
+                        <div class="custom-select-dropdown" id="eventTypeDropdown">
                             {% for ev in travel_event_types %}
                             <div class="custom-option"
-                                 data-id="{{ ev.id }}"
-                                 data-required="{{ ev.required_items|yesno:'true,false' }}">
+                                data-id="{{ ev.id }}"
+                                data-required="{{ ev.required_items|yesno:'true,false' }}"
+                                data-label="{{ ev.description|lower }}"
+                                data-status="{% if ev.status %}{{ ev.status.type|lower }}{% endif %}">
                                 <div class="option-content">
                                     <div class="option-tags">
                                         {% if ev.status %}
@@ -1354,7 +1365,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- ITENS -->
                 <div id="eventItemsBox" class="items-box" style="display:none;margin-top:20px;">
                     <div class="items-title">Itens da Viagem</div>
@@ -1525,53 +1535,100 @@ modalFilhos.addEventListener("click", function(e){
 </script>
 
 <script>
-function abrirModalEventoTravel(){
+function abrirModalEventoTravel() {
     document.getElementById("modalEventoTravel").classList.add("show");
 }
 
-function fecharModalEventoTravel(){
+function fecharModalEventoTravel() {
     document.getElementById("modalEventoTravel").classList.remove("show");
 }
 
-document.addEventListener("DOMContentLoaded", function(){
-
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("modalEventoTravel");
     const select = document.getElementById("eventTypeSelect");
-    const trigger = select.querySelector(".custom-select-trigger");
-    const dropdown = select.querySelector(".custom-select-dropdown");
+
+    if (!select) return;
+
+    const searchInput = document.getElementById("eventTypeSearch");
+    const dropdown = document.getElementById("eventTypeDropdown");
     const hiddenInput = document.getElementById("eventTypeId");
     const itemsBox = document.getElementById("eventItemsBox");
+    const options = dropdown.querySelectorAll(".custom-option");
 
-    trigger.addEventListener("click", function(e){
+    function normalizeText(value) {
+        return (value || "")
+            .toString()
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim();
+    }
+
+    function filtrarOpcoes() {
+        const termo = normalizeText(searchInput.value);
+        let visibleCount = 0;
+
+        options.forEach(option => {
+            const texto = normalizeText(option.dataset.label);
+            const status = normalizeText(option.dataset.status);
+            const match = !termo || texto.includes(termo) || status.includes(termo);
+
+            option.style.display = match ? "block" : "none";
+
+            if (match) visibleCount++;
+        });
+
+        dropdown.style.display = visibleCount > 0 ? "block" : "none";
+    }
+
+    searchInput.addEventListener("focus", function (e) {
         e.stopPropagation();
-        dropdown.style.display =
-            dropdown.style.display === "block" ? "none" : "block";
+        filtrarOpcoes();
     });
 
-    select.querySelectorAll(".custom-option").forEach(option => {
+    searchInput.addEventListener("click", function (e) {
+        e.stopPropagation();
+        filtrarOpcoes();
+    });
 
-        option.addEventListener("click", function(){
+    searchInput.addEventListener("input", function () {
+        hiddenInput.value = "";
+        filtrarOpcoes();
+    });
 
+    options.forEach(option => {
+        option.addEventListener("click", function () {
             const id = this.dataset.id;
             const required = this.dataset.required === "true";
+            const description = this.querySelector(".option-text")?.innerText?.trim() || "";
 
             hiddenInput.value = id;
-            trigger.innerHTML = this.innerHTML;
+            searchInput.value = description;
             dropdown.style.display = "none";
 
-            if(required){
+            if (required) {
                 itemsBox.style.display = "block";
             } else {
                 itemsBox.style.display = "none";
                 itemsBox.querySelectorAll("input[type='checkbox']")
-                        .forEach(cb => cb.checked = false);
+                    .forEach(cb => cb.checked = false);
             }
         });
     });
 
-    document.addEventListener("click", function(){
-        dropdown.style.display = "none";
+    document.addEventListener("click", function (e) {
+        if (!select.contains(e.target)) {
+            dropdown.style.display = "none";
+        }
     });
 
+    if (modal) {
+        modal.addEventListener("click", function (e) {
+            if (e.target === modal) {
+                fecharModalEventoTravel();
+            }
+        });
+    }
 });
 </script>
 
