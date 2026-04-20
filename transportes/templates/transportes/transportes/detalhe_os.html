@@ -1547,6 +1547,13 @@
                         </div>
                     </div>
 
+                    <div class="service-extra-item">
+                        <div class="service-extra-label">Custos do Fornecedor</div>
+                        <div class="service-extra-value">
+                            R$ {{ payload.service_order.extra_information.provider_costs }}
+                        </div>
+                    </div>
+
                     {% if payload.service_order.extra_information.sales_order_number %}
                     <div class="service-extra-item">
                         <div class="service-extra-label">Pedido de Venda</div>
