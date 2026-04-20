@@ -1222,6 +1222,76 @@
             flex: 0 0 24px;
         }
     }
+
+    .view-toggle-group {
+        display: flex;
+        background: #e2e8f0;
+        padding: 4px;
+        border-radius: 10px;
+        gap: 2px;
+    }
+
+    .btn-view-mode {
+        border: none;
+        background: transparent;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        color: #64748b;
+        font-size: 0.9rem;
+        font-weight: 700;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-view-mode.active {
+        background: #fff;
+        color: #2563eb;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    /* Estilo da Tabela */
+    .table-container {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 4px 10px rgba(0,0,0,.06);
+        overflow-x: auto;
+        display: none; /* Oculta por padrão */
+        margin-top: 16px;
+    }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.88rem;
+        text-align: left;
+    }
+
+    .custom-table th {
+        background: #f8fafc;
+        padding: 12px 16px;
+        color: #475569;
+        font-weight: 700;
+        border-bottom: 2px solid #e2e8f0;
+        white-space: nowrap;
+    }
+
+    .custom-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+        vertical-align: middle;
+    }
+
+    .custom-table tr:hover {
+        background: #f8fafc;
+    }
+
+    .hidden { display: none !important; }
+    .visible-table { display: block !important; }
 </style>
 
 <div class="toolbar">
@@ -1230,6 +1300,14 @@
         Ocultar filtros
         <span class="filter-count">{{ filtros_ativos }}</span>
     </button>
+    <div class="view-toggle-group">
+        <button type="button" class="btn-view-mode active" id="viewCards" title="Visão em Cards">
+            <i class="fa-solid fa-grip"></i>
+        </button>
+        <button type="button" class="btn-view-mode" id="viewTable" title="Visão em Tabela">
+            <i class="fa-solid fa-list"></i>
+        </button>
+    </div>
 </div>
 
 <div class="page-layout" id="pageLayout">
@@ -1388,86 +1466,122 @@
                     </button>
                 </div>
             </div>
-            <div class="cards-container">
+
+            <div class="cards-container" id="cardsContainer">
                 {% for item in travels %}
                 <div class="card" data-card-id="{{ item.travel.id }}">
                     <div class="card-header">
                         <div class="card-select-wrap">
-                            <input
-                                type="checkbox"
-                                class="card-select-checkbox"
-                                id="travel_{{ item.travel.id }}"
-                                name="travels_selecionadas"
-                                value="{{ item.travel.id }}"
-                            >
-                            <label class="card-select-label" for="travel_{{ item.travel.id }}"></label>
+                            <input type="checkbox" class="card-select-checkbox" 
+                                id="travel_card_{{ item.travel.id }}" 
+                                name="travels_selecionadas" 
+                                value="{{ item.travel.id }}">
+                            <label class="card-select-label" for="travel_card_{{ item.travel.id }}"></label>
                         </div>
 
-                        <a class="card-title"
-                        href="{% url 'transportes:detalhe_viagem' item.travel.id %}"
-                        target="_blank">
+                        <a class="card-title" href="{% url 'transportes:detalhe_viagem' item.travel.id %}" target="_blank">
                             {{ item.travel.id }}
                         </a>
 
                         <span class="status-tag status-{{ item.travel.status.type }}">
                             {{ item.travel.status.type }}
                         </span>
-                       
                     </div>
 
                     <div class="card-body">
                         <p><strong>Número da OS:</strong><br>{{ item.service_order.order_number }}</p>
-                        <p><strong>Número da OS Externa:</strong><br>{{ item.service_order.external_order_number }}</p>
+                        <p><strong>OS Externa:</strong><br>{{ item.service_order.external_order_number|default:"-" }}</p>
                         <p><strong>Cliente:</strong><br>{{ item.service_order.client.nome }}</p>
                         <p><strong>Transportadora:</strong><br>{{ item.travel.carrier.nome }}</p>
                         <p><strong>Origem:</strong><br>CEP: {{ item.service_order.origin.CEP }}<br><small>{{ item.service_order.origin.endereco }}</small></p>
                         <p><strong>Destino:</strong><br>CEP: {{ item.service_order.destination.CEP }}<br><small>{{ item.service_order.destination.endereco }}</small></p>
-                        <!-- <p>
-                            <strong>Prazo Final:</strong><br>
-                            {% if item.travel.end_date_formatada %}
-                                {{ item.travel.end_date_formatada }}
-                            {% else %}
-                                Em andamento
-                            {% endif %}
-                        </p> -->
-                        <p>
-                            <strong>Data Inicial:</strong><br>
-                            {% if item.travel.start_date_formatada %}
-                                {{ item.travel.start_date_formatada }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </p>
-
-                        <p>
-                            <strong>Data Final:</strong><br>
-                            {% if item.travel.end_date_formatada %}
-                                {{ item.travel.end_date_formatada }}
-                            {% else %}
-                                Em andamento
-                            {% endif %}
-                        </p>
+                        <p><strong>Início:</strong><br>{{ item.travel.start_date_formatada|default:"-" }}</p>
+                        <p><strong>Fim:</strong><br>{{ item.travel.end_date_formatada|default:"Em andamento" }}</p>
                     </div>
-                    {% if response_mode == "detailed" and item.travel_events %}
-                        <div class="card-footer-actions">
-                            <button
-                                type="button"
-                                class="btn-open-events-modal btn-events-minimal"
-                                data-travel-id="{{ item.travel.id }}"
-                                data-events-target="travel-events-{{ item.travel.id }}"
-                            >
-                                <i class="fa-solid fa-clock-rotate-left"></i>
-                                <span>Ocorrências</span>
-                                <span class="btn-events-count">{{ item.travel_events_count }}</span>
-                            </button>
-                        </div>
 
-                        <script type="application/json" id="travel-events-{{ item.travel.id }}">
+                    {% if response_mode == "detailed" and item.travel_events %}
+                    <div class="card-footer-actions">
+                        <button type="button" class="btn-open-events-modal btn-events-minimal" 
+                                data-travel-id="{{ item.travel.id }}" 
+                                data-events-target="travel-events-card-{{ item.travel.id }}">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <span>Ocorrências</span>
+                            <span class="btn-events-count">{{ item.travel_events_count }}</span>
+                        </button>
+                        <script type="application/json" id="travel-events-card-{{ item.travel.id }}">
                             {{ item.travel_events_json|safe }}
                         </script>
+                    </div>
                     {% endif %}
                 </div>
                 {% endfor %}
+            </div>
+
+            <div class="table-container" id="tableContainer">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th><i class="fa-solid fa-check-square"></i></th>
+                            <th>ID Viagem</th>
+                            <th>Status</th>
+                            <th>OS / Externa</th>
+                            <th>Cliente / Transportadora</th>
+                            <th>Origem / Destino</th>
+                            <th>Datas</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in travels %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="card-select-checkbox" 
+                                    name="travels_selecionadas" value="{{ item.travel.id }}"
+                                    id="table_check_{{ item.travel.id }}">
+                            </td>
+                            <td>
+                                <a href="{% url 'transportes:detalhe_viagem' item.travel.id %}" target="_blank" style="font-weight:700; text-decoration: none; color: #000;">
+                                    {{ item.travel.id }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="status-tag status-{{ item.travel.status.type }}">
+                                    {{ item.travel.status.type }}
+                                </span>
+                            </td>
+                            <td>
+                                <small>OS: {{ item.service_order.order_number }}</small><br>
+                                <small>Ext: {{ item.service_order.external_order_number|default:"-" }}</small>
+                            </td>
+                            <td>
+                                <div style="font-weight:600;">{{ item.service_order.client.nome }}</div>
+                                <div style="font-size:0.75rem; color:#666;">{{ item.travel.carrier.nome }}</div>
+                            </td>
+                            <td style="font-size:0.75rem;">
+                                <strong>O:</strong> {{ item.service_order.origin.CEP }}<br>
+                                <strong>D:</strong> {{ item.service_order.destination.CEP }}
+                            </td>
+                            <td style="font-size:0.75rem;">
+                                <strong>Ini:</strong> {{ item.travel.start_date_formatada|default:"-" }}<br>
+                                <strong>Fim:</strong> {{ item.travel.end_date_formatada|default:"Em andamento" }}
+                            </td>
+                            <td>
+                                {% if response_mode == "detailed" and item.travel_events %}
+                                    <button type="button" class="btn-open-events-modal btn-events-minimal"
+                                            data-travel-id="{{ item.travel.id }}"
+                                            data-events-target="travel-events-table-{{ item.travel.id }}">
+                                        <i class="fa-solid fa-clock-rotate-left"></i>
+                                        <span class="btn-events-count">{{ item.travel_events_count }}</span>
+                                    </button>
+                                    <script type="application/json" id="travel-events-table-{{ item.travel.id }}">
+                                        {{ item.travel_events_json|safe }}
+                                    </script>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </form>
         {% endif %}
@@ -2018,6 +2132,36 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     updateSelectedState();
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const btnCards = document.getElementById("viewCards");
+    const btnTable = document.getElementById("viewTable");
+    const cardsContainer = document.getElementById("cardsContainer");
+    const tableContainer = document.getElementById("tableContainer");
+
+    function setViewMode(mode) {
+        if (mode === "table") {
+            cardsContainer.classList.add("hidden");
+            tableContainer.classList.add("visible-table");
+            btnTable.classList.add("active");
+            btnCards.classList.remove("active");
+        } else {
+            cardsContainer.classList.remove("hidden");
+            tableContainer.classList.remove("visible-table");
+            btnCards.classList.add("active");
+            btnTable.classList.remove("active");
+        }
+        localStorage.setItem("travels_view_mode", mode);
+    }
+
+    btnCards.addEventListener("click", () => setViewMode("cards"));
+    btnTable.addEventListener("click", () => setViewMode("table"));
+
+    const savedMode = localStorage.getItem("travels_view_mode");
+    if (savedMode) setViewMode(savedMode);
 });
 </script>
 {% endblock %}
