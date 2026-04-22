@@ -6,7 +6,7 @@
             <i class="fa-solid fa-angles-right" id="toggle-sidebar"></i>
         </div>
 
-        <a href="{% url 'mural:mural' %}" class="logo-container">
+        <a href="{% url 'logistica:index' %}" class="logo-container">
             <img class="sidebar-logo sidebar-logo-expandida" src="{% static 'global/images/new_logo.png' %}"
                 alt="Logo Expandida">
             <img class="sidebar-logo sidebar-logo-reduzida" src="{% static 'global/images/new_logo_reduzida.png' %}"
@@ -16,7 +16,7 @@
         <div class="divider-horizontal"></div>
         <div class="divider-horizontal-reduzida"></div>
 
-        <a href="{% url 'mural:mural' %}" class="itens-sidebar {% if current_menu == 'home' %}active{% endif %}">
+        <a href="{% url 'logistica:index' %}" class="itens-sidebar {% if current_menu == 'home' %}active{% endif %}">
             <i class="fa-solid fa-house"></i>
             <span class="texto-item">Home</span>
         </a>
