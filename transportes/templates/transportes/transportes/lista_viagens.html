@@ -1130,6 +1130,7 @@
 
         .results-area {
             width: 100%;
+            width: 875px;
         }
 
         .cards-container {
@@ -1252,7 +1253,6 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
-    /* Estilo da Tabela */
     .table-container {
         background: #fff;
         border-radius: 14px;
@@ -1568,8 +1568,9 @@
                                 <strong>D:</strong> {{ item.service_order.destination.CEP }}
                             </td>
                             <td style="font-size:0.75rem;">
-                                <strong>Ini:</strong> {{ item.travel.start_date_formatada|default:"-" }}<br>
-                                <strong>Fim:</strong> {{ item.travel.end_date_formatada|default:"Em andamento" }}
+                                <strong>Inicio:</strong> {{ item.travel.start_date_formatada|default:"-" }}<br>
+                                <strong>Fim:</strong> {{ item.travel.end_date_formatada|default:"Em andamento" }}<br>
+                                <strong>Prazo:</strong> {{ item.travel.quote.estimated_deadline|default:"-" }} Dias
                             </td>
                             <td>
                                 {% if response_mode == "detailed" and item.travel_events %}
