@@ -334,7 +334,7 @@
     }
 
     .status-NEW { background-color: #2563eb; }
-    .status-PENDENTE { background-color: #f59e0b; }
+    .status-PENDING { background-color: #f59e0b; }
     .status-DELIVERED { background-color: #10b981; }
     .status-FINALIZADO { background-color: #6b7280; }
     .status-COLETADO { background-color: #666970; }
@@ -1460,6 +1460,11 @@
                         Criar eventos
                     </button>
 
+                    <button type="button" id="openDriverModalBtn" class="btn-bulk btn-bulk--primary">
+                        <i class="fa-solid fa-id-card"></i>
+                        Atrelar motorista
+                    </button>
+
                     <button type="button" id="clearCardSelection" class="btn-bulk btn-bulk--ghost">
                         <i class="fa-solid fa-xmark"></i>
                         Limpar seleção
@@ -1497,9 +1502,10 @@
                         <p><strong>Destino:</strong><br>CEP: {{ item.service_order.destination.CEP }}<br><small>{{ item.service_order.destination.endereco }}</small></p>
                         <p><strong>Início:</strong><br>{{ item.travel.start_date_formatada|default:"-" }}</p>
                         <p><strong>Fim:</strong><br>{{ item.travel.end_date_formatada|default:"Em andamento" }}</p>
+                        <p><strong>Prazo:</strong><br>{{ item.travel.quote.estimated_deadline|default:"-" }} Dias</p>
                     </div>
-
-                    {% if response_mode == "detailed" and item.travel_events %}
+                    
+                        {% if response_mode == "detailed" and item.travel_events %}
                     <div class="card-footer-actions">
                         <button type="button" class="btn-open-events-modal btn-events-minimal" 
                                 data-travel-id="{{ item.travel.id }}" 
@@ -1755,6 +1761,213 @@ document.addEventListener("DOMContentLoaded", function () {
     modal.addEventListener("click", function (e) {
         if (e.target === modal) {
             closeModal();
+        }
+    });
+});
+</script>
+
+<div class="os-modal-overlay" id="driverAssignModal">
+    <div class="os-modal" style="width:700px;">
+        <div class="os-modal-header">
+            <div class="os-modal-title">
+                Atrelar motorista às viagens selecionadas
+            </div>
+            <div class="os-modal-close" id="closeDriverAssignModal">✕</div>
+        </div>
+
+        <div class="os-modal-body">
+            <form method="post" id="driverAssignForm">
+                {% csrf_token %}
+
+                <div id="driverSelectedTravelsBox" style="margin-bottom:15px; padding:10px 12px; border-radius:8px; background:#f4f6f9; font-size:14px; display:none;">
+                    Motorista será vinculado para as viagens:
+                    <b id="driverSelectedTravelsText"></b>
+                </div>
+
+                <div id="driverSelectedTravelsInputs"></div>
+
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: 1 / -1; position: relative;">
+                        <label for="modal_driver_nome">Motorista</label>
+                        <input type="text" name="motorista_nome" id="modal_driver_nome" placeholder="Digite o nome do motorista...">
+                        <input type="hidden" name="motorista_id" id="modal_driver_id">
+                        <div id="modalDriverResults" class="driver-results"></div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top:15px;">
+                    <label for="modal_driver_observacao">Observação (opcional)</label>
+                    <textarea name="motorista_observacao" id="modal_driver_observacao" rows="3" placeholder="Observações adicionais..."></textarea>
+                </div>
+
+                <div style="margin-top:20px; text-align:right;">
+                    <button type="submit"
+                            class="btn-primary"
+                            name="atrelar_motorista_lote"
+                            value="1">
+                        Atrelar Motorista
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("driverAssignModal");
+    const openBtn = document.getElementById("openDriverModalBtn");
+    const closeBtn = document.getElementById("closeDriverAssignModal");
+    const selectedInputsBox = document.getElementById("driverSelectedTravelsInputs");
+    const selectedText = document.getElementById("driverSelectedTravelsText");
+    const selectedBox = document.getElementById("driverSelectedTravelsBox");
+
+    if (!modal || !openBtn || !closeBtn || !selectedInputsBox || !selectedText || !selectedBox) return;
+
+    function getSelectedTravelIds() {
+        const checked = document.querySelectorAll(".card-select-checkbox:checked");
+        const ids = [];
+
+        checked.forEach((checkbox) => {
+            if (checkbox.value && !ids.includes(checkbox.value)) {
+                ids.push(checkbox.value);
+            }
+        });
+
+        return ids;
+    }
+
+    function fillSelectedTravels(ids) {
+        selectedInputsBox.innerHTML = "";
+
+        ids.forEach((id) => {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "travels_selecionadas";
+            input.value = id;
+            selectedInputsBox.appendChild(input);
+        });
+
+        if (ids.length) {
+            selectedText.textContent = ids.join(", ");
+            selectedBox.style.display = "block";
+        } else {
+            selectedText.textContent = "";
+            selectedBox.style.display = "none";
+        }
+    }
+
+    function openModal() {
+        const ids = getSelectedTravelIds();
+
+        if (!ids.length) {
+            alert("Selecione pelo menos uma viagem.");
+            return;
+        }
+
+        fillSelectedTravels(ids);
+        modal.classList.add("show");
+    }
+
+    function closeModal() {
+        modal.classList.remove("show");
+    }
+
+    openBtn.addEventListener("click", openModal);
+    closeBtn.addEventListener("click", closeModal);
+
+    modal.addEventListener("click", function (e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("modal_driver_nome");
+    const resultsBox = document.getElementById("modalDriverResults");
+    const hiddenId = document.getElementById("modal_driver_id");
+    const carrierSelect = document.getElementById("id_transportadora");
+
+    if (!input || !resultsBox || !hiddenId) return;
+
+    let timeout = null;
+
+    function limparResultados() {
+        resultsBox.innerHTML = "";
+        resultsBox.style.display = "none";
+    }
+
+    input.addEventListener("keyup", function () {
+        const query = this.value.trim();
+        const carrierId = carrierSelect ? carrierSelect.value : "";
+
+        clearTimeout(timeout);
+
+        if (query.length < 2) {
+            hiddenId.value = "";
+            limparResultados();
+            return;
+        }
+
+        timeout = setTimeout(() => {
+            const url = "{% url 'transportes:buscar_motoristas_travels' %}?nome=" +
+                encodeURIComponent(query) +
+                "&carrier_id=" +
+                encodeURIComponent(carrierId);
+
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    resultsBox.innerHTML = "";
+
+                    if (!data.items || !data.items.length) {
+                        limparResultados();
+                        return;
+                    }
+
+                    data.items.forEach(driver => {
+                        const div = document.createElement("div");
+                        div.classList.add("driver-item");
+                        div.innerText = driver.name || "Motorista";
+
+                        div.addEventListener("mousedown", function (e) {
+                            e.preventDefault();
+                            input.value = driver.name || "";
+                            hiddenId.value = driver.uid || "";
+                            limparResultados();
+                        });
+
+                        resultsBox.appendChild(div);
+                    });
+
+                    resultsBox.style.display = "block";
+                })
+                .catch(() => {
+                    limparResultados();
+                });
+        }, 300);
+    });
+
+    input.addEventListener("input", function () {
+        if (!this.value.trim()) {
+            hiddenId.value = "";
+            limparResultados();
+        }
+    });
+
+    input.addEventListener("blur", function () {
+        setTimeout(() => {
+            if (!hiddenId.value) {
+                input.value = "";
+            }
+            limparResultados();
+        }, 150);
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!resultsBox.contains(e.target) && e.target !== input) {
+            limparResultados();
         }
     });
 });

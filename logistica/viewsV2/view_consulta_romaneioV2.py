@@ -73,13 +73,29 @@ def consult_romV2(request):
 
     try:
         pa_tatuape = GroupAditionalInformation.objects.get(
-            nome__iexact="PA Tatuapé"
+            nome__iexact="PA CTB Tatuapé"
         )
 
-        destination_choices.append({
-            "id": pa_tatuape.id,
-            "label": "PA Tatuapé"
-        })
+        grupos = Group.objects.filter(name__in=["arancia_CD"])
+
+        destinos = (
+            GroupAditionalInformation.objects
+            .filter(group__in=grupos)
+            .select_related("group")
+            .annotate(nome_lower=Lower("nome"))
+            .order_by("group__name", "nome_lower")
+        )
+
+        for d in destinos:
+            if d.group.name == "arancia_CD":
+                label = f"[CD] {d.nome}"
+            else:
+                label = d.nome
+
+            destination_choices.append({
+                "id": d.id,
+                "label": label
+            })
 
     except GroupAditionalInformation.DoesNotExist:
         pass
