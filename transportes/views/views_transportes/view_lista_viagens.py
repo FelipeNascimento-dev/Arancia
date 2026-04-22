@@ -509,13 +509,13 @@ def lista_viagens(request):
 
                 order_type_api = ""
                 if tipo_servico_id:
-                    order_type_api = tipo_api_map.get(str(tipo_servico_id), "")
+                    order_type_api = tipo_api_map.get(tipo_servico_id, "")
 
                 if cliente_nome and order_type_api:
                     query = urlencode({
                         "status": "true",
                         "cliente": cliente_nome,
-                        "order_type": order_type_api,
+                        "order_type": tipo_servico_id,
                     })
 
                     url = f"{TRANSP_API_URL}/order_events_types/list?{query}"
