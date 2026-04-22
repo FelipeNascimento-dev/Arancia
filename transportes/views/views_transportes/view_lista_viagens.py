@@ -297,7 +297,7 @@ def lista_viagens(request):
                 if campo == "pa_selecionada":
                     params["designation_id"] = valor
                 elif campo == "tipo_servico":
-                    params["tipo_servico"] = tipo_api_map.get(
+                    params["order_type"] = tipo_api_map.get(
                         str(valor), valor)
                 elif campo == "status_list":
                     params["status_list"] = status_api_map.get(
@@ -495,23 +495,30 @@ def lista_viagens(request):
 
         if selected_travel_ids:
             try:
-                client_id = request.POST.get(
-                    "cliente") or filtros.get("cliente")
-                tipo_servico = request.POST.get(
-                    "tipo_servico") or filtros.get("tipo_servico")
+                client_id = (request.POST.get("cliente")
+                             or filtros.get("cliente") or "").strip()
+                tipo_servico_id = (request.POST.get(
+                    "tipo_servico") or filtros.get("tipo_servico") or "").strip()
 
                 cliente_nome = ""
-                if client_id not in [None, ""]:
+                if client_id:
                     for c in resp:
                         if str(c.get("id")) == str(client_id):
                             cliente_nome = c.get("nome") or c.get("name") or ""
                             break
 
-                order_type_id = tipo_servico if tipo_servico not in [
-                    None, ""] else ""
+                order_type_api = ""
+                if tipo_servico_id:
+                    order_type_api = tipo_api_map.get(str(tipo_servico_id), "")
 
-                if cliente_nome and order_type_id:
-                    url = f"{TRANSP_API_URL}/order_events_types/list?status=true&cliente={cliente_nome}&order_type={order_type_id}"
+                if cliente_nome and order_type_api:
+                    query = urlencode({
+                        "status": "true",
+                        "cliente": cliente_nome,
+                        "order_type": order_type_api,
+                    })
+
+                    url = f"{TRANSP_API_URL}/order_events_types/list?{query}"
 
                     client = RequestClient(
                         method="GET",
@@ -526,13 +533,27 @@ def lista_viagens(request):
 
                     if isinstance(response_travel, list):
                         travel_event_types = [
-                            ev for ev in response_travel if ev.get("active") is True]
+                            ev for ev in response_travel
+                            if str(ev.get("active")).lower() == "true"
+                        ]
 
-                    elif isinstance(response_travel, dict) and "detail" in response_travel:
-                        messages.error(request, response_travel["detail"])
+                        if not travel_event_types:
+                            messages.warning(
+                                request,
+                                f"Nenhum tipo de evento encontrado para cliente '{cliente_nome}' e tipo '{order_type_api}'."
+                            )
+
+                    elif isinstance(response_travel, dict) and response_travel.get("detail"):
+                        messages.error(request, response_travel.get("detail"))
+
+                    else:
+                        messages.warning(
+                            request, "A API não retornou eventos em formato esperado.")
                 else:
                     messages.warning(
-                        request, "Selecione cliente e tipo de serviço para carregar os tipos de evento.")
+                        request,
+                        f"Selecione cliente e tipo de serviço válidos. Cliente='{client_id}' | Tipo='{tipo_servico_id}'"
+                    )
 
             except Exception as e:
                 messages.error(request, f"Erro ao consultar eventos: {e}")

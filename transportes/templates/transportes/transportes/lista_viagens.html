@@ -2000,38 +2000,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 {% endif %}
 
                 <div class="form-group">
-                    <label>Tipo de Evento</label>
-                    <input type="hidden" name="event_type_id" id="eventTypeId">
-                    <div class="custom-select" id="eventTypeSelect">
-                        <div class="custom-select-trigger">
-                            Selecione um tipo...
-                        </div>
+                    <label for="eventTypeId">Tipo de Evento</label>
+                    <select name="event_type_id" id="eventTypeId" required>
+                        <option value="">Selecione um tipo...</option>
+                        {% for ev in travel_event_types %}
+                            <option value="{{ ev.id }}">
+                                {{ ev.description }}
+                                {% if ev.status %} | Status: {{ ev.status.type }}{% endif %}
+                                {% if ev.status and ev.status.finished %} | Finalizador{% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
 
-                        <div class="custom-select-dropdown">
-                            {% for ev in travel_event_types %}
-                            <div class="custom-option"
-                                 data-id="{{ ev.id }}">
-                                <div class="option-content">
-                                    <div class="option-tags">
-                                        {% if ev.status %}
-                                            <span class="tag tag-status">
-                                                {{ ev.status.type }}
-                                            </span>
-                                        {% endif %}
-                                        {% if ev.status and ev.status.finished %}
-                                            <span class="tag tag-final">
-                                                Finalizador
-                                            </span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="option-text">
-                                        {{ ev.description }}
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
+                    <small style="display:block; margin-top:6px; color:#666;">
+                        Total de eventos carregados: {{ travel_event_types|length }}
+                    </small>
                 </div>
 
                 <div class="form-group" style="margin-top:15px;">
@@ -2068,41 +2051,16 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", function () {
     const modalEventosTravel = document.getElementById("modalEventosTravel");
 
-    if (modalEventosTravel) {
-        window.fecharModalEventosTravel = function () {
-            modalEventosTravel.classList.remove("show");
-        };
+    if (!modalEventosTravel) return;
 
-        modalEventosTravel.addEventListener("click", function (e) {
-            if (e.target === modalEventosTravel) {
-                fecharModalEventosTravel();
-            }
-        });
-    }
+    window.fecharModalEventosTravel = function () {
+        modalEventosTravel.classList.remove("show");
+    };
 
-    const select = document.getElementById("eventTypeSelect");
-    if (!select) return;
-
-    const trigger = select.querySelector(".custom-select-trigger");
-    const dropdown = select.querySelector(".custom-select-dropdown");
-    const hiddenInput = document.getElementById("eventTypeId");
-
-    trigger.addEventListener("click", function (e) {
-        e.stopPropagation();
-        dropdown.style.display =
-            dropdown.style.display === "block" ? "none" : "block";
-    });
-
-    select.querySelectorAll(".custom-option").forEach(option => {
-        option.addEventListener("click", function () {
-            hiddenInput.value = this.dataset.id;
-            trigger.innerHTML = this.innerHTML;
-            dropdown.style.display = "none";
-        });
-    });
-
-    document.addEventListener("click", function () {
-        dropdown.style.display = "none";
+    modalEventosTravel.addEventListener("click", function (e) {
+        if (e.target === modalEventosTravel) {
+            fecharModalEventosTravel();
+        }
     });
 });
 </script>
