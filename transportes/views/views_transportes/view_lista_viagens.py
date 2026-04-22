@@ -116,7 +116,7 @@ def lista_viagens(request):
         "created_at",
         "designation_id",
         "atrasado",
-        "Response",   # NOVO CAMPO
+        "Response",
     ]
 
     url_cliente = f"{TRANSP_API_URL}/gai/clientes/status?cliente=arancia_client"
@@ -177,7 +177,6 @@ def lista_viagens(request):
         filtros_post = montar_filtros_lista_viagens(
             request.POST, filtro_campos)
 
-        # garante default
         if not filtros_post.get("Response"):
             filtros_post["Response"] = "resume"
 
@@ -298,7 +297,7 @@ def lista_viagens(request):
                 if campo == "pa_selecionada":
                     params["designation_id"] = valor
                 elif campo == "tipo_servico":
-                    params["tipo_servico"] = tipo_api_map.get(
+                    params["order_type"] = tipo_api_map.get(
                         str(valor), valor)
                 elif campo == "status_list":
                     params["status_list"] = status_api_map.get(
@@ -308,7 +307,6 @@ def lista_viagens(request):
                 else:
                     params[campo] = valor
 
-            # garante default mesmo sem selecionar
             if "Response" not in params:
                 params["Response"] = "resume"
 
@@ -354,7 +352,6 @@ def lista_viagens(request):
                     ev["evento_descricao"] = evento_info.get("description", "")
                     ev["evento_tipo"] = evento_info.get("type", "")
 
-                # ordena por data crescente para timeline
                 eventos.sort(key=lambda x: x.get("created_at") or "")
 
                 t["travel_events"] = eventos
@@ -498,23 +495,30 @@ def lista_viagens(request):
 
         if selected_travel_ids:
             try:
-                client_id = request.POST.get(
-                    "cliente") or filtros.get("cliente")
-                tipo_servico = request.POST.get(
-                    "tipo_servico") or filtros.get("tipo_servico")
+                client_id = (request.POST.get("cliente")
+                             or filtros.get("cliente") or "").strip()
+                tipo_servico_id = (request.POST.get(
+                    "tipo_servico") or filtros.get("tipo_servico") or "").strip()
 
                 cliente_nome = ""
-                if client_id not in [None, ""]:
+                if client_id:
                     for c in resp:
                         if str(c.get("id")) == str(client_id):
                             cliente_nome = c.get("nome") or c.get("name") or ""
                             break
 
-                order_type_id = tipo_servico if tipo_servico not in [
-                    None, ""] else ""
+                order_type_api = ""
+                if tipo_servico_id:
+                    order_type_api = tipo_api_map.get(tipo_servico_id, "")
 
-                if cliente_nome and order_type_id:
-                    url = f"{TRANSP_API_URL}/order_events_types/list?status=true&cliente={cliente_nome}&order_type={order_type_id}"
+                if cliente_nome and order_type_api:
+                    query = urlencode({
+                        "status": "true",
+                        "cliente": cliente_nome,
+                        "order_type": tipo_servico_id,
+                    })
+
+                    url = f"{TRANSP_API_URL}/order_events_types/list?{query}"
 
                     client = RequestClient(
                         method="GET",
@@ -529,16 +533,91 @@ def lista_viagens(request):
 
                     if isinstance(response_travel, list):
                         travel_event_types = [
-                            ev for ev in response_travel if ev.get("active") is True]
+                            ev for ev in response_travel
+                            if str(ev.get("active")).lower() == "true"
+                        ]
 
-                    elif isinstance(response_travel, dict) and "detail" in response_travel:
-                        messages.error(request, response_travel["detail"])
+                        if not travel_event_types:
+                            messages.warning(
+                                request,
+                                f"Nenhum tipo de evento encontrado para cliente '{cliente_nome}' e tipo '{order_type_api}'."
+                            )
+
+                    elif isinstance(response_travel, dict) and response_travel.get("detail"):
+                        messages.error(request, response_travel.get("detail"))
+
+                    else:
+                        messages.warning(
+                            request, "A API não retornou eventos em formato esperado.")
                 else:
                     messages.warning(
-                        request, "Selecione cliente e tipo de serviço para carregar os tipos de evento.")
+                        request,
+                        f"Selecione cliente e tipo de serviço válidos. Cliente='{client_id}' | Tipo='{tipo_servico_id}'"
+                    )
 
             except Exception as e:
                 messages.error(request, f"Erro ao consultar eventos: {e}")
+
+    if request.method == "POST" and "atrelar_motorista_lote" in request.POST:
+        selected_travel_ids = request.POST.getlist("travels_selecionadas")
+        motorista_id = (request.POST.get("motorista_id") or "").strip()
+        motorista_nome = (request.POST.get("motorista_nome") or "").strip()
+        created_by = request.user.username
+
+        if not selected_travel_ids:
+            messages.error(request, "Selecione pelo menos uma viagem.")
+            return redirect("transportes:lista_viagens")
+
+        if not motorista_id:
+            messages.error(request, "Selecione um motorista válido.")
+            return redirect("transportes:lista_viagens")
+
+        try:
+            ids_limpos = [
+                int(str(travel_id).strip())
+                for travel_id in selected_travel_ids
+                if str(travel_id).strip()
+            ]
+
+            payload_update = [
+                {
+                    "travels_ids": ids_limpos,
+                    "driver_id": int(motorista_id),
+                }
+            ]
+
+            url_update = (
+                f"{TRANSP_API_URL}/v2/order_travel/driver/updated?created_by={created_by}"
+            )
+
+            client = RequestClient(
+                method="POST",
+                url=url_update,
+                headers={
+                    "accept": "application/json",
+                    "Content-Type": "application/json",
+                },
+                request_data=payload_update,
+            )
+
+            response_update = client.send_api_request()
+
+            if isinstance(response_update, dict) and response_update.get("detail"):
+                detail = response_update.get("detail")
+                if isinstance(detail, list):
+                    detail = " | ".join(str(item) for item in detail)
+                messages.error(request, f"Erro ao atrelar motorista: {detail}")
+            else:
+                messages.success(
+                    request,
+                    f"Motorista {motorista_nome or motorista_id} vinculado com sucesso às viagens selecionadas."
+                )
+
+            return redirect("transportes:lista_viagens")
+
+        except Exception as e:
+            messages.error(request, f"Erro ao atrelar motorista: {e}")
+            return redirect("transportes:lista_viagens")
 
     if request.method == "POST" and "criar_evento_travel_lote" in request.POST:
         selected_travel_ids = request.POST.getlist("travels_selecionadas")

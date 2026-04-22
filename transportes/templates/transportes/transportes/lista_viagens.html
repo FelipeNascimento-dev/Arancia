@@ -334,7 +334,7 @@
     }
 
     .status-NEW { background-color: #2563eb; }
-    .status-PENDENTE { background-color: #f59e0b; }
+    .status-PENDING { background-color: #f59e0b; }
     .status-DELIVERED { background-color: #10b981; }
     .status-FINALIZADO { background-color: #6b7280; }
     .status-COLETADO { background-color: #666970; }
@@ -1130,6 +1130,7 @@
 
         .results-area {
             width: 100%;
+            width: 875px;
         }
 
         .cards-container {
@@ -1252,7 +1253,6 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
-    /* Estilo da Tabela */
     .table-container {
         background: #fff;
         border-radius: 14px;
@@ -1292,6 +1292,129 @@
 
     .hidden { display: none !important; }
     .visible-table { display: block !important; }
+
+    .single-search--event {
+        position: relative;
+        width: 100%;
+        z-index: 20;
+    }
+
+    .single-search-input--event {
+        width: 100%;
+        min-height: 44px;
+        border: 1px solid #cfd8e3;
+        border-radius: 14px;
+        padding: 0 14px;
+        font-size: .95rem;
+        background: #fff;
+        box-sizing: border-box;
+        outline: none;
+        color: #1f2937;
+        transition: .2s ease;
+    }
+
+    .single-search-input--event::placeholder {
+        color: #7b8794;
+    }
+
+    .single-search-input--event:focus {
+        border-color: #cfd8e3;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+    }
+
+    .single-search-dropdown--event {
+        display: none;
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        max-height: 320px;
+        overflow-y: auto;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.14);
+        z-index: 9999;
+    }
+
+    .single-search.is-open .single-search-dropdown--event {
+        display: block;
+    }
+
+    .single-search-item.event-type-item {
+        padding: 0;
+        border: none;
+        border-bottom: 1px solid #eef2f7;
+        border-radius: 0;
+        background: #fff;
+        transition: background .15s ease;
+    }
+
+    .single-search-item.event-type-item:last-child {
+        border-bottom: none;
+    }
+
+    .single-search-item.event-type-item:hover {
+        background: #f8fafc;
+    }
+
+    .single-search-item.event-type-item.is-selected {
+        background: #eef6ff;
+    }
+
+    .event-type-item-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 18px 14px;
+    }
+
+    .event-type-item-title {
+        font-size: .95rem;
+        font-weight: 500;
+        color: #111827;
+        line-height: 1.35;
+        word-break: break-word;
+    }
+
+    .event-type-item-tags {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+    }
+
+    .event-type-tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 22px;
+        padding: 0 9px;
+        border-radius: 999px;
+        font-size: .68rem;
+        font-weight: 700;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    .event-type-tag--status {
+        background: #e8f1ff;
+        color: #1d6fd8;
+    }
+
+    .event-type-tag--final {
+        background: #dff7e8;
+        color: #1f7a3a;
+    }
+
+    .single-search-empty {
+        padding: 16px 14px;
+        color: #6b7280;
+        font-size: .9rem;
+        text-align: center;
+    }
 </style>
 
 <div class="toolbar">
@@ -1460,6 +1583,11 @@
                         Criar eventos
                     </button>
 
+                    <button type="button" id="openDriverModalBtn" class="btn-bulk btn-bulk--primary">
+                        <i class="fa-solid fa-id-card"></i>
+                        Atrelar motorista
+                    </button>
+
                     <button type="button" id="clearCardSelection" class="btn-bulk btn-bulk--ghost">
                         <i class="fa-solid fa-xmark"></i>
                         Limpar seleção
@@ -1497,9 +1625,10 @@
                         <p><strong>Destino:</strong><br>CEP: {{ item.service_order.destination.CEP }}<br><small>{{ item.service_order.destination.endereco }}</small></p>
                         <p><strong>Início:</strong><br>{{ item.travel.start_date_formatada|default:"-" }}</p>
                         <p><strong>Fim:</strong><br>{{ item.travel.end_date_formatada|default:"Em andamento" }}</p>
+                        <p><strong>Prazo:</strong><br>{{ item.travel.quote.estimated_deadline|default:"-" }} Dias</p>
                     </div>
-
-                    {% if response_mode == "detailed" and item.travel_events %}
+                    
+                        {% if response_mode == "detailed" and item.travel_events %}
                     <div class="card-footer-actions">
                         <button type="button" class="btn-open-events-modal btn-events-minimal" 
                                 data-travel-id="{{ item.travel.id }}" 
@@ -1562,8 +1691,9 @@
                                 <strong>D:</strong> {{ item.service_order.destination.CEP }}
                             </td>
                             <td style="font-size:0.75rem;">
-                                <strong>Ini:</strong> {{ item.travel.start_date_formatada|default:"-" }}<br>
-                                <strong>Fim:</strong> {{ item.travel.end_date_formatada|default:"Em andamento" }}
+                                <strong>Inicio:</strong> {{ item.travel.start_date_formatada|default:"-" }}<br>
+                                <strong>Fim:</strong> {{ item.travel.end_date_formatada|default:"Em andamento" }}<br>
+                                <strong>Prazo:</strong> {{ item.travel.quote.estimated_deadline|default:"-" }} Dias
                             </td>
                             <td>
                                 {% if response_mode == "detailed" and item.travel_events %}
@@ -1760,6 +1890,213 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
+<div class="os-modal-overlay" id="driverAssignModal">
+    <div class="os-modal" style="width:700px;">
+        <div class="os-modal-header">
+            <div class="os-modal-title">
+                Atrelar motorista às viagens selecionadas
+            </div>
+            <div class="os-modal-close" id="closeDriverAssignModal">✕</div>
+        </div>
+
+        <div class="os-modal-body">
+            <form method="post" id="driverAssignForm">
+                {% csrf_token %}
+
+                <div id="driverSelectedTravelsBox" style="margin-bottom:15px; padding:10px 12px; border-radius:8px; background:#f4f6f9; font-size:14px; display:none;">
+                    Motorista será vinculado para as viagens:
+                    <b id="driverSelectedTravelsText"></b>
+                </div>
+
+                <div id="driverSelectedTravelsInputs"></div>
+
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: 1 / -1; position: relative;">
+                        <label for="modal_driver_nome">Motorista</label>
+                        <input type="text" name="motorista_nome" id="modal_driver_nome" placeholder="Digite o nome do motorista...">
+                        <input type="hidden" name="motorista_id" id="modal_driver_id">
+                        <div id="modalDriverResults" class="driver-results"></div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top:15px;">
+                    <label for="modal_driver_observacao">Observação (opcional)</label>
+                    <textarea name="motorista_observacao" id="modal_driver_observacao" rows="3" placeholder="Observações adicionais..."></textarea>
+                </div>
+
+                <div style="margin-top:20px; text-align:right;">
+                    <button type="submit"
+                            class="btn-primary"
+                            name="atrelar_motorista_lote"
+                            value="1">
+                        Atrelar Motorista
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("driverAssignModal");
+    const openBtn = document.getElementById("openDriverModalBtn");
+    const closeBtn = document.getElementById("closeDriverAssignModal");
+    const selectedInputsBox = document.getElementById("driverSelectedTravelsInputs");
+    const selectedText = document.getElementById("driverSelectedTravelsText");
+    const selectedBox = document.getElementById("driverSelectedTravelsBox");
+
+    if (!modal || !openBtn || !closeBtn || !selectedInputsBox || !selectedText || !selectedBox) return;
+
+    function getSelectedTravelIds() {
+        const checked = document.querySelectorAll(".card-select-checkbox:checked");
+        const ids = [];
+
+        checked.forEach((checkbox) => {
+            if (checkbox.value && !ids.includes(checkbox.value)) {
+                ids.push(checkbox.value);
+            }
+        });
+
+        return ids;
+    }
+
+    function fillSelectedTravels(ids) {
+        selectedInputsBox.innerHTML = "";
+
+        ids.forEach((id) => {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "travels_selecionadas";
+            input.value = id;
+            selectedInputsBox.appendChild(input);
+        });
+
+        if (ids.length) {
+            selectedText.textContent = ids.join(", ");
+            selectedBox.style.display = "block";
+        } else {
+            selectedText.textContent = "";
+            selectedBox.style.display = "none";
+        }
+    }
+
+    function openModal() {
+        const ids = getSelectedTravelIds();
+
+        if (!ids.length) {
+            alert("Selecione pelo menos uma viagem.");
+            return;
+        }
+
+        fillSelectedTravels(ids);
+        modal.classList.add("show");
+    }
+
+    function closeModal() {
+        modal.classList.remove("show");
+    }
+
+    openBtn.addEventListener("click", openModal);
+    closeBtn.addEventListener("click", closeModal);
+
+    modal.addEventListener("click", function (e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("modal_driver_nome");
+    const resultsBox = document.getElementById("modalDriverResults");
+    const hiddenId = document.getElementById("modal_driver_id");
+    const carrierSelect = document.getElementById("id_transportadora");
+
+    if (!input || !resultsBox || !hiddenId) return;
+
+    let timeout = null;
+
+    function limparResultados() {
+        resultsBox.innerHTML = "";
+        resultsBox.style.display = "none";
+    }
+
+    input.addEventListener("keyup", function () {
+        const query = this.value.trim();
+        const carrierId = carrierSelect ? carrierSelect.value : "";
+
+        clearTimeout(timeout);
+
+        if (query.length < 2) {
+            hiddenId.value = "";
+            limparResultados();
+            return;
+        }
+
+        timeout = setTimeout(() => {
+            const url = "{% url 'transportes:buscar_motoristas_travels' %}?nome=" +
+                encodeURIComponent(query) +
+                "&carrier_id=" +
+                encodeURIComponent(carrierId);
+
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    resultsBox.innerHTML = "";
+
+                    if (!data.items || !data.items.length) {
+                        limparResultados();
+                        return;
+                    }
+
+                    data.items.forEach(driver => {
+                        const div = document.createElement("div");
+                        div.classList.add("driver-item");
+                        div.innerText = driver.name || "Motorista";
+
+                        div.addEventListener("mousedown", function (e) {
+                            e.preventDefault();
+                            input.value = driver.name || "";
+                            hiddenId.value = driver.uid || "";
+                            limparResultados();
+                        });
+
+                        resultsBox.appendChild(div);
+                    });
+
+                    resultsBox.style.display = "block";
+                })
+                .catch(() => {
+                    limparResultados();
+                });
+        }, 300);
+    });
+
+    input.addEventListener("input", function () {
+        if (!this.value.trim()) {
+            hiddenId.value = "";
+            limparResultados();
+        }
+    });
+
+    input.addEventListener("blur", function () {
+        setTimeout(() => {
+            if (!hiddenId.value) {
+                input.value = "";
+            }
+            limparResultados();
+        }, 150);
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!resultsBox.contains(e.target) && e.target !== input) {
+            limparResultados();
+        }
+    });
+});
+</script>
+
 {% if modal_travel_event %}
 <div class="os-modal-overlay show" id="modalEventosTravel">
     <div class="os-modal" style="width:700px;">
@@ -1786,37 +2123,51 @@ document.addEventListener("DOMContentLoaded", function () {
                 {% endif %}
 
                 <div class="form-group">
-                    <label>Tipo de Evento</label>
-                    <input type="hidden" name="event_type_id" id="eventTypeId">
-                    <div class="custom-select" id="eventTypeSelect">
-                        <div class="custom-select-trigger">
-                            Selecione um tipo...
-                        </div>
+                    <label for="event_type_search_input">Tipo de Evento</label>
 
-                        <div class="custom-select-dropdown">
+                    <div class="single-search single-search--event" id="eventTypeSingleSearch">
+                        <input
+                            type="text"
+                            id="event_type_search_input"
+                            class="single-search-input single-search-input--event"
+                            placeholder="Digite para buscar o tipo do evento..."
+                            autocomplete="off"
+                        >
+
+                        <div class="single-search-dropdown single-search-dropdown--event" id="eventTypeDropdown">
                             {% for ev in travel_event_types %}
-                            <div class="custom-option"
-                                 data-id="{{ ev.id }}">
-                                <div class="option-content">
-                                    <div class="option-tags">
-                                        {% if ev.status %}
-                                            <span class="tag tag-status">
-                                                {{ ev.status.type }}
-                                            </span>
-                                        {% endif %}
-                                        {% if ev.status and ev.status.finished %}
-                                            <span class="tag tag-final">
-                                                Finalizador
-                                            </span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="option-text">
-                                        {{ ev.description }}
+                                <div
+                                    class="single-search-item event-type-item"
+                                    data-value="{{ ev.id }}"
+                                    data-label="{{ ev.description }}"
+                                    data-search="{{ ev.description|lower }} {% if ev.status %}{{ ev.status.type|lower }}{% endif %}"
+                                >
+                                    <div class="event-type-item-row">
+                                        <div class="event-type-item-title">
+                                            {{ ev.description }}
+                                        </div>
+
+                                        <div class="event-type-item-tags">
+                                            {% if ev.status %}
+                                                <span class="event-type-tag event-type-tag--status">
+                                                    {{ ev.status.type }}
+                                                </span>
+                                            {% endif %}
+
+                                            {% if ev.status and ev.status.finished %}
+                                                <span class="event-type-tag event-type-tag--final">
+                                                    Finalizador
+                                                </span>
+                                            {% endif %}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            {% empty %}
+                                <div class="single-search-empty">Nenhum tipo de evento encontrado</div>
                             {% endfor %}
                         </div>
+
+                        <input type="hidden" name="event_type_id" id="eventTypeId" required>
                     </div>
                 </div>
 
@@ -1854,41 +2205,16 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", function () {
     const modalEventosTravel = document.getElementById("modalEventosTravel");
 
-    if (modalEventosTravel) {
-        window.fecharModalEventosTravel = function () {
-            modalEventosTravel.classList.remove("show");
-        };
+    if (!modalEventosTravel) return;
 
-        modalEventosTravel.addEventListener("click", function (e) {
-            if (e.target === modalEventosTravel) {
-                fecharModalEventosTravel();
-            }
-        });
-    }
+    window.fecharModalEventosTravel = function () {
+        modalEventosTravel.classList.remove("show");
+    };
 
-    const select = document.getElementById("eventTypeSelect");
-    if (!select) return;
-
-    const trigger = select.querySelector(".custom-select-trigger");
-    const dropdown = select.querySelector(".custom-select-dropdown");
-    const hiddenInput = document.getElementById("eventTypeId");
-
-    trigger.addEventListener("click", function (e) {
-        e.stopPropagation();
-        dropdown.style.display =
-            dropdown.style.display === "block" ? "none" : "block";
-    });
-
-    select.querySelectorAll(".custom-option").forEach(option => {
-        option.addEventListener("click", function () {
-            hiddenInput.value = this.dataset.id;
-            trigger.innerHTML = this.innerHTML;
-            dropdown.style.display = "none";
-        });
-    });
-
-    document.addEventListener("click", function () {
-        dropdown.style.display = "none";
+    modalEventosTravel.addEventListener("click", function (e) {
+        if (e.target === modalEventosTravel) {
+            fecharModalEventosTravel();
+        }
     });
 });
 </script>
@@ -2162,6 +2488,91 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const savedMode = localStorage.getItem("travels_view_mode");
     if (savedMode) setViewMode(savedMode);
+});
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const wrapper = document.getElementById("eventTypeSingleSearch");
+    const input = document.getElementById("event_type_search_input");
+    const dropdown = document.getElementById("eventTypeDropdown");
+    const hiddenInput = document.getElementById("eventTypeId");
+
+    if (!wrapper || !input || !dropdown || !hiddenInput) return;
+
+    const items = Array.from(dropdown.querySelectorAll(".single-search-item"));
+
+    function openDropdown() {
+        wrapper.classList.add("is-open");
+        filterItems(input.value);
+    }
+
+    function closeDropdown() {
+        wrapper.classList.remove("is-open");
+    }
+
+    function filterItems(term) {
+        const value = (term || "").trim().toLowerCase();
+        let visible = 0;
+
+        items.forEach(item => {
+            const haystack = (item.dataset.search || "").toLowerCase();
+            const match = !value || haystack.includes(value);
+            item.style.display = match ? "" : "none";
+            if (match) visible++;
+        });
+
+        let emptyEl = dropdown.querySelector(".single-search-empty-dynamic");
+
+        if (!visible) {
+            if (!emptyEl) {
+                emptyEl = document.createElement("div");
+                emptyEl.className = "single-search-empty single-search-empty-dynamic";
+                emptyEl.textContent = "Nenhum tipo de evento encontrado";
+                dropdown.appendChild(emptyEl);
+            }
+        } else if (emptyEl) {
+            emptyEl.remove();
+        }
+    }
+
+    function selectItem(item) {
+        hiddenInput.value = item.dataset.value || "";
+        input.value = item.dataset.label || "";
+
+        items.forEach(opt => opt.classList.remove("is-selected"));
+        item.classList.add("is-selected");
+
+        closeDropdown();
+    }
+
+    input.addEventListener("focus", function () {
+        openDropdown();
+    });
+
+    input.addEventListener("click", function () {
+        openDropdown();
+    });
+
+    input.addEventListener("input", function () {
+        hiddenInput.value = "";
+        items.forEach(opt => opt.classList.remove("is-selected"));
+        openDropdown();
+        filterItems(this.value);
+    });
+
+    items.forEach(item => {
+        item.addEventListener("click", function () {
+            selectItem(this);
+        });
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!wrapper.contains(e.target)) {
+            closeDropdown();
+        }
+    });
 });
 </script>
 {% endblock %}

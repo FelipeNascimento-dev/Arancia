@@ -272,7 +272,7 @@ def consulta_os_transp(request):
         page = 1
     page = max(page, 1)
 
-    limit = 20
+    limit = 60
     offset = (page - 1) * limit
 
     qs = data.copy()
