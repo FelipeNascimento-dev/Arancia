@@ -51,8 +51,8 @@ class RequestClient:
                     data = {"detail": response.text or "Erro interno do servidor"}
                     return data
 
-                log_request_result('request_error', self.url,
-                                   self.method, data, response)
+                # log_request_result('request_error', self.url,
+                #                    self.method, data, response)
                 return data
 
             # --- Sucesso ---
@@ -61,8 +61,8 @@ class RequestClient:
             except Exception:
                 data = {"detail": response.text or "Resposta não JSON"}
 
-            log_request_result('request_success', self.url,
-                               self.method, self.request_data, response)
+            # log_request_result('request_success', self.url,
+            #                    self.method, self.request_data, response)
         return data
 
     def send_api_request_no_json(self, *, stream: bool = True):

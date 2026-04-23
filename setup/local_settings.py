@@ -13,6 +13,10 @@ else:
     STOCK_API_URL = 'http://192.168.0.214/stock/api'
     TRANSP_API_URL = 'http://192.168.0.214/api-transportes/api'
 
+
+URL_LABEL_INTELIPOST = 'https://api.intelipost.com.br/api/v1/shipment_order/get_label/'
+
+
 PROJECT_BASE_PATH = '/arancia/'
 
 STATIC_URL = '/arancia/static/'

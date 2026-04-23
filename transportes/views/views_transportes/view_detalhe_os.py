@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, permission_required
-from setup.local_settings import TRANSP_API_URL
+from setup.local_settings import TRANSP_API_URL, URL_LABEL_INTELIPOST, API_KEY_INTELIPOST
 from utils.request import RequestClient
 from django.contrib import messages
 from django.db.models import Q
@@ -1058,6 +1058,34 @@ def detalhe_os_transp(request, order_number):
                 except Exception as e:
                     messages.error(request, str(e))
                     modal_confirmacao = True
+
+        if "consultar_etiqueta" in request.POST:
+            order_number = request.POST.get("order_number")
+            vol_id = request.POST.get("vol_id")
+
+            try:
+                url_ip = f"{URL_LABEL_INTELIPOST}{order_number}/{vol_id}"
+
+                client = RequestClient(
+                    method="GET",
+                    url=url_ip,
+                    headers={
+                        'Content-Type': 'application/json',
+                        'api-key': API_KEY_INTELIPOST
+                    })
+
+                response_ip = client.send_api_request()
+
+                if "detail" in response_ip:
+                    messages.error(request, response_ip.get("detail"))
+                else:
+                    messages.success(
+                        request, "Etiquetas consultadas com sucesso!")
+                    export_url = response_ip['content']['label_url']
+                    return redirect(export_url)
+
+            except Exception as e:
+                messages.error(request, f"Erro ao consultar etiquetas: {e}")
 
     confirmation_text = request.session.get("confirm_text")
 
