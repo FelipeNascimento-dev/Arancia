@@ -147,7 +147,7 @@ def buscar_veiculos(request):
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.acesso_arancia', raise_exception=True)
-@permission_required('transportes.transportes', raise_exception=True)
+@permission_required('transportes.ver_transportes', raise_exception=True)
 def detalhe_os_transp(request, order_number):
     modal_travel_events = False
     modal_confirmacao = False

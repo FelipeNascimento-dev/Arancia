@@ -102,7 +102,7 @@ def buscar_motoristas_travels(request):
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.acesso_arancia', raise_exception=True)
-@permission_required('transportes.transportes', raise_exception=True)
+@permission_required('transportes.ver_transportes', raise_exception=True)
 def lista_viagens(request):
     titulo = "Lista de Viagens"
     chave_tela = FiltroFavoritoUsuario.TELA_LISTA_VIAGENS

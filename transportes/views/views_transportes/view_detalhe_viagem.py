@@ -13,7 +13,7 @@ UPLOAD_API_URL = f"http://192.168.0.216/RetencaoAPI/api/v3/upload/upload/Firebas
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.acesso_arancia', raise_exception=True)
-@permission_required('transportes.transportes', raise_exception=True)
+@permission_required('transportes.ver_transportes', raise_exception=True)
 def detalhe_viagem(request, id_viagem):
     titulo = f'Detalhe da Viagem {id_viagem}'
 

@@ -93,7 +93,7 @@ def montar_filtros_consulta_os(post_data):
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.acesso_arancia', raise_exception=True)
-@permission_required('transportes.transportes', raise_exception=True)
+@permission_required('transportes.ver_transportes', raise_exception=True)
 def consulta_os_transp(request):
     titulo = "Consulta OS"
     chave_tela = FiltroFavoritoUsuario.TELA_CONSULTA_OS

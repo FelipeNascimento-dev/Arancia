@@ -1261,10 +1261,11 @@
         <div class="os-card">
             <div style="display:flex;justify-content:space-between;align-items:center;">
                 <div class="timeline-title">Eventos da Viagem</div>
-
+                {% if perms.transportes.transportes %}
                 <button class="btn-primary" style="margin-bottom: 20px;" onclick="abrirModalEventoTravel()">
                     + Adicionar Evento
                 </button>
+                {% endif %}
             </div>
             <div class="timeline-scroll">
                 <div class="timeline">

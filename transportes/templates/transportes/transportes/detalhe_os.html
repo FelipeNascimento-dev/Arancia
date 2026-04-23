@@ -1471,6 +1471,7 @@
                 </div>
             </div>
 
+            {% if perms.transportes.transportes %}
             <div class="dropdown">
                 <button class="btn-primary dropdown-toggle">
                     Ações ▾
@@ -1512,6 +1513,7 @@
 
                 </div>
             </div>
+            {% endif %}
         </div>
 
         {% if payload.service_order.extra_information %}
@@ -1981,11 +1983,13 @@
             </div>
 
             <div class="tab-pane" id="viagens">
+                {% if perms.transportes.transportes %}
                 <div id="travelSelectionActions" style="display:none; margin-bottom:15px; text-align:right;">
                     <button type="button" class="btn-primary" id="btnCriarEventoSelecionadas">
                         Criar eventos para selecionadas
                     </button>
                 </div>
+                {% endif %}
                 
                 {% for travel in payload.travels %}
                 <div class="os-card travel-card">
@@ -2062,6 +2066,7 @@
                                 </div>
                             </div>
 
+                            {% if perms.transportes.transportes %}
                             <form method="post">
                             {% csrf_token %}
                                 <input type="hidden" name="travel_id" value="{{ travel.id }}">
@@ -2073,6 +2078,7 @@
                                     <i class="fa-solid fa-plus"></i> Adicionar Evento
                                 </button>
                             </form>
+                            {% endif %}
                         </div>
 
                         {% if travel.travel_events %}
@@ -2199,6 +2205,7 @@
                                 </div>
                             </div>
                         </div>
+                        {% if perms.transportes.transportes %}
                         <div class="cotacao-actions">
                             {% if quote.status.type != "REJEITADA" %}
                             <form method="post">
@@ -2233,6 +2240,7 @@
                             </form>
                             {% endif %}
                         </div>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>

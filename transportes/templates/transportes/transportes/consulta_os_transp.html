@@ -1146,10 +1146,12 @@
             </button>
         </div>
 
+        {% if perms.transportes.transportes %}
         <a class="btn-primary-toolbar" href="{% url 'transportes:criar_os_transp' %}">
             <i class="fa-solid fa-plus"></i>
             Criar nova OS
         </a>
+        {% endif %}
     </div>
 </div>
 
