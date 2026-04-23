@@ -190,15 +190,21 @@
     }
 
     .filter-input,
-    .filter-select {
+    .filter-select,
+    .autocomplete-input {
         width: 100%;
-        height: 42px;
+        min-height: 42px;
         border: 1px solid #d1d5db;
         border-radius: 10px;
         padding: 0 12px;
         font-size: .95rem;
         background: #fff;
         box-sizing: border-box;
+    }
+
+    select.filter-select[multiple] {
+        min-height: 110px;
+        padding: 8px 12px;
     }
 
     .advanced-filters {
@@ -1415,6 +1421,106 @@
         font-size: .9rem;
         text-align: center;
     }
+
+    .multi-search {
+        position: relative;
+        width: 100%;
+    }
+
+    .multi-search-box {
+        min-height: 42px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        background: #fff;
+        padding: 6px 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        cursor: text;
+    }
+
+    .multi-search-box:focus-within {
+        border-color: #0ea5b7;
+        box-shadow: 0 0 0 3px rgba(14, 165, 183, 0.10);
+    }
+
+    .multi-search-input {
+        border: none;
+        outline: none;
+        min-width: 120px;
+        flex: 1;
+        font-size: .95rem;
+        padding: 6px 2px;
+        background: transparent;
+    }
+
+    .multi-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #eef9fc;
+        border: 1px solid #bfe8ef;
+        color: #0f766e;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: .86rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .multi-chip-remove {
+        border: none;
+        background: transparent;
+        color: #0f766e;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1;
+        padding: 0;
+    }
+
+    .multi-search-dropdown {
+        display: none;
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        max-height: 240px;
+        overflow-y: auto;
+        z-index: 9999;
+        box-shadow: 0 8px 20px rgba(0,0,0,.08);
+    }
+
+    .multi-search-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: .92rem;
+    }
+
+    .multi-search-item:last-child {
+        border-bottom: none;
+    }
+
+    .multi-search-item:hover {
+        background: #f8fafc;
+    }
+
+    .multi-search-item.is-selected {
+        background: #ecfeff;
+        color: #0f766e;
+        font-weight: 700;
+    }
+
+    .multi-search-empty {
+        padding: 10px 12px;
+        color: #6b7280;
+        font-size: .9rem;
+    }
 </style>
 
 <div class="toolbar">
@@ -2250,64 +2356,88 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!clienteSelect || !tipoServicoSelect || !statusSelect) return;
 
-    function preencherTipos(clienteId, tipoSelecionado = "") {
-        tipoServicoSelect.innerHTML = '<option value="">Selecione</option>';
-        statusSelect.innerHTML = '<option value="">Selecione</option>';
+    function preencherTipos(clienteId, tiposSelecionados = []) {
+        tipoServicoSelect.innerHTML = "";
+        statusSelect.innerHTML = "";
 
         const tipos = tiposPorCliente[clienteId] || [];
+        const tiposJaAdicionados = new Set();
 
         tipos.forEach(item => {
+            const itemId = String(item.id);
+            if (tiposJaAdicionados.has(itemId)) return;
+            tiposJaAdicionados.add(itemId);
+
             const option = document.createElement("option");
-            option.value = item.id;
+            option.value = itemId;
             option.textContent = item.description && item.description !== item.type
                 ? `${item.type} - ${item.description}`
                 : item.type;
 
-            if (String(item.id) === String(tipoSelecionado)) {
+            if (tiposSelecionados.includes(itemId)) {
                 option.selected = true;
             }
 
             tipoServicoSelect.appendChild(option);
         });
+
+        tipoServicoSelect.dispatchEvent(new CustomEvent("tipo:updated"));
     }
 
-    function preencherStatus(tipoId, statusSelecionado = "") {
-        statusSelect.innerHTML = '<option value="">Selecione</option>';
+    function preencherStatus(tiposIds = [], statusesSelecionados = []) {
+        statusSelect.innerHTML = "";
 
-        const statuses = statusPorTipo[tipoId] || [];
+        const statusKeysAdicionados = new Set();
 
-        statuses.forEach(item => {
-            const option = document.createElement("option");
-            option.value = item.id;
-            option.textContent = item.description && item.description !== item.type
-                ? `${item.type} - ${item.description}`
-                : item.type;
+        tiposIds.forEach(tipoId => {
+            const statuses = statusPorTipo[String(tipoId)] || [];
 
-            if (String(item.id) === String(statusSelecionado)) {
-                option.selected = true;
-            }
+            statuses.forEach(item => {
+                const itemId = String(item.id || "").trim();
+                const itemType = String(item.type || "").trim();
+                const itemDescription = String(item.description || "").trim();
 
-            statusSelect.appendChild(option);
+                const label = itemDescription && itemDescription !== itemType
+                    ? `${itemType} - ${itemDescription}`
+                    : itemType;
+
+                const uniqueKey = `${itemId}||${label.toLowerCase()}`;
+
+                if (!itemId || statusKeysAdicionados.has(uniqueKey)) return;
+                statusKeysAdicionados.add(uniqueKey);
+
+                const option = document.createElement("option");
+                option.value = itemId;
+                option.textContent = label;
+
+                if (statusesSelecionados.includes(itemId)) {
+                    option.selected = true;
+                }
+
+                statusSelect.appendChild(option);
+            });
         });
+
+        statusSelect.dispatchEvent(new CustomEvent("status:updated"));
     }
 
     const clienteInicial = clienteSelect.value;
-    const tipoInicial = tipoServicoSelect.value;
-    const statusInicial = statusSelect.value;
+    const tiposIniciais = Array.from(tipoServicoSelect.selectedOptions).map(opt => opt.value);
+    const statusesIniciais = Array.from(statusSelect.selectedOptions).map(opt => opt.value);
 
     if (clienteInicial) {
-        preencherTipos(clienteInicial, tipoInicial);
-        if (tipoInicial) {
-            preencherStatus(tipoInicial, statusInicial);
-        }
+        preencherTipos(clienteInicial, tiposIniciais);
+        preencherStatus(tiposIniciais, statusesIniciais);
     }
 
     clienteSelect.addEventListener("change", function () {
-        preencherTipos(this.value);
+        preencherTipos(this.value, []);
+        preencherStatus([], []);
     });
 
     tipoServicoSelect.addEventListener("change", function () {
-        preencherStatus(this.value);
+        const tiposSelecionados = Array.from(this.selectedOptions).map(opt => opt.value);
+        preencherStatus(tiposSelecionados, []);
     });
 });
 </script>
@@ -2573,6 +2703,225 @@ document.addEventListener("DOMContentLoaded", function () {
             closeDropdown();
         }
     });
+});
+</script>
+
+<!-- MULTI-SELECT -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const select = document.getElementById("id_status_list");
+    if (!select) return;
+
+    const parent = select.parentNode;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "multi-search";
+
+    const box = document.createElement("div");
+    box.className = "multi-search-box";
+
+    const chips = document.createElement("div");
+    chips.className = "multi-chips-wrap";
+    chips.style.display = "contents";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "multi-search-input";
+    input.placeholder = "Digite para buscar status...";
+
+    const dropdown = document.createElement("div");
+    dropdown.className = "multi-search-dropdown";
+
+    parent.insertBefore(wrapper, select);
+    wrapper.appendChild(box);
+    box.appendChild(chips);
+    box.appendChild(input);
+    wrapper.appendChild(dropdown);
+    wrapper.appendChild(select);
+
+    select.style.display = "none";
+
+    function normalizeText(value) {
+        return String(value || "").trim().toLowerCase();
+    }
+
+    function dedupeNativeSelectOptions() {
+        const seen = new Set();
+        const selectedValues = new Set(
+            Array.from(select.options)
+                .filter(opt => opt.selected)
+                .map(opt => String(opt.value))
+        );
+
+        const uniqueOptions = [];
+
+        Array.from(select.options).forEach(opt => {
+            const value = String(opt.value);
+            const label = String(opt.textContent || "").trim();
+            const key = `${value}||${normalizeText(label)}`;
+
+            if (seen.has(key)) return;
+            seen.add(key);
+
+            uniqueOptions.push({
+                value,
+                label,
+                selected: selectedValues.has(value),
+            });
+        });
+
+        select.innerHTML = "";
+
+        uniqueOptions.forEach(item => {
+            const option = document.createElement("option");
+            option.value = item.value;
+            option.textContent = item.label;
+            option.selected = item.selected;
+            select.appendChild(option);
+        });
+    }
+
+    function getOptions() {
+        const added = new Set();
+
+        return Array.from(select.options)
+            .map(opt => ({
+                value: String(opt.value),
+                label: String(opt.textContent || "").trim(),
+                selected: opt.selected
+            }))
+            .filter(item => {
+                const key = `${item.value}||${normalizeText(item.label)}`;
+                if (added.has(key)) return false;
+                added.add(key);
+                return true;
+            });
+    }
+
+    function getSelected() {
+        return getOptions().filter(item => item.selected);
+    }
+
+    function renderChips() {
+        chips.innerHTML = "";
+
+        getSelected().forEach(item => {
+            const chip = document.createElement("span");
+            chip.className = "multi-chip";
+            chip.innerHTML = `
+                <span>${item.label}</span>
+                <button type="button" class="multi-chip-remove" data-value="${item.value}">&times;</button>
+            `;
+            chips.appendChild(chip);
+        });
+    }
+
+    function renderDropdown(search = "") {
+        const term = normalizeText(search);
+        const options = getOptions().filter(item => {
+            if (item.selected) return false;
+            if (!term) return true;
+            return normalizeText(item.label).includes(term);
+        });
+
+        dropdown.innerHTML = "";
+
+        if (!options.length) {
+            const empty = document.createElement("div");
+            empty.className = "multi-search-empty";
+            empty.textContent = "Nenhum status encontrado";
+            dropdown.appendChild(empty);
+            dropdown.style.display = "block";
+            return;
+        }
+
+        options.forEach(item => {
+            const row = document.createElement("div");
+            row.className = "multi-search-item";
+            row.textContent = item.label;
+
+            row.addEventListener("click", function () {
+                const option = Array.from(select.options).find(opt => String(opt.value) === item.value);
+                if (!option) return;
+
+                option.selected = true;
+                input.value = "";
+                dedupeNativeSelectOptions();
+                renderChips();
+                renderDropdown("");
+                select.dispatchEvent(new Event("change", { bubbles: true }));
+            });
+
+            dropdown.appendChild(row);
+        });
+
+        dropdown.style.display = "block";
+    }
+
+    function closeDropdown() {
+        dropdown.style.display = "none";
+    }
+
+    function refreshComponent() {
+        dedupeNativeSelectOptions();
+        renderChips();
+        closeDropdown();
+    }
+
+    box.addEventListener("click", function () {
+        input.focus();
+        renderDropdown(input.value);
+    });
+
+    input.addEventListener("focus", function () {
+        renderDropdown(input.value);
+    });
+
+    input.addEventListener("input", function () {
+        renderDropdown(this.value);
+    });
+
+    input.addEventListener("keydown", function (e) {
+        if (e.key === "Backspace" && !input.value.trim()) {
+            const selected = getSelected();
+            const last = selected[selected.length - 1];
+            if (!last) return;
+
+            const option = Array.from(select.options).find(opt => String(opt.value) === last.value);
+            if (!option) return;
+
+            option.selected = false;
+            dedupeNativeSelectOptions();
+            renderChips();
+            renderDropdown(input.value);
+            select.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+    });
+
+    chips.addEventListener("click", function (e) {
+        const btn = e.target.closest(".multi-chip-remove");
+        if (!btn) return;
+
+        const value = btn.getAttribute("data-value");
+        const option = Array.from(select.options).find(opt => String(opt.value) === String(value));
+        if (!option) return;
+
+        option.selected = false;
+        dedupeNativeSelectOptions();
+        renderChips();
+        renderDropdown(input.value);
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+
+    select.addEventListener("status:updated", refreshComponent);
+
+    document.addEventListener("click", function (e) {
+        if (!wrapper.contains(e.target)) {
+            closeDropdown();
+        }
+    });
+
+    refreshComponent();
 });
 </script>
 {% endblock %}
