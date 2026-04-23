@@ -52,7 +52,7 @@ def buscar_locais(request):
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.acesso_arancia', raise_exception=True)
-@permission_required('transportes.transportes', raise_exception=True)
+@permission_required('transportes.ver_transportes', raise_exception=True)
 def criar_os_transp(request):
     titulo = "Criação de OS"
 

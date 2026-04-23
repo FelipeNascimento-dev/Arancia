@@ -1705,6 +1705,7 @@
                 {% for item in travels %}
                 <div class="card" data-card-id="{{ item.travel.id }}">
                     <div class="card-header">
+                        {% if perms.transportes.transportes %}
                         <div class="card-select-wrap">
                             <input type="checkbox" class="card-select-checkbox" 
                                 id="travel_card_{{ item.travel.id }}" 
@@ -1712,6 +1713,7 @@
                                 value="{{ item.travel.id }}">
                             <label class="card-select-label" for="travel_card_{{ item.travel.id }}"></label>
                         </div>
+                        {% endif %}
 
                         <a class="card-title" href="{% url 'transportes:detalhe_viagem' item.travel.id %}" target="_blank">
                             {{ item.travel.id }}

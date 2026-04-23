@@ -63,6 +63,7 @@ class PersonalPermissions(models.Model):
             ("CC_admin", "Mostrar menu administrativo"),
             ("CC_gerencial", "Controle de campo gerencial"),
             ("controle_chamados", "Controle de Chamados"),
+            ("ver_transportes", "Pode ver telas de transportes"),
             ("transportes", "Permissão total para transporte"),
         ]
 
