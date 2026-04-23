@@ -33,13 +33,27 @@ def formatar_data(data_str, com_hora=True):
         return data_str
 
 
+HARDCODE_PENDING_STATUS = {
+    "id": "PENDING",
+    "type": "PENDING",
+    "description": "PENDING",
+}
+
+
 def montar_filtros_lista_viagens(post_data, filtro_campos):
     filtros = {}
 
+    campos_multiplos = {"tipo_servico", "status_list"}
+
     for campo in filtro_campos:
-        valor = post_data.get(campo, "")
-        if isinstance(valor, str):
-            valor = valor.strip()
+        if campo in campos_multiplos:
+            valor = post_data.getlist(campo)
+            valor = [v.strip() for v in valor if str(v).strip()]
+        else:
+            valor = post_data.get(campo, "")
+            if isinstance(valor, str):
+                valor = valor.strip()
+
         filtros[campo] = valor
 
     return filtros
@@ -148,7 +162,8 @@ def lista_viagens(request):
 
         for ot in order_types:
             tipo_id = str(ot.get("id"))
-            status_por_tipo[tipo_id] = [
+
+            statuses_raw = [
                 {
                     "id": str(st.get("id")),
                     "type": st.get("type", ""),
@@ -156,6 +171,17 @@ def lista_viagens(request):
                 }
                 for st in (ot.get("status", []) or [])
             ]
+
+            pending_existe = any(
+                str(item.get("type", "")).strip().upper() == "PENDING"
+                or str(item.get("id", "")).strip().upper() == "PENDING"
+                for item in statuses_raw
+            )
+
+            if not pending_existe:
+                statuses_raw.insert(0, HARDCODE_PENDING_STATUS.copy())
+
+            status_por_tipo[tipo_id] = statuses_raw
 
     url_transportadora = f"{TRANSP_API_URL}/Carriers/list"
     client = RequestClient(
@@ -220,19 +246,74 @@ def lista_viagens(request):
             filtros = obter_filtros_tela(request.user, chave_tela) or {}
             filtros["Response"] = filtros.get("Response") or "resume"
 
+    usuario_eh_arancia_pa = request.user.groups.filter(
+        name="arancia_PA").exists()
+
+    user_designation = None
+    user_designation_id = ""
+    user_designation_nome = ""
+    usuario_eh_arancia_pa = request.user.groups.filter(
+        name="arancia_PA").exists()
+
+    if usuario_eh_arancia_pa:
+        user_designation = getattr(
+            getattr(request.user, "designacao", None), "informacao_adicional", None)
+
+        if user_designation is not None:
+            user_designation_id = str(
+                getattr(user_designation, "id", "") or "").strip()
+            user_designation_nome = str(
+                getattr(user_designation, "nome", "") or "").strip()
+
+        pa_filtro = str(filtros.get("pa_selecionada", "") or "").strip()
+
+        if user_designation_id:
+            if pa_filtro and pa_filtro != user_designation_id:
+                messages.error(
+                    request,
+                    "Você só pode consultar viagens da sua própria PA."
+                )
+                return redirect("transportes:lista_viagens")
+
+            filtros["pa_selecionada"] = user_designation_id
+
+    initial_data = {}
+    for campo in filtro_campos:
+        if campo in {"tipo_servico", "status_list"}:
+            valor = filtros.get(campo, [])
+            if isinstance(valor, str):
+                valor = [valor] if valor else []
+            initial_data[campo] = valor
+        else:
+            initial_data[campo] = filtros.get(campo, "")
+
     form = ListaViagensForm(
-        initial={campo: filtros.get(campo, "") for campo in filtro_campos},
+        initial=initial_data,
         nome_form=titulo,
         clientes=resp,
         transportadoras=resp_transportadora,
         user=request.user,
     )
 
+    if usuario_eh_arancia_pa:
+        if user_designation_id and "pa_selecionada" in form.fields:
+            form.fields["pa_selecionada"].choices = [
+                (user_designation_id, user_designation_nome or user_designation_id)
+            ]
+            form.fields["pa_selecionada"].initial = user_designation_id
+            form.fields["pa_selecionada"].widget.attrs["readonly"] = True
+            form.fields["pa_selecionada"].widget.attrs["onclick"] = "return false;"
+            form.fields["pa_selecionada"].widget.attrs["onmousedown"] = "return false;"
+
     cliente_selecionado = str(filtros.get("cliente", "")).strip()
-    tipo_servico_selecionado = str(filtros.get("tipo_servico", "")).strip()
+
+    tipos_servico_selecionados = filtros.get("tipo_servico", [])
+    if isinstance(tipos_servico_selecionados, str):
+        tipos_servico_selecionados = [
+            tipos_servico_selecionados] if tipos_servico_selecionados else []
 
     if "tipo_servico" in form.fields:
-        tipos_choices = [("", "Selecione")]
+        tipos_choices = []
         for item in tipos_por_cliente.get(cliente_selecionado, []):
             label = item["type"]
             if item["description"] and item["description"] != item["type"]:
@@ -241,12 +322,22 @@ def lista_viagens(request):
         form.fields["tipo_servico"].choices = tipos_choices
 
     if "status_list" in form.fields:
-        status_choices = [("", "Selecione")]
-        for item in status_por_tipo.get(tipo_servico_selecionado, []):
-            label = item["type"]
-            if item["description"] and item["description"] != item["type"]:
-                label = f'{item["type"]} - {item["description"]}'
-            status_choices.append((item["id"], label))
+        status_choices = []
+        status_ids_adicionados = set()
+
+        for tipo_id in tipos_servico_selecionados:
+            for item in status_por_tipo.get(str(tipo_id), []):
+                if item["id"] in status_ids_adicionados:
+                    continue
+
+                status_ids_adicionados.add(item["id"])
+
+                label = item["type"]
+                if item["description"] and item["description"] != item["type"]:
+                    label = f'{item["type"]} - {item["description"]}'
+
+                status_choices.append((item["id"], label))
+
         form.fields["status_list"].choices = status_choices
 
     tipos_map = {}
@@ -262,13 +353,24 @@ def lista_viagens(request):
             tipos_map[tipo_id] = tipo_label
             tipo_api_map[tipo_id] = ot.get("type", "")
 
-            for st in ot.get("status", []) or []:
+            statuses_do_tipo = list(ot.get("status", []) or [])
+
+            pending_existe = any(
+                str(st.get("type", "")).strip().upper() == "PENDING"
+                or str(st.get("id", "")).strip().upper() == "PENDING"
+                for st in statuses_do_tipo
+            )
+
+            if not pending_existe:
+                statuses_do_tipo.insert(0, HARDCODE_PENDING_STATUS.copy())
+
+            for st in statuses_do_tipo:
                 status_id = str(st.get("id"))
                 status_label = st.get("type") or st.get(
                     "description") or status_id
 
                 status_map[status_id] = status_label
-                status_api_map[status_id] = st.get("type", "")
+                status_api_map[status_id] = st.get("type", "") or status_id
 
     filtros_ativos = sum(
         1 for campo in filtro_campos
@@ -296,21 +398,37 @@ def lista_viagens(request):
 
                 if campo == "pa_selecionada":
                     params["designation_id"] = valor
+
                 elif campo == "tipo_servico":
-                    params["order_type"] = tipo_api_map.get(
-                        str(valor), valor)
+                    tipos_api = []
+                    for item in valor:
+                        mapped = tipo_api_map.get(str(item), item)
+                        if mapped and mapped not in tipos_api:
+                            tipos_api.append(mapped)
+
+                    if tipos_api:
+                        params["order_type"] = ",".join(tipos_api)
+
                 elif campo == "status_list":
-                    params["status_list"] = status_api_map.get(
-                        str(valor), valor)
+                    status_api = []
+                    for item in valor:
+                        mapped = status_api_map.get(str(item), item)
+                        if mapped and mapped not in status_api:
+                            status_api.append(mapped)
+
+                    if status_api:
+                        params["status"] = ",".join(status_api)
+
                 elif campo == "atrasado":
                     params["atrasado"] = str(valor).lower()
+
                 else:
                     params[campo] = valor
 
             if "Response" not in params:
                 params["Response"] = "resume"
 
-            url_travel = f"{TRANSP_API_URL}/v2/order_travel/list/general?{urlencode(params)}"
+            url_travel = f"{TRANSP_API_URL}/v2/order_travel/list/general?{urlencode(params, safe=',')}"
 
             client = RequestClient(
                 method="get",
@@ -413,9 +531,20 @@ def lista_viagens(request):
         elif campo == "transportadora":
             valor_exibicao = transportadoras_map.get(str(valor), valor)
         elif campo == "tipo_servico":
-            valor_exibicao = tipos_map.get(str(valor), valor)
+            if isinstance(valor, list):
+                valor_exibicao = ", ".join(
+                    tipos_map.get(str(v), str(v)) for v in valor
+                )
+            else:
+                valor_exibicao = tipos_map.get(str(valor), valor)
+
         elif campo == "status_list":
-            valor_exibicao = status_map.get(str(valor), valor)
+            if isinstance(valor, list):
+                valor_exibicao = ", ".join(
+                    status_map.get(str(v), str(v)) for v in valor
+                )
+            else:
+                valor_exibicao = status_map.get(str(valor), valor)
         elif campo in ["sem_motorista", "atrasado"]:
             valor_exibicao = "Sim" if str(valor).lower() in [
                 "true", "1", "on"] else "Não"
@@ -452,8 +581,14 @@ def lista_viagens(request):
 
             tipo_servico = filtros.get("tipo_servico")
             if tipo_servico not in [None, "", [], ()]:
-                extract_params["tipo_servico"] = tipo_api_map.get(
-                    str(tipo_servico), tipo_servico)
+                tipos_api = []
+                for item in tipo_servico:
+                    mapped = tipo_api_map.get(str(item), item)
+                    if mapped and mapped not in tipos_api:
+                        tipos_api.append(mapped)
+
+                if tipos_api:
+                    extract_params["tipo_servico"] = ",".join(tipos_api)
 
             driver_id = filtros.get("driver_id")
             if driver_id not in [None, "", [], ()]:
@@ -469,8 +604,14 @@ def lista_viagens(request):
 
             status_list = filtros.get("status_list")
             if status_list not in [None, "", [], ()]:
-                extract_params["status_list"] = status_api_map.get(
-                    str(status_list), status_list)
+                status_api = []
+                for item in status_list:
+                    mapped = status_api_map.get(str(item), item)
+                    if mapped and mapped not in status_api:
+                        status_api.append(mapped)
+
+                if status_api:
+                    extract_params["status_list"] = ",".join(status_api)
 
             cep_origin = filtros.get("cep_origin")
             if cep_origin not in [None, "", [], ()]:

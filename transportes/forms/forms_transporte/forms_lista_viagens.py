@@ -37,10 +37,14 @@ class ListaViagensForm(forms.Form):
         required=False
     )
 
-    tipo_servico = forms.ChoiceField(
+    tipo_servico = forms.MultipleChoiceField(
         label="Tipo de Serviço",
-        choices=[("", "Selecione")],
-        required=False
+        required=False,
+        choices=[],
+        widget=forms.SelectMultiple(attrs={
+            "class": "filter-select",
+            "id": "id_tipo_servico",
+        }),
     )
 
     driver_nome = forms.CharField(
@@ -61,10 +65,13 @@ class ListaViagensForm(forms.Form):
         choices=BOOL_CHOICES
     )
 
-    status_list = forms.ChoiceField(
-        label="Lista de Status",
-        choices=[("", "Selecione")],
-        required=False
+    status_list = forms.MultipleChoiceField(
+        required=False,
+        label="Status",
+        widget=forms.SelectMultiple(attrs={
+            "class": "filter-select",
+            "id": "id_status_list",
+        }),
     )
 
     cep_origin = forms.CharField(
