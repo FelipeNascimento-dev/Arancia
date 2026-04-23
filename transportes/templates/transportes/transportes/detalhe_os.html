@@ -1869,6 +1869,7 @@
                                 {% if perms.logistica.gestao_total %}
                                     <th>Ações</th>
                                 {% endif %}
+                                <th>Etiqueta</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1956,6 +1957,22 @@
                                         </form>
                                     </td>
                                 {% endif %}
+                                <td>
+                                    <form action="" method="post" target="_blank">
+                                        {% csrf_token %}
+                                        <input type="hidden"
+                                            name="order_number"
+                                            value="{{ payload.service_order.external_order_number|default:payload.service_order.order_number }}">
+
+                                        <input type="hidden"
+                                            name="vol_id"
+                                            value="{{ item.serial_number }}">
+
+                                        <button type="submit" class="btn-subitens" name="consultar_etiqueta" value="1">
+                                            <i class="fa-solid fa-tag" style="color:#2563eb;"></i>
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
