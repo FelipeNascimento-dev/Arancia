@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
+from datetime import timedelta
+from django.conf import settings
+from django.utils import timezone
 
 
 def user_avatar_path(instance, filename):
@@ -156,3 +159,62 @@ class PermissaoUsuarioDummy(models.Model):
 
     def __str__(self):
         return "Permissões personalizadas"
+
+
+# SENHAS
+class UserPasswordControl(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="password_control"
+    )
+    password_changed_at = models.DateTimeField(default=timezone.now)
+    force_change_password = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Controle de senha"
+        verbose_name_plural = "Controles de senha"
+
+    def expire_at(self):
+        expiration_days = getattr(settings, "PASSWORD_EXPIRATION_DAYS", 30)
+        return self.password_changed_at + timedelta(days=expiration_days)
+
+    def days_to_expire(self):
+        remaining = self.expire_at().date() - timezone.localdate()
+        return max(0, remaining.days)
+
+    def is_password_expired(self):
+        return self.force_change_password or timezone.now() >= self.expire_at()
+
+    def should_warn(self):
+        warning_days = getattr(settings, "PASSWORD_WARNING_DAYS", 7)
+        return not self.is_password_expired() and self.days_to_expire() <= warning_days
+
+    def mark_password_changed(self):
+        self.password_changed_at = timezone.now()
+        self.force_change_password = False
+        self.save(update_fields=[
+                  "password_changed_at", "force_change_password"])
+
+
+class PasswordResetAccessCode(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="reset_access_codes"
+    )
+    code_hash = models.CharField(max_length=255)
+    used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name = "Código único de acesso"
+        verbose_name_plural = "Códigos únicos de acesso"
+
+    def is_expired(self):
+        minutes = getattr(
+            settings, "PASSWORD_RESET_CODE_EXPIRATION_MINUTES", 15)
+        return timezone.now() > self.created_at + timedelta(minutes=minutes)
+
+    def is_valid(self):
+        return not self.used and not self.is_expired()

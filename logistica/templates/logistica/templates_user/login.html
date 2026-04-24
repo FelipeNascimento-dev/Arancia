@@ -39,7 +39,42 @@
         <form method="post" class="login-box">
             {% csrf_token %}
             <img class="logo-tela-login" src="{% static 'global/images/logo_flow.png' %}" alt="logo arancia">
+
+            {% if modo == "forgot" %}
+
+            <h2>Recuperar acesso</h2>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <p class="login-helper">
+                Informe seu usuário ou e-mail cadastrado. Enviaremos um código único para acesso.
+            </p>
+
+            <div class="form-login">
+                <i class="fa-regular fa-envelope"></i>
+                <input type="text" name="email" id="id_email" placeholder=" " required>
+                <label for="id_email">Usuário ou e-mail</label>
+            </div>
+
+            <button type="submit" class="login-button">Enviar código</button>
+
+            <p class="link-forgot">
+                <a class="link-forgot" href="{% url 'logistica:login' %}">Voltar para o login</a>
+            </p>
+
+            {% else %}
+
             <h2>Login</h2>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
 
             {% if request.COOKIES.mensagem_bloqueio %}
             <div class="alert">{{ request.COOKIES.mensagem_bloqueio }}</div>
@@ -69,17 +104,15 @@
                 {% endif %}
             </div>
 
-            <!-- <div class="top-register-button">
-                <span>Novo por aqui?</span>
-                <a href="{% url 'logistica:register' %}" class="btn-create-account">
-                    <i class="fa fa-user-plus"></i> Criar Conta
-                </a>
-            </div> -->
-
             <button type="submit" class="login-button">Entrar</button>
-            <!-- <p class="link-forgot">
-                <a href="#">Esqueceu sua senha?</a>
-            </p> -->
+
+            <p class="link-forgot">
+                <a class="link-forgot" href="{% url 'logistica:esqueci_minha_senha' %}">
+                    Esqueceu sua senha?
+                </a>
+            </p>
+
+            {% endif %}
         </form>
     </div>
 </body>

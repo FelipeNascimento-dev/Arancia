@@ -39,6 +39,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'setup.middleware.auto_logout.AutoLogoutMiddleware',
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+
+    "setup.middleware.password_expiration.PasswordExpirationMiddleware",
 ]
 
 ROOT_URLCONF = 'setup.urls'
@@ -149,3 +153,15 @@ except ImportError:
 
 def db_host_context(request):
     return {'DB_HOST': getattr(local_settings, 'DB_HOST', None)}
+
+
+# RESET DE SENHAS / ENVIO POR EMAIL
+
+EMAIL_SMTP_HOST = "smtp.c-trends.com.br"
+EMAIL_SMTP_PORT = 465
+EMAIL_USER = "system@c-trends.com.br"
+EMAIL_PASS = "@System#CTB2026"
+
+PASSWORD_EXPIRATION_DAYS = 30
+PASSWORD_WARNING_DAYS = 7
+PASSWORD_RESET_CODE_EXPIRATION_MINUTES = 15

@@ -6,8 +6,28 @@
 <div class="profile-modal">
   <div class="profile-header">
     <h2>Meu Perfil</h2>
-    <a class="btn-link" href="#" onclick="history.back();return false;">✕</a>
+    {% if not troca_senha_obrigatoria %}
+      <a class="btn-link" href="#" onclick="history.back();return false;">✕</a>
+    {% endif %}
   </div>
+
+  {% if troca_senha_obrigatoria %}
+  <div class="password-warning">
+    <h3>🔐 Alteração obrigatória de senha</h3>
+    <p>
+      Sua senha venceu ou você acessou usando um código único.
+      Para continuar utilizando o sistema, cadastre uma nova senha.
+    </p>
+  </div>
+  {% elif dias_restantes_senha <= 7 %}
+  <div class="password-warning">
+    <h3>🔐 Atenção à validade da senha</h3>
+    <p>
+      Sua senha vence em <strong>{{ dias_restantes_senha }}</strong> dia(s).
+      Recomendamos alterar sua senha antes do vencimento.
+    </p>
+  </div>
+  {% endif %}
 
   <div class="profile-tabs">
     <a class="profile-tab active" href="javascript:void(0)">Dados do Usuário</a>
@@ -48,28 +68,41 @@
             {{ form.last_name }} {{ form.last_name.errors }}
           </div>
 
+          {% if not permitir_sem_senha_atual %}
           <div class="form-group" id="grpSenhaAtual">
             <label for="{{ form.senha_atual.id_for_label }}" class="label">
               {{ form.senha_atual.label }}
             </label>
+
             <div class="input-with-eye">
               {{ form.senha_atual }}
               <button type="button" class="eye-btn" data-eye="senha_atual" aria-label="Mostrar/ocultar senha">
                 <i class="fa-solid fa-eye"></i>
               </button>
             </div>
-            <small class="helper">Para trocar sua senha, clique em “Alterar senha”.</small>
+
+            <small class="helper">Informe sua senha atual para trocar a senha.</small>
           </div>
+          {% endif %}
 
 
+          {% if not troca_senha_obrigatoria %}
           <label for="{{ form.senha_atual.id_for_label }}" class="label">
             <a href="#" id="btnToggleSenha" class="btn btn-outline btn-outline-input" aria-expanded="false">
               <i class="fa-solid fa-key" aria-hidden="true"></i>
               <span>Alterar senha</span>
             </a>
           </label>
+          {% else %}
+          <label class="label">
+            <span class="btn btn-outline btn-outline-input">
+              <i class="fa-solid fa-key" aria-hidden="true"></i>
+              <span>Troca de senha obrigatória</span>
+            </span>
+          </label>
+          {% endif %}
 
-          <div class="form-group hidden" id="grpNovaSenha1">
+          <div class="form-group {% if not troca_senha_obrigatoria %}hidden{% endif %}" id="grpNovaSenha1">
             <label for="{{ form.nova_senha1.id_for_label }}" class="label">
               {{ form.nova_senha1.label }}
             </label>
@@ -81,7 +114,7 @@
             </div>
           </div>
 
-          <div class="form-group hidden" id="grpNovaSenha2">
+          <div class="form-group {% if not troca_senha_obrigatoria %}hidden{% endif %}" id="grpNovaSenha2">
             <label for="{{ form.nova_senha2.id_for_label }}" class="label">
               {{ form.nova_senha2.label }}
             </label>
@@ -121,13 +154,16 @@
     const grp1 = document.getElementById('grpNovaSenha1');
     const grp2 = document.getElementById('grpNovaSenha2');
 
-    let aberto = false;
+    let aberto = {{ troca_senha_obrigatoria|yesno:"true,false" }};
     btnToggle?.addEventListener('click', (e) => {
       e.preventDefault();
       aberto = !aberto;
       grp1.classList.toggle('hidden', !aberto);
       grp2.classList.toggle('hidden', !aberto);
-      btnToggle.textContent = aberto ? 'Cancelar' : 'Alterar senha';
+      const span = btnToggle.querySelector('span');
+      if (span) {
+        span.textContent = aberto ? 'Cancelar' : 'Alterar senha';
+      }
 
       if (!aberto) {
         const i1 = document.getElementById('id_nova_senha1');

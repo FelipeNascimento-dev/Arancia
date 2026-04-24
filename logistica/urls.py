@@ -5,6 +5,7 @@ from django.contrib.auth.views import LogoutView
 from django.urls import path
 from .viewsV2 import *
 from .views import *
+from logistica.forms import LoginComCodigoForm
 
 app_name = 'logistica'
 
@@ -13,7 +14,8 @@ urls_User = [
     path('senhas-privilegiadas/', senhas_privilegiadas,
          name='senhas_privilegiadas'),
     path('toggle-db/', toggle_db, name='toggle_db'),
-    path('login/', UserLoginView.as_view(), name='login'),
+    path('login/', UserLoginView.as_view(authentication_form=LoginComCodigoForm), name='login'),
+    path("esqueci-minha-senha/", esqueci_minha_senha, name="esqueci_minha_senha"),
     path('register/', registrar_usuario, name='register'),
     path('logout/', logout_confirm_view, name='logout_confirm'),
     path('logout/confirm/', logout_view, name='logout'),

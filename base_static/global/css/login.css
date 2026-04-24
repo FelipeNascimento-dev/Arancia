@@ -162,9 +162,13 @@ body {
     margin-top: 4px;
 }
 
+.login-helper{
+    margin-bottom: 35px;
+}
+
 .alert {
-    background-color: #f8d7da;
-    color: #721c24;
+    background-color: #d7dcf8;
+    color: #2c3e50;
     padding: 10px;
     border-radius: 4px;
     margin-bottom: 15px;
@@ -184,6 +188,7 @@ body {
     margin-top: 10px;
     font-size: 0.97rem;
     color: #2c3e50;
+    text-decoration: none;
 }
 
 .top-register-button {
