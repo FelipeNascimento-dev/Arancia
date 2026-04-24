@@ -33,3 +33,4 @@ from .forms_checkin_checkout.forms_checkout_reverse_create import CheckoutRevers
 from .forms_fluxo_entrega.forms_recebimento_insucesso import RecebimentoInsucessoForm
 from .forms_reverse.forms_lista_romaneios import ListaRomaneiosForm
 from .forms_reverse.froms_consulta_cotacao import ConsultaQuoteForm
+from .forms_user.user_password_forms import LoginComCodigoForm, UserProfilePasswordForm

@@ -8,7 +8,7 @@ class ConfiguracaoUserForm(forms.ModelForm):
         label="Username", max_length=30, required=False, disabled=True
     )
     email = forms.EmailField(
-        label="E-mail", required=False, disabled=True  # ✅ corrigido aqui
+        label="E-mail", required=False, disabled=True
     )
     first_name = forms.CharField(
         label="Primeiro nome", max_length=30, required=False, disabled=True
@@ -51,43 +51,44 @@ class ConfiguracaoUserForm(forms.ModelForm):
         return email
 
     def clean(self):
-        cleaned = super().clean()
-        senha_atual = cleaned.get("senha_atual") or ""
-        nova1 = cleaned.get("nova_senha1") or ""
-        nova2 = cleaned.get("nova_senha2") or ""
+        cleaned_data = super().clean()
 
-        if not any([senha_atual, nova1, nova2]):
-            return cleaned
+        senha_atual = cleaned_data.get("senha_atual")
+        nova_senha1 = cleaned_data.get("nova_senha1")
+        nova_senha2 = cleaned_data.get("nova_senha2")
 
-        if not senha_atual:
-            self.add_error("senha_atual", "Informe a senha atual.")
-        if not nova1:
-            self.add_error("nova_senha1", "Informe a nova senha.")
-        if not nova2:
-            self.add_error("nova_senha2", "Confirme a nova senha.")
-        if self.errors:
-            return cleaned
+        quer_alterar_senha = bool(nova_senha1 or nova_senha2 or senha_atual)
 
-        if not self.instance.check_password(senha_atual):
-            self.add_error("senha_atual", "Senha atual incorreta.")
-            return cleaned
+        if self.password_required:
+            quer_alterar_senha = True
 
-        if nova1 != nova2:
-            self.add_error(
-                "nova_senha2", "A confirmação não coincide com a nova senha.")
-            return cleaned
+        if quer_alterar_senha:
+            if not self.allow_without_current_password:
+                if not senha_atual:
+                    self.add_error("senha_atual", "Informe a senha atual.")
+                elif self.user and not self.user.check_password(senha_atual):
+                    self.add_error("senha_atual", "Senha atual inválida.")
 
-        if senha_atual == nova1:
-            self.add_error(
-                "nova_senha1", "A nova senha não pode ser igual à atual.")
-            return cleaned
+            if not nova_senha1:
+                self.add_error("nova_senha1", "Informe a nova senha.")
 
-        try:
-            validate_password(nova1, self.instance)
-        except forms.ValidationError as e:
-            self.add_error("nova_senha1", e.messages)
+            if not nova_senha2:
+                self.add_error("nova_senha2", "Confirme a nova senha.")
 
-        return cleaned
+            if nova_senha1 and nova_senha2 and nova_senha1 != nova_senha2:
+                self.add_error("nova_senha2", "As senhas não conferem.")
+
+            if nova_senha1:
+                from django.contrib.auth import password_validation
+                from django.core.exceptions import ValidationError
+
+                try:
+                    password_validation.validate_password(
+                        nova_senha1, self.user)
+                except ValidationError as e:
+                    self.add_error("nova_senha1", e)
+
+        return cleaned_data
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -103,5 +104,15 @@ class ConfiguracaoUserForm(forms.ModelForm):
             user.save()
         return user
 
-    def password_changed(self) -> bool:
-        return getattr(self, "_password_changed", False)
+    def password_changed(self):
+        return bool(self.cleaned_data.get("nova_senha1"))
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        self.password_required = kwargs.pop("password_required", False)
+        self.allow_without_current_password = kwargs.pop(
+            "allow_without_current_password",
+            False
+        )
+
+        super().__init__(*args, **kwargs)
