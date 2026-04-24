@@ -1,5 +1,6 @@
 from pathlib import Path
 from setup import local_settings
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'logistica',
+    "logistica.apps.LogisticaConfig",
     'transportes', 'backoffice',
     'mural',
 ]
@@ -137,11 +138,12 @@ LOGOUT_REDIRECT_URL = '/login/'
 CELERY_BROKER_URL = 'redis://localhost:6379/0'  # ou RabbitMQ, se preferir
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
+
 # Configuração de agendamento
 CELERY_BEAT_SCHEDULE = {
-    'desativar_usuarios_inativos_diariamente': {
-        'task': 'usuarios.tasks.deactivate_inactive_users',
-        'schedule': 86400.0,  # a cada 24h (em segundos)
+    "desativar-usuarios-inativos-todos-os-dias": {
+        "task": "logistica.tasks.deactivate_inactive_users",
+        "schedule": crontab(hour=3, minute=0),
     },
 }
 
