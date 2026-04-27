@@ -1729,6 +1729,7 @@
                         <p><strong>OS Externa:</strong><br>{{ item.service_order.external_order_number|default:"-" }}</p>
                         <p><strong>Cliente:</strong><br>{{ item.service_order.client.nome }}</p>
                         <p><strong>Transportadora:</strong><br>{{ item.travel.carrier.nome }}</p>
+                        <p><strong>Motorista:</strong><br>{{item.travel.driver.name|default:"-"}}</p>
                         <p><strong>Origem:</strong><br>CEP: {{ item.service_order.origin.CEP }}<br><small>{{ item.service_order.origin.endereco }}</small></p>
                         <p><strong>Destino:</strong><br>CEP: {{ item.service_order.destination.CEP }}<br><small>{{ item.service_order.destination.endereco }}</small></p>
                         <p><strong>Início:</strong><br>{{ item.travel.start_date_formatada|default:"-" }}</p>
