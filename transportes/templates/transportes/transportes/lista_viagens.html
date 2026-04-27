@@ -1835,11 +1835,29 @@
 
                 <div class="pagination-pages">
                     {% for num in travels.paginator.page_range %}
-                        {% if num == travels.number %}
-                            <span class="pagination-btn pagination-btn--active">{{ num }}</span>
-                        {% else %}
-                            <a class="pagination-btn" href="?page={{ num }}">{{ num }}</a>
+
+                        {% if num == 1 or num == travels.paginator.num_pages %}
+
+                            {% if num == travels.number %}
+                                <span class="pagination-btn pagination-btn--active">{{ num }}</span>
+                            {% else %}
+                                <a class="pagination-btn" href="?page={{ num }}">{{ num }}</a>
+                            {% endif %}
+
+                        {% elif num >= travels.number|add:"-2" and num <= travels.number|add:"2" %}
+
+                            {% if num == travels.number %}
+                                <span class="pagination-btn pagination-btn--active">{{ num }}</span>
+                            {% else %}
+                                <a class="pagination-btn" href="?page={{ num }}">{{ num }}</a>
+                            {% endif %}
+
+                        {% elif num == travels.number|add:"-3" or num == travels.number|add:"3" %}
+
+                            <span class="pagination-btn pagination-btn--disabled">...</span>
+
                         {% endif %}
+
                     {% endfor %}
                 </div>
 
@@ -2011,7 +2029,8 @@ document.addEventListener("DOMContentLoaded", function () {
             <form method="post" id="driverAssignForm">
                 {% csrf_token %}
 
-                <div id="driverSelectedTravelsBox" style="margin-bottom:15px; padding:10px 12px; border-radius:8px; background:#f4f6f9; font-size:14px; display:none;">
+                <div id="driverSelectedTravelsBox"
+                     style="margin-bottom:15px; padding:10px 12px; border-radius:8px; background:#f4f6f9; font-size:14px; display:none;">
                     Motorista será vinculado para as viagens:
                     <b id="driverSelectedTravelsText"></b>
                 </div>
@@ -2019,17 +2038,37 @@ document.addEventListener("DOMContentLoaded", function () {
                 <div id="driverSelectedTravelsInputs"></div>
 
                 <div class="form-grid">
-                    <div class="form-group" style="grid-column: 1 / -1; position: relative;">
+                    <div class="form-group">
+                        <label>Transportadora</label>
+                        <select name="carrier_id" id="modal_carrier_id" required>
+                            <option value="">Selecione uma transportadora...</option>
+                            {% for carrier in carriers %}
+                                <option value="{{ carrier.id }}">{{ carrier.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="position: relative;">
                         <label for="modal_driver_nome">Motorista</label>
-                        <input type="text" name="motorista_nome" id="modal_driver_nome" placeholder="Digite o nome do motorista...">
+                        <input type="text"
+                               name="motorista_nome"
+                               id="modal_driver_nome"
+                               placeholder="Selecione a transportadora primeiro..."
+                               autocomplete="off"
+                               disabled>
+
                         <input type="hidden" name="motorista_id" id="modal_driver_id">
+
                         <div id="modalDriverResults" class="driver-results"></div>
                     </div>
                 </div>
 
                 <div class="form-group" style="margin-top:15px;">
                     <label for="modal_driver_observacao">Observação (opcional)</label>
-                    <textarea name="motorista_observacao" id="modal_driver_observacao" rows="3" placeholder="Observações adicionais..."></textarea>
+                    <textarea name="motorista_observacao"
+                              id="modal_driver_observacao"
+                              rows="3"
+                              placeholder="Observações adicionais..."></textarea>
                 </div>
 
                 <div style="margin-top:20px; text-align:right;">
@@ -2116,25 +2155,134 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("driverAssignModal");
+    const openBtn = document.getElementById("openDriverModalBtn");
+    const closeBtn = document.getElementById("closeDriverAssignModal");
+
+    const selectedInputsBox = document.getElementById("driverSelectedTravelsInputs");
+    const selectedText = document.getElementById("driverSelectedTravelsText");
+    const selectedBox = document.getElementById("driverSelectedTravelsBox");
+
+    const carrierSelect = document.getElementById("modal_carrier_id");
     const input = document.getElementById("modal_driver_nome");
     const resultsBox = document.getElementById("modalDriverResults");
     const hiddenId = document.getElementById("modal_driver_id");
-    const carrierSelect = document.getElementById("id_transportadora");
 
-    if (!input || !resultsBox || !hiddenId) return;
+    if (!modal || !openBtn || !closeBtn || !selectedInputsBox || !selectedText || !selectedBox) return;
+
+    function getSelectedTravelIds() {
+        const checked = document.querySelectorAll(".card-select-checkbox:checked");
+        const ids = [];
+
+        checked.forEach((checkbox) => {
+            if (checkbox.value && !ids.includes(checkbox.value)) {
+                ids.push(checkbox.value);
+            }
+        });
+
+        return ids;
+    }
+
+    function fillSelectedTravels(ids) {
+        selectedInputsBox.innerHTML = "";
+
+        ids.forEach((id) => {
+            const inputHidden = document.createElement("input");
+            inputHidden.type = "hidden";
+            inputHidden.name = "travels_selecionadas";
+            inputHidden.value = id;
+            selectedInputsBox.appendChild(inputHidden);
+        });
+
+        if (ids.length) {
+            selectedText.textContent = ids.join(", ");
+            selectedBox.style.display = "block";
+        } else {
+            selectedText.textContent = "";
+            selectedBox.style.display = "none";
+        }
+    }
+
+    function limparResultados() {
+        if (resultsBox) {
+            resultsBox.innerHTML = "";
+            resultsBox.style.display = "none";
+        }
+    }
+
+    function limparMotorista() {
+        if (input) input.value = "";
+        if (hiddenId) hiddenId.value = "";
+        limparResultados();
+    }
+
+    function openModal() {
+        const ids = getSelectedTravelIds();
+
+        if (!ids.length) {
+            alert("Selecione pelo menos uma viagem.");
+            return;
+        }
+
+        fillSelectedTravels(ids);
+
+        limparMotorista();
+
+        if (carrierSelect) {
+            carrierSelect.value = "";
+        }
+
+        if (input) {
+            input.disabled = true;
+            input.placeholder = "Selecione a transportadora primeiro...";
+        }
+
+        modal.classList.add("show");
+    }
+
+    function closeModal() {
+        modal.classList.remove("show");
+    }
+
+    openBtn.addEventListener("click", openModal);
+    closeBtn.addEventListener("click", closeModal);
+
+    modal.addEventListener("click", function (e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    if (carrierSelect && input) {
+        carrierSelect.addEventListener("change", function () {
+            limparMotorista();
+
+            if (this.value) {
+                input.disabled = false;
+                input.placeholder = "Digite o nome do motorista...";
+                input.focus();
+            } else {
+                input.disabled = true;
+                input.placeholder = "Selecione a transportadora primeiro...";
+            }
+        });
+    }
+
+    if (!input || !resultsBox || !hiddenId || !carrierSelect) return;
 
     let timeout = null;
 
-    function limparResultados() {
-        resultsBox.innerHTML = "";
-        resultsBox.style.display = "none";
-    }
-
     input.addEventListener("keyup", function () {
         const query = this.value.trim();
-        const carrierId = carrierSelect ? carrierSelect.value : "";
+        const carrierId = carrierSelect.value;
 
         clearTimeout(timeout);
+
+        if (!carrierId) {
+            hiddenId.value = "";
+            limparResultados();
+            return;
+        }
 
         if (query.length < 2) {
             hiddenId.value = "";
@@ -2165,8 +2313,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
                         div.addEventListener("mousedown", function (e) {
                             e.preventDefault();
+
                             input.value = driver.name || "";
                             hiddenId.value = driver.uid || "";
+
                             limparResultados();
                         });
 
@@ -2193,6 +2343,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!hiddenId.value) {
                 input.value = "";
             }
+
             limparResultados();
         }, 150);
     });
