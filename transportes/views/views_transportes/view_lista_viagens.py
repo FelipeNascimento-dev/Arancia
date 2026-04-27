@@ -63,17 +63,19 @@ def buscar_motoristas_travels(request):
     nome = request.GET.get("nome", "").strip()
     carrier_id = request.GET.get("carrier_id", "").strip()
 
-    if not nome:
+    if not nome or not carrier_id:
         return JsonResponse({"items": []})
 
-    params_url = f"?Nome={nome}&limit=10"
-    if carrier_id:
-        params_url += f"&carrier_id={carrier_id}"
+    params = {
+        "Nome": nome,
+        "carrier_id": carrier_id,
+        "limit": 10,
+    }
 
-    url = f"{TRANSP_API_URL}/Carriers/driver/list{params_url}"
+    url = f"{TRANSP_API_URL}/Carriers/driver/list?{urlencode(params)}"
 
     client = RequestClient(
-        method="get",
+        method="GET",
         url=url,
         headers={
             "accept": "application/json",
@@ -93,7 +95,7 @@ def buscar_motoristas_travels(request):
     items = []
     for item in raw_items:
         items.append({
-            "uid": item.get("uid", ""),
+            "uid": item.get("uid") or item.get("id") or "",
             "name": item.get("name") or item.get("nome") or "",
         })
 
@@ -184,15 +186,32 @@ def lista_viagens(request):
             status_por_tipo[tipo_id] = statuses_raw
 
     url_transportadora = f"{TRANSP_API_URL}/Carriers/list"
+
     client = RequestClient(
-        method="get",
+        method="GET",
         url=url_transportadora,
-        headers={"accept": "application/json",
-                 "Content-Type": "application/json"},
+        headers={
+            "accept": "application/json",
+            "Content-Type": "application/json",
+        },
     )
-    resp_transportadora = client.send_api_request()
-    if isinstance(resp_transportadora, dict) and resp_transportadora.get("detail"):
+
+    resp_transportadora_api = client.send_api_request()
+
+    if isinstance(resp_transportadora_api, dict) and resp_transportadora_api.get("detail"):
         resp_transportadora = []
+    elif isinstance(resp_transportadora_api, dict):
+        resp_transportadora = (
+            resp_transportadora_api.get("items")
+            or resp_transportadora_api.get("results")
+            or []
+        )
+    elif isinstance(resp_transportadora_api, list):
+        resp_transportadora = resp_transportadora_api
+    else:
+        resp_transportadora = []
+
+    carriers = resp_transportadora
 
     filtros = {}
 
@@ -701,12 +720,19 @@ def lista_viagens(request):
 
     if request.method == "POST" and "atrelar_motorista_lote" in request.POST:
         selected_travel_ids = request.POST.getlist("travels_selecionadas")
+
+        carrier_id = (request.POST.get("carrier_id") or "").strip()
         motorista_id = (request.POST.get("motorista_id") or "").strip()
         motorista_nome = (request.POST.get("motorista_nome") or "").strip()
+
         created_by = request.user.username
 
         if not selected_travel_ids:
             messages.error(request, "Selecione pelo menos uma viagem.")
+            return redirect("transportes:lista_viagens")
+
+        if not carrier_id:
+            messages.error(request, "Selecione uma transportadora.")
             return redirect("transportes:lista_viagens")
 
         if not motorista_id:
@@ -720,34 +746,43 @@ def lista_viagens(request):
                 if str(travel_id).strip()
             ]
 
-            payload_update = [
+            if not ids_limpos:
+                messages.error(
+                    request, "Nenhuma viagem válida foi selecionada.")
+                return redirect("transportes:lista_viagens")
+
+            update_driver_payload = [
                 {
                     "travels_ids": ids_limpos,
                     "driver_id": int(motorista_id),
                 }
             ]
 
-            url_update = (
-                f"{TRANSP_API_URL}/v2/order_travel/driver/updated?created_by={created_by}"
+            update_driver_url = (
+                f"{TRANSP_API_URL}/v2/order_travel/driver/updated"
+                f"?created_by={created_by}&carrier_id={carrier_id}"
             )
 
-            client = RequestClient(
+            update_driver_client = RequestClient(
                 method="POST",
-                url=url_update,
+                url=update_driver_url,
                 headers={
                     "accept": "application/json",
                     "Content-Type": "application/json",
                 },
-                request_data=payload_update,
+                request_data=update_driver_payload,
             )
 
-            response_update = client.send_api_request()
+            update_driver_response = update_driver_client.send_api_request()
 
-            if isinstance(response_update, dict) and response_update.get("detail"):
-                detail = response_update.get("detail")
+            if isinstance(update_driver_response, dict) and update_driver_response.get("detail"):
+                detail = update_driver_response.get("detail")
+
                 if isinstance(detail, list):
                     detail = " | ".join(str(item) for item in detail)
+
                 messages.error(request, f"Erro ao atrelar motorista: {detail}")
+
             else:
                 messages.success(
                     request,
@@ -833,4 +868,5 @@ def lista_viagens(request):
         "travel_event_types": travel_event_types,
         "travel_items": travel_items,
         "response_mode": response_mode,
+        "carriers": carriers,
     })
