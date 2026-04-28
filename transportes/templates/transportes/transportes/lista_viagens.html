@@ -296,8 +296,8 @@
         border-radius: 8px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         overflow: hidden;
-        height: 570px;
-        min-height: 570px;
+        height: 620px;
+        min-height: 620px;
     }
 
     .card-header {
@@ -1737,7 +1737,7 @@
                         <p><strong>Prazo:</strong><br>{{ item.travel.quote.estimated_deadline|default:"-" }} Dias</p>
                     </div>
                     
-                        {% if response_mode == "detailed" and item.travel_events %}
+                    {% if response_mode == "detailed" and item.travel_events %}
                     <div class="card-footer-actions">
                         <button type="button" class="btn-open-events-modal btn-events-minimal" 
                                 data-travel-id="{{ item.travel.id }}" 
