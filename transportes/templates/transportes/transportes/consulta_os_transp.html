@@ -1127,6 +1127,33 @@
     .visible-table {
         display: block !important;
     }
+
+    .filter-chip-removable {
+        gap: 8px;
+        padding-right: 6px;
+    }
+
+    .filter-chip-x {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: none;
+        background: #fee2e2;
+        color: #b91c1c;
+        font-size: 16px;
+        font-weight: 800;
+        line-height: 1;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: .2s ease;
+    }
+
+    .filter-chip-x:hover {
+        background: #ef4444;
+        color: #fff;
+    }
 </style>
 
 <div class="toolbar">
@@ -1181,7 +1208,23 @@
 
                     {% if filtros_exibicao %}
                         {% for filtro in filtros_exibicao %}
-                            <span class="filter-chip">{{ filtro.campo }}: {{ filtro.valor }}</span>
+                            <span 
+                                class="filter-chip filter-chip-removable"
+                                data-field="{{ filtro.field }}"
+                                data-value="{{ filtro.value }}"
+                            >
+                                <span>{{ filtro.campo }}: {{ filtro.valor }}</span>
+
+                                <button 
+                                    type="button"
+                                    class="filter-chip-x"
+                                    title="Remover filtro"
+                                    data-field="{{ filtro.field }}"
+                                    data-value="{{ filtro.value }}"
+                                >
+                                    &times;
+                                </button>
+                            </span>
                         {% endfor %}
                     {% else %}
                         <span class="filter-chip">Nenhum filtro aplicado</span>
@@ -1977,6 +2020,72 @@
         if (savedMode) {
             setViewMode(savedMode);
         }
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const filterForm = document.querySelector(".filters-sidebar form");
+        const removeButtons = document.querySelectorAll(".filter-chip-x");
+
+        if (!filterForm || !removeButtons.length) return;
+
+        function clearField(fieldName, value) {
+            if (!fieldName) return;
+
+            const fields = filterForm.querySelectorAll(`[name="${fieldName}"]`);
+
+            fields.forEach(field => {
+                const tag = field.tagName.toLowerCase();
+                const type = (field.getAttribute("type") || "").toLowerCase();
+
+                if (type === "radio" || type === "checkbox") {
+                    if (!value || String(field.value) === String(value)) {
+                        field.checked = false;
+                    }
+                    return;
+                }
+
+                if (tag === "select") {
+                    const isMultiple = field.hasAttribute("multiple");
+
+                    if (isMultiple && value) {
+                        Array.from(field.options).forEach(option => {
+                            if (String(option.value) === String(value)) {
+                                option.selected = false;
+                            }
+                        });
+                    } else {
+                        Array.from(field.options).forEach(option => {
+                            option.selected = false;
+                        });
+
+                        field.value = "";
+                    }
+
+                    return;
+                }
+
+                field.value = "";
+            });
+        }
+
+        removeButtons.forEach(button => {
+            button.addEventListener("click", function () {
+                const fieldName = this.getAttribute("data-field");
+                const value = this.getAttribute("data-value");
+
+                clearField(fieldName, value);
+
+                const hiddenInput = document.createElement("input");
+                hiddenInput.type = "hidden";
+                hiddenInput.name = "enviar_evento";
+                hiddenInput.value = "1";
+
+                filterForm.appendChild(hiddenInput);
+                filterForm.submit();
+            });
+        });
     });
 </script>
 {% endblock %}

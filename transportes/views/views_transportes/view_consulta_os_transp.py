@@ -19,6 +19,18 @@ from transportes.utils.filtros import (
 )
 
 
+def add_filtro_exibicao(lista, campo, valor, field, value=None):
+    if valor in [None, ""]:
+        return
+
+    lista.append({
+        "campo": campo,
+        "valor": valor,
+        "field": field,
+        "value": str(value) if value is not None else "",
+    })
+
+
 def buscar_locais(request):
     termo = request.GET.get("q", "").strip()
 
@@ -272,7 +284,7 @@ def consulta_os_transp(request):
         page = 1
     page = max(page, 1)
 
-    limit = 60
+    limit = 250
     offset = (page - 1) * limit
 
     qs = data.copy()
@@ -321,23 +333,46 @@ def consulta_os_transp(request):
                 c.get("id")) == str(cliente_id)), None)
             if cliente_obj and cliente_obj.get("nome"):
                 params["cliente"] = cliente_obj["nome"]
-                filtros_exibicao.append(
-                    {"campo": "Cliente", "valor": cliente_obj["nome"]})
+                add_filtro_exibicao(
+                    filtros_exibicao,
+                    campo="Cliente",
+                    valor=cliente_obj["nome"],
+                    field="client",
+                    value=cliente_id,
+                )
 
         pa_id = (data.get("pa_selecionada") or "").strip()
         if pa_id:
             params["designation_id"] = pa_id
-            filtros_exibicao.append({"campo": "PA", "valor": pa_id})
+            add_filtro_exibicao(
+                filtros_exibicao,
+                campo="PA",
+                valor=pa_id,
+                field="pa_selecionada",
+                value=pa_id,
+            )
 
         origem_id = (data.get("origem") or "").strip()
         if origem_id:
             params["origin_id"] = origem_id
-            filtros_exibicao.append({"campo": "Origem", "valor": origem_id})
+            add_filtro_exibicao(
+                filtros_exibicao,
+                campo="Origem",
+                valor=origem_id,
+                field="origem",
+                value=origem_id,
+            )
 
         destino_id = (data.get("destino") or "").strip()
         if destino_id:
             params["destin_id"] = destino_id
-            filtros_exibicao.append({"campo": "Destino", "valor": destino_id})
+            add_filtro_exibicao(
+                filtros_exibicao,
+                campo="Destino",
+                valor=destino_id,
+                field="destino",
+                value=destino_id,
+            )
 
         status_ids = [s.strip() for s in data.getlist("status") if s.strip()]
         if status_ids:
@@ -353,8 +388,19 @@ def consulta_os_transp(request):
 
             if status_textos:
                 params["status"] = ",".join(status_textos)
-                for st in status_textos:
-                    filtros_exibicao.append({"campo": "Status", "valor": st})
+
+                for status_id in status_ids:
+                    for cliente in resp:
+                        for order_type_item in cliente.get("OrderType", []):
+                            for status_item in order_type_item.get("status", []):
+                                if str(status_item.get("id")) == str(status_id):
+                                    add_filtro_exibicao(
+                                        filtros_exibicao,
+                                        campo="Status",
+                                        valor=status_item.get("type"),
+                                        field="status",
+                                        value=status_id,
+                                    )
 
         order_type_ids = [ot.strip()
                           for ot in data.getlist("order_type") if ot.strip()]
@@ -364,21 +410,44 @@ def consulta_os_transp(request):
             for cliente in resp:
                 for order_type_item in cliente.get("OrderType", []):
                     if str(order_type_item.get("id")) in order_type_ids:
-                        filtros_exibicao.append({
-                            "campo": "Tipo de OS",
-                            "valor": order_type_item.get("type") or str(order_type_item.get("id"))
-                        })
+                        add_filtro_exibicao(
+                            filtros_exibicao,
+                            campo="Tipo de OS",
+                            valor=order_type_item.get("type") or str(
+                                order_type_item.get("id")),
+                            field="order_type",
+                            value=order_type_item.get("id"),
+                        )
 
         if numero_os:
-            filtros_exibicao.append({"campo": "Número OS", "valor": numero_os})
+            add_filtro_exibicao(
+                filtros_exibicao,
+                campo="Número OS",
+                valor=numero_os,
+                field="numero_os",
+            )
         if tipo_os:
-            filtros_exibicao.append({"campo": "Tipo", "valor": tipo_os})
+            add_filtro_exibicao(
+                filtros_exibicao,
+                campo="Tipo",
+                valor=tipo_os,
+                field="tipo_os",
+            )
         if data.get("data_inicial"):
-            filtros_exibicao.append(
-                {"campo": "Data inicial", "valor": data.get("data_inicial")})
+            add_filtro_exibicao(
+                filtros_exibicao,
+                campo="Data inicial",
+                valor=data.get("data_inicial"),
+                field="data_inicial",
+            )
+
         if data.get("data_final"):
-            filtros_exibicao.append(
-                {"campo": "Data final", "valor": data.get("data_final")})
+            add_filtro_exibicao(
+                filtros_exibicao,
+                campo="Data final",
+                valor=data.get("data_final"),
+                field="data_final",
+            )
 
         params["limit"] = limit
         params["offset"] = offset
