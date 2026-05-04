@@ -549,6 +549,139 @@
             min-width: 100%;
         }
     }
+
+    .create-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        z-index: 9999;
+    }
+
+    .create-modal-overlay.show {
+        display: flex;
+    }
+
+    .create-modal {
+        width: min(980px, 100%);
+        max-height: 92vh;
+        overflow: auto;
+        background: #fff;
+        border-radius: 22px;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+        border: 1px solid var(--border);
+    }
+
+    .create-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 22px 24px;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 2;
+    }
+
+    .create-modal-header h3 {
+        margin: 0;
+        font-size: 22px;
+        color: var(--text);
+    }
+
+    .create-modal-close {
+        border: 1px solid var(--border);
+        background: #fff;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 18px;
+    }
+
+    .create-form {
+        padding: 24px;
+        display: grid;
+        gap: 18px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .form-group {
+        display: grid;
+        gap: 8px;
+    }
+
+    .form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .form-control,
+    .form-select,
+    .form-textarea {
+        width: 100%;
+        border: 1px solid var(--border);
+        background: #fff;
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 14px;
+        outline: none;
+        transition: 0.2s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        border-color: #86efac;
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+    }
+
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .form-checks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+    }
+
+    .form-check {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: var(--text);
+    }
+
+    .create-form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 6px;
+    }
+
+    @media (max-width: 820px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 
 <div class="page">
@@ -603,6 +736,10 @@
                 <button class="action-btn dark" id="toggleReadBtn">
                     <i class="fa-regular fa-circle-check"></i>
                     Ocultar lidos
+                </button>
+                <button class="action-btn primary" type="button" id="openCreateModalBtn">
+                    <i class="fa-solid fa-plus"></i>
+                    Novo item
                 </button>
             </div>
         </div>
@@ -847,5 +984,153 @@
     });
 
     renderMural();
+</script>
+
+
+<!-- MODAL PARA CRIAR ITENS -->
+<div class="create-modal-overlay" id="createModal">
+    <div class="create-modal">
+        <div class="create-modal-header">
+            <h3>Criar item do mural</h3>
+            <button type="button" class="create-modal-close" id="closeCreateModalBtn">×</button>
+        </div>
+
+        <form method="post" class="create-form">
+            {% csrf_token %}
+
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label class="form-label">Título</label>
+                    <input type="text" name="title" class="form-control" required>
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Resumo</label>
+                    <textarea name="summary" class="form-textarea" required></textarea>
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Conteúdo</label>
+                    <textarea name="content" class="form-textarea"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tipo do item</label>
+                    <select name="item_type" class="form-select" required>
+                        {% for value, label in item_type_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Severidade</label>
+                    <select name="severity" class="form-select" required>
+                        {% for value, label in severity_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Destino</label>
+                    <select name="target_type" class="form-select" required>
+                        {% for value, label in target_type_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Início</label>
+                    <input type="datetime-local" name="starts_at" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Fim</label>
+                    <input type="datetime-local" name="ends_at" class="form-control">
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Link externo</label>
+                    <input type="url" name="external_link" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">URL do anexo</label>
+                    <input type="url" name="attachment_url" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">URL da imagem</label>
+                    <input type="url" name="image_url" class="form-control">
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Opções</label>
+                    <div class="form-checks">
+                        <label class="form-check">
+                            <input type="checkbox" name="is_active" checked>
+                            Ativo
+                        </label>
+                        <label class="form-check">
+                            <input type="checkbox" name="is_pinned">
+                            Fixado
+                        </label>
+                        <label class="form-check">
+                            <input type="checkbox" name="is_indefinite">
+                            Prazo indefinido
+                        </label>
+                        <label class="form-check">
+                            <input type="checkbox" name="until_read">
+                            Até leitura
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="create-form-actions">
+                <button type="button" class="action-btn" id="cancelCreateModalBtn">Cancelar</button>
+                <button type="submit" class="action-btn primary">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    Criar item
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    const createModal = document.getElementById('createModal');
+    const openCreateModalBtn = document.getElementById('openCreateModalBtn');
+    const closeCreateModalBtn = document.getElementById('closeCreateModalBtn');
+    const cancelCreateModalBtn = document.getElementById('cancelCreateModalBtn');
+
+    function openCreateModal() {
+        createModal.classList.add('show');
+    }
+
+    function closeCreateModal() {
+        createModal.classList.remove('show');
+    }
+
+    if (openCreateModalBtn) {
+        openCreateModalBtn.addEventListener('click', openCreateModal);
+    }
+
+    if (closeCreateModalBtn) {
+        closeCreateModalBtn.addEventListener('click', closeCreateModal);
+    }
+
+    if (cancelCreateModalBtn) {
+        cancelCreateModalBtn.addEventListener('click', closeCreateModal);
+    }
+
+    if (createModal) {
+        createModal.addEventListener('click', (event) => {
+            if (event.target === createModal) {
+                closeCreateModal();
+            }
+        });
+    }
 </script>
 {% endblock %}
