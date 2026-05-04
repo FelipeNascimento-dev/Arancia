@@ -1,0 +1,114 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+<style>
+    /* Reaproveitando sua identidade visual */
+    .auth-page {
+        padding: 30px;
+        margin-left: 50px;
+        margin-top: 30px;
+    }
+
+    .auth-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .auth-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 35px 40px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e9ecef;
+    }
+
+    .auth-header {
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+
+    .auth-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .auth-title::before {
+        content: "";
+        display: inline-block;
+        width: 6px;
+        height: 28px;
+        background: linear-gradient(180deg, #0f172a, #1e3a8a);
+        border-radius: 6px;
+    }
+
+    .input-code {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1.2rem;
+        text-align: center;
+        letter-spacing: 4px;
+        margin-bottom: 20px;
+    }
+
+    .btn-verify {
+        background: #0f172a;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-weight: 600;
+        width: 100%;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .btn-verify:hover {
+        background: #1e3a8a;
+    }
+
+    .auth-footer {
+        margin-top: 20px;
+        font-size: 0.85rem;
+        color: #64748b;
+        text-align: center;
+    }
+</style>
+
+<div class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1 class="auth-title">Verificação de Identidade</h1>
+                <p style="color: #475569; margin-top: 10px;">
+                    Controle de Acesso A.8.5 (ISO 27001:2022)
+                </p>
+            </div>
+
+            <div class="auth-body">
+                <p style="color: #334155; margin-bottom: 20px;">
+                    Para acessar a <strong>Gestão de Contas Privilegiadas</strong>, insira o código enviado para <span
+                        style="color: #1e3a8a; font-weight: 600;">{{ email }}</span>.
+                </p>
+
+                <form method="POST" action="{% url 'logistica:validate_privileged_access' %}">
+                    {% csrf_token %}
+                    <input type="text" name="code" class="input-code" placeholder="000000" required autofocus>
+                    <button type="submit" class="btn-verify">Confirmar Identidade</button>
+                </form>
+            </div>
+
+            <div class="auth-footer">
+                Esta ação está sendo monitorada e registrada pelo sistema <strong>C-Trends Flow</strong>.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

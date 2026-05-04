@@ -416,6 +416,12 @@
                 class="{% if current_menu == 'senhas_privilegiadas' %}active{% endif %}">
                     Senhas Privilegiadas
                 </a>
+                {% if perms.logistica.contas_privilegiadas %}
+                <a href="{% url 'logistica:trigger_privileged_auth' %}"
+                class="{% if current_menu == 'contas_privilegiadas' %}active{% endif %}">
+                    Gestão de Contas Privilegiadas
+                </a>
+                {% endif %}
             </div>
         </div>
     </div>

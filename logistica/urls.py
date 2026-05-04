@@ -22,6 +22,12 @@ urls_User = [
     path("settings/", settings_view, name="settings"),
     path("settings/password/", UserPasswordChangeView.as_view(),
          name="password_change"),
+    path('gestao-privilegiada/auth/', trigger_privileged_auth,
+         name='trigger_privileged_auth'),
+    path('gestao-privilegiada/validar/', validate_privileged_access,
+         name='validate_privileged_access'),
+    path('contas-privilegiadas', gestao_contas_privilegiadas,
+         name='gestao_contas_privilegiadas')
 ]
 
 urls_LastmileB2C = [
