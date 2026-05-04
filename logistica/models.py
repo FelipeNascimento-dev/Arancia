@@ -140,6 +140,7 @@ class PermissaoUsuarioDummy(models.Model):
         verbose_name_plural = "--Personalizadas--"
         permissions = [
             ("acesso_arancia", "Acesso Arancia"),
+            ("contas_privilegiadas", "Acesso ao modulo de contas privilegiadas"),
             ("ti_interno", "TI Interno"),
             ("logistica_perm", "Permissão Logistica"),
             ("lastmile_b2c", "LastMile (B2C)"),
@@ -154,7 +155,7 @@ class PermissaoUsuarioDummy(models.Model):
             ("estoque", "Pode Visualizar Estoque"),
             ("gerente_estoque", "Gerente de Estoque"),
             ("reverse", "Reversa"),
-            ("desinstalacao", "Pode fazer Desinstalação")
+            ("desinstalacao", "Pode fazer Desinstalação"),
         ]
 
     def __str__(self):

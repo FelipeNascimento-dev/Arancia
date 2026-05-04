@@ -41,3 +41,5 @@ from .views_checkin_checkout.view_checkout_reverse import checkout_reverse
 from .views_checkin_checkout.view_checkout_reverse_create import checkout_reverse_create
 from .views_fluxo_entrega.view_recebimento_insucesso import recebimento_insucesso
 from .views_user.password_reset_view import esqueci_minha_senha
+from .view_gestao_contas import *
+from .view_contas_privilegiadas import gestao_contas_privilegiadas

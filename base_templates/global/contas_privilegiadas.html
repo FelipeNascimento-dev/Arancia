@@ -1,0 +1,140 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+<style>
+    .privileged-page {
+        padding: 30px;
+        margin-left: 50px;
+        margin-top: 70px;
+    }
+
+    .header-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 30px;
+    }
+
+    .btn-cadastrar {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: 0.3s;
+    }
+
+    .privileged-table-container {
+        background: #fff;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .privileged-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .privileged-table th {
+        text-align: left;
+        padding: 15px;
+        color: #6c757d;
+        font-weight: 500;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .privileged-table td {
+        padding: 15px;
+        border-bottom: 1px solid #f1f1f1;
+        color: #333;
+        vertical-align: middle;
+    }
+
+    .status-badge {
+        font-weight: 600;
+        color: #28a745;
+    }
+
+    .token-display {
+        font-family: 'Courier New', Courier, monospace;
+        background: #f8f9fa;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 13px;
+        color: #495057;
+    }
+
+    .servidor-url {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    /* Estilo do título igual ao da sua Política */
+    .title-section {
+        margin-bottom: 20px;
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 15px;
+    }
+
+    .main-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .main-title::before {
+        content: "";
+        display: inline-block;
+        width: 6px;
+        height: 30px;
+        background: linear-gradient(180deg, #0f172a, #1e3a8a);
+        border-radius: 6px;
+    }
+</style>
+
+<div class="privileged-page">
+    <div class="title-section">
+        <h1 class="main-title">Gestão de Contas Privilegiadas (PAM)</h1>
+        <p style="color: #64748b; margin-top: 5px;">Acesso restrito a administradores - C-Trends Flow Systems</p>
+    </div>
+
+    <div class="header-actions">
+        <a href="#" class="btn-cadastrar">+ Cadastrar Nova Credencial</a>
+    </div>
+
+    <div class="privileged-table-container">
+        <table class="privileged-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Nome</th>
+                    <th style="width: 25%;">Descrição</th>
+                    <th style="width: 20%;">Servidor / Endpoint</th>
+                    <th style="width: 25%;">Usuário / Access Token</th>
+                    <th style="width: 15%;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for conta in contas %}
+                <tr>
+                    <td><strong>{{ conta.nome }}</strong></td>
+                    <td>{{ conta.descricao }}</td>
+                    <td><span class="servidor-url">{{ conta.servidor }}</span></td>
+                    <td>
+                        <div class="token-display">
+                            {{ conta.usuario }} / {{ conta.token }}
+                        </div>
+                    </td>
+                    <td><span class="status-badge">{{ conta.status }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
