@@ -86,24 +86,18 @@ def mural(request):
             },
         )
 
-        resp = client.send_api_request_no_json(stream=False)
+        resp = client.send_api_request()
 
-        if not resp:
-            raise Exception("Resposta vazia da API do mural.")
+        if 'detail' in resp:
+            messages.error(request, resp.get('detail'))
 
-        status_code = getattr(resp, "status_code", None)
-        if status_code != 200:
-            raise Exception(f"API retornou status {status_code}")
-
-        response_data = resp.json()
-
-        if isinstance(response_data, list):
-            items = response_data
-        elif isinstance(response_data, dict):
+        if isinstance(resp, list):
+            items = resp
+        elif isinstance(resp, dict):
             items = (
-                response_data.get("items")
-                or response_data.get("results")
-                or response_data.get("data")
+                resp.get("items")
+                or resp.get("results")
+                or resp.get("data")
                 or []
             )
         else:
