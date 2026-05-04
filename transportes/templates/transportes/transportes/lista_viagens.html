@@ -1705,7 +1705,7 @@
                 {% for item in travels %}
                 <div class="card" data-card-id="{{ item.travel.id }}">
                     <div class="card-header">
-                        {% if perms.transportes.transportes %}
+                        {% if perms.transportes.ver_transportes %}
                         <div class="card-select-wrap">
                             <input type="checkbox" class="card-select-checkbox" 
                                 id="travel_card_{{ item.travel.id }}" 

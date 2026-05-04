@@ -1,126 +1,119 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, permission_required
+from logistica.models import GroupAditionalInformation
+from setup.local_settings import MURAL_API_URL
+from django.contrib import messages
+from utils.request import RequestClient
+from datetime import datetime
+
+ITEM_TYPE_LABELS = {
+    "announcement": "Comunicado",
+    "notice": "Aviso",
+    "script": "Script",
+    "manual": "Manual",
+}
+
+SEVERITY_LABELS = {
+    "informational": "Informativo",
+    "moderate": "Moderado",
+    "important": "Importante",
+    "critical": "Crítico",
+}
+
+
+def format_datetime(value):
+    if not value:
+        return ""
+    try:
+        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        return dt.strftime("%d/%m/%Y %H:%M")
+    except Exception:
+        return value
+
+
+def normalize_item(item):
+    return {
+        "id": item.get("id"),
+        "title": item.get("title", ""),
+        "summary": item.get("summary", ""),
+        "content": item.get("content", ""),
+        "item_type": item.get("item_type", "notice"),
+        "item_type_label": ITEM_TYPE_LABELS.get(
+            item.get("item_type"), item.get("item_type", "Item").title()
+        ),
+        "severity": item.get("severity", "informational"),
+        "severity_label": SEVERITY_LABELS.get(
+            item.get("severity"), item.get("severity", "Informativo").title()
+        ),
+        "starts_at": format_datetime(item.get("starts_at")),
+        "ends_at": format_datetime(item.get("ends_at")),
+        "until_read": item.get("until_read", False),
+        "is_indefinite": item.get("is_indefinite", False),
+        "is_pinned": item.get("is_pinned", False),
+        "is_active": item.get("is_active", True),
+        "is_read": item.get("is_read", item.get("read", False)),
+        "link": item.get("external_link") or item.get("attachment_url") or item.get("image_url") or "#",
+        "external_link": item.get("external_link") or "",
+        "attachment_url": item.get("attachment_url") or "",
+        "image_url": item.get("image_url") or "",
+        "target_type": item.get("target_type") or "",
+        "created_by_id": item.get("created_by_id"),
+    }
 
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def mural(request):
-    mural_data = {
-        "items": [
-            {
-                "id": 1,
-                "title": "Leitura obrigatória: novo fluxo de atendimento Cielo",
-                "summary": "Todos os usuários precisam revisar o novo procedimento antes de iniciar as operações do dia.",
-                "content": "Fluxo atualizado com ajustes em validação, checklist e retorno do atendimento.",
-                "item_type": "announcement",
-                "item_type_label": "Comunicado",
-                "severity": "critical",
-                "severity_label": "Crítico",
-                "starts_at": "13/04/2026 08:00",
-                "until_read": True,
-                "is_indefinite": True,
-                "is_pinned": True,
-                "is_read": False,
-                "link": "#"
+    mural_data = {"items": []}
+
+    user_id = request.user.id
+    gai_id = request.user.designacao.informacao_adicional_id
+    offset = 0
+    limit = 100
+
+    try:
+        url = (
+            f"{MURAL_API_URL}/v1/items/by-user/"
+            f"?user_id={user_id}&gai_id={gai_id}"
+        )
+
+        client = RequestClient(
+            url=url,
+            method="GET",
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
             },
-            {
-                "id": 2,
-                "title": "Manual de abertura e acompanhamento de OS",
-                "summary": "Documento com passo a passo operacional para criação, edição e consulta das ordens de serviço.",
-                "content": "Manual completo com imagens, exemplos de preenchimento e boas práticas.",
-                "item_type": "manual",
-                "item_type_label": "Manual",
-                "severity": "informational",
-                "severity_label": "Informativo",
-                "starts_at": "11/04/2026 10:20",
-                "until_read": False,
-                "is_indefinite": True,
-                "is_pinned": False,
-                "is_read": False,
-                "link": "#"
-            },
-            {
-                "id": 3,
-                "title": "Script padrão para tratativa de divergência de coleta",
-                "summary": "Modelo oficial de comunicação com orientações para uso em casos de divergência em campo.",
-                "content": "Texto padronizado aprovado para agilizar tratativas com técnico e cliente.",
-                "item_type": "script",
-                "item_type_label": "Script",
-                "severity": "important",
-                "severity_label": "Importante",
-                "starts_at": "12/04/2026 09:10",
-                "until_read": False,
-                "is_indefinite": True,
-                "is_pinned": True,
-                "is_read": True,
-                "link": "#"
-            },
-            {
-                "id": 4,
-                "title": "Aviso operacional sobre atualização de senha",
-                "summary": "Por política de segurança, a troca de senha deverá ser feita a cada 60 dias ou após retorno de férias.",
-                "content": "A alteração é obrigatória para garantir conformidade e segurança de acesso.",
-                "item_type": "notice",
-                "item_type_label": "Aviso",
-                "severity": "important",
-                "severity_label": "Importante",
-                "starts_at": "10/04/2026 15:40",
-                "until_read": False,
-                "is_indefinite": True,
-                "is_pinned": False,
-                "is_read": False,
-                "link": "#"
-            },
-            {
-                "id": 5,
-                "title": "Guia rápido de etiquetas e movimentações",
-                "summary": "Consulte as principais regras para geração de etiquetas, conferência e movimentação de pedidos.",
-                "content": "Guia enxuto com atalhos, regras e observações de uso na operação.",
-                "item_type": "manual",
-                "item_type_label": "Manual",
-                "severity": "moderate",
-                "severity_label": "Moderado",
-                "starts_at": "09/04/2026 08:15",
-                "until_read": False,
-                "is_indefinite": False,
-                "is_pinned": False,
-                "is_read": False,
-                "link": "#"
-            },
-            {
-                "id": 6,
-                "title": "Comunicado sobre indisponibilidade parcial do módulo logístico",
-                "summary": "Durante a janela de manutenção, algumas ações poderão apresentar lentidão ou bloqueio temporário.",
-                "content": "Recomendado evitar operações críticas durante o período informado.",
-                "item_type": "announcement",
-                "item_type_label": "Comunicado",
-                "severity": "moderate",
-                "severity_label": "Moderado",
-                "starts_at": "13/04/2026 07:30",
-                "until_read": False,
-                "is_indefinite": False,
-                "is_pinned": False,
-                "is_read": False,
-                "link": "#"
-            },
-            {
-                "id": 7,
-                "title": "Leitura obrigatória: novo procedimento de evidência de treinamento",
-                "summary": "Atualização do processo para garantir rastreabilidade de comunicados e comprovação de ciência dos usuários.",
-                "content": "Regras aplicáveis a treinamentos, scripts e materiais críticos da operação.",
-                "item_type": "announcement",
-                "item_type_label": "Comunicado",
-                "severity": "critical",
-                "severity_label": "Crítico",
-                "starts_at": "13/04/2026 06:55",
-                "until_read": True,
-                "is_indefinite": True,
-                "is_pinned": False,
-                "is_read": False,
-                "link": "#"
-            }
-        ]
-    }
+        )
+
+        resp = client.send_api_request_no_json(stream=False)
+
+        if not resp:
+            raise Exception("Resposta vazia da API do mural.")
+
+        status_code = getattr(resp, "status_code", None)
+        if status_code != 200:
+            raise Exception(f"API retornou status {status_code}")
+
+        response_data = resp.json()
+
+        if isinstance(response_data, list):
+            items = response_data
+        elif isinstance(response_data, dict):
+            items = (
+                response_data.get("items")
+                or response_data.get("results")
+                or response_data.get("data")
+                or []
+            )
+        else:
+            items = []
+
+        mural_data["items"] = [normalize_item(item) for item in items]
+
+    except Exception as e:
+        messages.warning(
+            request, f"Não foi possível carregar os itens do mural. Erro: {e}")
 
     return render(request, 'mural/template_mural.html', {
         'site_title': 'Home',
