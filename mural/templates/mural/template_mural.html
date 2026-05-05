@@ -19,7 +19,7 @@
         --warning-soft: #fffbeb;
         --info: #2563eb;
         --info-soft: #eff6ff;
-        --shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
+        --shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
         --radius-xl: 22px;
         --radius-lg: 16px;
         --radius-md: 12px;
@@ -39,11 +39,10 @@
     }
 
     .mural-shell {
-        background: rgba(255, 255, 255, 0.74);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(217, 226, 236, 0.9);
-        border-radius: 24px;
-        box-shadow: var(--shadow);
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
         overflow: hidden;
     }
 
@@ -206,8 +205,7 @@
     .filter-btn:hover,
     .action-btn:hover,
     .card-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
+        background: #f8fafc;
     }
 
     .filter-btn.active {
@@ -422,8 +420,7 @@
 
     .notice-card:hover,
     .manual-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 16px 28px rgba(15, 23, 42, 0.08);
+        border-color: #bbf7d0;
     }
 
     .notice-card.pinned {
@@ -1017,27 +1014,37 @@
                 <div class="form-group">
                     <label class="form-label">Tipo do item</label>
                     <select name="item_type" class="form-select" required>
-                        {% for value, label in item_type_choices %}
-                        <option value="{{ value }}">{{ label }}</option>
-                        {% endfor %}
+                        <option value="announcement">Comunicado</option>
+                        <option value="notice">Aviso</option>
+                        <option value="script">Script</option>
+                        <option value="manual">Manual</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Severidade</label>
                     <select name="severity" class="form-select" required>
-                        {% for value, label in severity_choices %}
-                        <option value="{{ value }}">{{ label }}</option>
-                        {% endfor %}
+                        <option value="informational">Informativo</option>
+                        <option value="moderate">Moderado</option>
+                        <option value="important">Importante</option>
+                        <option value="critical">Crítico</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Destino</label>
-                    <select name="target_type" class="form-select" required>
-                        {% for value, label in target_type_choices %}
-                        <option value="{{ value }}">{{ label }}</option>
-                        {% endfor %}
+                    <label class="form-label">Público Alvo</label>
+                    <select name="target_type" id="targetTypeSelect" class="form-select" required>
+                        <option value="all">Todos</option>
+                        <option value="users">Usuários</option>
+                        <option value="groups">Grupos</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="targetObjectsGroup" style="display: none;">
+                    <label class="form-label" id="targetObjectsLabel">Usuários/Grupos</label>
+
+                    <select name="target_id" id="targetObjectsSelect" class="form-select">
+                        <option value="">Selecione o público-alvo primeiro</option>
                     </select>
                 </div>
 
@@ -1091,7 +1098,7 @@
 
             <div class="create-form-actions">
                 <button type="button" class="action-btn" id="cancelCreateModalBtn">Cancelar</button>
-                <button type="submit" class="action-btn primary">
+                <button type="submit" class="action-btn primary" name="create_mural_item">
                     <i class="fa-solid fa-floppy-disk"></i>
                     Criar item
                 </button>
@@ -1132,5 +1139,93 @@
             }
         });
     }
+</script>
+
+{{ target_users|json_script:"target-users-data" }}
+{{ target_groups|json_script:"target-groups-data" }}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const targetUsers = JSON.parse(document.getElementById('target-users-data').textContent);
+        const targetGroups = JSON.parse(document.getElementById('target-groups-data').textContent);
+
+        const targetTypeSelect = document.getElementById('targetTypeSelect');
+        const targetObjectsSelect = document.getElementById('targetObjectsSelect');
+        const targetObjectsGroup = document.getElementById('targetObjectsGroup');
+        const targetObjectsLabel = document.getElementById('targetObjectsLabel');
+
+        if (!targetTypeSelect || !targetObjectsSelect || !targetObjectsGroup) {
+            console.warn('Campos de público-alvo não encontrados no template.');
+            return;
+        }
+
+        function clearTargetObjects() {
+            targetObjectsSelect.innerHTML = '';
+        }
+
+        function addOption(value, label) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = label;
+            targetObjectsSelect.appendChild(option);
+        }
+
+        function renderTargetOptions() {
+            const selectedType = targetTypeSelect.value;
+
+            clearTargetObjects();
+
+            if (selectedType === 'all') {
+                targetObjectsGroup.style.display = 'none';
+                targetObjectsSelect.removeAttribute('required');
+                targetObjectsSelect.disabled = true;
+                addOption('', 'Todos os usuários');
+                return;
+            }
+
+            targetObjectsGroup.style.display = 'grid';
+            targetObjectsSelect.disabled = false;
+            targetObjectsSelect.setAttribute('required', 'required');
+
+            if (selectedType === 'users') {
+                targetObjectsLabel.textContent = 'Usuário';
+                addOption('', 'Selecione um usuário');
+
+                if (!targetUsers.length) {
+                    clearTargetObjects();
+                    addOption('', 'Nenhum usuário ARC encontrado');
+                    return;
+                }
+
+                targetUsers.forEach(user => {
+                    const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+
+                    const label = fullName
+                        ? `${user.username} - ${fullName}`
+                        : user.username;
+
+                    addOption(user.id, label);
+                });
+            }
+
+            if (selectedType === 'groups') {
+                targetObjectsLabel.textContent = 'Grupo';
+                addOption('', 'Selecione um grupo');
+
+                if (!targetGroups.length) {
+                    clearTargetObjects();
+                    addOption('', 'Nenhum grupo encontrado');
+                    return;
+                }
+
+                targetGroups.forEach(group => {
+                    addOption(group.id, group.nome);
+                });
+            }
+        }
+
+        targetTypeSelect.addEventListener('change', renderTargetOptions);
+        renderTargetOptions();
+    });
 </script>
 {% endblock %}

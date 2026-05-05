@@ -1,10 +1,14 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth import get_user_model
+from django.contrib import messages
+
 from logistica.models import GroupAditionalInformation
 from setup.local_settings import MURAL_API_URL
-from django.contrib import messages
 from utils.request import RequestClient
+
 from datetime import datetime
+
 
 ITEM_TYPE_LABELS = {
     "announcement": "Comunicado",
@@ -68,8 +72,22 @@ def mural(request):
 
     user_id = request.user.id
     gai_id = request.user.designacao.informacao_adicional_id
-    offset = 0
-    limit = 100
+
+    User = get_user_model()
+
+    target_users = list(
+        User.objects.filter(
+            username__istartswith="ARC"
+        )
+        .order_by("username")
+        .values("id", "username", "first_name", "last_name")
+    )
+
+    target_groups = list(
+        GroupAditionalInformation.objects.all()
+        .order_by("nome")
+        .values("id", "nome")
+    )
 
     try:
         url = (
@@ -88,7 +106,7 @@ def mural(request):
 
         resp = client.send_api_request()
 
-        if 'detail' in resp:
+        if isinstance(resp, dict) and 'detail' in resp:
             messages.error(request, resp.get('detail'))
 
         if isinstance(resp, list):
@@ -107,10 +125,17 @@ def mural(request):
 
     except Exception as e:
         messages.warning(
-            request, f"Não foi possível carregar os itens do mural. Erro: {e}")
+            request, f"Não foi possível carregar os itens do mural. Erro: {e}"
+        )
+
+    if "create_mural_item" in request.POST:
+        messages.info(
+            request, "Funcionalidade de criação de item ainda não implementada.")
 
     return render(request, 'mural/template_mural.html', {
         'site_title': 'Home',
         'current_menu': 'home',
         'mural_data': mural_data,
+        'target_users': target_users,
+        'target_groups': target_groups,
     })
