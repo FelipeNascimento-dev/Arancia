@@ -35,6 +35,19 @@ def format_datetime(value):
         return value
 
 
+def format_datetime_to_api(value):
+    if not value:
+        return None
+
+    try:
+        dt = datetime.strptime(value, "%Y-%m-%dT%H:%M")
+
+        return dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
+    except Exception:
+        return None
+
+
 def normalize_item(item):
     return {
         "id": item.get("id"),
@@ -129,8 +142,82 @@ def mural(request):
         )
 
     if "create_mural_item" in request.POST:
-        messages.info(
-            request, "Funcionalidade de criação de item ainda não implementada.")
+        title = request.POST.get("title")
+        summary = request.POST.get("summary")
+        content = request.POST.get("content")
+        item_type = request.POST.get("item_type")
+        severity = request.POST.get("severity")
+        target_type = request.POST.get("target_type")
+
+        is_active = request.POST.get("is_active") == "on"
+        is_pinned = request.POST.get("is_pinned") == "on"
+        is_indefinite = request.POST.get("is_indefinite") == "on"
+        until_read = request.POST.get("until_read") == "on"
+
+        starts_at = format_datetime_to_api(request.POST.get("starts_at"))
+        ends_at = format_datetime_to_api(request.POST.get("ends_at"))
+
+        external_link = request.POST.get("external_link") or None
+        attachment_url = request.POST.get("attachment_url") or None
+        image_url = request.POST.get("image_url") or None
+
+        created_by_id = request.user.id
+
+        target_id = request.POST.get("target_id") or None
+
+        if target_type == "all":
+            ids = []
+        elif target_id:
+            ids = [int(target_id)]
+        else:
+            ids = []
+
+        payload = {
+            "title": title,
+            "summary": summary,
+            "content": content,
+            "item_type": item_type,
+            "severity": severity,
+            "target_type": target_type,
+            "is_active": is_active,
+            "is_pinned": is_pinned,
+            "is_indefinite": is_indefinite,
+            "until_read": until_read,
+            "starts_at": starts_at,
+            "ends_at": ends_at,
+            "external_link": external_link,
+            "attachment_url": attachment_url,
+            "image_url": image_url,
+            "created_by_id": created_by_id,
+            "ids": ids
+        }
+
+        print(payload)
+
+        try:
+            create_url = (
+                f"{MURAL_API_URL}/v1/items/create-item/"
+            )
+
+            create_client = RequestClient(
+                url=create_url,
+                method="POST",
+                headers={
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                request_data=payload
+            )
+
+            create_resp = create_client.send_api_request()
+
+            if 'detail' in create_resp:
+                messages.error(request, create_resp.get('detail'))
+            else:
+                messages.success(request, "Item criado com sucesso!")
+
+        except Exception as e:
+            messages.error(request, f"Erro ao criar item no mural. Erro: {e}")
 
     return render(request, 'mural/template_mural.html', {
         'site_title': 'Home',
