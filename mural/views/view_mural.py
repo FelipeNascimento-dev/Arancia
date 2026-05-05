@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
@@ -215,9 +215,39 @@ def mural(request):
                 messages.error(request, create_resp.get('detail'))
             else:
                 messages.success(request, "Item criado com sucesso!")
+                return redirect('mural:mural')
 
         except Exception as e:
             messages.error(request, f"Erro ao criar item no mural. Erro: {e}")
+
+    if "disable_item" in request.POST:
+        item_id = request.POST.get("disable_item_id")
+
+        try:
+            disable_url = (
+                f"{MURAL_API_URL}/v1/items/disable-item/{item_id}"
+            )
+
+            disable_client = RequestClient(
+                url=disable_url,
+                method="DELETE",
+                headers={
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                }
+            )
+
+            disable_resp = disable_client.send_api_request()
+
+            if 'detail' in disable_resp:
+                messages.error(request, disable_resp.get('detail'))
+            else:
+                messages.success(request, "Item desabilitado com sucesso!")
+                return redirect('mural:mural')
+
+        except Exception as e:
+            messages.error(
+                request, f"Erro ao desabilitar item no mural. Erro: {e}")
 
     return render(request, 'mural/template_mural.html', {
         'site_title': 'Home',

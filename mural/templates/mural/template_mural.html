@@ -812,6 +812,19 @@
         padding: 0;
         cursor: pointer;
     }
+
+    .action-btn.danger,
+    .card-btn.danger {
+        background: linear-gradient(135deg, var(--danger) 0%, var(--danger-dark) 100%);
+        border-color: transparent;
+        color: #fff;
+    }
+
+    .action-btn.danger:hover,
+    .card-btn.danger:hover {
+        background: var(--danger-dark);
+        color: #fff;
+    }
 </style>
 
 <div class="page">
@@ -1345,7 +1358,21 @@
             </div>
         </div>
 
-        <div class="view-modal-actions" id="viewItemActions"></div>
+        <div class="view-modal-actions">
+            <div id="viewItemActions"></div>
+
+            <form method="post" id="disableItemForm" style="display: inline-flex;">
+                {% csrf_token %}
+
+                <input type="hidden" name="disable_item" value="1">
+                <input type="hidden" name="disable_item_id" id="disableItemId">
+
+                <button type="submit" class="action-btn danger">
+                    <i class="fa-solid fa-ban"></i>
+                    Desabilitar item
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 <script>
@@ -1363,10 +1390,13 @@
     const viewItemStatus = document.getElementById('viewItemStatus');
     const viewItemDeadline = document.getElementById('viewItemDeadline');
     const viewItemActions = document.getElementById('viewItemActions');
+    const disableItemId = document.getElementById('disableItemId');
 
     function openViewItemModal(item) {
         viewItemTitle.textContent = item.title || 'Detalhes do item';
 
+        disableItemId.value = item.id || '';
+        
         viewItemBadges.innerHTML = `
             <span class="badge green">
                 <i class="fa-regular fa-file-lines"></i> ${item.item_type_label || 'Item'}
