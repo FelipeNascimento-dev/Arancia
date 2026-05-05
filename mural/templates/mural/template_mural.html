@@ -679,6 +679,139 @@
             grid-template-columns: 1fr;
         }
     }
+
+    .view-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        z-index: 10000;
+    }
+
+    .view-modal-overlay.show {
+        display: flex;
+    }
+
+    .view-modal {
+        width: min(850px, 100%);
+        max-height: 90vh;
+        overflow: auto;
+        background: #fff;
+        border-radius: 22px;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+        border: 1px solid var(--border);
+    }
+
+    .view-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        padding: 22px 24px;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 2;
+    }
+
+    .view-modal-title {
+        margin: 0;
+        font-size: 24px;
+        color: var(--text);
+        line-height: 1.2;
+    }
+
+    .view-modal-close {
+        border: 1px solid var(--border);
+        background: #fff;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 18px;
+    }
+
+    .view-modal-body {
+        padding: 24px;
+        display: grid;
+        gap: 18px;
+    }
+
+    .view-modal-badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .view-modal-summary {
+        padding: 16px;
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        color: var(--text);
+        line-height: 1.6;
+    }
+
+    .view-modal-content {
+        color: var(--text);
+        line-height: 1.75;
+        white-space: pre-wrap;
+    }
+
+    .view-modal-info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .view-info-card {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 14px;
+        background: #fff;
+    }
+
+    .view-info-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 6px;
+    }
+
+    .view-info-value {
+        font-size: 14px;
+        color: var(--text);
+        font-weight: 700;
+        word-break: break-word;
+    }
+
+    .view-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 0 24px 24px;
+    }
+
+    @media (max-width: 820px) {
+        .view-modal-info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    button.card-link {
+        border: none;
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+    }
 </style>
 
 <div class="page">
@@ -821,7 +954,9 @@
             </div>
           </div>
           <div class="critical-actions">
-            <a href="${item.link}" class="card-btn primary">Abrir</a>
+            <button type="button" class="card-btn primary js-view-item" data-id="${item.id}">
+                Abrir
+            </button>
             <button class="card-btn js-mark-read" data-id="${item.id}">
               <i class="fa-regular fa-circle-check"></i> Marcar como lido
             </button>
@@ -848,7 +983,9 @@
             ${item.is_read ? '<span><i class="fa-solid fa-check"></i> Lido</span>' : '<span><i class="fa-regular fa-bell"></i> Pendente</span>'}
           </div>
           <div class="card-footer">
-            <a href="${item.link}" class="card-link">Visualizar <i class="fa-solid fa-arrow-right"></i></a>
+            <button type="button" class="card-link js-view-item" data-id="${item.id}">
+                Visualizar <i class="fa-solid fa-arrow-right"></i>
+            </button>
             <div class="card-actions">
               ${!item.is_read ? `<button class="card-btn js-mark-read" data-id="${item.id}">Marcar como lido</button>` : ''}
             </div>
@@ -873,7 +1010,9 @@
             ${item.is_read ? '<span><i class="fa-solid fa-check"></i> Lido</span>' : '<span><i class="fa-regular fa-bookmark"></i> Disponível</span>'}
           </div>
           <div class="card-footer">
-            <a href="${item.link}" class="card-link">Abrir material <i class="fa-solid fa-arrow-right"></i></a>
+            <button type="button" class="card-link js-view-item" data-id="${item.id}">
+                Abrir material <i class="fa-solid fa-arrow-right"></i>
+            </button>
             <div class="card-actions">
               ${!item.is_read ? `<button class="card-btn js-mark-read" data-id="${item.id}">Marcar como lido</button>` : ''}
             </div>
@@ -947,6 +1086,7 @@
         }
 
         bindReadButtons();
+        bindViewButtons();
     }
 
     function bindReadButtons() {
@@ -957,6 +1097,19 @@
                 if (!item) return;
                 item.is_read = true;
                 renderMural();
+            });
+        });
+    }
+
+    function bindViewButtons() {
+        document.querySelectorAll('.js-view-item').forEach(button => {
+            button.addEventListener('click', () => {
+                const id = Number(button.dataset.id);
+                const item = muralItems.find(entry => entry.id === id);
+
+                if (!item) return;
+
+                openViewItemModal(item);
             });
         });
     }
@@ -1141,6 +1294,162 @@
     }
 </script>
 
+<!-- MODAL PARA VISUALIZAÇÃO DE ITENS -->
+<div class="view-modal-overlay" id="viewItemModal">
+    <div class="view-modal">
+        <div class="view-modal-header">
+            <h3 class="view-modal-title" id="viewItemTitle">Detalhes do item</h3>
+            <button type="button" class="view-modal-close" id="closeViewItemModalBtn">×</button>
+        </div>
+
+        <div class="view-modal-body">
+            <div class="view-modal-badges" id="viewItemBadges"></div>
+
+            <div class="view-modal-summary" id="viewItemSummary"></div>
+
+            <div>
+                <span class="view-info-label">Conteúdo</span>
+                <div class="view-modal-content" id="viewItemContent"></div>
+            </div>
+
+            <div class="view-modal-info-grid">
+                <div class="view-info-card">
+                    <span class="view-info-label">Tipo</span>
+                    <div class="view-info-value" id="viewItemType"></div>
+                </div>
+
+                <div class="view-info-card">
+                    <span class="view-info-label">Severidade</span>
+                    <div class="view-info-value" id="viewItemSeverity"></div>
+                </div>
+
+                <div class="view-info-card">
+                    <span class="view-info-label">Início</span>
+                    <div class="view-info-value" id="viewItemStartsAt"></div>
+                </div>
+
+                <div class="view-info-card">
+                    <span class="view-info-label">Fim</span>
+                    <div class="view-info-value" id="viewItemEndsAt"></div>
+                </div>
+
+                <div class="view-info-card">
+                    <span class="view-info-label">Status</span>
+                    <div class="view-info-value" id="viewItemStatus"></div>
+                </div>
+
+                <div class="view-info-card">
+                    <span class="view-info-label">Prazo</span>
+                    <div class="view-info-value" id="viewItemDeadline"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="view-modal-actions" id="viewItemActions"></div>
+    </div>
+</div>
+<script>
+    const viewItemModal = document.getElementById('viewItemModal');
+    const closeViewItemModalBtn = document.getElementById('closeViewItemModalBtn');
+
+    const viewItemTitle = document.getElementById('viewItemTitle');
+    const viewItemBadges = document.getElementById('viewItemBadges');
+    const viewItemSummary = document.getElementById('viewItemSummary');
+    const viewItemContent = document.getElementById('viewItemContent');
+    const viewItemType = document.getElementById('viewItemType');
+    const viewItemSeverity = document.getElementById('viewItemSeverity');
+    const viewItemStartsAt = document.getElementById('viewItemStartsAt');
+    const viewItemEndsAt = document.getElementById('viewItemEndsAt');
+    const viewItemStatus = document.getElementById('viewItemStatus');
+    const viewItemDeadline = document.getElementById('viewItemDeadline');
+    const viewItemActions = document.getElementById('viewItemActions');
+
+    function openViewItemModal(item) {
+        viewItemTitle.textContent = item.title || 'Detalhes do item';
+
+        viewItemBadges.innerHTML = `
+            <span class="badge green">
+                <i class="fa-regular fa-file-lines"></i> ${item.item_type_label || 'Item'}
+            </span>
+            <span class="severity-pill ${severityClass(item.severity || 'informational')}">
+                ${item.severity_label || 'Informativo'}
+            </span>
+            ${item.is_pinned ? '<span class="badge orange"><i class="fa-solid fa-thumbtack"></i> Fixado</span>' : ''}
+            ${item.until_read ? '<span class="badge blue"><i class="fa-regular fa-eye"></i> Até leitura</span>' : ''}
+        `;
+
+        viewItemSummary.textContent = item.summary || 'Sem resumo informado.';
+        viewItemContent.textContent = item.content || 'Sem conteúdo informado.';
+
+        viewItemType.textContent = item.item_type_label || '-';
+        viewItemSeverity.textContent = item.severity_label || '-';
+        viewItemStartsAt.textContent = item.starts_at || '-';
+        viewItemEndsAt.textContent = item.ends_at || '-';
+
+        viewItemStatus.textContent = item.is_read ? 'Lido' : 'Pendente de leitura';
+
+        viewItemDeadline.textContent = item.is_indefinite
+            ? 'Prazo indefinido'
+            : item.ends_at || 'Sem data final';
+
+        viewItemActions.innerHTML = '';
+
+        if (item.external_link) {
+            viewItemActions.innerHTML += `
+                <a href="${item.external_link}" target="_blank" class="action-btn primary">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    Abrir link externo
+                </a>
+            `;
+        }
+
+        if (item.attachment_url) {
+            viewItemActions.innerHTML += `
+                <a href="${item.attachment_url}" target="_blank" class="action-btn">
+                    <i class="fa-solid fa-paperclip"></i>
+                    Abrir anexo
+                </a>
+            `;
+        }
+
+        if (item.image_url) {
+            viewItemActions.innerHTML += `
+                <a href="${item.image_url}" target="_blank" class="action-btn">
+                    <i class="fa-regular fa-image"></i>
+                    Abrir imagem
+                </a>
+            `;
+        }
+
+        if (!item.external_link && !item.attachment_url && !item.image_url) {
+            viewItemActions.innerHTML = `
+                <button type="button" class="action-btn" disabled>
+                    Nenhum link adicional informado
+                </button>
+            `;
+        }
+
+        viewItemModal.classList.add('show');
+    }
+
+    function closeViewItemModal() {
+        viewItemModal.classList.remove('show');
+    }
+
+    if (closeViewItemModalBtn) {
+        closeViewItemModalBtn.addEventListener('click', closeViewItemModal);
+    }
+
+    if (viewItemModal) {
+        viewItemModal.addEventListener('click', (event) => {
+            if (event.target === viewItemModal) {
+                closeViewItemModal();
+            }
+        });
+    }
+</script>
+
+<!-- SELECT DE PUBLICO ALVO -->
 {{ target_users|json_script:"target-users-data" }}
 {{ target_groups|json_script:"target-groups-data" }}
 
