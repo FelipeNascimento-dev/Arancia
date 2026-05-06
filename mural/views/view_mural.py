@@ -35,6 +35,17 @@ def format_datetime(value):
         return value
 
 
+def format_datetime_to_input(value):
+    if not value:
+        return ""
+
+    try:
+        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        return dt.strftime("%Y-%m-%dT%H:%M")
+    except Exception:
+        return ""
+
+
 def format_datetime_to_api(value):
     if not value:
         return None
@@ -64,6 +75,8 @@ def normalize_item(item):
         ),
         "starts_at": format_datetime(item.get("starts_at")),
         "ends_at": format_datetime(item.get("ends_at")),
+        "starts_at_input": format_datetime_to_input(item.get("starts_at")),
+        "ends_at_input": format_datetime_to_input(item.get("ends_at")),
         "until_read": item.get("until_read", False),
         "is_indefinite": item.get("is_indefinite", False),
         "is_pinned": item.get("is_pinned", False),
@@ -248,6 +261,110 @@ def mural(request):
         except Exception as e:
             messages.error(
                 request, f"Erro ao desabilitar item no mural. Erro: {e}")
+
+    if "mark_read_item" in request.POST:
+        mark_read_item_id = request.POST.get("mark_read_item_id")
+        mark_read_user_id = request.user.id
+
+        mark_read_payload = {
+            "mural_item_id": mark_read_item_id,
+            "user_id": mark_read_user_id
+        }
+
+        try:
+            mark_read_url = (
+                f"{MURAL_API_URL}/v1/item-reads/?manualconfirmation=true"
+            )
+
+            mark_read_client = RequestClient(
+                url=mark_read_url,
+                method="POST",
+                headers={
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                request_data=mark_read_payload
+            )
+
+            mark_read_resp = mark_read_client.send_api_request()
+
+            if 'detail' in mark_read_resp:
+                messages.error(request, mark_read_resp.get('detail'))
+            else:
+                messages.success(
+                    request, "Item marcado como lido com sucesso!")
+                return redirect('mural:mural')
+
+        except Exception as e:
+            messages.warning(
+                request, f"Não foi possível marcar o item como lido. Erro: {e}"
+            )
+
+    if "edit_mural_item" in request.POST:
+        edit_item_id = request.POST.get("edit_item_id")
+
+        edit_title = request.POST.get("title")
+        edit_summary = request.POST.get("summary")
+        edit_content = request.POST.get("content")
+        edit_item_type = request.POST.get("item_type")
+        edit_severity = request.POST.get("severity")
+
+        edit_is_active = request.POST.get("is_active") == "on"
+        edit_is_pinned = request.POST.get("is_pinned") == "on"
+        edit_is_indefinite = request.POST.get("is_indefinite") == "on"
+        edit_until_read = request.POST.get("until_read") == "on"
+
+        edit_starts_at = format_datetime_to_api(request.POST.get("starts_at"))
+        edit_ends_at = format_datetime_to_api(request.POST.get("ends_at"))
+
+        edit_external_link = request.POST.get("external_link") or None
+        edit_attachment_url = request.POST.get("attachment_url") or None
+        edit_image_url = request.POST.get("image_url") or None
+
+        edit_payload = {
+            "title": edit_title,
+            "summary": edit_summary,
+            "content": edit_content,
+            "item_type": edit_item_type,
+            "severity": edit_severity,
+            "is_active": edit_is_active,
+            "is_pinned": edit_is_pinned,
+            "is_indefinite": edit_is_indefinite,
+            "until_read": edit_until_read,
+            "starts_at": edit_starts_at,
+            "ends_at": edit_ends_at,
+            "external_link": edit_external_link,
+            "attachment_url": edit_attachment_url,
+            "image_url": edit_image_url,
+            "updated_by_id": request.user.id,
+        }
+
+        try:
+            edit_url = (
+                f"{MURAL_API_URL}/v1/items/update-item/{edit_item_id}"
+            )
+
+            edit_client = RequestClient(
+                url=edit_url,
+                method="PUT",
+                headers={
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                request_data=edit_payload
+            )
+
+            edit_resp = edit_client.send_api_request()
+
+            if 'detail' in edit_resp:
+                messages.error(request, edit_resp.get('detail'))
+            else:
+                messages.success(request, "Item editado com sucesso!")
+                return redirect('mural:mural')
+
+        except Exception as e:
+            messages.error(
+                request, f"Erro ao editar item no mural. Erro: {e}")
 
     return render(request, 'mural/template_mural.html', {
         'site_title': 'Home',
