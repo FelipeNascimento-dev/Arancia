@@ -2,9 +2,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
-
+import requests
 from logistica.models import GroupAditionalInformation
-from setup.local_settings import MURAL_API_URL
+from setup.local_settings import MURAL_API_URL, TRANSP_API_URL
 from utils.request import RequestClient
 
 from datetime import datetime
@@ -91,6 +91,50 @@ def normalize_item(item):
     }
 
 
+def upload_file_to_firebase(uploaded_file):
+    if not uploaded_file:
+        return None
+
+    upload_url = f"{TRANSP_API_URL}/v2/firebase/upload/Firebase/"
+
+    files = {
+        "file": (
+            uploaded_file.name,
+            uploaded_file.file,
+            uploaded_file.content_type
+        )
+    }
+
+    response = requests.post(
+        upload_url,
+        files=files,
+        timeout=60
+    )
+
+    try:
+        response_data = response.json()
+    except Exception:
+        raise Exception(
+            f"Erro ao interpretar resposta do upload: {response.text}")
+
+    if response.status_code not in [200, 201]:
+        raise Exception(response_data)
+
+    firebase_url = (
+        response_data.get("url")
+        or response_data.get("file_url")
+        or response_data.get("download_url")
+        or response_data.get("public_url")
+        or response_data.get("data", {}).get("url")
+    )
+
+    if not firebase_url:
+        raise Exception(
+            f"Upload realizado, mas nenhuma URL foi retornada: {response_data}")
+
+    return firebase_url
+
+
 @login_required(login_url='logistica:login')
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def mural(request):
@@ -171,8 +215,24 @@ def mural(request):
         ends_at = format_datetime_to_api(request.POST.get("ends_at"))
 
         external_link = request.POST.get("external_link") or None
-        attachment_url = request.POST.get("attachment_url") or None
-        image_url = request.POST.get("image_url") or None
+
+        attachment_file = request.FILES.get("attachment_file")
+        image_file = request.FILES.get("image_file")
+
+        attachment_url = None
+        image_url = None
+
+        try:
+            if attachment_file:
+                attachment_url = upload_file_to_firebase(attachment_file)
+
+            if image_file:
+                image_url = upload_file_to_firebase(image_file)
+
+        except Exception as e:
+            messages.error(
+                request, f"Erro ao enviar arquivo/imagem para o Firebase. Erro: {e}")
+            return redirect('mural:mural')
 
         created_by_id = request.user.id
 
@@ -318,8 +378,28 @@ def mural(request):
         edit_ends_at = format_datetime_to_api(request.POST.get("ends_at"))
 
         edit_external_link = request.POST.get("external_link") or None
-        edit_attachment_url = request.POST.get("attachment_url") or None
-        edit_image_url = request.POST.get("image_url") or None
+        current_attachment_url = request.POST.get(
+            "current_attachment_url") or None
+        current_image_url = request.POST.get("current_image_url") or None
+
+        edit_attachment_file = request.FILES.get("attachment_file")
+        edit_image_file = request.FILES.get("image_file")
+
+        edit_attachment_url = current_attachment_url
+        edit_image_url = current_image_url
+
+        try:
+            if edit_attachment_file:
+                edit_attachment_url = upload_file_to_firebase(
+                    edit_attachment_file)
+
+            if edit_image_file:
+                edit_image_url = upload_file_to_firebase(edit_image_file)
+
+        except Exception as e:
+            messages.error(
+                request, f"Erro ao enviar novo arquivo/imagem para o Firebase. Erro: {e}")
+            return redirect('mural:mural')
 
         edit_payload = {
             "title": edit_title,

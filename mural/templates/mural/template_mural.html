@@ -846,6 +846,35 @@
         opacity: 0.55;
         cursor: not-allowed;
     }
+
+    .mural-image-preview {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+        background: var(--surface-soft);
+        display: none;
+    }
+
+    .mural-image-preview.show {
+        display: block;
+    }
+
+    .mural-image-preview img {
+        width: 100%;
+        max-height: 420px;
+        object-fit: contain;
+        display: block;
+        background: #fff;
+    }
+
+    .mural-image-preview-caption {
+        padding: 10px 14px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+        border-top: 1px solid var(--border);
+    }
 </style>
 
 <div class="page">
@@ -1159,7 +1188,7 @@
             <button type="button" class="create-modal-close" id="closeCreateModalBtn">×</button>
         </div>
 
-        <form method="post" class="create-form">
+        <form method="post" class="create-form" enctype="multipart/form-data">
             {% csrf_token %}
 
             <div class="form-grid">
@@ -1231,13 +1260,30 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">URL do anexo</label>
-                    <input type="url" name="attachment_url" class="form-control">
+                    <label class="form-label">Anexo</label>
+                    <input 
+                        type="file" 
+                        name="attachment_file" 
+                        id="attachmentFile" 
+                        class="form-control"
+                    >
+                    <small style="color: var(--muted); font-size: 12px;">
+                        Selecione um arquivo da sua máquina para anexar ao item.
+                    </small>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">URL da imagem</label>
-                    <input type="url" name="image_url" class="form-control">
+                    <label class="form-label">Imagem</label>
+                    <input 
+                        type="file" 
+                        name="image_file" 
+                        id="imageFile" 
+                        class="form-control"
+                        accept="image/*"
+                    >
+                    <small style="color: var(--muted); font-size: 12px;">
+                        Selecione uma imagem da sua máquina para exibir ou anexar ao item.
+                    </small>
                 </div>
 
                 <div class="form-group full">
@@ -1362,6 +1408,13 @@
                     <div class="view-info-value" id="viewItemDeadline"></div>
                 </div>
             </div>
+
+            <div class="mural-image-preview" id="viewItemImageBox">
+                <img id="viewItemImage" src="" alt="Imagem do item">
+                <div class="mural-image-preview-caption">
+                    Imagem vinculada ao item
+                </div>
+            </div>
         </div>
 
         <div class="view-modal-actions">
@@ -1406,6 +1459,8 @@
     const viewItemBadges = document.getElementById('viewItemBadges');
     const viewItemSummary = document.getElementById('viewItemSummary');
     const viewItemContent = document.getElementById('viewItemContent');
+    const viewItemImageBox = document.getElementById('viewItemImageBox');
+    const viewItemImage = document.getElementById('viewItemImage');
     const viewItemType = document.getElementById('viewItemType');
     const viewItemSeverity = document.getElementById('viewItemSeverity');
     const viewItemStartsAt = document.getElementById('viewItemStartsAt');
@@ -1537,6 +1592,14 @@
         viewItemSummary.textContent = item.summary || 'Sem resumo informado.';
         viewItemContent.textContent = item.content || 'Sem conteúdo informado.';
 
+        if (item.image_url) {
+            viewItemImage.src = item.image_url;
+            viewItemImageBox.classList.add('show');
+        } else {
+            viewItemImage.src = '';
+            viewItemImageBox.classList.remove('show');
+        }
+        
         viewItemType.textContent = item.item_type_label || '-';
         viewItemSeverity.textContent = item.severity_label || '-';
         viewItemStartsAt.textContent = item.starts_at || '-';
@@ -1564,15 +1627,6 @@
                 <a href="${item.attachment_url}" target="_blank" class="action-btn">
                     <i class="fa-solid fa-paperclip"></i>
                     Abrir anexo
-                </a>
-            `;
-        }
-
-        if (item.image_url) {
-            viewItemActions.innerHTML += `
-                <a href="${item.image_url}" target="_blank" class="action-btn">
-                    <i class="fa-regular fa-image"></i>
-                    Abrir imagem
                 </a>
             `;
         }
@@ -1658,11 +1712,13 @@
             <button type="button" class="create-modal-close" id="closeEditItemModalBtn">×</button>
         </div>
 
-        <form method="post" class="create-form">
+        <form method="post" class="create-form" enctype="multipart/form-data">
             {% csrf_token %}
 
             <input type="hidden" name="edit_mural_item" value="1">
             <input type="hidden" name="edit_item_id" id="editItemId">
+            <input type="hidden" name="current_attachment_url" id="editCurrentAttachmentUrl">
+            <input type="hidden" name="current_image_url" id="editCurrentImageUrl">
 
             <div class="form-grid">
                 <div class="form-group full">
@@ -1716,13 +1772,41 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">URL do anexo</label>
-                    <input type="url" name="attachment_url" id="editAttachmentUrl" class="form-control">
+                    <label class="form-label">Novo anexo</label>
+                    <input 
+                        type="file" 
+                        name="attachment_file" 
+                        id="editAttachmentFile" 
+                        class="form-control"
+                    >
+                    <small style="color: var(--muted); font-size: 12px;">
+                        Envie um novo arquivo apenas se quiser substituir o anexo atual.
+                    </small>
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Imagem atual</label>
+
+                    <div class="mural-image-preview" id="editCurrentImageBox">
+                        <img id="editCurrentImagePreview" src="" alt="Imagem atual do item">
+                        <div class="mural-image-preview-caption">
+                            Imagem atualmente vinculada ao item
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">URL da imagem</label>
-                    <input type="url" name="image_url" id="editImageUrl" class="form-control">
+                    <label class="form-label">Nova imagem</label>
+                    <input 
+                        type="file" 
+                        name="image_file" 
+                        id="editImageFile" 
+                        class="form-control"
+                        accept="image/*"
+                    >
+                    <small style="color: var(--muted); font-size: 12px;">
+                        Envie uma nova imagem apenas se quiser substituir a imagem atual.
+                    </small>
                 </div>
 
                 <div class="form-group full">
@@ -1768,13 +1852,17 @@
     const editTitle = document.getElementById('editTitle');
     const editSummary = document.getElementById('editSummary');
     const editContent = document.getElementById('editContent');
+    const editCurrentImageBox = document.getElementById('editCurrentImageBox');
+    const editCurrentImagePreview = document.getElementById('editCurrentImagePreview');
     const editItemType = document.getElementById('editItemType');
     const editSeverity = document.getElementById('editSeverity');
     const editStartsAt = document.getElementById('editStartsAt');
     const editEndsAt = document.getElementById('editEndsAt');
     const editExternalLink = document.getElementById('editExternalLink');
-    const editAttachmentUrl = document.getElementById('editAttachmentUrl');
-    const editImageUrl = document.getElementById('editImageUrl');
+    const editAttachmentFile = document.getElementById('editAttachmentFile');
+    const editImageFile = document.getElementById('editImageFile');
+    const editCurrentAttachmentUrl = document.getElementById('editCurrentAttachmentUrl');
+    const editCurrentImageUrl = document.getElementById('editCurrentImageUrl');
     const editIsActive = document.getElementById('editIsActive');
     const editIsPinned = document.getElementById('editIsPinned');
     const editIsIndefinite = document.getElementById('editIsIndefinite');
@@ -1795,8 +1883,24 @@
         editEndsAt.value = item.ends_at_input || '';
 
         editExternalLink.value = item.external_link || '';
-        editAttachmentUrl.value = item.attachment_url || '';
-        editImageUrl.value = item.image_url || '';
+        editCurrentAttachmentUrl.value = item.attachment_url || '';
+        editCurrentImageUrl.value = item.image_url || '';
+
+        if (item.image_url) {
+            editCurrentImagePreview.src = item.image_url;
+            editCurrentImageBox.classList.add('show');
+        } else {
+            editCurrentImagePreview.src = '';
+            editCurrentImageBox.classList.remove('show');
+        }
+
+        if (editAttachmentFile) {
+            editAttachmentFile.value = '';
+        }
+
+        if (editImageFile) {
+            editImageFile.value = '';
+        }
 
         editIsActive.checked = item.is_active === true;
         editIsPinned.checked = item.is_pinned === true;
