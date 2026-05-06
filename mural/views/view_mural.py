@@ -8,6 +8,85 @@ from setup.local_settings import MURAL_API_URL, TRANSP_API_URL
 from utils.request import RequestClient
 
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
+BR_TZ = ZoneInfo("America/Sao_Paulo")
+UTC_TZ = ZoneInfo("UTC")
+
+
+def parse_api_datetime(value):
+    if not value:
+        return None
+
+    try:
+        value = str(value).strip()
+
+        if value.endswith("Z"):
+            value = value.replace("Z", "+00:00")
+
+        dt = datetime.fromisoformat(value)
+
+        # Se vier sem timezone da API, vamos assumir UTC
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=UTC_TZ)
+
+        return dt
+
+    except Exception:
+        return None
+
+
+def format_datetime(value):
+    """
+    API -> Tela
+    Exemplo:
+    2026-05-06T14:46:00.000Z -> 06/05/2026 11:46
+    """
+    dt = parse_api_datetime(value)
+
+    if not dt:
+        return value or ""
+
+    dt_br = dt.astimezone(BR_TZ)
+
+    return dt_br.strftime("%d/%m/%Y %H:%M")
+
+
+def format_datetime_to_input(value):
+    """
+    API -> input datetime-local
+    Exemplo:
+    2026-05-06T14:46:00.000Z -> 2026-05-06T11:46
+    """
+    dt = parse_api_datetime(value)
+
+    if not dt:
+        return ""
+
+    dt_br = dt.astimezone(BR_TZ)
+
+    return dt_br.strftime("%Y-%m-%dT%H:%M")
+
+
+def format_datetime_to_api(value):
+    """
+    input datetime-local -> API
+    Exemplo:
+    2026-05-06T11:46 -> 2026-05-06T14:46:00.000Z
+    """
+    if not value:
+        return None
+
+    try:
+        dt_br = datetime.strptime(value, "%Y-%m-%dT%H:%M")
+        dt_br = dt_br.replace(tzinfo=BR_TZ)
+
+        dt_utc = dt_br.astimezone(UTC_TZ)
+
+        return dt_utc.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
+    except Exception:
+        return None
 
 
 ITEM_TYPE_LABELS = {
@@ -23,40 +102,6 @@ SEVERITY_LABELS = {
     "important": "Importante",
     "critical": "Crítico",
 }
-
-
-def format_datetime(value):
-    if not value:
-        return ""
-    try:
-        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
-        return dt.strftime("%d/%m/%Y %H:%M")
-    except Exception:
-        return value
-
-
-def format_datetime_to_input(value):
-    if not value:
-        return ""
-
-    try:
-        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
-        return dt.strftime("%Y-%m-%dT%H:%M")
-    except Exception:
-        return ""
-
-
-def format_datetime_to_api(value):
-    if not value:
-        return None
-
-    try:
-        dt = datetime.strptime(value, "%Y-%m-%dT%H:%M")
-
-        return dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
-
-    except Exception:
-        return None
 
 
 def normalize_item(item):
@@ -265,7 +310,10 @@ def mural(request):
             "ids": ids
         }
 
-        print(payload)
+        print("STARTS POST HTML:", request.POST.get("starts_at"))
+        print("STARTS API:", starts_at)
+        print("ENDS POST HTML:", request.POST.get("ends_at"))
+        print("ENDS API:", ends_at)
 
         try:
             create_url = (
