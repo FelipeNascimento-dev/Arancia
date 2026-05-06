@@ -926,10 +926,10 @@
                 <button class="filter-btn" data-filter="notice">Avisos</button>
                 <button class="filter-btn" data-filter="script">Scripts</button>
                 <button class="filter-btn" data-filter="manual">Manuais</button>
-                <!-- <button class="action-btn dark" id="toggleReadBtn">
+                <button class="action-btn dark" id="toggleReadBtn">
                     <i class="fa-regular fa-circle-check"></i>
                     Ocultar lidos
-                </button> -->
+                </button>
                 <button class="action-btn primary" type="button" id="openCreateModalBtn">
                     <i class="fa-solid fa-plus"></i>
                     Novo item
@@ -945,6 +945,7 @@
                         Alertas críticos
                         <small>Leitura obrigatória</small>
                     </h2>
+                    <a href="#" class="section-link">Ver histórico</a>
                 </div>
                 <div class="critical-stack" id="criticalList"></div>
             </section>
@@ -956,6 +957,7 @@
                         Fixados
                         <small>Conteúdo prioritário</small>
                     </h2>
+                    <a href="#" class="section-link">Gerenciar destaques</a>
                 </div>
                 <div class="card-grid" id="pinnedList"></div>
             </section>
@@ -967,6 +969,7 @@
                         Atualizações e materiais
                         <small>Documentos e orientações</small>
                     </h2>
+                    <a href="#" class="section-link">Ver biblioteca completa</a>
                 </div>
                 <div class="manual-grid" id="generalList"></div>
             </section>
@@ -1230,6 +1233,7 @@
                         <option value="all">Todos</option>
                         <option value="users">Usuários</option>
                         <option value="groups">Grupos</option>
+                        <option value="gais">GAIs</option>
                     </select>
                 </div>
 
@@ -1941,11 +1945,13 @@
 
 <!-- SELECT DE PUBLICO ALVO -->
 {{ target_users|json_script:"target-users-data" }}
+{{ target_gais|json_script:"target-gais-data" }}
 {{ target_groups|json_script:"target-groups-data" }}
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const targetUsers = JSON.parse(document.getElementById('target-users-data').textContent);
+        const targetGais = JSON.parse(document.getElementById('target-gais-data').textContent);
         const targetGroups = JSON.parse(document.getElementById('target-groups-data').textContent);
 
         const targetTypeSelect = document.getElementById('targetTypeSelect');
@@ -2007,18 +2013,33 @@
                 });
             }
 
+            if (selectedType === 'gais') {
+                targetObjectsLabel.textContent = 'GAI';
+                addOption('', 'Selecione uma GAI');
+
+                if (!targetGais.length) {
+                    clearTargetObjects();
+                    addOption('', 'Nenhuma GAI encontrada');
+                    return;
+                }
+
+                targetGais.forEach(gai => {
+                    addOption(gai.id, gai.nome);
+                });
+            }
+
             if (selectedType === 'groups') {
                 targetObjectsLabel.textContent = 'Grupo';
                 addOption('', 'Selecione um grupo');
 
                 if (!targetGroups.length) {
                     clearTargetObjects();
-                    addOption('', 'Nenhum grupo encontrado');
+                    addOption('', 'Nenhum grupo arancia_ encontrado');
                     return;
                 }
 
                 targetGroups.forEach(group => {
-                    addOption(group.id, group.nome);
+                    addOption(group.id, group.name);
                 });
             }
         }
