@@ -688,7 +688,7 @@
         align-items: center;
         justify-content: center;
         padding: 24px;
-        z-index: 10000;
+        z-index: 9998;
     }
 
     .view-modal-overlay.show {
@@ -825,6 +825,56 @@
         background: var(--danger-dark);
         color: #fff;
     }
+
+    .read-required-box {
+        display: none;
+        padding: 14px 16px;
+        border-radius: 14px;
+        background: var(--warning-soft);
+        color: #92400e;
+        border: 1px solid #fde68a;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.5;
+    }
+
+    .read-required-box.show {
+        display: block;
+    }
+
+    .action-btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+
+    .mural-image-preview {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+        background: var(--surface-soft);
+        display: none;
+    }
+
+    .mural-image-preview.show {
+        display: block;
+    }
+
+    .mural-image-preview img {
+        width: 100%;
+        max-height: 420px;
+        object-fit: contain;
+        display: block;
+        background: #fff;
+    }
+
+    .mural-image-preview-caption {
+        padding: 10px 14px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+        border-top: 1px solid var(--border);
+    }
 </style>
 
 <div class="page">
@@ -876,10 +926,10 @@
                 <button class="filter-btn" data-filter="notice">Avisos</button>
                 <button class="filter-btn" data-filter="script">Scripts</button>
                 <button class="filter-btn" data-filter="manual">Manuais</button>
-                <button class="action-btn dark" id="toggleReadBtn">
+                <!-- <button class="action-btn dark" id="toggleReadBtn">
                     <i class="fa-regular fa-circle-check"></i>
                     Ocultar lidos
-                </button>
+                </button> -->
                 <button class="action-btn primary" type="button" id="openCreateModalBtn">
                     <i class="fa-solid fa-plus"></i>
                     Novo item
@@ -895,7 +945,6 @@
                         Alertas críticos
                         <small>Leitura obrigatória</small>
                     </h2>
-                    <a href="#" class="section-link">Ver histórico</a>
                 </div>
                 <div class="critical-stack" id="criticalList"></div>
             </section>
@@ -907,7 +956,6 @@
                         Fixados
                         <small>Conteúdo prioritário</small>
                     </h2>
-                    <a href="#" class="section-link">Gerenciar destaques</a>
                 </div>
                 <div class="card-grid" id="pinnedList"></div>
             </section>
@@ -919,7 +967,6 @@
                         Atualizações e materiais
                         <small>Documentos e orientações</small>
                     </h2>
-                    <a href="#" class="section-link">Ver biblioteca completa</a>
                 </div>
                 <div class="manual-grid" id="generalList"></div>
             </section>
@@ -970,9 +1017,6 @@
             <button type="button" class="card-btn primary js-view-item" data-id="${item.id}">
                 Abrir
             </button>
-            <button class="card-btn js-mark-read" data-id="${item.id}">
-              <i class="fa-regular fa-circle-check"></i> Marcar como lido
-            </button>
           </div>
         </article>
       `;
@@ -999,9 +1043,7 @@
             <button type="button" class="card-link js-view-item" data-id="${item.id}">
                 Visualizar <i class="fa-solid fa-arrow-right"></i>
             </button>
-            <div class="card-actions">
-              ${!item.is_read ? `<button class="card-btn js-mark-read" data-id="${item.id}">Marcar como lido</button>` : ''}
-            </div>
+            <div class="card-actions"></div>
           </div>
         </article>
       `;
@@ -1026,9 +1068,7 @@
             <button type="button" class="card-link js-view-item" data-id="${item.id}">
                 Abrir material <i class="fa-solid fa-arrow-right"></i>
             </button>
-            <div class="card-actions">
-              ${!item.is_read ? `<button class="card-btn js-mark-read" data-id="${item.id}">Marcar como lido</button>` : ''}
-            </div>
+            <div class="card-actions"></div>
           </div>
         </article>
       `;
@@ -1098,20 +1138,7 @@
             renderEmpty(generalList, 'Nenhum conteúdo encontrado', 'Tente mudar os filtros ou limpar a pesquisa para visualizar mais itens.');
         }
 
-        bindReadButtons();
         bindViewButtons();
-    }
-
-    function bindReadButtons() {
-        document.querySelectorAll('.js-mark-read').forEach(button => {
-            button.addEventListener('click', () => {
-                const id = Number(button.dataset.id);
-                const item = muralItems.find(entry => entry.id === id);
-                if (!item) return;
-                item.is_read = true;
-                renderMural();
-            });
-        });
     }
 
     function bindViewButtons() {
@@ -1158,7 +1185,7 @@
             <button type="button" class="create-modal-close" id="closeCreateModalBtn">×</button>
         </div>
 
-        <form method="post" class="create-form">
+        <form method="post" class="create-form" enctype="multipart/form-data">
             {% csrf_token %}
 
             <div class="form-grid">
@@ -1230,13 +1257,30 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">URL do anexo</label>
-                    <input type="url" name="attachment_url" class="form-control">
+                    <label class="form-label">Anexo</label>
+                    <input 
+                        type="file" 
+                        name="attachment_file" 
+                        id="attachmentFile" 
+                        class="form-control"
+                    >
+                    <small style="color: var(--muted); font-size: 12px;">
+                        Selecione um arquivo da sua máquina para anexar ao item.
+                    </small>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">URL da imagem</label>
-                    <input type="url" name="image_url" class="form-control">
+                    <label class="form-label">Imagem</label>
+                    <input 
+                        type="file" 
+                        name="image_file" 
+                        id="imageFile" 
+                        class="form-control"
+                        accept="image/*"
+                    >
+                    <small style="color: var(--muted); font-size: 12px;">
+                        Selecione uma imagem da sua máquina para exibir ou anexar ao item.
+                    </small>
                 </div>
 
                 <div class="form-group full">
@@ -1320,6 +1364,11 @@
 
             <div class="view-modal-summary" id="viewItemSummary"></div>
 
+            <div class="read-required-box" id="readRequiredBox">
+                <i class="fa-solid fa-circle-info"></i>
+                Este item exige leitura obrigatória. Role todo o conteúdo até o final para liberar o botão “Marcar como lido”.
+            </div>
+
             <div>
                 <span class="view-info-label">Conteúdo</span>
                 <div class="view-modal-content" id="viewItemContent"></div>
@@ -1356,10 +1405,34 @@
                     <div class="view-info-value" id="viewItemDeadline"></div>
                 </div>
             </div>
+
+            <div class="mural-image-preview" id="viewItemImageBox">
+                <img id="viewItemImage" src="" alt="Imagem do item">
+                <div class="mural-image-preview-caption">
+                    Imagem vinculada ao item
+                </div>
+            </div>
         </div>
 
         <div class="view-modal-actions">
             <div id="viewItemActions"></div>
+
+            <button type="button" class="action-btn" id="openEditItemModalBtn">
+                <i class="fa-solid fa-pen-to-square"></i>
+                Editar item
+            </button>
+
+            <form method="post" id="markReadForm" style="display: inline-flex;">
+                {% csrf_token %}
+
+                <input type="hidden" name="mark_read_item" value="1">
+                <input type="hidden" name="mark_read_item_id" id="markReadItemId">
+
+                <button type="submit" class="action-btn primary" id="markReadBtn">
+                    <i class="fa-regular fa-circle-check"></i>
+                    Marcar como lido
+                </button>
+            </form>
 
             <form method="post" id="disableItemForm" style="display: inline-flex;">
                 {% csrf_token %}
@@ -1383,6 +1456,8 @@
     const viewItemBadges = document.getElementById('viewItemBadges');
     const viewItemSummary = document.getElementById('viewItemSummary');
     const viewItemContent = document.getElementById('viewItemContent');
+    const viewItemImageBox = document.getElementById('viewItemImageBox');
+    const viewItemImage = document.getElementById('viewItemImage');
     const viewItemType = document.getElementById('viewItemType');
     const viewItemSeverity = document.getElementById('viewItemSeverity');
     const viewItemStartsAt = document.getElementById('viewItemStartsAt');
@@ -1390,13 +1465,116 @@
     const viewItemStatus = document.getElementById('viewItemStatus');
     const viewItemDeadline = document.getElementById('viewItemDeadline');
     const viewItemActions = document.getElementById('viewItemActions');
+
     const disableItemId = document.getElementById('disableItemId');
 
+    const markReadItemId = document.getElementById('markReadItemId');
+    const markReadBtn = document.getElementById('markReadBtn');
+    const markReadForm = document.getElementById('markReadForm');
+    const readRequiredBox = document.getElementById('readRequiredBox');
+
+    let currentViewItem = null;
+    let readScrollCompleted = false;
+    let readMinimumTimeCompleted = false;
+    let readTimer = null;
+
+    function modalReachedBottom() {
+        const tolerance = 12;
+
+        return (
+            viewItemModal.querySelector('.view-modal').scrollTop +
+            viewItemModal.querySelector('.view-modal').clientHeight
+        ) >= (
+            viewItemModal.querySelector('.view-modal').scrollHeight - tolerance
+        );
+    }
+
+    function modalHasScroll() {
+        const modalBox = viewItemModal.querySelector('.view-modal');
+        return modalBox.scrollHeight > modalBox.clientHeight + 12;
+    }
+
+    function updateMarkReadButtonState() {
+        if (!currentViewItem) return;
+
+        if (currentViewItem.is_read) {
+            markReadBtn.disabled = true;
+            markReadBtn.innerHTML = '<i class="fa-solid fa-check"></i> Item já lido';
+            return;
+        }
+
+        if (!currentViewItem.until_read) {
+            markReadBtn.disabled = false;
+            markReadBtn.innerHTML = '<i class="fa-regular fa-circle-check"></i> Marcar como lido';
+            return;
+        }
+
+        const canMarkRead = readScrollCompleted && readMinimumTimeCompleted;
+
+        markReadBtn.disabled = !canMarkRead;
+
+        if (canMarkRead) {
+            markReadBtn.innerHTML = '<i class="fa-regular fa-circle-check"></i> Marcar como lido';
+        } else if (!readScrollCompleted) {
+            markReadBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Role até o final para liberar';
+        } else if (!readMinimumTimeCompleted) {
+            markReadBtn.innerHTML = '<i class="fa-solid fa-clock"></i> Aguarde alguns segundos';
+        }
+    }
+
+    function resetReadValidation(item) {
+        currentViewItem = item;
+        readScrollCompleted = false;
+        readMinimumTimeCompleted = false;
+
+        if (readTimer) {
+            clearTimeout(readTimer);
+            readTimer = null;
+        }
+
+        markReadItemId.value = item.id || '';
+        disableItemId.value = item.id || '';
+
+        if (item.until_read && !item.is_read) {
+            readRequiredBox.classList.add('show');
+
+            const contentSize = `${item.title || ''} ${item.summary || ''} ${item.content || ''}`.length;
+
+            let minimumSeconds = Math.ceil(contentSize / 350);
+            minimumSeconds = Math.max(6, minimumSeconds);
+            minimumSeconds = Math.min(45, minimumSeconds);
+
+            readTimer = setTimeout(() => {
+                readMinimumTimeCompleted = true;
+                updateMarkReadButtonState();
+            }, minimumSeconds * 1000);
+
+            setTimeout(() => {
+                if (!modalHasScroll()) {
+                    readScrollCompleted = true;
+                    updateMarkReadButtonState();
+                    return;
+                }
+
+                if (modalReachedBottom()) {
+                    readScrollCompleted = true;
+                    updateMarkReadButtonState();
+                }
+            }, 300);
+        } else {
+            readRequiredBox.classList.remove('show');
+            readScrollCompleted = true;
+            readMinimumTimeCompleted = true;
+        }
+
+        updateMarkReadButtonState();
+    }
+
     function openViewItemModal(item) {
+        currentViewItem = item;
+
         viewItemTitle.textContent = item.title || 'Detalhes do item';
 
-        disableItemId.value = item.id || '';
-        
         viewItemBadges.innerHTML = `
             <span class="badge green">
                 <i class="fa-regular fa-file-lines"></i> ${item.item_type_label || 'Item'}
@@ -1405,12 +1583,20 @@
                 ${item.severity_label || 'Informativo'}
             </span>
             ${item.is_pinned ? '<span class="badge orange"><i class="fa-solid fa-thumbtack"></i> Fixado</span>' : ''}
-            ${item.until_read ? '<span class="badge blue"><i class="fa-regular fa-eye"></i> Até leitura</span>' : ''}
+            ${item.until_read ? '<span class="badge blue"><i class="fa-regular fa-eye"></i> Leitura obrigatória</span>' : ''}
         `;
 
         viewItemSummary.textContent = item.summary || 'Sem resumo informado.';
         viewItemContent.textContent = item.content || 'Sem conteúdo informado.';
 
+        if (item.image_url) {
+            viewItemImage.src = item.image_url;
+            viewItemImageBox.classList.add('show');
+        } else {
+            viewItemImage.src = '';
+            viewItemImageBox.classList.remove('show');
+        }
+        
         viewItemType.textContent = item.item_type_label || '-';
         viewItemSeverity.textContent = item.severity_label || '-';
         viewItemStartsAt.textContent = item.starts_at || '-';
@@ -1442,15 +1628,6 @@
             `;
         }
 
-        if (item.image_url) {
-            viewItemActions.innerHTML += `
-                <a href="${item.image_url}" target="_blank" class="action-btn">
-                    <i class="fa-regular fa-image"></i>
-                    Abrir imagem
-                </a>
-            `;
-        }
-
         if (!item.external_link && !item.attachment_url && !item.image_url) {
             viewItemActions.innerHTML = `
                 <button type="button" class="action-btn" disabled>
@@ -1460,10 +1637,24 @@
         }
 
         viewItemModal.classList.add('show');
+
+        const modalBox = viewItemModal.querySelector('.view-modal');
+        modalBox.scrollTop = 0;
+
+        resetReadValidation(item);
     }
 
     function closeViewItemModal() {
         viewItemModal.classList.remove('show');
+
+        if (readTimer) {
+            clearTimeout(readTimer);
+            readTimer = null;
+        }
+
+        currentViewItem = null;
+        readScrollCompleted = false;
+        readMinimumTimeCompleted = false;
     }
 
     if (closeViewItemModalBtn) {
@@ -1474,6 +1665,275 @@
         viewItemModal.addEventListener('click', (event) => {
             if (event.target === viewItemModal) {
                 closeViewItemModal();
+            }
+        });
+
+        const modalBox = viewItemModal.querySelector('.view-modal');
+
+        modalBox.addEventListener('scroll', () => {
+            if (!currentViewItem) return;
+            if (!currentViewItem.until_read) return;
+            if (readScrollCompleted) return;
+
+            if (modalReachedBottom()) {
+                readScrollCompleted = true;
+                updateMarkReadButtonState();
+            }
+        });
+    }
+
+    if (markReadForm) {
+        markReadForm.addEventListener('submit', function (event) {
+            if (!currentViewItem) {
+                event.preventDefault();
+                return;
+            }
+
+            if (currentViewItem.until_read && (!readScrollCompleted || !readMinimumTimeCompleted)) {
+                event.preventDefault();
+                alert('Para marcar como lido, você precisa visualizar todo o conteúdo até o final.');
+                return;
+            }
+
+            markReadBtn.disabled = true;
+            markReadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registrando leitura...';
+        });
+    }
+</script>
+
+<!-- MODAL PARA EDITAR ITEM -->
+<div class="create-modal-overlay" id="editItemModal">
+    <div class="create-modal">
+        <div class="create-modal-header">
+            <h3>Editar item do mural</h3>
+            <button type="button" class="create-modal-close" id="closeEditItemModalBtn">×</button>
+        </div>
+
+        <form method="post" class="create-form" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <input type="hidden" name="edit_mural_item" value="1">
+            <input type="hidden" name="edit_item_id" id="editItemId">
+            <input type="hidden" name="current_attachment_url" id="editCurrentAttachmentUrl">
+            <input type="hidden" name="current_image_url" id="editCurrentImageUrl">
+
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label class="form-label">Título</label>
+                    <input type="text" name="title" id="editTitle" class="form-control" required>
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Resumo</label>
+                    <textarea name="summary" id="editSummary" class="form-textarea" required></textarea>
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Conteúdo</label>
+                    <textarea name="content" id="editContent" class="form-textarea"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tipo do item</label>
+                    <select name="item_type" id="editItemType" class="form-select" required>
+                        <option value="announcement">Comunicado</option>
+                        <option value="notice">Aviso</option>
+                        <option value="script">Script</option>
+                        <option value="manual">Manual</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Severidade</label>
+                    <select name="severity" id="editSeverity" class="form-select" required>
+                        <option value="informational">Informativo</option>
+                        <option value="moderate">Moderado</option>
+                        <option value="important">Importante</option>
+                        <option value="critical">Crítico</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Início</label>
+                    <input type="datetime-local" name="starts_at" id="editStartsAt" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Fim</label>
+                    <input type="datetime-local" name="ends_at" id="editEndsAt" class="form-control">
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Link externo</label>
+                    <input type="url" name="external_link" id="editExternalLink" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Novo anexo</label>
+                    <input 
+                        type="file" 
+                        name="attachment_file" 
+                        id="editAttachmentFile" 
+                        class="form-control"
+                    >
+                    <small style="color: var(--muted); font-size: 12px;">
+                        Envie um novo arquivo apenas se quiser substituir o anexo atual.
+                    </small>
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Imagem atual</label>
+
+                    <div class="mural-image-preview" id="editCurrentImageBox">
+                        <img id="editCurrentImagePreview" src="" alt="Imagem atual do item">
+                        <div class="mural-image-preview-caption">
+                            Imagem atualmente vinculada ao item
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nova imagem</label>
+                    <input 
+                        type="file" 
+                        name="image_file" 
+                        id="editImageFile" 
+                        class="form-control"
+                        accept="image/*"
+                    >
+                    <small style="color: var(--muted); font-size: 12px;">
+                        Envie uma nova imagem apenas se quiser substituir a imagem atual.
+                    </small>
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Opções</label>
+                    <div class="form-checks">
+                        <label class="form-check">
+                            <input type="checkbox" name="is_active" id="editIsActive">
+                            Ativo
+                        </label>
+                        <label class="form-check">
+                            <input type="checkbox" name="is_pinned" id="editIsPinned">
+                            Fixado
+                        </label>
+                        <label class="form-check">
+                            <input type="checkbox" name="is_indefinite" id="editIsIndefinite">
+                            Prazo indefinido
+                        </label>
+                        <label class="form-check">
+                            <input type="checkbox" name="until_read" id="editUntilRead">
+                            Até leitura
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="create-form-actions">
+                <button type="button" class="action-btn" id="cancelEditItemModalBtn">Cancelar</button>
+                <button type="submit" class="action-btn primary">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    Salvar alterações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    const editItemModal = document.getElementById('editItemModal');
+    const openEditItemModalBtn = document.getElementById('openEditItemModalBtn');
+    const closeEditItemModalBtn = document.getElementById('closeEditItemModalBtn');
+    const cancelEditItemModalBtn = document.getElementById('cancelEditItemModalBtn');
+
+    const editItemId = document.getElementById('editItemId');
+    const editTitle = document.getElementById('editTitle');
+    const editSummary = document.getElementById('editSummary');
+    const editContent = document.getElementById('editContent');
+    const editCurrentImageBox = document.getElementById('editCurrentImageBox');
+    const editCurrentImagePreview = document.getElementById('editCurrentImagePreview');
+    const editItemType = document.getElementById('editItemType');
+    const editSeverity = document.getElementById('editSeverity');
+    const editStartsAt = document.getElementById('editStartsAt');
+    const editEndsAt = document.getElementById('editEndsAt');
+    const editExternalLink = document.getElementById('editExternalLink');
+    const editAttachmentFile = document.getElementById('editAttachmentFile');
+    const editImageFile = document.getElementById('editImageFile');
+    const editCurrentAttachmentUrl = document.getElementById('editCurrentAttachmentUrl');
+    const editCurrentImageUrl = document.getElementById('editCurrentImageUrl');
+    const editIsActive = document.getElementById('editIsActive');
+    const editIsPinned = document.getElementById('editIsPinned');
+    const editIsIndefinite = document.getElementById('editIsIndefinite');
+    const editUntilRead = document.getElementById('editUntilRead');
+
+    function openEditItemModal(item) {
+        if (!item) return;
+
+        editItemId.value = item.id || '';
+        editTitle.value = item.title || '';
+        editSummary.value = item.summary || '';
+        editContent.value = item.content || '';
+
+        editItemType.value = item.item_type || 'notice';
+        editSeverity.value = item.severity || 'informational';
+
+        editStartsAt.value = item.starts_at_input || '';
+        editEndsAt.value = item.ends_at_input || '';
+
+        editExternalLink.value = item.external_link || '';
+        editCurrentAttachmentUrl.value = item.attachment_url || '';
+        editCurrentImageUrl.value = item.image_url || '';
+
+        if (item.image_url) {
+            editCurrentImagePreview.src = item.image_url;
+            editCurrentImageBox.classList.add('show');
+        } else {
+            editCurrentImagePreview.src = '';
+            editCurrentImageBox.classList.remove('show');
+        }
+
+        if (editAttachmentFile) {
+            editAttachmentFile.value = '';
+        }
+
+        if (editImageFile) {
+            editImageFile.value = '';
+        }
+
+        editIsActive.checked = item.is_active === true;
+        editIsPinned.checked = item.is_pinned === true;
+        editIsIndefinite.checked = item.is_indefinite === true;
+        editUntilRead.checked = item.until_read === true;
+
+        editItemModal.classList.add('show');
+    }
+
+    function closeEditItemModal() {
+        editItemModal.classList.remove('show');
+    }
+
+    if (openEditItemModalBtn) {
+        openEditItemModalBtn.addEventListener('click', function () {
+            if (!currentViewItem) {
+                alert('Nenhum item selecionado para edição.');
+                return;
+            }
+
+            openEditItemModal(currentViewItem);
+        });
+    }
+
+    if (closeEditItemModalBtn) {
+        closeEditItemModalBtn.addEventListener('click', closeEditItemModal);
+    }
+
+    if (cancelEditItemModalBtn) {
+        cancelEditItemModalBtn.addEventListener('click', closeEditItemModal);
+    }
+
+    if (editItemModal) {
+        editItemModal.addEventListener('click', function (event) {
+            if (event.target === editItemModal) {
+                closeEditItemModal();
             }
         });
     }
