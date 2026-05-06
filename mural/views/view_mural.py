@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 import requests
-from logistica.models import GroupAditionalInformation
+from logistica.models import GroupAditionalInformation, Group
 from setup.local_settings import MURAL_API_URL, TRANSP_API_URL
 from utils.request import RequestClient
 
@@ -198,10 +198,18 @@ def mural(request):
         .values("id", "username", "first_name", "last_name")
     )
 
-    target_groups = list(
+    target_gais = list(
         GroupAditionalInformation.objects.all()
         .order_by("nome")
         .values("id", "nome")
+    )
+
+    target_groups = list(
+        Group.objects.filter(
+            name__istartswith="arancia_"
+        )
+        .order_by("name")
+        .values("id", "name")
     )
 
     try:
@@ -499,5 +507,6 @@ def mural(request):
         'current_menu': 'home',
         'mural_data': mural_data,
         'target_users': target_users,
+        'target_gais': target_gais,
         'target_groups': target_groups,
     })
