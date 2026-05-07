@@ -7,7 +7,7 @@ from logistica.models import GroupAditionalInformation, Group
 from setup.local_settings import MURAL_API_URL, TRANSP_API_URL
 from utils.request import RequestClient
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 BR_TZ = ZoneInfo("America/Sao_Paulo")
@@ -180,6 +180,30 @@ def upload_file_to_firebase(uploaded_file):
     return firebase_url
 
 
+def validate_critical_duration(severity, starts_at_raw, ends_at_raw):
+    if severity != "critical":
+        return True, None
+
+    if not starts_at_raw or not ends_at_raw:
+        return False, "Item crítico precisa ter data de início e data de fim."
+
+    try:
+        starts_dt = datetime.strptime(starts_at_raw, "%Y-%m-%dT%H:%M")
+        ends_dt = datetime.strptime(ends_at_raw, "%Y-%m-%dT%H:%M")
+    except Exception:
+        return False, "Datas inválidas para o item crítico."
+
+    if ends_dt <= starts_dt:
+        return False, "A data final precisa ser maior que a data inicial."
+
+    max_end_dt = starts_dt + timedelta(days=7)
+
+    if ends_dt > max_end_dt:
+        return False, "Item crítico pode ter duração máxima de 7 dias."
+
+    return True, None
+
+
 @login_required(login_url='logistica:login')
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def mural(request):
@@ -264,8 +288,21 @@ def mural(request):
         is_indefinite = request.POST.get("is_indefinite") == "on"
         until_read = request.POST.get("until_read") == "on"
 
-        starts_at = format_datetime_to_api(request.POST.get("starts_at"))
-        ends_at = format_datetime_to_api(request.POST.get("ends_at"))
+        starts_at_raw = request.POST.get("starts_at")
+        ends_at_raw = request.POST.get("ends_at")
+
+        is_valid_critical, critical_error = validate_critical_duration(
+            severity=severity,
+            starts_at_raw=starts_at_raw,
+            ends_at_raw=ends_at_raw
+        )
+
+        if not is_valid_critical:
+            messages.error(request, critical_error)
+            return redirect('mural:mural')
+
+        starts_at = format_datetime_to_api(starts_at_raw)
+        ends_at = format_datetime_to_api(ends_at_raw)
 
         external_link = request.POST.get("external_link") or None
 
@@ -430,8 +467,21 @@ def mural(request):
         edit_is_indefinite = request.POST.get("is_indefinite") == "on"
         edit_until_read = request.POST.get("until_read") == "on"
 
-        edit_starts_at = format_datetime_to_api(request.POST.get("starts_at"))
-        edit_ends_at = format_datetime_to_api(request.POST.get("ends_at"))
+        edit_starts_at_raw = request.POST.get("starts_at")
+        edit_ends_at_raw = request.POST.get("ends_at")
+
+        is_valid_critical, critical_error = validate_critical_duration(
+            severity=edit_severity,
+            starts_at_raw=edit_starts_at_raw,
+            ends_at_raw=edit_ends_at_raw
+        )
+
+        if not is_valid_critical:
+            messages.error(request, critical_error)
+            return redirect('mural:mural')
+
+        edit_starts_at = format_datetime_to_api(edit_starts_at_raw)
+        edit_ends_at = format_datetime_to_api(edit_ends_at_raw)
 
         edit_external_link = request.POST.get("external_link") or None
         current_attachment_url = request.POST.get(

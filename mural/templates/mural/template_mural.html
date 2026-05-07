@@ -1219,7 +1219,7 @@
 
                 <div class="form-group">
                     <label class="form-label">Severidade</label>
-                    <select name="severity" class="form-select" required>
+                    <select name="severity" id="createSeverity" class="form-select" required>
                         <option value="informational">Informativo</option>
                         <option value="moderate">Moderado</option>
                         <option value="important">Importante</option>
@@ -1247,12 +1247,15 @@
 
                 <div class="form-group">
                     <label class="form-label">Início</label>
-                    <input type="datetime-local" name="starts_at" class="form-control">
+                    <input type="datetime-local" name="starts_at" id="createStartsAt" class="form-control">
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Fim</label>
-                    <input type="datetime-local" name="ends_at" class="form-control">
+                    <input type="datetime-local" name="ends_at" id="createEndsAt" class="form-control">
+                    <small id="createCriticalDateHelp" style="display:none; color: var(--danger); font-size: 12px; font-weight: 700;">
+                        Item crítico pode ter duração máxima de 7 dias.
+                    </small>
                 </div>
 
                 <div class="form-group full">
@@ -1908,6 +1911,22 @@
         editIsIndefinite.checked = item.is_indefinite === true;
         editUntilRead.checked = item.until_read === true;
 
+        if (editSeverity.value === 'critical' && editStartsAt.value) {
+            const startsAt = new Date(editStartsAt.value);
+            const maxEndAt = new Date(startsAt);
+            maxEndAt.setDate(maxEndAt.getDate() + 7);
+
+            const year = maxEndAt.getFullYear();
+            const month = String(maxEndAt.getMonth() + 1).padStart(2, '0');
+            const day = String(maxEndAt.getDate()).padStart(2, '0');
+            const hours = String(maxEndAt.getHours()).padStart(2, '0');
+            const minutes = String(maxEndAt.getMinutes()).padStart(2, '0');
+
+            editEndsAt.max = `${year}-${month}-${day}T${hours}:${minutes}`;
+        } else {
+            editEndsAt.removeAttribute('max');
+        }
+
         editItemModal.classList.add('show');
     }
 
@@ -2046,6 +2065,162 @@
 
         targetTypeSelect.addEventListener('change', renderTargetOptions);
         renderTargetOptions();
+    });
+</script>
+
+<!-- VALIDAÇÃO PARA ITENS CRITICOS COM MENOS DE 7 DIAS -->
+<script>
+    function getDateTimeValue(input) {
+        if (!input || !input.value) return null;
+        return new Date(input.value);
+    }
+
+    function validateCriticalDurationOnForm(severityInput, startsInput, endsInput) {
+        if (!severityInput || severityInput.value !== 'critical') {
+            return {
+                valid: true,
+                message: ''
+            };
+        }
+
+        const startsAt = getDateTimeValue(startsInput);
+        const endsAt = getDateTimeValue(endsInput);
+
+        if (!startsAt || !endsAt) {
+            return {
+                valid: false,
+                message: 'Item crítico precisa ter data de início e data de fim.'
+            };
+        }
+
+        if (endsAt <= startsAt) {
+            return {
+                valid: false,
+                message: 'A data final precisa ser maior que a data inicial.'
+            };
+        }
+
+        const maxEndAt = new Date(startsAt);
+        maxEndAt.setDate(maxEndAt.getDate() + 7);
+
+        if (endsAt > maxEndAt) {
+            return {
+                valid: false,
+                message: 'Item crítico pode ter duração máxima de 7 dias.'
+            };
+        }
+
+        return {
+            valid: true,
+            message: ''
+        };
+    }
+
+    function applyCriticalEndLimit(severityInput, startsInput, endsInput, helpElement) {
+        if (!severityInput || !startsInput || !endsInput) return;
+
+        if (severityInput.value === 'critical') {
+            if (helpElement) {
+                helpElement.style.display = 'block';
+            }
+
+            if (startsInput.value) {
+                const startsAt = new Date(startsInput.value);
+                const maxEndAt = new Date(startsAt);
+                maxEndAt.setDate(maxEndAt.getDate() + 7);
+
+                const year = maxEndAt.getFullYear();
+                const month = String(maxEndAt.getMonth() + 1).padStart(2, '0');
+                const day = String(maxEndAt.getDate()).padStart(2, '0');
+                const hours = String(maxEndAt.getHours()).padStart(2, '0');
+                const minutes = String(maxEndAt.getMinutes()).padStart(2, '0');
+
+                endsInput.max = `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
+        } else {
+            endsInput.removeAttribute('max');
+
+            if (helpElement) {
+                helpElement.style.display = 'none';
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const createForm = document.querySelector('#createModal form');
+        const createSeverity = document.getElementById('createSeverity');
+        const createStartsAt = document.getElementById('createStartsAt');
+        const createEndsAt = document.getElementById('createEndsAt');
+        const createCriticalDateHelp = document.getElementById('createCriticalDateHelp');
+
+        function refreshCreateCriticalLimit() {
+            applyCriticalEndLimit(
+                createSeverity,
+                createStartsAt,
+                createEndsAt,
+                createCriticalDateHelp
+            );
+        }
+
+        if (createSeverity) {
+            createSeverity.addEventListener('change', refreshCreateCriticalLimit);
+        }
+
+        if (createStartsAt) {
+            createStartsAt.addEventListener('change', refreshCreateCriticalLimit);
+        }
+
+        if (createForm) {
+            createForm.addEventListener('submit', function (event) {
+                const validation = validateCriticalDurationOnForm(
+                    createSeverity,
+                    createStartsAt,
+                    createEndsAt
+                );
+
+                if (!validation.valid) {
+                    event.preventDefault();
+                    alert(validation.message);
+                }
+            });
+        }
+
+        const editForm = document.querySelector('#editItemModal form');
+        const editSeverity = document.getElementById('editSeverity');
+        const editStartsAt = document.getElementById('editStartsAt');
+        const editEndsAt = document.getElementById('editEndsAt');
+
+        function refreshEditCriticalLimit() {
+            applyCriticalEndLimit(
+                editSeverity,
+                editStartsAt,
+                editEndsAt,
+                null
+            );
+        }
+
+        if (editSeverity) {
+            editSeverity.addEventListener('change', refreshEditCriticalLimit);
+        }
+
+        if (editStartsAt) {
+            editStartsAt.addEventListener('change', refreshEditCriticalLimit);
+        }
+
+        if (editForm) {
+            editForm.addEventListener('submit', function (event) {
+                const validation = validateCriticalDurationOnForm(
+                    editSeverity,
+                    editStartsAt,
+                    editEndsAt
+                );
+
+                if (!validation.valid) {
+                    event.preventDefault();
+                    alert(validation.message);
+                }
+            });
+        }
     });
 </script>
 {% endblock %}
