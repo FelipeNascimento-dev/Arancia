@@ -1763,7 +1763,7 @@
                             <th>ID Viagem</th>
                             <th>Status</th>
                             <th>OS / Externa</th>
-                            <th>Cliente / Transportadora</th>
+                            <th>Cliente / Transportadora / Motorista</th>
                             <th>Origem / Destino</th>
                             <th>Datas</th>
                             <th>Ações</th>
@@ -1794,6 +1794,7 @@
                             <td>
                                 <div style="font-weight:600;">{{ item.service_order.client.nome }}</div>
                                 <div style="font-size:0.75rem; color:#666;">{{ item.travel.carrier.nome }}</div>
+                                <div style="font-size:0.75rem; color:#666;">{{item.travel.driver.name|default:"-"}}</div>
                             </td>
                             <td style="font-size:0.75rem;">
                                 <strong>O:</strong> {{ item.service_order.origin.CEP }}<br>
