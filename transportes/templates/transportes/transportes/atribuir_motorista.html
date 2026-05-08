@@ -1,0 +1,525 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+    .content-wrapper,
+    .main-content,
+    .container,
+    .page-content {
+        max-width: 1100px !important;
+        width: 100% !important;
+        margin-bottom: 150px;
+    }
+
+    .assign-page {
+        margin-top: 75px;
+    }
+
+    .assign-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        overflow: visible;
+    }
+
+    .assign-card-body {
+        padding: 28px;
+        overflow: visible;
+    }
+
+    .driver-results {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(0,0,0,.08);
+        max-height: 220px;
+        overflow-y: auto;
+        z-index: 9999;
+        display: none;
+    }
+
+    .assign-card-header {
+        padding: 24px 28px;
+        border-bottom: 1px solid #e5e7eb;
+        background: linear-gradient(135deg, #ffffff, #f8fafc);
+    }
+
+    .assign-card-header h2 {
+        margin: 0;
+        color: #1f2937;
+        font-size: 1.6rem;
+        font-weight: 800;
+    }
+
+    .assign-card-header p {
+        margin: 8px 0 0;
+        color: #64748b;
+        font-size: .95rem;
+    }
+
+    .assign-card-body {
+        padding: 28px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        font-size: .9rem;
+        color: #374151;
+        font-weight: 700;
+    }
+
+    .form-group select,
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px 13px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        font-size: .95rem;
+        box-sizing: border-box;
+        background: #fff;
+        outline: none;
+    }
+
+    .form-group select:focus,
+    .form-group input:focus,
+    .form-group textarea:focus {
+        border-color: #0ea5b7;
+        box-shadow: 0 0 0 3px rgba(14, 165, 183, 0.12);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 210px;
+        font-family: Consolas, monospace;
+    }
+
+    .help-text {
+        color: #64748b;
+        font-size: .84rem;
+        line-height: 1.45;
+    }
+
+    .counter-box {
+        margin-top: 8px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        color: #475569;
+        font-size: .9rem;
+        font-weight: 600;
+    }
+
+    .counter-box strong {
+        color: #0f172a;
+    }
+
+    .driver-results {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(0,0,0,.08);
+        max-height: 220px;
+        overflow-y: auto;
+        z-index: 50;
+        display: none;
+    }
+
+    .driver-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: .92rem;
+    }
+
+    .driver-item:last-child {
+        border-bottom: none;
+    }
+
+    .driver-item:hover {
+        background: #f8fafc;
+    }
+
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .btn-primary {
+        background: #0ea5b7;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 10px;
+        color: white;
+        font-weight: 800;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+    .btn-primary:hover {
+        background: #0b90a0;
+    }
+
+    .btn-primary:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        padding: 12px 18px;
+        border-radius: 10px;
+        color: #334155;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .alert {
+        padding: 14px 18px;
+        border-radius: 12px;
+        margin-bottom: 14px;
+        font-weight: 700;
+        border: 1px solid transparent;
+    }
+
+    .alert-success {
+        background: #ecfdf3;
+        color: #166534;
+        border-color: #bbf7d0;
+    }
+
+    .alert-error,
+    .alert-danger {
+        background: #fef2f2;
+        color: #991b1b;
+        border-color: #fecaca;
+    }
+
+    .alert-warning {
+        background: #fffbeb;
+        color: #92400e;
+        border-color: #fde68a;
+    }
+
+    @media (max-width: 768px) {
+        .assign-page {
+            margin-top: 55px;
+        }
+
+        .assign-card-body {
+            padding: 20px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .actions {
+            flex-direction: column;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="assign-page">
+    <div class="assign-card">
+        <div class="assign-card-header">
+            <h2>Atribuir motorista às viagens</h2>
+            <p>
+                Informe uma lista de IDs de viagens, selecione a transportadora e escolha o motorista responsável.
+            </p>
+        </div>
+
+        <div class="assign-card-body">
+            <form method="post" id="assignDriverForm">
+                {% csrf_token %}
+
+                <div class="form-grid">
+
+                    <div class="form-group full">
+                        <label for="travels_ids_texto">IDs das viagens</label>
+
+                        <textarea
+                            name="travels_ids_texto"
+                            id="travels_ids_texto"
+                            placeholder="Exemplo:&#10;1001&#10;1002&#10;1003&#10;1004"
+                            required
+                        ></textarea>
+
+                        <div class="help-text">
+                            Você pode informar os IDs separados por quebra de linha, vírgula, ponto e vírgula, espaço ou barra vertical (pipe: | ).
+                        </div>
+
+                        <div class="counter-box">
+                            Total de viagens detectadas:
+                            <strong id="travelIdsCounter">0</strong>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="carrier_id">Transportadora</label>
+
+                        <select name="carrier_id" id="carrier_id" required>
+                            <option value="">Selecione uma transportadora...</option>
+
+                            {% for carrier in carriers %}
+                                <option value="{{ carrier.id }}">
+                                    {{ carrier.nome }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="position: relative;">
+                        <label for="motorista_nome">Motorista</label>
+
+                        <input
+                            type="text"
+                            name="motorista_nome"
+                            id="motorista_nome"
+                            placeholder="Selecione a transportadora primeiro..."
+                            autocomplete="off"
+                            disabled
+                            required
+                        >
+
+                        <input type="hidden" name="motorista_id" id="motorista_id">
+
+                        <div id="driverResults" class="driver-results"></div>
+
+                        <div class="help-text">
+                            Digite ao menos 2 letras para buscar o motorista.
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="btn-primary" id="btnSubmitAssign">
+                        Atrelar motorista
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const textarea = document.getElementById("travels_ids_texto");
+    const counter = document.getElementById("travelIdsCounter");
+
+    function getTravelIdsFromTextarea() {
+        const texto = textarea.value || "";
+
+        const ids = texto
+            .replaceAll(",", "\n")
+            .replaceAll(";", "\n")
+            .replaceAll("|", "\n")
+            .split(/\s+/)
+            .map(item => item.trim())
+            .filter(item => item !== "");
+
+        return [...new Set(ids)];
+    }
+
+    function updateCounter() {
+        const ids = getTravelIdsFromTextarea();
+        counter.textContent = ids.length;
+    }
+
+    textarea.addEventListener("input", updateCounter);
+    updateCounter();
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const carrierSelect = document.getElementById("carrier_id");
+    const input = document.getElementById("motorista_nome");
+    const resultsBox = document.getElementById("driverResults");
+    const hiddenId = document.getElementById("motorista_id");
+
+    if (!carrierSelect || !input || !resultsBox || !hiddenId) return;
+
+    let timeout = null;
+
+    function limparResultados() {
+        resultsBox.innerHTML = "";
+        resultsBox.style.display = "none";
+    }
+
+    function limparMotorista() {
+        input.value = "";
+        hiddenId.value = "";
+        limparResultados();
+    }
+
+    carrierSelect.addEventListener("change", function () {
+        limparMotorista();
+
+        if (this.value) {
+            input.disabled = false;
+            input.placeholder = "Digite o nome do motorista...";
+            input.focus();
+        } else {
+            input.disabled = true;
+            input.placeholder = "Selecione a transportadora primeiro...";
+        }
+    });
+
+    input.addEventListener("keyup", function () {
+        const query = this.value.trim();
+        const carrierId = carrierSelect.value;
+
+        clearTimeout(timeout);
+
+        if (!carrierId) {
+            hiddenId.value = "";
+            limparResultados();
+            return;
+        }
+
+        if (query.length < 2) {
+            hiddenId.value = "";
+            limparResultados();
+            return;
+        }
+
+        timeout = setTimeout(() => {
+            const url = "{% url 'transportes:buscar_motoristas_travels' %}?nome=" +
+                encodeURIComponent(query) +
+                "&carrier_id=" +
+                encodeURIComponent(carrierId);
+
+            fetch(url)
+                .then(async res => {
+                    const data = await res.json();
+
+                    console.log("URL chamada:", url);
+                    console.log("Status:", res.status);
+                    console.log("Resposta motoristas:", data);
+
+                    return data;
+                })
+                .then(data => {
+                    resultsBox.innerHTML = "";
+
+                    if (!data.items || !data.items.length) {
+                        limparResultados();
+                        return;
+                    }
+
+                    data.items.forEach(driver => {
+                        const div = document.createElement("div");
+                        div.classList.add("driver-item");
+
+                        div.innerHTML = `
+                            <strong>${driver.name || "Motorista"}</strong>
+                            <br>
+                            <small>ID: ${driver.uid || ""}</small>
+                        `;
+
+                        div.addEventListener("mousedown", function (e) {
+                            e.preventDefault();
+
+                            input.value = driver.name || "";
+                            hiddenId.value = driver.uid || "";
+
+                            limparResultados();
+                        });
+
+                        resultsBox.appendChild(div);
+                    });
+
+                    resultsBox.style.display = "block";
+                })
+                .catch(() => {
+                    limparResultados();
+                });
+        }, 300);
+    });
+
+    input.addEventListener("input", function () {
+        if (!this.value.trim()) {
+            hiddenId.value = "";
+            limparResultados();
+        }
+    });
+
+    input.addEventListener("blur", function () {
+        setTimeout(() => {
+            if (!hiddenId.value) {
+                input.value = "";
+            }
+
+            limparResultados();
+        }, 150);
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!resultsBox.contains(e.target) && e.target !== input) {
+            limparResultados();
+        }
+    });
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("assignDriverForm");
+    const btn = document.getElementById("btnSubmitAssign");
+    const hiddenId = document.getElementById("motorista_id");
+
+    if (!form || !btn || !hiddenId) return;
+
+    form.addEventListener("submit", function (e) {
+        if (!hiddenId.value) {
+            e.preventDefault();
+            alert("Selecione um motorista válido na lista.");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = "Atrelando...";
+    });
+});
+</script>
+
+{% endblock %}

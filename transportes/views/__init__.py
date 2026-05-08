@@ -19,3 +19,4 @@ from .views_transportes.view_criar_localidade import skill_customer
 from .views_transportes.view_criar_transportadora import skill_transport
 from .views_transportes.view_criar_motorista import driver_ger
 from .views_transportes.view_criar_veiculo import vehicle_ger
+from .views_transportes.atribuir_motorista import atribuir_motorista_viagens_manual

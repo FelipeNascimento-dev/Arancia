@@ -386,14 +386,16 @@ def mural(request):
 
         created_by_id = request.user.id
 
-        target_id = request.POST.get("target_id") or None
+        target_ids = request.POST.getlist("target_id")
 
         if target_type == "all":
             ids = []
-        elif target_id:
-            ids = [int(target_id)]
         else:
-            ids = []
+            ids = [
+                int(target_id)
+                for target_id in target_ids
+                if str(target_id).strip().isdigit()
+            ]
 
         payload = {
             "title": title,
