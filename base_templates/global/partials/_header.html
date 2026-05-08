@@ -326,6 +326,9 @@
                     <a href="{% url 'transportes:lista_viagens' %}" class="itens-sidebar {% if current_menu == 'lista_viagens' %}active{% endif %}">
                         <span class="texto-item">Lista Viagens</span>
                     </a>
+                    <a href="{% url 'transportes:atribuir_motorista_viagens_manual' %}" class="itens-sidebar {% if current_menu == 'atribuir_motorista' %}active{% endif %}">
+                        <span class="texto-item">Atribuir Motorista</span>
+                    </a>
                     {% if perms.logistica.gestao_total %}
                     <h5 class="submenu-toggle {% if current_menu == 'gerenciamento' %}active{% endif %}"
                         data-target="gerenciamentoTransp">
