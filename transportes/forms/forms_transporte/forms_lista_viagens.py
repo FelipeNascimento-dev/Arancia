@@ -86,6 +86,24 @@ class ListaViagensForm(forms.Form):
         widget=forms.TextInput(attrs={"placeholder": "Ex: cep1,cep2"})
     )
 
+    os_interna = forms.CharField(
+        label="OS interna",
+        required=False,
+        widget=forms.TextInput(attrs={
+            "class": "filter-input",
+            "placeholder": "Digite a OS interna"
+        })
+    )
+
+    os_externa = forms.CharField(
+        label="OS externa",
+        required=False,
+        widget=forms.TextInput(attrs={
+            "class": "filter-input",
+            "placeholder": "Digite a OS externa"
+        })
+    )
+
     created_at = forms.DateField(
         label="Criado em",
         required=False,

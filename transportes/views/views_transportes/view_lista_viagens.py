@@ -116,6 +116,8 @@ def lista_viagens(request):
 
     filtro_campos = [
         "travel_id",
+        "os_interna",
+        "os_externa",
         "cliente",
         "transportadora",
         "pa_selecionada",
@@ -441,6 +443,12 @@ def lista_viagens(request):
                 elif campo == "atrasado":
                     params["atrasado"] = str(valor).lower()
 
+                elif campo == "os_interna":
+                    params["IN"] = valor
+
+                elif campo == "os_externa":
+                    params["EX"] = valor
+
                 else:
                     params[campo] = valor
 
@@ -507,6 +515,8 @@ def lista_viagens(request):
 
     mapa_campos = {
         "travel_id": "Travel",
+        "os_interna": "OS interna",
+        "os_externa": "OS externa",
         "cliente": "Cliente",
         "transportadora": "Transportadora",
         "pa_selecionada": "PA",
@@ -585,6 +595,14 @@ def lista_viagens(request):
             travel_id = filtros.get("travel_id")
             if travel_id not in [None, "", [], ()]:
                 extract_params["travel_id"] = travel_id
+
+            os_interna = filtros.get("os_interna")
+            if os_interna not in [None, "", [], ()]:
+                extract_params["IN"] = os_interna
+
+            os_externa = filtros.get("os_externa")
+            if os_externa not in [None, "", [], ()]:
+                extract_params["EX"] = os_externa
 
             cliente = filtros.get("cliente")
             if cliente not in [None, "", [], ()]:
