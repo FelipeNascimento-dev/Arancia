@@ -1521,6 +1521,157 @@
         color: #6b7280;
         font-size: .9rem;
     }
+
+    .sortable-th {
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .sort-btn {
+        border: none;
+        background: transparent;
+        color: #475569;
+        font-weight: 800;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0;
+        font-size: .86rem;
+    }
+
+    .sort-btn:hover {
+        color: #2563eb;
+    }
+
+    .sort-icon {
+        font-size: .72rem;
+        opacity: .65;
+    }
+
+    .sort-priority {
+        min-width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        background: #2563eb;
+        color: #fff;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        font-size: .68rem;
+        font-weight: 800;
+    }
+
+    .sort-btn.is-active .sort-priority {
+        display: inline-flex;
+    }
+
+    .table-sort-help {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e5e7eb;
+        font-size: .82rem;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .btn-clear-sort {
+        border: 1px solid #cbd5e1;
+        background: #fff;
+        color: #334155;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: .78rem;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .btn-clear-sort:hover {
+        background: #f1f5f9;
+    }
+
+    .btn-primary-toolbar {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-weight: 700;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, .18);
+    }
+
+    .btn-primary-toolbar:hover {
+        text-decoration: none;
+        color: #fff;
+        background: #1d4ed8;
+    }
+
+    .route-cell {
+        min-width: 420px;
+        max-width: 560px;
+        white-space: normal;
+    }
+
+    .route-box {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .route-item {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 10px 12px;
+        background: #f8fafc;
+    }
+
+    .route-item--origin {
+        border-left: 4px solid #2563eb;
+    }
+
+    .route-item--destination {
+        border-left: 4px solid #16a34a;
+    }
+
+    .route-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: .72rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: #334155;
+        margin-bottom: 5px;
+    }
+
+    .route-cep {
+        font-size: .78rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+
+    .route-address {
+        font-size: .76rem;
+        color: #475569;
+        line-height: 1.35;
+        word-break: break-word;
+    }
+
+    .route-empty {
+        font-size: .76rem;
+        color: #94a3b8;
+        font-style: italic;
+    }
 </style>
 
 <div class="toolbar">
@@ -1536,6 +1687,11 @@
         <button type="button" class="btn-view-mode" id="viewTable" title="Visão em Tabela">
             <i class="fa-solid fa-list"></i>
         </button>
+
+        <a class="btn-primary-toolbar" href="{% url 'transportes:atribuir_motorista_viagens_manual' %}">
+            <i class="fa-solid fa-plus"></i>
+            Atribuir Motoristas
+        </a>
     </div>
 </div>
 
@@ -1764,55 +1920,196 @@
             </div>
 
             <div class="table-container" id="tableContainer">
-                <table class="custom-table">
+                <div class="table-sort-help">
+                    <span>
+                        Clique nos títulos para ordenar. A ordenação é acumulativa.
+                    </span>
+
+                    <button type="button" class="btn-clear-sort" id="clearTableSort">
+                        Limpar ordenação
+                    </button>
+                </div>
+
+                <table class="custom-table" id="travelsSortableTable">
                     <thead>
                         <tr>
                             <th><i class="fa-solid fa-check-square"></i></th>
-                            <th>ID Viagem</th>
-                            <th>Status</th>
-                            <th>OS / Externa</th>
-                            <th>Cliente / Transportadora / Motorista</th>
-                            <th>Origem / Destino</th>
-                            <th>Datas</th>
+
+                            <th class="sortable-th">
+                                <button type="button" class="sort-btn" data-sort-key="id" data-sort-type="number">
+                                    ID Viagem
+                                    <span class="sort-icon">↕</span>
+                                    <span class="sort-priority"></span>
+                                </button>
+                            </th>
+
+                            <th class="sortable-th">
+                                <button type="button" class="sort-btn" data-sort-key="status" data-sort-type="text">
+                                    Status
+                                    <span class="sort-icon">↕</span>
+                                    <span class="sort-priority"></span>
+                                </button>
+                            </th>
+
+                            <th class="sortable-th">
+                                <button type="button" class="sort-btn" data-sort-key="os" data-sort-type="text">
+                                    OS
+                                    <span class="sort-icon">↕</span>
+                                    <span class="sort-priority"></span>
+                                </button>
+                            </th>
+
+                            <th class="sortable-th">
+                                <button type="button" class="sort-btn" data-sort-key="os_externa" data-sort-type="text">
+                                    OS Externa
+                                    <span class="sort-icon">↕</span>
+                                    <span class="sort-priority"></span>
+                                </button>
+                            </th>
+
+                            <th class="sortable-th">
+                                <button type="button" class="sort-btn" data-sort-key="cliente" data-sort-type="text">
+                                    Cliente
+                                    <span class="sort-icon">↕</span>
+                                    <span class="sort-priority"></span>
+                                </button>
+                            </th>
+
+                            <th class="sortable-th">
+                                <button type="button" class="sort-btn" data-sort-key="transportadora" data-sort-type="text">
+                                    Transportadora
+                                    <span class="sort-icon">↕</span>
+                                    <span class="sort-priority"></span>
+                                </button>
+                            </th>
+
+                            <th class="sortable-th">
+                                <button type="button" class="sort-btn" data-sort-key="motorista" data-sort-type="text">
+                                    Motorista
+                                    <span class="sort-icon">↕</span>
+                                    <span class="sort-priority"></span>
+                                </button>
+                            </th>
+
+                            <th class="sortable-th">
+                                <button type="button" class="sort-btn" data-sort-key="origem" data-sort-type="text">
+                                    Origem
+                                    <span class="sort-icon">↕</span>
+                                    <span class="sort-priority"></span>
+                                </button>
+                            </th>
+
+                            <th class="sortable-th">
+                                <button type="button" class="sort-btn" data-sort-key="destino" data-sort-type="text">
+                                    Destino
+                                    <span class="sort-icon">↕</span>
+                                    <span class="sort-priority"></span>
+                                </button>
+                            </th>
+
+                            <th class="sortable-th">
+                                <button type="button" class="sort-btn" data-sort-key="inicio" data-sort-type="date">
+                                    Início
+                                    <span class="sort-icon">↕</span>
+                                    <span class="sort-priority"></span>
+                                </button>
+                            </th>
+
+                            <th class="sortable-th">
+                                <button type="button" class="sort-btn" data-sort-key="fim" data-sort-type="date">
+                                    Fim
+                                    <span class="sort-icon">↕</span>
+                                    <span class="sort-priority"></span>
+                                </button>
+                            </th>
+
+                            <th class="sortable-th">
+                                <button type="button" class="sort-btn" data-sort-key="prazo" data-sort-type="number">
+                                    Prazo
+                                    <span class="sort-icon">↕</span>
+                                    <span class="sort-priority"></span>
+                                </button>
+                            </th>
+
                             <th>Ações</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {% for item in travels %}
-                        <tr>
+                        <tr
+                            data-sort-id="{{ item.travel.id|default:'' }}"
+                            data-sort-status="{{ item.travel.status.type|default:'' }}"
+                            data-sort-os="{{ item.service_order.order_number|default:'' }}"
+                            data-sort-os_externa="{{ item.service_order.external_order_number|default:'' }}"
+                            data-sort-cliente="{{ item.service_order.client.nome|default:'' }}"
+                            data-sort-transportadora="{{ item.travel.carrier.nome|default:'' }}"
+                            data-sort-motorista="{{ item.travel.driver.name|default:'' }}"
+                            data-sort-origem="{{ item.service_order.origin.CEP|default:'' }}"
+                            data-sort-destino="{{ item.service_order.destination.CEP|default:'' }}"
+                            data-sort-inicio="{{ item.travel.start_date|default:'' }}"
+                            data-sort-fim="{{ item.travel.end_date|default:'' }}"
+                            data-sort-prazo="{{ item.travel.quote.estimated_deadline|default:'' }}"
+                        >
                             <td>
-                                <input type="checkbox" class="card-select-checkbox" 
-                                    name="travels_selecionadas" value="{{ item.travel.id }}"
+                                <input type="checkbox" class="card-select-checkbox"
+                                    name="travels_selecionadas"
+                                    value="{{ item.travel.id }}"
                                     id="table_check_{{ item.travel.id }}">
                             </td>
+
                             <td>
                                 <a href="{% url 'transportes:detalhe_viagem' item.travel.id %}" target="_blank" style="font-weight:700; text-decoration: none; color: #000;">
                                     {{ item.travel.id }}
                                 </a>
                             </td>
+
                             <td>
                                 <span class="status-tag status-{{ item.travel.status.type }}">
                                     {{ item.travel.status.type }}
                                 </span>
                             </td>
+
                             <td>
-                                <small>OS: {{ item.service_order.order_number }}</small><br>
-                                <small>Ext: {{ item.service_order.external_order_number|default:"-" }}</small>
+                                {{ item.service_order.order_number|default:"-" }}
                             </td>
+
                             <td>
-                                <div style="font-weight:600;">{{ item.service_order.client.nome }}</div>
-                                <div style="font-size:0.75rem; color:#666;">{{ item.travel.carrier.nome }}</div>
-                                <div style="font-size:0.75rem; color:#666;">{{item.travel.driver.name|default:"-"}}</div>
+                                {{ item.service_order.external_order_number|default:"-" }}
                             </td>
+
+                            <td>
+                                {{ item.service_order.client.nome|default:"-" }}
+                            </td>
+
+                            <td>
+                                {{ item.travel.carrier.nome|default:"-" }}
+                            </td>
+
+                            <td>
+                                {{ item.travel.driver.name|default:"-" }}
+                            </td>
+
                             <td style="font-size:0.75rem;">
-                                <strong>O:</strong> {{ item.service_order.origin.CEP }}<br>
-                                <strong>D:</strong> {{ item.service_order.destination.CEP }}
+                                <strong>CEP:</strong> {{ item.service_order.origin.CEP|default:"-" }}
                             </td>
+
                             <td style="font-size:0.75rem;">
-                                <strong>Inicio:</strong> {{ item.travel.start_date_formatada|default:"-" }}<br>
-                                <strong>Fim:</strong> {{ item.travel.end_date_formatada|default:"Em andamento" }}<br>
-                                <strong>Prazo:</strong> {{ item.travel.quote.estimated_deadline|default:"-" }} Dias
+                                <strong>CEP:</strong> {{ item.service_order.destination.CEP|default:"-" }}
                             </td>
+
+                            <td style="font-size:0.75rem;">
+                                {{ item.travel.start_date_formatada|default:"-" }}
+                            </td>
+
+                            <td style="font-size:0.75rem;">
+                                {{ item.travel.end_date_formatada|default:"Em andamento" }}
+                            </td>
+
+                            <td style="font-size:0.75rem;">
+                                {{ item.travel.quote.estimated_deadline|default:"-" }} Dias
+                            </td>
+
                             <td>
                                 {% if response_mode == "detailed" and item.travel_events %}
                                     <button type="button" class="btn-open-events-modal btn-events-minimal"
@@ -1821,6 +2118,7 @@
                                         <i class="fa-solid fa-clock-rotate-left"></i>
                                         <span class="btn-events-count">{{ item.travel_events_count }}</span>
                                     </button>
+
                                     <script type="application/json" id="travel-events-table-{{ item.travel.id }}">
                                         {{ item.travel_events_json|safe }}
                                     </script>
@@ -3085,6 +3383,184 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     refreshComponent();
+});
+</script>
+
+<!-- ORDENAÇÃO DA TABELA -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("travelsSortableTable");
+    const clearBtn = document.getElementById("clearTableSort");
+
+    if (!table) return;
+
+    const tbody = table.querySelector("tbody");
+    const sortButtons = Array.from(table.querySelectorAll(".sort-btn"));
+
+    let originalRows = Array.from(tbody.querySelectorAll("tr"));
+    let sortStack = [];
+
+    function normalizeText(value) {
+        return String(value || "")
+            .trim()
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function parseNumber(value) {
+        const clean = String(value || "")
+            .replace(/[^\d,.-]/g, "")
+            .replace(",", ".");
+
+        const number = Number(clean);
+
+        return Number.isNaN(number) ? 0 : number;
+    }
+
+    function parseDate(value) {
+        if (!value) return 0;
+
+        const direct = Date.parse(value);
+        if (!Number.isNaN(direct)) return direct;
+
+        const match = String(value).match(/^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2}))?/);
+
+        if (!match) return 0;
+
+        const day = Number(match[1]);
+        const month = Number(match[2]) - 1;
+        const year = Number(match[3]);
+        const hour = Number(match[4] || 0);
+        const minute = Number(match[5] || 0);
+
+        return new Date(year, month, day, hour, minute).getTime();
+    }
+
+    function getRowValue(row, key, type) {
+        const value = row.dataset[`sort${key.charAt(0).toUpperCase()}${key.slice(1)}`];
+
+        if (type === "number") {
+            return parseNumber(value);
+        }
+
+        if (type === "date") {
+            return parseDate(value);
+        }
+
+        return normalizeText(value);
+    }
+
+    function compareValues(a, b, type) {
+        if (type === "text") {
+            return a.localeCompare(b, "pt-BR");
+        }
+
+        return a - b;
+    }
+
+    function applySort() {
+        let rows = Array.from(tbody.querySelectorAll("tr"));
+
+        if (!sortStack.length) {
+            tbody.innerHTML = "";
+            originalRows.forEach(row => tbody.appendChild(row));
+            updateHeaderState();
+            return;
+        }
+
+        rows.sort(function (rowA, rowB) {
+            for (const sort of sortStack) {
+                const valueA = getRowValue(rowA, sort.key, sort.type);
+                const valueB = getRowValue(rowB, sort.key, sort.type);
+
+                let result = compareValues(valueA, valueB, sort.type);
+
+                if (sort.direction === "desc") {
+                    result = result * -1;
+                }
+
+                if (result !== 0) {
+                    return result;
+                }
+            }
+
+            return 0;
+        });
+
+        tbody.innerHTML = "";
+        rows.forEach(row => tbody.appendChild(row));
+
+        updateHeaderState();
+    }
+
+    function updateHeaderState() {
+        sortButtons.forEach(button => {
+            const key = button.dataset.sortKey;
+            const icon = button.querySelector(".sort-icon");
+            const priority = button.querySelector(".sort-priority");
+
+            const index = sortStack.findIndex(item => item.key === key);
+
+            button.classList.remove("is-active");
+
+            if (icon) {
+                icon.textContent = "↕";
+            }
+
+            if (priority) {
+                priority.textContent = "";
+            }
+
+            if (index >= 0) {
+                const sort = sortStack[index];
+
+                button.classList.add("is-active");
+
+                if (icon) {
+                    icon.textContent = sort.direction === "asc" ? "↑" : "↓";
+                }
+
+                if (priority) {
+                    priority.textContent = index + 1;
+                }
+            }
+        });
+    }
+
+    function addOrToggleSort(button) {
+        const key = button.dataset.sortKey;
+        const type = button.dataset.sortType || "text";
+
+        const existing = sortStack.find(item => item.key === key);
+
+        if (existing) {
+            existing.direction = existing.direction === "asc" ? "desc" : "asc";
+        } else {
+            sortStack.push({
+                key: key,
+                type: type,
+                direction: "asc",
+            });
+        }
+
+        applySort();
+    }
+
+    sortButtons.forEach(button => {
+        button.addEventListener("click", function () {
+            addOrToggleSort(this);
+        });
+    });
+
+    if (clearBtn) {
+        clearBtn.addEventListener("click", function () {
+            sortStack = [];
+            applySort();
+        });
+    }
+
+    updateHeaderState();
 });
 </script>
 {% endblock %}

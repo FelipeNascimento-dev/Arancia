@@ -507,7 +507,7 @@ def lista_viagens(request):
         except Exception:
             travels = []
 
-    paginator = Paginator(travels, 12)
+    paginator = Paginator(travels, 75)
     page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
 
