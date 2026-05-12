@@ -417,11 +417,6 @@ def mural(request):
             "ids": ids
         }
 
-        print("STARTS POST HTML:", request.POST.get("starts_at"))
-        print("STARTS API:", starts_at)
-        print("ENDS POST HTML:", request.POST.get("ends_at"))
-        print("ENDS API:", ends_at)
-
         try:
             create_url = (
                 f"{MURAL_API_URL}/v1/items/create-item/"
