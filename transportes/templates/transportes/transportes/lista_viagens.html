@@ -1265,35 +1265,225 @@
         border: 1px solid #e5e7eb;
         box-shadow: 0 4px 10px rgba(0,0,0,.06);
         overflow-x: auto;
-        display: none; /* Oculta por padrão */
+        display: none;
         margin-top: 16px;
     }
 
     .custom-table {
         width: 100%;
-        border-collapse: collapse;
-        font-size: 0.88rem;
+        min-width: 1180px;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: .82rem;
         text-align: left;
     }
 
     .custom-table th {
+        position: sticky;
+        top: 0;
+        z-index: 5;
         background: #f8fafc;
-        padding: 12px 16px;
+        padding: 10px 12px;
         color: #475569;
-        font-weight: 700;
+        font-weight: 800;
         border-bottom: 2px solid #e2e8f0;
         white-space: nowrap;
+        vertical-align: top;
     }
 
     .custom-table td {
-        padding: 12px 16px;
+        padding: 10px 12px;
         border-bottom: 1px solid #f1f5f9;
         color: #334155;
-        vertical-align: middle;
+        vertical-align: top;
     }
 
-    .custom-table tr:hover {
+    .custom-table tbody tr:hover {
         background: #f8fafc;
+    }
+
+    .col-check {
+        width: 42px;
+        text-align: center;
+    }
+
+    .col-viagem {
+        width: 120px;
+    }
+
+    .col-os {
+        width: 150px;
+    }
+
+    .col-envolvidos {
+        width: 230px;
+    }
+
+    .col-local {
+        width: 270px;
+    }
+
+    .col-prazos {
+        width: 150px;
+    }
+
+    .col-acoes {
+        width: 80px;
+        text-align: center;
+    }
+
+    .table-main-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 900;
+        color: #0f172a;
+        text-decoration: none;
+        font-size: .92rem;
+    }
+
+    .table-main-link:hover {
+        color: #2563eb;
+        text-decoration: underline;
+    }
+
+    .info-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .info-row {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    .info-label {
+        font-size: .65rem;
+        font-weight: 900;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        line-height: 1;
+    }
+
+    .info-value {
+        font-size: .8rem;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.25;
+        word-break: break-word;
+    }
+
+    .info-value-muted {
+        font-size: .78rem;
+        font-weight: 600;
+        color: #64748b;
+        line-height: 1.25;
+        word-break: break-word;
+    }
+
+    .status-tag {
+        display: inline-flex;
+        width: fit-content;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 9px;
+        border-radius: 999px;
+        font-size: .68rem;
+        font-weight: 900;
+        color: #fff;
+        white-space: nowrap;
+    }
+
+    .local-box {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        line-height: 1.25;
+    }
+
+    .local-box--origin {
+        border-left: 4px solid #2563eb;
+    }
+
+    .local-box--destination {
+        border-left: 4px solid #16a34a;
+    }
+
+    .local-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: .66rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: #475569;
+    }
+
+    .local-cep {
+        font-size: .76rem;
+        font-weight: 900;
+        color: #0f172a;
+    }
+
+    .local-address {
+        font-size: .75rem;
+        font-weight: 600;
+        color: #334155;
+        word-break: break-word;
+    }
+
+    .date-pill {
+        display: inline-flex;
+        width: fit-content;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 7px;
+        border-radius: 8px;
+        background: #f1f5f9;
+        color: #334155;
+        font-size: .74rem;
+        font-weight: 800;
+    }
+
+    .table-header-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .table-header-title {
+        font-size: .8rem;
+        font-weight: 900;
+        color: #334155;
+    }
+
+    .table-header-sorts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .table-header-sorts .sort-btn {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 999px;
+        padding: 4px 7px;
+        font-size: .68rem;
+    }
+
+    .table-header-sorts .sort-btn.is-active {
+        border-color: #2563eb;
+        color: #2563eb;
+        background: #eff6ff;
     }
 
     .hidden { display: none !important; }
@@ -1613,65 +1803,6 @@
         color: #fff;
         background: #1d4ed8;
     }
-
-    .route-cell {
-        min-width: 420px;
-        max-width: 560px;
-        white-space: normal;
-    }
-
-    .route-box {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .route-item {
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 10px 12px;
-        background: #f8fafc;
-    }
-
-    .route-item--origin {
-        border-left: 4px solid #2563eb;
-    }
-
-    .route-item--destination {
-        border-left: 4px solid #16a34a;
-    }
-
-    .route-title {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: .72rem;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: .04em;
-        color: #334155;
-        margin-bottom: 5px;
-    }
-
-    .route-cep {
-        font-size: .78rem;
-        font-weight: 800;
-        color: #0f172a;
-        margin-bottom: 4px;
-    }
-
-    .route-address {
-        font-size: .76rem;
-        color: #475569;
-        line-height: 1.35;
-        word-break: break-word;
-    }
-
-    .route-empty {
-        font-size: .76rem;
-        color: #94a3b8;
-        font-style: italic;
-    }
 </style>
 
 <div class="toolbar">
@@ -1894,7 +2025,13 @@
                         <p><strong>Cliente:</strong><br>{{ item.service_order.client.nome }}</p>
                         <p><strong>Transportadora:</strong><br>{{ item.travel.carrier.nome }}</p>
                         <p><strong>Motorista:</strong><br>{{item.travel.driver.name|default:"-"}}</p>
-                        <p><strong>Origem:</strong><br>CEP: {{ item.service_order.origin.CEP }}<br><small>{{ item.service_order.origin.endereco }}</small></p>
+                        {% if item.view_origin %}
+                            <p>
+                                <strong>Origem:</strong><br>
+                                CEP: {{ item.service_order.origin.CEP|default:"-" }}<br>
+                                <small>{{ item.service_order.origin.endereco|default:"Endereço não informado" }}</small>
+                            </p>
+                        {% endif %}
                         <p><strong>Destino:</strong><br>CEP: {{ item.service_order.destination.CEP }}<br><small>{{ item.service_order.destination.endereco }}</small></p>
                         <p><strong>Início:</strong><br>{{ item.travel.start_date_formatada|default:"-" }}</p>
                         <p><strong>Fim:</strong><br>{{ item.travel.end_date_formatada|default:"Em andamento" }}</p>
@@ -1933,105 +2070,103 @@
                 <table class="custom-table" id="travelsSortableTable">
                     <thead>
                         <tr>
-                            <th><i class="fa-solid fa-check-square"></i></th>
-
-                            <th class="sortable-th">
-                                <button type="button" class="sort-btn" data-sort-key="id" data-sort-type="number">
-                                    ID Viagem
-                                    <span class="sort-icon">↕</span>
-                                    <span class="sort-priority"></span>
-                                </button>
+                            <th class="col-check">
+                                <i class="fa-solid fa-check-square"></i>
                             </th>
 
-                            <th class="sortable-th">
-                                <button type="button" class="sort-btn" data-sort-key="status" data-sort-type="text">
-                                    Status
-                                    <span class="sort-icon">↕</span>
-                                    <span class="sort-priority"></span>
-                                </button>
+                            <th class="col-viagem">
+                                <div class="table-header-group">
+                                    <div class="table-header-title">Viagem</div>
+                                    <div class="table-header-sorts">
+                                        <button type="button" class="sort-btn" data-sort-key="id" data-sort-type="number">
+                                            ID <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+
+                                        <button type="button" class="sort-btn" data-sort-key="status" data-sort-type="text">
+                                            Status <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+                                    </div>
+                                </div>
                             </th>
 
-                            <th class="sortable-th">
-                                <button type="button" class="sort-btn" data-sort-key="os" data-sort-type="text">
-                                    OS
-                                    <span class="sort-icon">↕</span>
-                                    <span class="sort-priority"></span>
-                                </button>
+                            <th class="col-os">
+                                <div class="table-header-group">
+                                    <div class="table-header-title">OS</div>
+                                    <div class="table-header-sorts">
+                                        <button type="button" class="sort-btn" data-sort-key="os" data-sort-type="text">
+                                            Interna <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+
+                                        <button type="button" class="sort-btn" data-sort-key="os_externa" data-sort-type="text">
+                                            Externa <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+                                    </div>
+                                </div>
                             </th>
 
-                            <th class="sortable-th">
-                                <button type="button" class="sort-btn" data-sort-key="os_externa" data-sort-type="text">
-                                    OS Externa
-                                    <span class="sort-icon">↕</span>
-                                    <span class="sort-priority"></span>
-                                </button>
+                            <th class="col-envolvidos">
+                                <div class="table-header-group">
+                                    <div class="table-header-title">Envolvidos</div>
+                                    <div class="table-header-sorts">
+                                        <button type="button" class="sort-btn" data-sort-key="cliente" data-sort-type="text">
+                                            Cliente <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+
+                                        <button type="button" class="sort-btn" data-sort-key="transportadora" data-sort-type="text">
+                                            Transp. <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+
+                                        <button type="button" class="sort-btn" data-sort-key="motorista" data-sort-type="text">
+                                            Motorista <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+                                    </div>
+                                </div>
                             </th>
 
-                            <th class="sortable-th">
-                                <button type="button" class="sort-btn" data-sort-key="cliente" data-sort-type="text">
-                                    Cliente
-                                    <span class="sort-icon">↕</span>
-                                    <span class="sort-priority"></span>
-                                </button>
+                            {% if show_origin_column %}
+                            <th class="col-local">
+                                <div class="table-header-group">
+                                    <div class="table-header-title">Origem</div>
+                                    <div class="table-header-sorts">
+                                        <button type="button" class="sort-btn" data-sort-key="origem" data-sort-type="text">
+                                            Ordenar <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </th>
+                            {% endif %}
+
+                            <th class="col-local">
+                                <div class="table-header-group">
+                                    <div class="table-header-title">Destino</div>
+                                    <div class="table-header-sorts">
+                                        <button type="button" class="sort-btn" data-sort-key="destino" data-sort-type="text">
+                                            Ordenar <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+                                    </div>
+                                </div>
                             </th>
 
-                            <th class="sortable-th">
-                                <button type="button" class="sort-btn" data-sort-key="transportadora" data-sort-type="text">
-                                    Transportadora
-                                    <span class="sort-icon">↕</span>
-                                    <span class="sort-priority"></span>
-                                </button>
+                            <th class="col-prazos">
+                                <div class="table-header-group">
+                                    <div class="table-header-title">Prazos</div>
+                                    <div class="table-header-sorts">
+                                        <button type="button" class="sort-btn" data-sort-key="inicio" data-sort-type="date">
+                                            Início <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+
+                                        <button type="button" class="sort-btn" data-sort-key="fim" data-sort-type="date">
+                                            Fim <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+
+                                        <button type="button" class="sort-btn" data-sort-key="prazo" data-sort-type="number">
+                                            Prazo <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+                                    </div>
+                                </div>
                             </th>
 
-                            <th class="sortable-th">
-                                <button type="button" class="sort-btn" data-sort-key="motorista" data-sort-type="text">
-                                    Motorista
-                                    <span class="sort-icon">↕</span>
-                                    <span class="sort-priority"></span>
-                                </button>
-                            </th>
-
-                            <th class="sortable-th">
-                                <button type="button" class="sort-btn" data-sort-key="origem" data-sort-type="text">
-                                    Origem
-                                    <span class="sort-icon">↕</span>
-                                    <span class="sort-priority"></span>
-                                </button>
-                            </th>
-
-                            <th class="sortable-th">
-                                <button type="button" class="sort-btn" data-sort-key="destino" data-sort-type="text">
-                                    Destino
-                                    <span class="sort-icon">↕</span>
-                                    <span class="sort-priority"></span>
-                                </button>
-                            </th>
-
-                            <th class="sortable-th">
-                                <button type="button" class="sort-btn" data-sort-key="inicio" data-sort-type="date">
-                                    Início
-                                    <span class="sort-icon">↕</span>
-                                    <span class="sort-priority"></span>
-                                </button>
-                            </th>
-
-                            <th class="sortable-th">
-                                <button type="button" class="sort-btn" data-sort-key="fim" data-sort-type="date">
-                                    Fim
-                                    <span class="sort-icon">↕</span>
-                                    <span class="sort-priority"></span>
-                                </button>
-                            </th>
-
-                            <th class="sortable-th">
-                                <button type="button" class="sort-btn" data-sort-key="prazo" data-sort-type="number">
-                                    Prazo
-                                    <span class="sort-icon">↕</span>
-                                    <span class="sort-priority"></span>
-                                </button>
-                            </th>
-
-                            <th>Ações</th>
+                            <th class="col-acoes">Ações</th>
                         </tr>
                     </thead>
 
@@ -2045,74 +2180,151 @@
                             data-sort-cliente="{{ item.service_order.client.nome|default:'' }}"
                             data-sort-transportadora="{{ item.travel.carrier.nome|default:'' }}"
                             data-sort-motorista="{{ item.travel.driver.name|default:'' }}"
-                            data-sort-origem="{{ item.service_order.origin.CEP|default:'' }}"
-                            data-sort-destino="{{ item.service_order.destination.CEP|default:'' }}"
+                            {% if show_origin_column %}
+                            data-sort-origem="{% if item.view_origin %}{{ item.service_order.origin.CEP|default:'' }} {{ item.service_order.origin.endereco|default:'' }}{% endif %}"
+                            {% endif %}
+                            data-sort-destino="{{ item.service_order.destination.CEP|default:'' }} {{ item.service_order.destination.endereco|default:'' }}"
                             data-sort-inicio="{{ item.travel.start_date|default:'' }}"
                             data-sort-fim="{{ item.travel.end_date|default:'' }}"
                             data-sort-prazo="{{ item.travel.quote.estimated_deadline|default:'' }}"
                         >
-                            <td>
-                                <input type="checkbox" class="card-select-checkbox"
+                            <td class="col-check">
+                                <input type="checkbox"
+                                    class="card-select-checkbox"
                                     name="travels_selecionadas"
                                     value="{{ item.travel.id }}"
                                     id="table_check_{{ item.travel.id }}">
                             </td>
 
-                            <td>
-                                <a href="{% url 'transportes:detalhe_viagem' item.travel.id %}" target="_blank" style="font-weight:700; text-decoration: none; color: #000;">
-                                    {{ item.travel.id }}
-                                </a>
+                            <td class="col-viagem">
+                                <div class="info-stack">
+                                    <a href="{% url 'transportes:detalhe_viagem' item.travel.id %}"
+                                    target="_blank"
+                                    class="table-main-link">
+                                        #{{ item.travel.id }}
+                                    </a>
+
+                                    <span class="status-tag status-{{ item.travel.status.type }}">
+                                        {{ item.travel.status.type|default:"-" }}
+                                    </span>
+                                </div>
                             </td>
 
-                            <td>
-                                <span class="status-tag status-{{ item.travel.status.type }}">
-                                    {{ item.travel.status.type }}
-                                </span>
+                            <td class="col-os">
+                                <div class="info-stack">
+                                    <div class="info-row">
+                                        <span class="info-label">OS interna</span>
+                                        <span class="info-value">
+                                            {{ item.service_order.order_number|default:"-" }}
+                                        </span>
+                                    </div>
+
+                                    <div class="info-row">
+                                        <span class="info-label">OS externa</span>
+                                        <span class="info-value-muted">
+                                            {{ item.service_order.external_order_number|default:"-" }}
+                                        </span>
+                                    </div>
+                                </div>
                             </td>
 
-                            <td>
-                                {{ item.service_order.order_number|default:"-" }}
+                            <td class="col-envolvidos">
+                                <div class="info-stack">
+                                    <div class="info-row">
+                                        <span class="info-label">Cliente</span>
+                                        <span class="info-value">
+                                            {{ item.service_order.client.nome|default:"-" }}
+                                        </span>
+                                    </div>
+
+                                    <div class="info-row">
+                                        <span class="info-label">Transportadora</span>
+                                        <span class="info-value-muted">
+                                            {{ item.travel.carrier.nome|default:"-" }}
+                                        </span>
+                                    </div>
+
+                                    <div class="info-row">
+                                        <span class="info-label">Motorista</span>
+                                        <span class="info-value-muted">
+                                            {{ item.travel.driver.name|default:"Sem motorista" }}
+                                        </span>
+                                    </div>
+                                </div>
                             </td>
 
-                            <td>
-                                {{ item.service_order.external_order_number|default:"-" }}
+                            {% if show_origin_column %}
+                            <td class="col-local">
+                                {% if item.view_origin %}
+                                    <div class="local-box local-box--origin">
+                                        <div class="local-title">
+                                            <i class="fa-solid fa-location-dot"></i>
+                                            Origem
+                                        </div>
+
+                                        <div class="local-cep">
+                                            CEP: {{ item.service_order.origin.CEP|default:"-" }}
+                                        </div>
+
+                                        <div class="local-address">
+                                            {{ item.service_order.origin.endereco|default:"Endereço não informado" }}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="info-value-muted">-</span>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+
+                            <td class="col-local">
+                                <div class="local-box local-box--destination">
+                                    <div class="local-title">
+                                        <i class="fa-solid fa-flag-checkered"></i>
+                                        Destino
+                                    </div>
+
+                                    <div class="local-cep">
+                                        CEP: {{ item.service_order.destination.CEP|default:"-" }}
+                                    </div>
+
+                                    <div class="local-address">
+                                        {{ item.service_order.destination.endereco|default:"Endereço não informado" }}
+                                    </div>
+                                </div>
                             </td>
 
-                            <td>
-                                {{ item.service_order.client.nome|default:"-" }}
+                            <td class="col-prazos">
+                                <div class="info-stack">
+                                    <div class="info-row">
+                                        <span class="info-label">Início</span>
+                                        <span class="date-pill">
+                                            <i class="fa-regular fa-calendar"></i>
+                                            {{ item.travel.start_date_formatada|default:"-" }}
+                                        </span>
+                                    </div>
+
+                                    <div class="info-row">
+                                        <span class="info-label">Fim</span>
+                                        <span class="date-pill">
+                                            <i class="fa-regular fa-calendar-check"></i>
+                                            {{ item.travel.end_date_formatada|default:"Em andamento" }}
+                                        </span>
+                                    </div>
+
+                                    <div class="info-row">
+                                        <span class="info-label">Prazo</span>
+                                        <span class="date-pill">
+                                            <i class="fa-regular fa-clock"></i>
+                                            {{ item.travel.quote.estimated_deadline|default:"-" }} dias
+                                        </span>
+                                    </div>
+                                </div>
                             </td>
 
-                            <td>
-                                {{ item.travel.carrier.nome|default:"-" }}
-                            </td>
-
-                            <td>
-                                {{ item.travel.driver.name|default:"-" }}
-                            </td>
-
-                            <td style="font-size:0.75rem;">
-                                <strong>CEP:</strong> {{ item.service_order.origin.CEP|default:"-" }}
-                            </td>
-
-                            <td style="font-size:0.75rem;">
-                                <strong>CEP:</strong> {{ item.service_order.destination.CEP|default:"-" }}
-                            </td>
-
-                            <td style="font-size:0.75rem;">
-                                {{ item.travel.start_date_formatada|default:"-" }}
-                            </td>
-
-                            <td style="font-size:0.75rem;">
-                                {{ item.travel.end_date_formatada|default:"Em andamento" }}
-                            </td>
-
-                            <td style="font-size:0.75rem;">
-                                {{ item.travel.quote.estimated_deadline|default:"-" }} Dias
-                            </td>
-
-                            <td>
+                            <td class="col-acoes">
                                 {% if response_mode == "detailed" and item.travel_events %}
-                                    <button type="button" class="btn-open-events-modal btn-events-minimal"
+                                    <button type="button"
+                                            class="btn-open-events-modal btn-events-minimal"
                                             data-travel-id="{{ item.travel.id }}"
                                             data-events-target="travel-events-table-{{ item.travel.id }}">
                                         <i class="fa-solid fa-clock-rotate-left"></i>
@@ -2122,6 +2334,8 @@
                                     <script type="application/json" id="travel-events-table-{{ item.travel.id }}">
                                         {{ item.travel_events_json|safe }}
                                     </script>
+                                {% else %}
+                                    <span class="info-value-muted">-</span>
                                 {% endif %}
                             </td>
                         </tr>

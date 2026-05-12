@@ -507,6 +507,11 @@ def lista_viagens(request):
         except Exception:
             travels = []
 
+    show_origin_column = any(
+        bool(item.get("view_origin"))
+        for item in travels
+    )
+
     paginator = Paginator(travels, 75)
     page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
@@ -887,4 +892,5 @@ def lista_viagens(request):
         "travel_items": travel_items,
         "response_mode": response_mode,
         "carriers": carriers,
+        "show_origin_column": show_origin_column,
     })
