@@ -6,13 +6,13 @@ if LOCAL_DEBUG:
     STOCK_API_URL = 'http://192.168.0.214/hg-stock/api'
     TRANSP_API_URL = 'http://192.168.0.214/hg-api-transportes/api'
     MURAL_API_URL = 'http://192.168.0.214/hg-api-mural/api'
-    DB_HOST = '192.168.0.219'
+    DB_HOST = '192.168.0.220'
 else:
     API_KEY_INTELIPOST = 'e92231bc-18a9-033b-738d-2039f9452e12etyu'
-    DB_HOST = '192.168.0.219'
-    API_URL = 'http://192.168.0.216/fulfillment'
+    DB_HOST = '192.168.0.220'
+    API_URL = 'http://192.168.0.214/fulfillment'
     STOCK_API_URL = 'http://192.168.0.214/stock/api'
-    TRANSP_API_URL = 'http://192.168.0.214/api-transportes/api'
+    TRANSP_API_URL = 'http://192.168.0.216/api-transportes/api'
     MURAL_API_URL = 'http://192.168.0.214/api-mural/api'
 
 
