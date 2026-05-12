@@ -508,7 +508,11 @@ def lista_viagens(request):
             travels = []
 
     show_origin_column = any(
-        bool(item.get("view_origin"))
+        str(
+            item.get("service_order", {})
+                .get("order_type", {})
+                .get("direction", "")
+        ).lower() == "normal"
         for item in travels
     )
 

@@ -2025,7 +2025,7 @@
                         <p><strong>Cliente:</strong><br>{{ item.service_order.client.nome }}</p>
                         <p><strong>Transportadora:</strong><br>{{ item.travel.carrier.nome }}</p>
                         <p><strong>Motorista:</strong><br>{{item.travel.driver.name|default:"-"}}</p>
-                        {% if item.view_origin %}
+                        {% if item.service_order.order_type.direction|lower == "normal" %}
                             <p>
                                 <strong>Origem:</strong><br>
                                 CEP: {{ item.service_order.origin.CEP|default:"-" }}<br>
@@ -2181,7 +2181,7 @@
                             data-sort-transportadora="{{ item.travel.carrier.nome|default:'' }}"
                             data-sort-motorista="{{ item.travel.driver.name|default:'' }}"
                             {% if show_origin_column %}
-                            data-sort-origem="{% if item.view_origin %}{{ item.service_order.origin.CEP|default:'' }} {{ item.service_order.origin.endereco|default:'' }}{% endif %}"
+                            data-sort-origem="{% if item.service_order.order_type.direction|lower == 'normal' %}{{ item.service_order.origin.CEP|default:'' }} {{ item.service_order.origin.endereco|default:'' }}{% endif %}"
                             {% endif %}
                             data-sort-destino="{{ item.service_order.destination.CEP|default:'' }} {{ item.service_order.destination.endereco|default:'' }}"
                             data-sort-inicio="{{ item.travel.start_date|default:'' }}"
@@ -2255,7 +2255,7 @@
 
                             {% if show_origin_column %}
                             <td class="col-local">
-                                {% if item.view_origin %}
+                                {% if item.service_order.order_type.direction|lower == "normal" %}
                                     <div class="local-box local-box--origin">
                                         <div class="local-title">
                                             <i class="fa-solid fa-location-dot"></i>
