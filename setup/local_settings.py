@@ -4,7 +4,7 @@ if LOCAL_DEBUG:
     API_KEY_INTELIPOST = '2c7b1f95-9dfc-2e5e-d844-ece50622eb54eacv'
     API_URL = 'http://192.168.0.216/homo-fulfillment'
     STOCK_API_URL = 'http://192.168.0.214/hg-stock/api'
-    TRANSP_API_URL = 'http://192.168.0.214/hg-api-transportes/api'
+    TRANSP_API_URL = 'http://192.168.0.215/hg-api-transportes/api'
     MURAL_API_URL = 'http://192.168.0.214/hg-api-mural/api'
     DB_HOST = '192.168.0.219'
 else:
@@ -13,7 +13,7 @@ else:
     API_URL = 'http://192.168.0.214/fulfillment'
     STOCK_API_URL = 'http://192.168.0.214/stock/api'
     TRANSP_API_URL = 'http://192.168.0.216/api-transportes/api'
-    MURAL_API_URL = 'http://192.168.0.214/api-mural/api'
+    MURAL_API_URL = 'http://192.168.0.215/api-mural/api'
 
 
 URL_LABEL_INTELIPOST = 'https://api.intelipost.com.br/api/v1/shipment_order/get_label/'
