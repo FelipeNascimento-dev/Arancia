@@ -6,11 +6,11 @@ from django.urls import path
 from .viewsV2 import *
 from .views import *
 from logistica.forms import LoginComCodigoForm
-
+from mural.views.view_mural import mural
 app_name = 'logistica'
 
 urls_User = [
-    path('', index, name='index'),
+    path('', mural, name='index'),
     path('senhas-privilegiadas/', senhas_privilegiadas,
          name='senhas_privilegiadas'),
     path('toggle-db/', toggle_db, name='toggle_db'),
