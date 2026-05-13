@@ -1549,10 +1549,12 @@
                     <i class="fa-regular fa-circle-check"></i>
                     Ocultar lidos
                 </button>
-                <button class="action-btn primary" type="button" id="openCreateModalBtn">
-                    <i class="fa-solid fa-plus"></i>
-                    Novo item
-                </button>
+                {% if perms.mural.ger_mural %}
+                    <button class="action-btn primary" type="button" id="openCreateModalBtn">
+                        <i class="fa-solid fa-plus"></i>
+                        Novo item
+                    </button>
+                {% endif %}
             </div>
         </div>
 
@@ -2171,11 +2173,12 @@
 
         <div class="view-modal-actions">
             <div id="viewItemActions"></div>
-
+            {% if perms.mural.ger_mural %}
             <button type="button" class="action-btn" id="openEditItemModalBtn">
                 <i class="fa-solid fa-pen-to-square"></i>
                 Editar item
             </button>
+            {% endif %}
 
             <form method="post" id="markReadForm" style="display: inline-flex;">
                 {% csrf_token %}
@@ -2195,10 +2198,12 @@
                 <input type="hidden" name="disable_item" value="1">
                 <input type="hidden" name="disable_item_id" id="disableItemId">
 
-                <button type="submit" class="action-btn danger">
-                    <i class="fa-solid fa-ban"></i>
-                    Desabilitar item
-                </button>
+                {% if perms.mural.ger_mural %}
+                    <button type="submit" class="action-btn danger">
+                        <i class="fa-solid fa-ban"></i>
+                        Desabilitar item
+                    </button>
+                {% endif %}
             </form>
         </div>
     </div>
