@@ -277,12 +277,6 @@ def mural(request):
         .values("id", "username", "first_name", "last_name")
     )
 
-    target_gais = list(
-        GroupAditionalInformation.objects.all()
-        .order_by("nome")
-        .values("id", "nome")
-    )
-
     target_groups = list(
         Group.objects.filter(
             name__istartswith="arancia_"
@@ -290,6 +284,29 @@ def mural(request):
         .order_by("name")
         .values("id", "name")
     )
+
+    target_gais_raw = list(
+        GroupAditionalInformation.objects
+        .select_related("group")
+        .filter(group__name__istartswith="arancia_")
+        .order_by("nome")
+        .values(
+            "id",
+            "nome",
+            "group_id",
+            "group__name",
+        )
+    )
+
+    target_gais = [
+        {
+            "id": gai["id"],
+            "nome": gai["nome"],
+            "group_id": gai["group_id"],
+            "group_name": gai["group__name"],
+        }
+        for gai in target_gais_raw
+    ]
 
     try:
         url = (

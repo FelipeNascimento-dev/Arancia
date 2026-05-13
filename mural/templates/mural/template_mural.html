@@ -1663,6 +1663,16 @@
                 <div class="form-group" id="targetObjectsGroup" style="display: none;">
                     <label class="form-label" id="targetObjectsLabel">Usuários/Grupos</label>
 
+                    <div id="targetGaiGroupFilter" style="display: none; margin-bottom: 10px;">
+                        <select id="targetGaiGroupSelect" class="form-select">
+                            <option value="">Selecione um grupo para visualizar os GAIs</option>
+                        </select>
+
+                        <small style="color: var(--muted); font-size: 12px;">
+                            Os GAIs serão filtrados de acordo com o grupo selecionado.
+                        </small>
+                    </div>
+
                     <div class="target-picker">
                         <div class="target-picker-search">
                             <input 
@@ -2388,6 +2398,7 @@
 {{ target_users|json_script:"target-users-data" }}
 {{ target_gais|json_script:"target-gais-data" }}
 {{ target_groups|json_script:"target-groups-data" }}
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const targetUsers = JSON.parse(document.getElementById('target-users-data').textContent);
@@ -2401,6 +2412,9 @@
         const targetSearchInput = document.getElementById('targetSearchInput');
         const selectAllTargetsBtn = document.getElementById('selectAllTargetsBtn');
         const clearTargetsBtn = document.getElementById('clearTargetsBtn');
+
+        const targetGaiGroupFilter = document.getElementById('targetGaiGroupFilter');
+        const targetGaiGroupSelect = document.getElementById('targetGaiGroupSelect');
 
         let currentTargets = [];
 
@@ -2423,6 +2437,21 @@
             return 'Público';
         }
 
+        function populateGaiGroupSelect() {
+            if (!targetGaiGroupSelect) return;
+
+            targetGaiGroupSelect.innerHTML = `
+                <option value="">Selecione um grupo para visualizar os GAIs</option>
+            `;
+
+            targetGroups.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group.id;
+                option.textContent = group.name || group.nome || `Grupo ${group.id}`;
+                targetGaiGroupSelect.appendChild(option);
+            });
+        }
+
         function buildTargetsByType(type) {
             if (type === 'users') {
                 return targetUsers.map(user => {
@@ -2441,11 +2470,19 @@
             }
 
             if (type === 'gais') {
-                return targetGais.map(gai => ({
-                    id: gai.id,
-                    label: gai.nome,
-                    extra: 'GAI'
-                }));
+                const selectedGroupId = targetGaiGroupSelect ? targetGaiGroupSelect.value : '';
+
+                if (!selectedGroupId) {
+                    return [];
+                }
+
+                return targetGais
+                    .filter(gai => String(gai.group_id) === String(selectedGroupId))
+                    .map(gai => ({
+                        id: gai.id,
+                        label: gai.nome,
+                        extra: gai.group_name ? `GAI • ${gai.group_name}` : 'GAI'
+                    }));
             }
 
             if (type === 'groups') {
@@ -2461,6 +2498,7 @@
 
         function renderTargetList() {
             const search = normalizeText(targetSearchInput.value);
+
             const filteredTargets = currentTargets.filter(item => {
                 return normalizeText(item.label).includes(search);
             });
@@ -2468,6 +2506,17 @@
             targetObjectsList.innerHTML = '';
 
             if (!filteredTargets.length) {
+                const selectedType = targetTypeSelect.value;
+
+                if (selectedType === 'gais' && targetGaiGroupSelect && !targetGaiGroupSelect.value) {
+                    targetObjectsList.innerHTML = `
+                        <div class="target-empty">
+                            Selecione um grupo para listar os GAIs disponíveis.
+                        </div>
+                    `;
+                    return;
+                }
+
                 targetObjectsList.innerHTML = `
                     <div class="target-empty">
                         Nenhum resultado encontrado.
@@ -2501,6 +2550,10 @@
             targetObjectsList.innerHTML = '';
             targetSearchInput.value = '';
 
+            if (targetGaiGroupFilter) {
+                targetGaiGroupFilter.style.display = 'none';
+            }
+
             if (selectedType === 'all') {
                 targetObjectsGroup.style.display = 'none';
                 currentTargets = [];
@@ -2510,8 +2563,25 @@
             targetObjectsGroup.style.display = 'grid';
             targetObjectsLabel.textContent = getSelectedTypeLabel(selectedType);
 
-            currentTargets = buildTargetsByType(selectedType);
+            if (selectedType === 'gais') {
+                if (targetGaiGroupFilter) {
+                    targetGaiGroupFilter.style.display = 'block';
+                }
 
+                if (targetGaiGroupSelect) {
+                    targetGaiGroupSelect.value = '';
+                }
+            }
+
+            currentTargets = buildTargetsByType(selectedType);
+            renderTargetList();
+        }
+
+        function refreshGaiTargetsByGroup() {
+            if (targetTypeSelect.value !== 'gais') return;
+
+            targetSearchInput.value = '';
+            currentTargets = buildTargetsByType('gais');
             renderTargetList();
         }
 
@@ -2519,7 +2589,13 @@
             return targetObjectsList.querySelectorAll('input[type="checkbox"][name="target_id"]');
         }
 
+        populateGaiGroupSelect();
+
         targetTypeSelect.addEventListener('change', renderTargetOptions);
+
+        if (targetGaiGroupSelect) {
+            targetGaiGroupSelect.addEventListener('change', refreshGaiTargetsByGroup);
+        }
 
         targetSearchInput.addEventListener('input', renderTargetList);
 
