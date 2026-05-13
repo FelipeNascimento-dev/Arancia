@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 import requests
+import json
+from pathlib import Path
 from logistica.models import GroupAditionalInformation, Group
 from setup.local_settings import MURAL_API_URL, TRANSP_API_URL
 from utils.request import RequestClient
@@ -117,6 +119,23 @@ def normalize_item(item, read_item_ids=None):
     is_read_from_item = item.get("is_read", item.get("read", False))
     is_read_from_endpoint = item_id_int in read_item_ids if item_id_int is not None else False
 
+    attachments = item.get("attachments") or []
+
+    if not attachments and item.get("attachment_url"):
+        attachments = [
+            {
+                "file_name": "Anexo",
+                "file_url": item.get("attachment_url"),
+                "file_extension": "",
+                "file_description": "",
+            }
+        ]
+
+    first_attachment_url = ""
+
+    if attachments:
+        first_attachment_url = attachments[0].get("file_url") or ""
+
     return {
         "id": item.get("id"),
         "title": item.get("title", ""),
@@ -141,9 +160,10 @@ def normalize_item(item, read_item_ids=None):
 
         "is_read": bool(is_read_from_item or is_read_from_endpoint),
 
-        "link": item.get("external_link") or item.get("attachment_url") or item.get("image_url") or "#",
+        "link": item.get("external_link") or first_attachment_url or item.get("image_url") or "#",
         "external_link": item.get("external_link") or "",
-        "attachment_url": item.get("attachment_url") or "",
+        "attachments": attachments,
+        "attachment_url": first_attachment_url,
         "image_url": item.get("image_url") or "",
         "target_type": item.get("target_type") or "",
         "created_by_id": item.get("created_by_id"),
@@ -192,6 +212,37 @@ def upload_file_to_firebase(uploaded_file):
             f"Upload realizado, mas nenhuma URL foi retornada: {response_data}")
 
     return firebase_url
+
+
+def build_attachments_from_files(uploaded_files, descriptions=None):
+    attachments = []
+    descriptions = descriptions or []
+
+    for index, uploaded_file in enumerate(uploaded_files):
+        if not uploaded_file:
+            continue
+
+        file_url = upload_file_to_firebase(uploaded_file)
+
+        file_name = uploaded_file.name
+        file_extension = Path(
+            uploaded_file.name).suffix.replace(".", "").lower()
+
+        file_description = ""
+
+        if index < len(descriptions):
+            file_description = descriptions[index] or ""
+
+        attachments.append(
+            {
+                "file_name": file_name,
+                "file_url": file_url,
+                "file_extension": file_extension,
+                "file_description": file_description,
+            }
+        )
+
+    return attachments
 
 
 def validate_critical_duration(severity, starts_at_raw, ends_at_raw):
@@ -277,12 +328,6 @@ def mural(request):
         .values("id", "username", "first_name", "last_name")
     )
 
-    target_gais = list(
-        GroupAditionalInformation.objects.all()
-        .order_by("nome")
-        .values("id", "nome")
-    )
-
     target_groups = list(
         Group.objects.filter(
             name__istartswith="arancia_"
@@ -290,6 +335,29 @@ def mural(request):
         .order_by("name")
         .values("id", "name")
     )
+
+    target_gais_raw = list(
+        GroupAditionalInformation.objects
+        .select_related("group")
+        .filter(group__name__istartswith="arancia_")
+        .order_by("nome")
+        .values(
+            "id",
+            "nome",
+            "group_id",
+            "group__name",
+        )
+    )
+
+    target_gais = [
+        {
+            "id": gai["id"],
+            "nome": gai["nome"],
+            "group_id": gai["group_id"],
+            "group_name": gai["group__name"],
+        }
+        for gai in target_gais_raw
+    ]
 
     try:
         url = (
@@ -366,22 +434,29 @@ def mural(request):
 
         external_link = request.POST.get("external_link") or None
 
-        attachment_file = request.FILES.get("attachment_file")
+        attachment_files = request.FILES.getlist("attachment_files")
+        attachment_descriptions = request.POST.getlist(
+            "attachment_descriptions")
+
         image_file = request.FILES.get("image_file")
 
-        attachment_url = None
+        attachments = []
         image_url = None
 
         try:
-            if attachment_file:
-                attachment_url = upload_file_to_firebase(attachment_file)
+            if attachment_files:
+                attachments = build_attachments_from_files(
+                    uploaded_files=attachment_files,
+                    descriptions=attachment_descriptions
+                )
 
             if image_file:
                 image_url = upload_file_to_firebase(image_file)
 
         except Exception as e:
             messages.error(
-                request, f"Erro ao enviar arquivo/imagem para o Firebase. Erro: {e}")
+                request, f"Erro ao enviar arquivo/imagem para o Firebase. Erro: {e}"
+            )
             return redirect('mural:mural')
 
         created_by_id = request.user.id
@@ -411,7 +486,7 @@ def mural(request):
             "starts_at": starts_at,
             "ends_at": ends_at,
             "external_link": external_link,
-            "attachment_url": attachment_url,
+            "attachments": attachments,
             "image_url": image_url,
             "created_by_id": created_by_id,
             "ids": ids
@@ -541,27 +616,54 @@ def mural(request):
         edit_ends_at = format_datetime_to_api(edit_ends_at_raw)
 
         edit_external_link = request.POST.get("external_link") or None
-        current_attachment_url = request.POST.get(
-            "current_attachment_url") or None
         current_image_url = request.POST.get("current_image_url") or None
 
-        edit_attachment_file = request.FILES.get("attachment_file")
+        current_attachments_raw = request.POST.get(
+            "current_attachments") or "[]"
+
+        try:
+            current_attachments = json.loads(current_attachments_raw)
+
+            if not isinstance(current_attachments, list):
+                current_attachments = []
+
+        except Exception:
+            current_attachments = []
+
+        removed_attachment_urls = request.POST.getlist("remove_attachment_url")
+
+        if removed_attachment_urls:
+            current_attachments = [
+                attachment
+                for attachment in current_attachments
+                if attachment.get("file_url") not in removed_attachment_urls
+            ]
+
+        edit_attachment_files = request.FILES.getlist("attachment_files")
+        edit_attachment_descriptions = request.POST.getlist(
+            "attachment_descriptions")
+
         edit_image_file = request.FILES.get("image_file")
 
-        edit_attachment_url = current_attachment_url
+        edit_attachments = current_attachments
         edit_image_url = current_image_url
 
         try:
-            if edit_attachment_file:
-                edit_attachment_url = upload_file_to_firebase(
-                    edit_attachment_file)
+            if edit_attachment_files:
+                new_attachments = build_attachments_from_files(
+                    uploaded_files=edit_attachment_files,
+                    descriptions=edit_attachment_descriptions
+                )
+
+                edit_attachments.extend(new_attachments)
 
             if edit_image_file:
                 edit_image_url = upload_file_to_firebase(edit_image_file)
 
         except Exception as e:
             messages.error(
-                request, f"Erro ao enviar novo arquivo/imagem para o Firebase. Erro: {e}")
+                request, f"Erro ao enviar novo arquivo/imagem para o Firebase. Erro: {e}"
+            )
             return redirect('mural:mural')
 
         edit_payload = {
@@ -577,7 +679,7 @@ def mural(request):
             "starts_at": edit_starts_at,
             "ends_at": edit_ends_at,
             "external_link": edit_external_link,
-            "attachment_url": edit_attachment_url,
+            "attachments": edit_attachments,
             "image_url": edit_image_url,
             "updated_by_id": request.user.id,
         }
