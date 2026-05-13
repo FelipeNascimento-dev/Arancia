@@ -1257,6 +1257,243 @@
             height: 180px;
         }
     }
+
+    .attachments-box {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: #fff;
+        overflow: hidden;
+    }
+
+    .attachments-head {
+        padding: 14px 16px;
+        background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .attachments-title {
+        font-size: 13px;
+        font-weight: 900;
+        color: var(--text);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .attachments-help {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .attachments-list {
+        display: grid;
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .attachment-item {
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 12px;
+        display: grid;
+        gap: 10px;
+        background: #fff;
+    }
+
+    .attachment-item-name {
+        font-size: 13px;
+        font-weight: 900;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        word-break: break-word;
+    }
+
+    .attachment-item-name i,
+    .attachment-current-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: var(--primary-soft);
+        color: var(--primary-dark);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+    }
+
+    .attachment-current-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 14px;
+        align-items: center;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 12px;
+        background: #fff;
+        transition: 0.2s ease;
+    }
+
+    .attachment-current-row:hover {
+        border-color: #bbf7d0;
+        background: #fbfefc;
+    }
+
+    .attachment-current-info {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .attachment-current-text {
+        min-width: 0;
+        display: grid;
+        gap: 3px;
+    }
+
+    .attachment-current-text a {
+        color: var(--primary-dark);
+        font-weight: 900;
+        font-size: 13px;
+        text-decoration: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .attachment-current-text a:hover {
+        text-decoration: underline;
+    }
+
+    .attachment-current-text small {
+        color: var(--muted);
+        font-size: 12px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .attachment-remove {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-width: 105px;
+        border: 1px solid #fecaca;
+        background: var(--danger-soft);
+        color: var(--danger-dark);
+        border-radius: 999px;
+        padding: 8px 10px;
+        font-size: 12px;
+        font-weight: 900;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .attachment-remove input {
+        width: 15px;
+        height: 15px;
+        margin: 0;
+        accent-color: var(--danger);
+    }
+
+    .attachment-upload-area {
+        padding: 14px;
+        border-top: 1px solid var(--border);
+        background: var(--surface-soft);
+        display: grid;
+        gap: 8px;
+    }
+
+    .attachment-upload-area .form-label {
+        margin: 0;
+    }
+
+    .view-attachments-box {
+        border-top: 1px solid var(--border);
+        padding: 18px 24px 0;
+        margin-top: -6px;
+    }
+
+    .view-attachments-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .view-attachments-title strong {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text);
+        font-size: 14px;
+    }
+
+    .view-attachments-title span {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .view-attachments-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .view-attachment-link {
+        max-width: 260px;
+        border: 1px solid var(--border);
+        background: #fff;
+        color: #334155;
+        border-radius: 999px;
+        padding: 9px 12px;
+        font-weight: 800;
+        font-size: 13px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: 0.2s ease;
+    }
+
+    .view-attachment-link:hover {
+        border-color: #bbf7d0;
+        background: var(--primary-soft);
+        color: var(--primary-dark);
+    }
+
+    .view-attachment-link span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    @media (max-width: 820px) {
+        .attachment-current-row {
+            grid-template-columns: 1fr;
+        }
+
+        .attachment-remove {
+            width: 100%;
+        }
+
+        .view-attachment-link {
+            max-width: 100%;
+            width: 100%;
+        }
+    }
 </style>
 
 <div class="page">
@@ -1717,17 +1954,33 @@
                     <input type="url" name="external_link" class="form-control">
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Anexo</label>
-                    <input 
-                        type="file" 
-                        name="attachment_file" 
-                        id="attachmentFile" 
-                        class="form-control"
-                    >
-                    <small style="color: var(--muted); font-size: 12px;">
-                        Selecione um arquivo da sua máquina para anexar ao item.
-                    </small>
+                <div class="form-group full">
+                    <label class="form-label">Anexos</label>
+
+                    <div class="attachments-box">
+                        <div class="attachments-head">
+                            <span class="attachments-title">
+                                <i class="fa-solid fa-paperclip"></i>
+                                Arquivos anexados
+                            </span>
+                        </div>
+
+                        <div style="padding: 12px;">
+                            <input 
+                                type="file" 
+                                name="attachment_files" 
+                                id="attachmentFiles" 
+                                class="form-control"
+                                multiple
+                            >
+
+                            <small style="color: var(--muted); font-size: 12px;">
+                                Você pode selecionar mais de um arquivo.
+                            </small>
+                        </div>
+
+                        <div class="attachments-list" id="attachmentDescriptionsList"></div>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -1812,6 +2065,48 @@
     }
 </script>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const attachmentFiles = document.getElementById('attachmentFiles');
+        const attachmentDescriptionsList = document.getElementById('attachmentDescriptionsList');
+
+        function renderCreateAttachmentDescriptions() {
+            if (!attachmentFiles || !attachmentDescriptionsList) return;
+
+            attachmentDescriptionsList.innerHTML = '';
+
+            const files = Array.from(attachmentFiles.files || []);
+
+            if (!files.length) return;
+
+            files.forEach((file) => {
+                const row = document.createElement('div');
+                row.className = 'attachment-item';
+
+                row.innerHTML = `
+                    <div class="attachment-item-name">
+                        <i class="fa-solid fa-file"></i>
+                        <span>${file.name}</span>
+                    </div>
+
+                    <input 
+                        type="text" 
+                        name="attachment_descriptions" 
+                        class="form-control"
+                        placeholder="Descrição do anexo, opcional"
+                    >
+                `;
+
+                attachmentDescriptionsList.appendChild(row);
+            });
+        }
+
+        if (attachmentFiles) {
+            attachmentFiles.addEventListener('change', renderCreateAttachmentDescriptions);
+        }
+    });
+</script>
+
 <!-- MODAL PARA VISUALIZAÇÃO DE ITENS -->
 <div class="view-modal-overlay" id="viewItemModal">
     <div class="view-modal">
@@ -1858,6 +2153,18 @@
                 <img id="viewItemImage" src="" alt="Imagem do item">
                 <div class="mural-image-preview-caption">
                     Imagem vinculada ao item
+                </div>
+                <div class="view-attachments-box" id="viewAttachmentsBox" style="display: none;">
+                    <div class="view-attachments-title">
+                        <strong>
+                            <i class="fa-solid fa-paperclip"></i>
+                            Anexos do item
+                        </strong>
+
+                        <span id="viewAttachmentsCount">0 anexos</span>
+                    </div>
+
+                    <div class="view-attachments-list" id="viewAttachmentsList"></div>
                 </div>
             </div>
         </div>
@@ -1910,6 +2217,9 @@
     const viewItemEndsAt = document.getElementById('viewItemEndsAt');
     const viewItemStatus = document.getElementById('viewItemStatus');
     const viewItemActions = document.getElementById('viewItemActions');
+    const viewAttachmentsBox = document.getElementById('viewAttachmentsBox');
+    const viewAttachmentsList = document.getElementById('viewAttachmentsList');
+    const viewAttachmentsCount = document.getElementById('viewAttachmentsCount');
 
     const disableItemId = document.getElementById('disableItemId');
 
@@ -2058,21 +2368,37 @@
             `;
         }
 
-        if (item.attachment_url) {
-            viewItemActions.innerHTML += `
-                <a href="${item.attachment_url}" target="_blank" class="action-btn">
-                    <i class="fa-solid fa-paperclip"></i>
-                    Abrir anexo
-                </a>
-            `;
+        const attachments = item.attachments || [];
+
+        if (viewAttachmentsList) {
+            viewAttachmentsList.innerHTML = '';
         }
 
-        if (!item.external_link && !item.attachment_url && !item.image_url) {
-            viewItemActions.innerHTML = `
-                <button type="button" class="action-btn" disabled>
-                    Nenhum link adicional informado
-                </button>
-            `;
+        if (attachments.length) {
+            viewAttachmentsBox.style.display = 'block';
+            viewAttachmentsCount.textContent = attachments.length === 1
+                ? '1 anexo'
+                : `${attachments.length} anexos`;
+
+            attachments.forEach((attachment, index) => {
+                const fileUrl = attachment.file_url || '#';
+                const fileName = attachment.file_name || `Anexo ${index + 1}`;
+                const fileDescription = attachment.file_description || '';
+
+                viewAttachmentsList.innerHTML += `
+                    <a href="${fileUrl}" target="_blank" class="view-attachment-link" title="${fileDescription || fileName}">
+                        <i class="fa-solid fa-paperclip"></i>
+                        <span>${fileName}</span>
+                    </a>
+                `;
+            });
+        } else {
+            viewAttachmentsBox.style.display = 'none';
+            viewAttachmentsCount.textContent = '0 anexos';
+        }
+
+        if (!item.external_link) {
+            viewItemActions.innerHTML = '';
         }
 
         viewItemModal.classList.add('show');
@@ -2153,7 +2479,7 @@
 
             <input type="hidden" name="edit_mural_item" value="1">
             <input type="hidden" name="edit_item_id" id="editItemId">
-            <input type="hidden" name="current_attachment_url" id="editCurrentAttachmentUrl">
+            <input type="hidden" name="current_attachments" id="editCurrentAttachments">
             <input type="hidden" name="current_image_url" id="editCurrentImageUrl">
 
             <div class="form-grid">
@@ -2207,17 +2533,37 @@
                     <input type="url" name="external_link" id="editExternalLink" class="form-control">
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Novo anexo</label>
-                    <input 
-                        type="file" 
-                        name="attachment_file" 
-                        id="editAttachmentFile" 
-                        class="form-control"
-                    >
-                    <small style="color: var(--muted); font-size: 12px;">
-                        Envie um novo arquivo apenas se quiser substituir o anexo atual.
-                    </small>
+                <div class="form-group full">
+                    <label class="form-label">Anexos</label>
+
+                    <div class="attachments-box">
+                        <div class="attachments-head">
+                            <span class="attachments-title">
+                                <i class="fa-solid fa-paperclip"></i>
+                                Anexos atuais
+                            </span>
+                        </div>
+
+                        <div class="attachments-list" id="editCurrentAttachmentsList"></div>
+
+                        <div class="attachment-upload-area">
+                            <label class="form-label">Adicionar novos anexos</label>
+
+                            <input 
+                                type="file" 
+                                name="attachment_files" 
+                                id="editAttachmentFiles" 
+                                class="form-control"
+                                multiple
+                            >
+
+                            <small style="color: var(--muted); font-size: 12px;">
+                                Os novos arquivos serão adicionados aos anexos já existentes.
+                            </small>
+                        </div>
+
+                        <div class="attachments-list" id="editAttachmentDescriptionsList"></div>
+                    </div>
                 </div>
 
                 <div class="form-group full">
@@ -2295,14 +2641,97 @@
     const editStartsAt = document.getElementById('editStartsAt');
     const editEndsAt = document.getElementById('editEndsAt');
     const editExternalLink = document.getElementById('editExternalLink');
-    const editAttachmentFile = document.getElementById('editAttachmentFile');
+    const editAttachmentFiles = document.getElementById('editAttachmentFiles');
+    const editCurrentAttachments = document.getElementById('editCurrentAttachments');
+    const editCurrentAttachmentsList = document.getElementById('editCurrentAttachmentsList');
+    const editAttachmentDescriptionsList = document.getElementById('editAttachmentDescriptionsList');
     const editImageFile = document.getElementById('editImageFile');
-    const editCurrentAttachmentUrl = document.getElementById('editCurrentAttachmentUrl');
     const editCurrentImageUrl = document.getElementById('editCurrentImageUrl');
     const editIsActive = document.getElementById('editIsActive');
     const editIsPinned = document.getElementById('editIsPinned');
     const editIsIndefinite = document.getElementById('editIsIndefinite');
     const editUntilRead = document.getElementById('editUntilRead');
+
+    function renderEditCurrentAttachments(attachments) {
+        if (!editCurrentAttachmentsList) return;
+
+        editCurrentAttachmentsList.innerHTML = '';
+
+        if (!attachments || !attachments.length) {
+            editCurrentAttachmentsList.innerHTML = `
+                <div class="target-empty">
+                    Nenhum anexo atual.
+                </div>
+            `;
+            return;
+        }
+
+        attachments.forEach((attachment, index) => {
+            const fileName = attachment.file_name || `Anexo ${index + 1}`;
+            const fileUrl = attachment.file_url || '#';
+            const description = attachment.file_description || 'Sem descrição';
+
+            const row = document.createElement('div');
+            row.className = 'attachment-current-row';
+
+            row.innerHTML = `
+                <div class="attachment-current-info">
+                    <span class="attachment-current-icon">
+                        <i class="fa-solid fa-paperclip"></i>
+                    </span>
+
+                    <div class="attachment-current-text">
+                        <a href="${fileUrl}" target="_blank" title="${fileName}">
+                            ${fileName}
+                        </a>
+                        <small title="${description}">${description}</small>
+                    </div>
+                </div>
+
+                <label class="attachment-remove">
+                    <input 
+                        type="checkbox" 
+                        name="remove_attachment_url" 
+                        value="${fileUrl}"
+                    >
+                    Remover
+                </label>
+            `;
+
+            editCurrentAttachmentsList.appendChild(row);
+        });
+    }
+
+    function renderAttachmentDescriptions(inputElement, containerElement) {
+        if (!inputElement || !containerElement) return;
+
+        containerElement.innerHTML = '';
+
+        const files = Array.from(inputElement.files || []);
+
+        if (!files.length) return;
+
+        files.forEach((file) => {
+            const row = document.createElement('div');
+            row.className = 'attachment-item';
+
+            row.innerHTML = `
+                <div class="attachment-item-name">
+                    <i class="fa-solid fa-file"></i>
+                    <span>${file.name}</span>
+                </div>
+
+                <input 
+                    type="text" 
+                    name="attachment_descriptions" 
+                    class="form-control"
+                    placeholder="Descrição do anexo, opcional"
+                >
+            `;
+
+            containerElement.appendChild(row);
+        });
+    }
 
     function openEditItemModal(item) {
         if (!item) return;
@@ -2319,7 +2748,12 @@
         editEndsAt.value = item.ends_at_input || '';
 
         editExternalLink.value = item.external_link || '';
-        editCurrentAttachmentUrl.value = item.attachment_url || '';
+        const attachments = item.attachments || [];
+
+        editCurrentAttachments.value = JSON.stringify(attachments);
+
+        renderEditCurrentAttachments(attachments);
+
         editCurrentImageUrl.value = item.image_url || '';
 
         if (item.image_url) {
@@ -2330,8 +2764,12 @@
             editCurrentImageBox.classList.remove('show');
         }
 
-        if (editAttachmentFile) {
-            editAttachmentFile.value = '';
+        if (editAttachmentFiles) {
+            editAttachmentFiles.value = '';
+        }
+
+        if (editAttachmentDescriptionsList) {
+            editAttachmentDescriptionsList.innerHTML = '';
         }
 
         if (editImageFile) {
@@ -2364,6 +2802,15 @@
 
     function closeEditItemModal() {
         editItemModal.classList.remove('show');
+    }
+
+    if (editAttachmentFiles) {
+        editAttachmentFiles.addEventListener('change', function () {
+            renderAttachmentDescriptions(
+                editAttachmentFiles,
+                editAttachmentDescriptionsList
+            );
+        });
     }
 
     if (openEditItemModalBtn) {
