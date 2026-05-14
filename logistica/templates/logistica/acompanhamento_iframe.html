@@ -1,0 +1,128 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+.iframe-page-container {
+    width: 1380px;
+    height: calc(100vh - 80px);
+    padding: 20px;
+    box-sizing: border-box;
+    background: #f4f6f9;
+    margin-top: 80px;
+    margin-left: 65px;
+    border-radius: 20px;
+}
+
+.iframe-header {
+    width: 100%;
+    min-height: 70px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.iframe-header h2 {
+    margin: 0;
+    font-size: 22px;
+    color: #222;
+}
+
+.iframe-header p {
+    margin: 5px 0 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.btn-open-new-tab {
+    text-decoration: none;
+    background: #222;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-open-new-tab:hover {
+    background: #444;
+}
+
+.iframe-wrapper {
+    width: 100%;
+    height: calc(100% - 95px);
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+.iframe-wrapper iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+@media (max-width: 768px) {
+    .iframe-page-container {
+        padding: 10px;
+        height: calc(100vh - 70px);
+    }
+
+    .iframe-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .btn-open-new-tab {
+        width: 100%;
+        text-align: center;
+    }
+
+    .iframe-wrapper {
+        height: calc(100% - 140px);
+    }
+}
+</style>
+
+
+<div class="iframe-page-container">
+
+    <div class="iframe-header">
+        <div>
+            <h2>{{ acompanhamento.nome }}</h2>
+
+            {% if acompanhamento.descricao %}
+                <p>{{ acompanhamento.descricao }}</p>
+            {% else %}
+                <p>Visualização do painel de acompanhamento.</p>
+            {% endif %}
+        </div>
+
+        <a href="{{ acompanhamento.link }}" target="_blank" class="btn-open-new-tab">
+            <i class="fa-solid fa-up-right-from-square"></i>
+            Abrir em nova aba
+        </a>
+    </div>
+
+    <div class="iframe-wrapper">
+        <iframe
+            src="https://kuma.wolf.local/dashboard"
+            title="{{ acompanhamento.nome }}"
+            frameborder="0"
+            allowfullscreen
+            loading="lazy">
+        </iframe>
+    </div>
+
+</div>
+
+{% endblock %}

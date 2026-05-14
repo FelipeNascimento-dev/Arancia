@@ -35,7 +35,6 @@ from .views_checkin_checkout.view_consulta_produtos import product_create
 from .views_checkin_checkout.view_consulta_clientes import client_consult
 from .views_recebimento_estoque.view_gerenciamento_estoque import gerenciamento_estoque
 from .views_recebimento_estoque.view_gerenciamento_kits import gerenciamento_kits
-from .transp import transp_view
 from .views_checkin_checkout.print_serial import print_serial
 from .views_checkin_checkout.view_checkout_reverse import checkout_reverse
 from .views_checkin_checkout.view_checkout_reverse_create import checkout_reverse_create
@@ -43,3 +42,4 @@ from .views_fluxo_entrega.view_recebimento_insucesso import recebimento_insucess
 from .views_user.password_reset_view import esqueci_minha_senha
 from .view_gestao_contas import *
 from .view_contas_privilegiadas import gestao_contas_privilegiadas
+from .view_iframe_acompanhamento import acompanhamento_iframe

@@ -3,6 +3,7 @@ from django.contrib.auth.models import User, Group
 from datetime import timedelta
 from django.conf import settings
 from django.utils import timezone
+from django.utils.text import slugify
 
 
 def user_avatar_path(instance, filename):
@@ -219,3 +220,55 @@ class PasswordResetAccessCode(models.Model):
 
     def is_valid(self):
         return not self.used and not self.is_expired()
+
+
+class AcompanhamentoSistema(models.Model):
+    nome = models.CharField(
+        max_length=100,
+        verbose_name="Nome do acompanhamento"
+    )
+    slug = models.SlugField(
+        max_length=120,
+        unique=True,
+        blank=True,
+        verbose_name="Slug da URL"
+    )
+    link = models.URLField(
+        max_length=500,
+        verbose_name="Link do iframe"
+    )
+    descricao = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Descrição"
+    )
+    ativo = models.BooleanField(
+        default=True,
+        verbose_name="Ativo"
+    )
+    ordem = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Ordem de exibição"
+    )
+    criado_em = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Criado em"
+    )
+    atualizado_em = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Atualizado em"
+    )
+
+    class Meta:
+        verbose_name = "Acompanhamento de Sistema"
+        verbose_name_plural = "Acompanhamentos de Sistemas"
+        ordering = ["ordem", "nome"]
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.nome)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.nome

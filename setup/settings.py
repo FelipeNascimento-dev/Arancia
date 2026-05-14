@@ -62,6 +62,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'setup.settings.db_host_context',
                 'logistica.context_processors.avatar_url',
+                'logistica.context_processors.acompanhamentos_navbar'
             ],
         },
     },

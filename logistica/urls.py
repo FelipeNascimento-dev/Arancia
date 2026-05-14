@@ -27,7 +27,9 @@ urls_User = [
     path('gestao-privilegiada/validar/', validate_privileged_access,
          name='validate_privileged_access'),
     path('contas-privilegiadas', gestao_contas_privilegiadas,
-         name='gestao_contas_privilegiadas')
+         name='gestao_contas_privilegiadas'),
+    path("monitoramento/<slug:slug>/", acompanhamento_iframe,
+         name="acompanhamento_iframe"),
 ]
 
 urls_LastmileB2C = [
@@ -82,7 +84,6 @@ urls_LastmileB2C = [
     path('gerenciamento-estoque/', gerenciamento_estoque,
          name='gerenciamento_estoque'),
     path('gerenciamento-kits/', gerenciamento_kits, name='gerenciamento_kits'),
-    path('transp/', transp_view, name='transp_view'),
 
     path('reversa/consulta/', consult_romV2, name='consultar_romaneioV2'),
     path('reversa/criar/', reverse_createV2, name='reverse_createV2'),
