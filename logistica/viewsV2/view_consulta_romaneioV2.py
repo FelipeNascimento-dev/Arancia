@@ -111,7 +111,7 @@ def consult_romV2(request):
             else:
                 origin_id = location_id
 
-            destination_id = pa_tatuape.id
+            destination_id = request.POST.get("destination_id")
 
             if not origin_id or not destination_id:
                 messages.error(request, "Selecione origem e destino")

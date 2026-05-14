@@ -1,3 +1,64 @@
+<style>
+.monitoramento-dropdown {
+    position: relative;
+    margin-right: 12px;
+}
+
+.monitoramento-dropdown-toggle {
+    border: none;
+    background: transparent;
+    color: #222;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    transition: 0.2s ease;
+}
+
+.monitoramento-dropdown-toggle:hover {
+    background: rgba(0,0,0,0.06);
+}
+
+.monitoramento-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 42px;
+    right: 0;
+    background: #fff;
+    min-width: 230px;
+    padding: 8px 0;
+    margin: 0;
+    list-style: none;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    z-index: 9999;
+}
+
+.monitoramento-dropdown-menu li a,
+.monitoramento-dropdown-menu li span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 14px;
+    color: #222;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.monitoramento-dropdown-menu li a:hover {
+    background: #f2f2f2;
+}
+
+.items-nav-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+</style>
+
 <div class="user-navbar" style="{% if DB_HOST == '192.168.0.219' %}background-color:#62ee9c;{% endif %}">
     <div class="macro-guia" id="macroGuia"></div>
     {% if show_config_link %}
@@ -40,6 +101,30 @@
     {% endif %}
 
     <div class="items-nav-user">
+        {% if acompanhamentos_navbar %}
+        <div class="monitoramento-dropdown">
+            <button class="monitoramento-dropdown-toggle" onclick="toggleMonitoramentoDropdown()">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Monitoramento</span>
+                <i class="fa fa-chevron-down arrow-icon"></i>
+            </button>
+
+            <ul class="monitoramento-dropdown-menu" id="monitoramentoDropdownMenu">
+                {% for acompanhamento in acompanhamentos_navbar %}
+                    <li>
+                        <a href="{% url 'logistica:acompanhamento_iframe' acompanhamento.slug %}">
+                            <i class="fa-solid fa-display"></i>
+                            {{ acompanhamento.nome }}
+                        </a>
+                    </li>
+                {% empty %}
+                    <li>
+                        <span>Nenhum acompanhamento cadastrado</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
         <div class="user-dropdown">
             <button class="user-dropdown-toggle" onclick="toggleUserDropdown()">
                 <div class="user-pic">
@@ -64,6 +149,13 @@
 </div>
 
 <script>
+function toggleMonitoramentoDropdown() {
+    const menu = document.getElementById('monitoramentoDropdownMenu');
+    if (!menu) return;
+
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+
 function toggleUserDropdown() {
     const menu = document.getElementById('userDropdownMenu');
     menu.style.display = menu.style.display === 'block' ? 'none' : 'block';

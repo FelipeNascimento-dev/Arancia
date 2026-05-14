@@ -2,6 +2,7 @@ from django.contrib import admin
 from django import forms
 from .models import PontoAtendimentoInfo, GroupAditionalInformation, UserDesignation, GroupAditionalInformationLegacy
 from transportes.models import FiltroPadraoTela, FiltroFavoritoUsuario
+from .models import AcompanhamentoSistema
 
 
 class PontoAtendimentoInfoAdminForm(forms.ModelForm):
@@ -61,3 +62,12 @@ class FiltroFavoritoUsuarioAdmin(admin.ModelAdmin):
                     "favorito", "ativo", "atualizado_em")
     search_fields = ("usuario__username", "chave_tela", "nome")
     list_filter = ("favorito", "ativo", "chave_tela")
+
+
+@admin.register(AcompanhamentoSistema)
+class AcompanhamentoSistemaAdmin(admin.ModelAdmin):
+    list_display = ("nome", "slug", "ativo", "ordem", "atualizado_em")
+    list_filter = ("ativo",)
+    search_fields = ("nome", "slug", "link")
+    prepopulated_fields = {"slug": ("nome",)}
+    ordering = ("ordem", "nome")

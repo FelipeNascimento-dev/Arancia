@@ -32,6 +32,8 @@ ALLOWED_HOSTS: list[str] = [
     '192.168.0.216',
     'https://www.centralretencao.com.br',
     'www.centralretencao.com.br'
+    'http://kuma.wolf.local'
+    'kuma.wolf.local'
 ]
 CSRF_TRUSTED_ORIGINS: list[str] = [
     'http://localhost',
