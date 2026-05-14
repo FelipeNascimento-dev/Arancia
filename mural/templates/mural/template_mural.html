@@ -771,9 +771,11 @@
     }
 
     .view-modal-content {
+        padding-top: 8px;
         color: var(--text);
         line-height: 1.75;
-        white-space: pre-wrap;
+        white-space: normal;
+        font-size: 15px;
     }
 
     .view-info-label {
@@ -1494,6 +1496,185 @@
             width: 100%;
         }
     }
+
+    .ck-editor__editable {
+        min-height: 220px;
+        border-radius: 0 0 12px 12px !important;
+    }
+
+    .ck.ck-editor {
+        width: 100%;
+    }
+
+    .ck.ck-toolbar {
+        border-radius: 12px 12px 0 0 !important;
+        border-color: var(--border) !important;
+    }
+
+    .ck.ck-editor__main > .ck-editor__editable {
+        border-color: var(--border) !important;
+    }
+
+    .ck.ck-editor__editable:focus {
+        border-color: #86efac !important;
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12) !important;
+    }
+
+    .view-modal-content h1,
+    .view-modal-content h2,
+    .view-modal-content h3,
+    .view-modal-content h4 {
+        color: var(--text);
+        font-weight: 800;
+        line-height: 1.25;
+        margin: 16px 0 10px;
+    }
+
+    .view-modal-content h1 {
+        font-size: 28px;
+    }
+
+    .view-modal-content h2 {
+        font-size: 24px;
+    }
+
+    .view-modal-content h3 {
+        font-size: 20px;
+    }
+
+    .view-modal-content h4 {
+        font-size: 17px;
+    }
+
+    .view-modal-content p {
+        margin: 0 0 12px;
+        color: var(--text);
+        line-height: 1.75;
+    }
+
+    .view-modal-content ul,
+    .view-modal-content ol {
+        display: block;
+        margin: 12px 0 16px 24px;
+        padding-left: 22px;
+        color: var(--text);
+    }
+
+    .view-modal-content ul {
+        list-style-type: disc;
+    }
+
+    .view-modal-content ol {
+        list-style-type: decimal;
+    }
+
+    .view-modal-content li {
+        display: list-item;
+        margin: 6px 0;
+        padding-left: 4px;
+        color: var(--text);
+        line-height: 1.65;
+    }
+
+    .view-modal-content li::marker {
+        color: var(--primary-dark);
+        font-weight: 800;
+    }
+
+    .view-modal-content strong,
+    .view-modal-content b {
+        font-weight: 800;
+        color: var(--text);
+    }
+
+    .view-modal-content em,
+    .view-modal-content i {
+        font-style: italic;
+    }
+
+    .view-modal-content a {
+        color: var(--primary-dark);
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    .view-modal-content blockquote {
+        margin: 16px 0;
+        padding: 14px 16px;
+        border-left: 4px solid var(--primary);
+        background: var(--primary-soft);
+        color: var(--text);
+        border-radius: 12px;
+    }
+
+    .view-modal-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 16px 0;
+        overflow: hidden;
+        border-radius: 12px;
+    }
+
+    .view-modal-content th,
+    .view-modal-content td {
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+        text-align: left;
+    }
+
+    .view-modal-content th {
+        background: var(--surface-soft);
+        font-weight: 800;
+    }
+
+    /* =========================
+    CONTEÚDO FORMATADO - CKEDITOR
+    ========================= */
+
+    .ck-content {
+        color: var(--text);
+        font-size: 15px;
+        line-height: 1.75;
+    }
+
+    .ck-content ul,
+    .ck-content ol {
+        display: block;
+        margin: 12px 0 16px 24px;
+        padding-left: 22px;
+    }
+
+    .ck-content ul {
+        list-style-type: disc;
+    }
+
+    .ck-content ol {
+        list-style-type: decimal;
+    }
+
+    .ck-content li {
+        display: list-item;
+        margin: 6px 0;
+        padding-left: 4px;
+    }
+
+    .ck-content li::marker {
+        color: var(--primary-dark);
+        font-weight: 800;
+    }
+
+    .ck-content p {
+        margin: 0 0 12px;
+    }
+
+    .ck-content h1,
+    .ck-content h2,
+    .ck-content h3,
+    .ck-content h4 {
+        color: var(--text);
+        font-weight: 800;
+        margin: 16px 0 10px;
+    }
 </style>
 
 <div class="page">
@@ -1866,7 +2047,7 @@
 
                 <div class="form-group full">
                     <label class="form-label">Conteúdo</label>
-                    <textarea name="content" class="form-textarea"></textarea>
+                    <textarea name="content" id="createContent" class="form-textarea"></textarea>
                 </div>
 
                 <div class="form-group">
@@ -2347,7 +2528,9 @@
         `;
 
         viewItemSummary.textContent = item.summary || 'Sem resumo informado.';
-        viewItemContent.textContent = item.content || 'Sem conteúdo informado.';
+        viewItemContent.innerHTML = item.content
+            ? sanitizeMuralHtml(item.content)
+            : 'Sem conteúdo informado.';
 
         if (item.image_url) {
             viewItemImage.src = item.image_url;
@@ -2744,7 +2927,11 @@
         editItemId.value = item.id || '';
         editTitle.value = item.title || '';
         editSummary.value = item.summary || '';
-        editContent.value = item.content || '';
+        if (window.editContentEditor) {
+            window.editContentEditor.setData(item.content || '');
+        } else {
+            editContent.value = item.content || '';
+        }
 
         editItemType.value = item.item_type || 'notice';
         editSeverity.value = item.severity || 'informational';
@@ -3224,5 +3411,130 @@
             });
         }
     });
+</script>
+
+<!-- AJUSTAR FORMATAÇÃO NA HORA DE CRIAR -->
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.3/dist/purify.min.js"></script>
+
+<script>
+    window.createContentEditor = null;
+    window.editContentEditor = null;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const createContent = document.getElementById('createContent');
+        const editContent = document.getElementById('editContent');
+
+        if (createContent) {
+            ClassicEditor
+                .create(createContent, {
+                    toolbar: [
+                        'heading',
+                        '|',
+                        'bold',
+                        'italic',
+                        'link',
+                        'bulletedList',
+                        'numberedList',
+                        '|',
+                        'blockQuote',
+                        'insertTable',
+                        '|',
+                        'undo',
+                        'redo'
+                    ]
+                })
+                .then(editor => {
+                    window.createContentEditor = editor;
+                })
+                .catch(error => {
+                    console.error('Erro ao iniciar editor de criação:', error);
+                });
+        }
+
+        if (editContent) {
+            ClassicEditor
+                .create(editContent, {
+                    toolbar: [
+                        'heading',
+                        '|',
+                        'bold',
+                        'italic',
+                        'link',
+                        'bulletedList',
+                        'numberedList',
+                        '|',
+                        'blockQuote',
+                        'insertTable',
+                        '|',
+                        'undo',
+                        'redo'
+                    ]
+                })
+                .then(editor => {
+                    window.editContentEditor = editor;
+                })
+                .catch(error => {
+                    console.error('Erro ao iniciar editor de edição:', error);
+                });
+        }
+
+        const createForm = document.querySelector('#createModal form');
+
+        if (createForm) {
+            createForm.addEventListener('submit', function () {
+                if (window.createContentEditor) {
+                    createContent.value = window.createContentEditor.getData();
+                }
+            });
+        }
+
+        const editForm = document.querySelector('#editItemModal form');
+
+        if (editForm) {
+            editForm.addEventListener('submit', function () {
+                if (window.editContentEditor) {
+                    editContent.value = window.editContentEditor.getData();
+                }
+            });
+        }
+    });
+
+    function sanitizeMuralHtml(html) {
+        return DOMPurify.sanitize(html || '', {
+            ALLOWED_TAGS: [
+                'p',
+                'br',
+                'strong',
+                'b',
+                'em',
+                'i',
+                'u',
+                's',
+                'h1',
+                'h2',
+                'h3',
+                'h4',
+                'ul',
+                'ol',
+                'li',
+                'a',
+                'blockquote',
+                'table',
+                'thead',
+                'tbody',
+                'tr',
+                'th',
+                'td'
+            ],
+            ALLOWED_ATTR: [
+                'href',
+                'target',
+                'rel',
+                'colspan',
+                'rowspan'
+            ]
+        });
+    }
 </script>
 {% endblock %}
