@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth import get_user_model
@@ -314,6 +316,15 @@ def get_read_item_ids_by_user(user_id):
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def mural(request):
     mural_data = {"items": []}
+    view_read_results = []
+    view_read_search_done = False
+    view_read_selected_item_id = ""
+    view_read_filters = {
+        "username": "",
+        "name": "",
+        "gai_id": "",
+        "limit": "20",
+    }
 
     user_id = request.user.id
     gai_id = request.user.designacao.informacao_adicional_id
@@ -402,6 +413,82 @@ def mural(request):
         messages.warning(
             request, f"Não foi possível carregar os itens do mural. Erro: {e}"
         )
+
+    if "view_reads" in request.POST:
+        view_read_search_done = True
+
+        view_item_id = request.POST.get("item_id")
+        view_username = request.POST.get("username", "").strip()
+        view_name = request.POST.get("name", "").strip()
+        view_gai_id = request.POST.get("gai_id", "").strip()
+        view_limit = request.POST.get("limit", "20").strip() or "20"
+
+        view_read_selected_item_id = view_item_id
+
+        view_read_filters = {
+            "username": view_username,
+            "name": view_name,
+            "gai_id": view_gai_id,
+            "limit": view_limit,
+        }
+
+        params = {
+            "skip": 0,
+            "limit": view_limit,
+        }
+
+        if view_username:
+            params["username"] = view_username
+
+        if view_name:
+            params["name"] = view_name
+
+        if view_gai_id:
+            params["gai_id"] = view_gai_id
+
+        query_string = urlencode(params)
+
+        try:
+            view_read_url = (
+                f"{MURAL_API_URL}/v1/item-reads/by-item-id/{view_item_id}"
+                f"?{query_string}"
+            )
+
+            view_read_client = RequestClient(
+                url=view_read_url,
+                method="GET",
+                headers={
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+            )
+
+            view_read_resp = view_read_client.send_api_request()
+
+            if isinstance(view_read_resp, dict) and "detail" in view_read_resp:
+                messages.error(request, view_read_resp.get("detail"))
+                view_read_results = []
+
+            elif isinstance(view_read_resp, list):
+                view_read_results = view_read_resp
+
+            elif isinstance(view_read_resp, dict):
+                view_read_results = (
+                    view_read_resp.get("items")
+                    or view_read_resp.get("results")
+                    or view_read_resp.get("data")
+                    or []
+                )
+
+            else:
+                view_read_results = []
+
+        except Exception as e:
+            messages.warning(
+                request,
+                f"Não foi possível carregar os leitores do item. Erro: {e}"
+            )
+            view_read_results = []
 
     if "create_mural_item" in request.POST:
         title = request.POST.get("title")
@@ -718,4 +805,8 @@ def mural(request):
         'target_users': target_users,
         'target_gais': target_gais,
         'target_groups': target_groups,
+        'view_read_results': view_read_results,
+        'view_read_search_done': view_read_search_done,
+        'view_read_selected_item_id': view_read_selected_item_id,
+        'view_read_filters': view_read_filters,
     })
