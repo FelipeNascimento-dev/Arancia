@@ -1675,6 +1675,317 @@
         font-weight: 800;
         margin: 16px 0 10px;
     }
+
+    .readers-search-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        z-index: 10000;
+    }
+
+    .readers-search-modal-overlay.show {
+        display: flex;
+    }
+
+    .readers-search-modal {
+        width: min(720px, 100%);
+        max-height: 88vh;
+        overflow: auto;
+        background: #fff;
+        border-radius: 22px;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+        border: 1px solid var(--border);
+    }
+
+    .readers-search-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        padding: 22px 24px;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 2;
+    }
+
+    .readers-search-modal-header h3 {
+        margin: 0;
+        font-size: 22px;
+        color: var(--text);
+    }
+
+    .readers-search-modal-close {
+        border: 1px solid var(--border);
+        background: #fff;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 18px;
+    }
+
+    .readers-search-modal-body {
+        padding: 24px;
+        display: grid;
+        gap: 18px;
+    }
+
+    .readers-search-help {
+        padding: 14px 16px;
+        border-radius: 14px;
+        background: var(--info-soft);
+        color: var(--info);
+        border: 1px solid #bfdbfe;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.5;
+    }
+
+    .readers-search-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding-top: 6px;
+    }
+
+    @media (max-width: 820px) {
+        .readers-search-actions {
+            justify-content: stretch;
+        }
+
+        .readers-search-actions .action-btn {
+            width: 100%;
+        }
+    }
+
+    .readers-search-modal {
+        width: min(1080px, 100%);
+    }
+
+    .readers-layout {
+        display: grid;
+        grid-template-columns: 360px minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+    }
+
+    .readers-filter-panel {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--surface-soft);
+        padding: 16px;
+        display: grid;
+        gap: 14px;
+    }
+
+    .readers-result-panel {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: #fff;
+        overflow: hidden;
+        min-height: 320px;
+    }
+
+    .readers-result-header {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .readers-result-header strong {
+        color: var(--text);
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .readers-result-header span {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .readers-result-list {
+        padding: 12px;
+        display: grid;
+        gap: 10px;
+        max-height: 420px;
+        overflow-y: auto;
+    }
+
+    .reader-result-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 12px;
+        display: grid;
+        grid-template-columns: 44px minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+        background: #fff;
+    }
+
+    .reader-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: var(--primary-soft);
+        color: var(--primary-dark);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 13px;
+    }
+
+    .reader-result-info {
+        min-width: 0;
+        display: grid;
+        gap: 4px;
+    }
+
+    .reader-result-info strong {
+        color: var(--text);
+        font-size: 14px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .reader-result-info small {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .readers-empty-result {
+        min-height: 260px;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        color: var(--muted);
+        font-weight: 700;
+        padding: 24px;
+    }
+
+    .readers-empty-result i {
+        font-size: 28px;
+        color: #94a3b8;
+        margin-bottom: 8px;
+    }
+
+    @media (max-width: 900px) {
+        .readers-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .readers-gai-picker {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: #fff;
+        overflow: hidden;
+    }
+
+    .readers-gai-search {
+        position: relative;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .readers-gai-search i {
+        position: absolute;
+        top: 50%;
+        left: 14px;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 13px;
+        z-index: 2;
+    }
+
+    .readers-gai-search input {
+        border: none;
+        border-radius: 0;
+        padding-left: 40px;
+        box-shadow: none !important;
+    }
+
+    .readers-gai-list {
+        max-height: 180px;
+        overflow-y: auto;
+        display: grid;
+        background: #fff;
+    }
+
+    .readers-gai-option {
+        border: none;
+        border-bottom: 1px solid #f1f5f9;
+        background: #fff;
+        text-align: left;
+        padding: 10px 12px;
+        cursor: pointer;
+        display: grid;
+        gap: 2px;
+    }
+
+    .readers-gai-option:hover,
+    .readers-gai-option.active {
+        background: var(--primary-soft);
+    }
+
+    .readers-gai-option strong {
+        font-size: 13px;
+        color: var(--text);
+    }
+
+    .readers-gai-option small {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 700;
+    }
+
+    .readers-gai-option.hidden {
+        display: none;
+    }
+
+    .readers-check-option {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: fit-content;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .readers-check-option input {
+        width: 18px;
+        height: 18px;
+        margin: 0;
+        flex: 0 0 auto;
+        accent-color: var(--primary);
+        cursor: pointer;
+    }
+
+    .readers-check-text {
+        color: var(--text);
+        font-size: 14px;
+        font-weight: 800;
+        line-height: 1;
+    }
 </style>
 
 <div class="page">
@@ -2355,6 +2666,13 @@
         <div class="view-modal-actions">
             <div id="viewItemActions"></div>
             {% if perms.mural.ger_mural %}
+            <button type="button" class="action-btn" id="openReadersSearchModalBtn">
+                <i class="fa-solid fa-users-viewfinder"></i>
+                Quem leu
+            </button>
+            {% endif %}
+
+            {% if perms.mural.ger_mural %}
             <button type="button" class="action-btn" id="openEditItemModalBtn">
                 <i class="fa-solid fa-pen-to-square"></i>
                 Editar item
@@ -2653,6 +2971,380 @@
         });
     }
 </script>
+
+<!-- MODAL PARA VISUALIZAR LEITURAS DO ITEM -->
+<div 
+        class="readers-search-modal-overlay" 
+        id="readersSearchModal"
+        {% if view_read_search_done %}data-keep-filters="1"{% endif %}
+    >
+    <div class="readers-search-modal">
+        <div class="readers-search-modal-header">
+            <h3 id="readersSearchModalTitle">Pesquisar leitores do item</h3>
+            <button type="button" class="readers-search-modal-close" id="closeReadersSearchModalBtn">
+                ×
+            </button>
+        </div>
+
+        <form method="post" class="readers-search-modal-body">
+            {% csrf_token %}
+
+            <input type="hidden" name="view_reads" value="1">
+            <input 
+                type="hidden" 
+                name="item_id" 
+                id="readersSearchItemId"
+                value="{{ view_read_selected_item_id }}"
+            >
+
+            <div class="readers-search-help">
+                <i class="fa-solid fa-circle-info"></i>
+                Informe os filtros desejados para consultar quais usuários realizaram a leitura deste item.
+            </div>
+
+            <div class="readers-layout">
+                <div class="readers-filter-panel">
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input 
+                            type="text" 
+                            name="username" 
+                            id="readersSearchUsername" 
+                            class="form-control"
+                            placeholder="Ex: ARC0007"
+                            value="{{ view_read_filters.username }}"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Nome do usuário</label>
+                        <input 
+                            type="text" 
+                            name="name" 
+                            id="readersSearchName" 
+                            class="form-control"
+                            placeholder="Ex: Felipe"
+                            value="{{ view_read_filters.name }}"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">GAI</label>
+
+                        <input 
+                            type="hidden" 
+                            name="gai_id" 
+                            id="readersSearchGaiId"
+                            value="{{ view_read_filters.gai_id }}"
+                        >
+
+                        <div class="readers-gai-picker">
+                            <div class="readers-gai-search">
+                                <input 
+                                    type="text"
+                                    id="readersSearchGaiText"
+                                    class="form-control"
+                                    placeholder="Digite para pesquisar o GAI..."
+                                    autocomplete="off"
+                                >
+                            </div>
+
+                            <div class="readers-gai-list" id="readersGaiList">
+                                <button 
+                                    type="button" 
+                                    class="readers-gai-option" 
+                                    data-id="" 
+                                    data-label="Todos os GAIs"
+                                >
+                                    <strong>Todos os GAIs</strong>
+                                    <small>Sem filtro por GAI</small>
+                                </button>
+
+                                {% for gai in target_gais %}
+                                    <button 
+                                        type="button" 
+                                        class="readers-gai-option" 
+                                        data-id="{{ gai.id }}" 
+                                        data-label="{{ gai.nome }}{% if gai.group_name %} - {{ gai.group_name }}{% endif %}"
+                                    >
+                                        <strong>{{ gai.nome }}</strong>
+                                        <small>{{ gai.group_name|default:"GAI" }}</small>
+                                    </button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Visualizar</label>
+
+                        <input 
+                            type="number" 
+                            name="limit" 
+                            id="readersSearchLimit" 
+                            class="form-control"
+                            value="{{ view_read_filters.limit|default:'20' }}"
+                            min="1"
+                        >
+
+                        <label class="readers-check-option">
+                            <input 
+                                type="checkbox" 
+                                name="all_results" 
+                                id="readersSearchAllResults"
+                                {% if view_read_filters.all_results %}checked{% endif %}
+                            >
+
+                            <span class="readers-check-text">
+                                Trazer todos os registros
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="readers-search-actions">
+                        <button type="button" class="action-btn" id="cancelReadersSearchModalBtn">
+                            Cancelar
+                        </button>
+
+                        <button type="submit" class="action-btn primary">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            Pesquisar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="readers-result-panel">
+                    <div class="readers-result-header">
+                        <strong>
+                            <i class="fa-solid fa-users"></i>
+                            Resultado da consulta
+                        </strong>
+
+                        <span>
+                            {{ view_read_results|length }} encontrado(s)
+                        </span>
+                    </div>
+
+                    {% if view_read_search_done %}
+                        {% if view_read_results %}
+                            <div class="readers-result-list">
+                                {% for reader in view_read_results %}
+                                    <div class="reader-result-card">
+                                        <div class="reader-avatar">
+                                            {{ reader.user_name|default:reader.username|slice:":2"|upper }}
+                                        </div>
+
+                                        <div class="reader-result-info">
+                                            <strong>
+                                                {{ reader.user_name|default:"Nome não informado" }}
+                                            </strong>
+
+                                            <small>
+                                                <i class="fa-regular fa-user"></i>
+                                                {{ reader.username|default:"-" }}
+                                            </small>
+
+                                            <small>
+                                                <i class="fa-regular fa-clock"></i>
+                                                {{ reader.read_at|default:"-" }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="readers-empty-result">
+                                <i class="fa-regular fa-folder-open"></i>
+                                Nenhum usuário encontrado para os filtros informados.
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="readers-empty-result">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            Faça uma pesquisa para visualizar os usuários que leram este item.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    const readersSearchModal = document.getElementById('readersSearchModal');
+    const openReadersSearchModalBtn = document.getElementById('openReadersSearchModalBtn');
+    const closeReadersSearchModalBtn = document.getElementById('closeReadersSearchModalBtn');
+    const cancelReadersSearchModalBtn = document.getElementById('cancelReadersSearchModalBtn');
+
+    const readersSearchModalTitle = document.getElementById('readersSearchModalTitle');
+    const readersSearchItemId = document.getElementById('readersSearchItemId');
+
+    const readersSearchUsername = document.getElementById('readersSearchUsername');
+    const readersSearchName = document.getElementById('readersSearchName');
+    const readersSearchGaiId = document.getElementById('readersSearchGaiId');
+    const readersSearchLimit = document.getElementById('readersSearchLimit');
+
+    function openReadersSearchModal() {
+        if (!currentViewItem || !currentViewItem.id) {
+            alert('Abra um item antes de pesquisar os leitores.');
+            return;
+        }
+
+        readersSearchItemId.value = currentViewItem.id;
+
+        readersSearchModalTitle.textContent = `Pesquisar leitores: ${currentViewItem.title || 'Item'}`;
+
+        if (!readersSearchModal.dataset.keepFilters) {
+            readersSearchUsername.value = '';
+            readersSearchName.value = '';
+            readersSearchGaiId.value = '';
+
+            if (readersSearchGaiText) {
+                readersSearchGaiText.value = 'Todos os GAIs';
+            }
+
+            if (readersSearchAllResults) {
+                readersSearchAllResults.checked = false;
+            }
+
+            readersSearchLimit.disabled = false;
+            readersSearchLimit.value = '20';
+
+            document.querySelectorAll('.readers-gai-option').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            const allGaiOption = document.querySelector('.readers-gai-option[data-id=""]');
+
+            if (allGaiOption) {
+                allGaiOption.classList.add('active');
+            }
+        }
+
+        readersSearchModal.classList.add('show');
+    }
+
+    function closeReadersSearchModal() {
+        readersSearchModal.classList.remove('show');
+    }
+
+    if (openReadersSearchModalBtn) {
+        openReadersSearchModalBtn.addEventListener('click', openReadersSearchModal);
+    }
+
+    if (closeReadersSearchModalBtn) {
+        closeReadersSearchModalBtn.addEventListener('click', closeReadersSearchModal);
+    }
+
+    if (cancelReadersSearchModalBtn) {
+        cancelReadersSearchModalBtn.addEventListener('click', closeReadersSearchModal);
+    }
+
+    if (readersSearchModal) {
+        readersSearchModal.addEventListener('click', function (event) {
+            if (event.target === readersSearchModal) {
+                closeReadersSearchModal();
+            }
+        });
+    }
+</script>
+<script>
+    const readersSearchGaiText = document.getElementById('readersSearchGaiText');
+    const readersGaiList = document.getElementById('readersGaiList');
+    const readersSearchAllResults = document.getElementById('readersSearchAllResults');
+
+    function normalizeReaderText(value) {
+        return String(value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function selectReaderGai(option) {
+        if (!option || !readersSearchGaiId || !readersSearchGaiText) return;
+
+        readersSearchGaiId.value = option.dataset.id || '';
+        readersSearchGaiText.value = option.dataset.label || '';
+
+        document.querySelectorAll('.readers-gai-option').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        option.classList.add('active');
+    }
+
+    function filterReaderGais() {
+        if (!readersSearchGaiText || !readersGaiList) return;
+
+        const search = normalizeReaderText(readersSearchGaiText.value);
+
+        readersGaiList.querySelectorAll('.readers-gai-option').forEach(option => {
+            const label = normalizeReaderText(option.dataset.label);
+            const shouldShow = !search || label.includes(search);
+
+            option.classList.toggle('hidden', !shouldShow);
+        });
+    }
+
+    function restoreSelectedReaderGai() {
+        if (!readersSearchGaiId || !readersSearchGaiText) return;
+
+        const selectedId = readersSearchGaiId.value;
+
+        const selectedOption = Array.from(
+            document.querySelectorAll('.readers-gai-option')
+        ).find(option => String(option.dataset.id || '') === String(selectedId || ''));
+
+        if (selectedOption) {
+            readersSearchGaiText.value = selectedOption.dataset.label || '';
+            selectedOption.classList.add('active');
+        }
+    }
+
+    if (readersGaiList) {
+        readersGaiList.querySelectorAll('.readers-gai-option').forEach(option => {
+            option.addEventListener('click', function () {
+                selectReaderGai(option);
+            });
+        });
+    }
+
+    if (readersSearchGaiText) {
+        readersSearchGaiText.addEventListener('input', function () {
+            readersSearchGaiId.value = '';
+            filterReaderGais();
+        });
+    }
+
+    if (readersSearchAllResults && readersSearchLimit) {
+        function toggleReadersLimit() {
+            if (readersSearchAllResults.checked) {
+                readersSearchLimit.disabled = true;
+                readersSearchLimit.value = '';
+            } else {
+                readersSearchLimit.disabled = false;
+
+                if (!readersSearchLimit.value) {
+                    readersSearchLimit.value = '20';
+                }
+            }
+        }
+
+        readersSearchAllResults.addEventListener('change', toggleReadersLimit);
+        toggleReadersLimit();
+    }
+
+    restoreSelectedReaderGai();
+</script>
+{% if view_read_search_done %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (readersSearchModal) {
+            readersSearchModal.classList.add('show');
+        }
+    });
+</script>
+{% endif %}
+
 
 <!-- MODAL PARA EDITAR ITEM -->
 <div class="create-modal-overlay" id="editItemModal">
