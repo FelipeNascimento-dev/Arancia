@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 from logistica.models import GroupAditionalInformation, Group
 from setup.local_settings import MURAL_API_URL, TRANSP_API_URL
+from utils import request
 from utils.request import RequestClient
 
 from datetime import datetime, timedelta
@@ -324,6 +325,7 @@ def mural(request):
         "name": "",
         "gai_id": "",
         "limit": "20",
+        "all_results": False,
     }
 
     user_id = request.user.id
@@ -421,7 +423,8 @@ def mural(request):
         view_username = request.POST.get("username", "").strip()
         view_name = request.POST.get("name", "").strip()
         view_gai_id = request.POST.get("gai_id", "").strip()
-        view_limit = request.POST.get("limit", "20").strip() or "20"
+        view_limit = request.POST.get("limit", "").strip()
+        view_all_results = request.POST.get("all_results") == "on"
 
         view_read_selected_item_id = view_item_id
 
@@ -434,8 +437,10 @@ def mural(request):
 
         params = {
             "skip": 0,
-            "limit": view_limit,
         }
+
+        if not view_all_results:
+            params["limit"] = view_limit or "20"
 
         if view_username:
             params["username"] = view_username
