@@ -161,6 +161,7 @@ def client_checkin(request):
     if request.method == "POST" and "gerar_serial_provisorio" in request.POST:
         form = ClientCheckInForm(
             request.POST,
+            user=request.user,
             nome_form=titulo,
             from_choices=from_choices,
             product_choices=product_choices,
@@ -203,6 +204,7 @@ def client_checkin(request):
 
             form = ClientCheckInForm(
                 post_data,
+                user=request.user,
                 nome_form=titulo,
                 from_choices=from_choices,
                 product_choices=product_choices,
@@ -240,6 +242,7 @@ def client_checkin(request):
     elif request.method == "POST" and "enviar_evento" in request.POST:
         form = ClientCheckInForm(
             request.POST,
+            user=request.user,
             nome_form=titulo,
             from_choices=from_choices,
             product_choices=product_choices,
@@ -346,6 +349,7 @@ def client_checkin(request):
 
         form = ClientCheckInForm(
             nome_form=titulo,
+            user=request.user,
             initial=initial_data,
             from_choices=from_choices,
             product_choices=product_choices,
