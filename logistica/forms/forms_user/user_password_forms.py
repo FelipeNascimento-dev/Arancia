@@ -13,13 +13,8 @@ class LoginComCodigoForm(AuthenticationForm):
     username = forms.CharField(label="Usuário ou e-mail")
 
     def clean(self):
-        print(">>> LoginComCodigoForm FOI CHAMADO")
-
         username = self.cleaned_data.get("username")
         password = self.cleaned_data.get("password")
-
-        print(">>> username digitado:", username)
-        print(">>> senha/codigo digitado:", password)
 
         if username is None or password is None:
             return self.cleaned_data
@@ -34,20 +29,14 @@ class LoginComCodigoForm(AuthenticationForm):
         )
 
         if user is not None:
-            print(">>> Login normal OK")
-
             self.confirm_login_allowed(user)
             self.user_cache = user
             return self.cleaned_data
-
-        print(">>> Login normal falhou. Tentando código único...")
 
         user_codigo = User.objects.filter(
             Q(username__iexact=username) | Q(email__iexact=username),
             is_active=True
         ).first()
-
-        print(">>> usuário encontrado para código:", user_codigo)
 
         if user_codigo:
             codigo = PasswordResetAccessCode.objects.filter(
@@ -55,18 +44,7 @@ class LoginComCodigoForm(AuthenticationForm):
                 used=False
             ).order_by("-created_at").first()
 
-            print(">>> código encontrado:", codigo)
-
-            if codigo:
-                print(">>> código usado:", codigo.used)
-                print(">>> código expirado:", codigo.is_expired())
-                print(">>> código válido:", codigo.is_valid())
-                print(">>> código confere:", check_password(
-                    password, codigo.code_hash))
-
             if codigo and codigo.is_valid() and check_password(password, codigo.code_hash):
-                print(">>> Código único OK")
-
                 codigo.used = True
                 codigo.save(update_fields=["used"])
 
@@ -84,8 +62,6 @@ class LoginComCodigoForm(AuthenticationForm):
                 self.user_cache = user_codigo
 
                 return self.cleaned_data
-
-        print(">>> Código único falhou")
 
         raise self.get_invalid_login_error()
 

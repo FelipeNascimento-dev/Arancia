@@ -22,8 +22,6 @@ def esqueci_minha_senha(request):
             is_active=True
         ).first()
 
-        print(">>> Usuário encontrado:", user)
-
         if user:
             code = str(secrets.randbelow(900000) + 100000)
 
@@ -38,8 +36,6 @@ def esqueci_minha_senha(request):
                 user=user,
                 code_hash=make_password(code)
             )
-
-            print(">>> Código salvo no banco. ID:", novo_codigo.id)
 
             control, _ = UserPasswordControl.objects.get_or_create(
                 user=user

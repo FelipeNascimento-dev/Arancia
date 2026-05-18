@@ -157,6 +157,7 @@ class PermissaoUsuarioDummy(models.Model):
             ("gerente_estoque", "Gerente de Estoque"),
             ("reverse", "Reversa"),
             ("desinstalacao", "Pode fazer Desinstalação"),
+            ("full_checkin", "Acesso Completo ao Check-in"),
         ]
 
     def __str__(self):
