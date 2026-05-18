@@ -2507,7 +2507,7 @@
                             Prazo indefinido
                         </label>
                         <label class="form-check">
-                            <input type="checkbox" name="until_read">
+                            <input type="checkbox" name="until_read" id="createUntilRead">
                             Até leitura
                         </label>
                     </div>
@@ -2530,7 +2530,25 @@
     const closeCreateModalBtn = document.getElementById('closeCreateModalBtn');
     const cancelCreateModalBtn = document.getElementById('cancelCreateModalBtn');
 
+    function formatDateTimeLocalNow() {
+        const now = new Date();
+
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
     function openCreateModal() {
+        const createStartsAt = document.getElementById('createStartsAt');
+
+        if (createStartsAt && !createStartsAt.value) {
+            createStartsAt.value = formatDateTimeLocalNow();
+        }
+
         createModal.classList.add('show');
     }
 
@@ -4041,6 +4059,12 @@
                 createEndsAt,
                 createCriticalDateHelp
             );
+
+            const createUntilRead = document.getElementById('createUntilRead');
+
+            if (createUntilRead && createSeverity.value === 'critical') {
+                createUntilRead.checked = true;
+            }
         }
 
         if (createSeverity) {
