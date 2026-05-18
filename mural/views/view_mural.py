@@ -110,17 +110,7 @@ SEVERITY_LABELS = {
 
 
 def normalize_item(item, read_item_ids=None):
-    read_item_ids = read_item_ids or set()
-
-    item_id = item.get("id")
-
-    try:
-        item_id_int = int(item_id)
-    except Exception:
-        item_id_int = None
-
     is_read_from_item = item.get("is_read", item.get("read", False))
-    is_read_from_endpoint = item_id_int in read_item_ids if item_id_int is not None else False
 
     attachments = item.get("attachments") or []
 
@@ -161,7 +151,7 @@ def normalize_item(item, read_item_ids=None):
         "is_pinned": item.get("is_pinned", False),
         "is_active": item.get("is_active", True),
 
-        "is_read": bool(is_read_from_item or is_read_from_endpoint),
+        "is_read": bool(is_read_from_item),
 
         "link": item.get("external_link") or first_attachment_url or item.get("image_url") or "#",
         "external_link": item.get("external_link") or "",
@@ -272,47 +262,6 @@ def validate_critical_duration(severity, starts_at_raw, ends_at_raw):
     return True, None
 
 
-def get_read_item_ids_by_user(user_id):
-    try:
-        item_read_url = f"{MURAL_API_URL}/v1/item-reads/by-user/{user_id}"
-
-        item_read_client = RequestClient(
-            url=item_read_url,
-            method="GET",
-            headers={
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            },
-        )
-
-        item_read_resp = item_read_client.send_api_request()
-
-        if isinstance(item_read_resp, list):
-            reads = item_read_resp
-        elif isinstance(item_read_resp, dict):
-            reads = (
-                item_read_resp.get("items")
-                or item_read_resp.get("results")
-                or item_read_resp.get("data")
-                or []
-            )
-        else:
-            reads = []
-
-        read_ids = set()
-
-        for read in reads:
-            mural_item_id = read.get("mural_item_id")
-
-            if mural_item_id is not None:
-                read_ids.add(int(mural_item_id))
-
-        return read_ids
-
-    except Exception:
-        return set()
-
-
 @login_required(login_url='logistica:login')
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def mural(request):
@@ -372,11 +321,23 @@ def mural(request):
         for gai in target_gais_raw
     ]
 
+    reads_param = request.GET.get("reads", "false").lower()
+
+    if reads_param not in ["true", "false"]:
+        reads_param = "false"
+
+    show_reads = reads_param == "true"
+
     try:
-        url = (
-            f"{MURAL_API_URL}/v1/items/by-user/"
-            f"?user_id={user_id}&gai_id={gai_id}"
-        )
+        params = {
+            "user_id": user_id,
+            "gai_id": gai_id,
+            "offset": 0,
+            "limit": 100,
+            "reads": reads_param,
+        }
+
+        url = f"{MURAL_API_URL}/v1/items/by-user/?{urlencode(params)}"
 
         client = RequestClient(
             url=url,
@@ -404,10 +365,8 @@ def mural(request):
         else:
             items = []
 
-        read_item_ids = get_read_item_ids_by_user(user_id)
-
         mural_data["items"] = [
-            normalize_item(item, read_item_ids=read_item_ids)
+            normalize_item(item)
             for item in items
         ]
 
@@ -814,4 +773,5 @@ def mural(request):
         'view_read_search_done': view_read_search_done,
         'view_read_selected_item_id': view_read_selected_item_id,
         'view_read_filters': view_read_filters,
+        'show_reads': show_reads,
     })

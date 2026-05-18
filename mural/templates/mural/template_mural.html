@@ -2037,10 +2037,17 @@
                 <button class="filter-btn" data-filter="notice">Avisos</button>
                 <button class="filter-btn" data-filter="script">Scripts</button>
                 <button class="filter-btn" data-filter="manual">Manuais</button>
-                <button class="action-btn dark" id="toggleReadBtn">
-                    <i class="fa-regular fa-circle-check"></i>
-                    Ocultar lidos
-                </button>
+                {% if show_reads %}
+                    <a class="action-btn dark" href="{{ request.path }}?reads=false">
+                        <i class="fa-regular fa-bell"></i>
+                        Ver não lidos
+                    </a>
+                {% else %}
+                    <a class="action-btn dark" href="{{ request.path }}?reads=true">
+                        <i class="fa-solid fa-eye"></i>
+                        Ver lidos
+                    </a>
+                {% endif %}
                 {% if perms.mural.ger_mural %}
                     <button class="action-btn primary" type="button" id="openCreateModalBtn">
                         <i class="fa-solid fa-plus"></i>
@@ -2096,9 +2103,12 @@
     const muralPayload = JSON.parse(document.getElementById('mural-data').textContent);
     const muralItems = muralPayload.items || [];
 
+    console.log('ITENS RECEBIDOS DO BACKEND:', muralItems);
+    console.log('ITENS CRÍTICOS:', muralItems.filter(item => item.severity === 'critical'));
+    console.log('ITENS LIDOS:', muralItems.filter(item => item.is_read));
+
     const searchInput = document.getElementById('searchInput');
     const filterButtons = document.querySelectorAll('.filter-btn');
-    const toggleReadBtn = document.getElementById('toggleReadBtn');
     const criticalList = document.getElementById('criticalList');
     const pinnedList = document.getElementById('pinnedList');
     const generalList = document.getElementById('generalList');
@@ -2107,7 +2117,6 @@
     const materialsSection = document.getElementById('materialsSection');
 
     let activeFilter = 'all';
-    let hideRead = true;
 
     function severityClass(severity) {
         return `severity-${severity}`;
@@ -2236,10 +2245,10 @@
 
         return items.filter(item => {
             const matchesType = activeFilter === 'all' || item.item_type === activeFilter;
-            const matchesRead = hideRead ? !item.is_read : true;
             const text = `${item.title} ${item.summary} ${item.item_type_label} ${item.severity_label}`.toLowerCase();
             const matchesSearch = !search || text.includes(search);
-            return matchesType && matchesRead && matchesSearch;
+
+            return matchesType && matchesSearch;
         });
     }
 
@@ -2260,13 +2269,13 @@
         const generalItems = filtered.filter(item => !item.is_pinned && item.severity !== 'critical');
 
         document.getElementById('count-critical').textContent =
-            muralItems.filter(item => item.severity === 'critical' && (!hideRead || !item.is_read)).length;
+            muralItems.filter(item => item.severity === 'critical').length;
 
         document.getElementById('count-pinned').textContent =
-            muralItems.filter(item => item.is_pinned && item.severity !== 'critical' && (!hideRead || !item.is_read)).length;
+            muralItems.filter(item => item.is_pinned && item.severity !== 'critical').length;
 
         document.getElementById('count-total').textContent =
-            muralItems.filter(item => (!hideRead || !item.is_read)).length;
+            muralItems.length;
 
         if (criticalItems.length) {
             criticalSection.classList.remove('hidden');
@@ -2321,14 +2330,6 @@
     });
 
     searchInput.addEventListener('input', renderMural);
-
-    toggleReadBtn.addEventListener('click', () => {
-        hideRead = !hideRead;
-        toggleReadBtn.innerHTML = hideRead
-            ? '<i class="fa-regular fa-circle-check"></i> Ocultar lidos'
-            : '<i class="fa-solid fa-eye"></i> Mostrar lidos';
-        renderMural();
-    });
 
     renderMural();
 </script>
