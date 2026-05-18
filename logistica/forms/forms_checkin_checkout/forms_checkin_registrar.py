@@ -2,11 +2,6 @@ from django import forms
 
 
 class ClientCheckInForm(forms.Form):
-    pedido = forms.CharField(
-        label='Romaneio',
-        max_length=100,
-        widget=forms.TextInput(attrs={'autocomplete': 'off'})
-    )
     serial = forms.CharField(
         label='Serial',
         max_length=100,
@@ -18,20 +13,8 @@ class ClientCheckInForm(forms.Form):
         choices=[],
         widget=forms.Select(attrs={'class': 'form-control'})
     )
-    volume = forms.IntegerField(
-        label='Volume (opcional)',
-        min_value=1,
-        required=False,
-        initial=1
-    )
-    kit = forms.IntegerField(
-        label='Kit (opcional)',
-        min_value=1,
-        required=False,
-        initial=1
-    )
     pedido_atrelado = forms.CharField(
-        label='Pedido Atrelado (opcional)',
+        label='Pedido',
         max_length=100,
         required=False,
         widget=forms.TextInput(attrs={'autocomplete': 'off'})
