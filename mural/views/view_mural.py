@@ -109,7 +109,20 @@ SEVERITY_LABELS = {
 }
 
 
-def normalize_item(item, read_item_ids=None):
+def normalize_reader(reader):
+    read_at_raw = (
+        reader.get("read_at")
+        or reader.get("created_at")
+        or reader.get("updated_at")
+    )
+
+    return {
+        **reader,
+        "read_at_formatted": format_datetime(read_at_raw),
+    }
+
+
+def normalize_item(item):
     is_read_from_item = item.get("is_read", item.get("read", False))
 
     attachments = item.get("attachments") or []
@@ -392,6 +405,7 @@ def mural(request):
             "name": view_name,
             "gai_id": view_gai_id,
             "limit": view_limit,
+            "all_results": view_all_results,
         }
 
         params = {
@@ -446,6 +460,11 @@ def mural(request):
 
             else:
                 view_read_results = []
+
+            view_read_results = [
+                normalize_reader(reader)
+                for reader in view_read_results
+            ]
 
         except Exception as e:
             messages.warning(
