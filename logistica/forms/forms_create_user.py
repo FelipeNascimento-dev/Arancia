@@ -15,6 +15,15 @@ class CustomUserCreationForm(UserCreationForm):
     first_name = forms.CharField(label="Primeiro nome", max_length=30)
     last_name = forms.CharField(label="Último nome", max_length=30)
     email = forms.EmailField(label="E-mail")
+    telefone = forms.CharField(
+        label="Telefone",
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={
+            "placeholder": "(00) 00000-0000",
+            "autocomplete": "off"
+        })
+    )
     cpf = forms.CharField(label="CPF", max_length=14, required=False)
 
     grupo = forms.ModelChoiceField(
