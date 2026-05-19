@@ -1680,7 +1680,580 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.3/dist/purify.min.js"></script>
+<!-- MODAL PARA VISUALIZAR LEITURAS DO ITEM -->
+<div 
+    class="readers-search-modal-overlay" 
+    id="readersSearchModal"
+    {% if view_read_search_done %}data-keep-filters="1"{% endif %}
+>
+    <div class="readers-search-modal">
+        <div class="readers-search-modal-header">
+            <h3 id="readersSearchModalTitle">Pesquisar leitores do item</h3>
+            <button type="button" class="readers-search-modal-close" id="closeReadersSearchModalBtn">
+                ×
+            </button>
+        </div>
+
+        <form method="post" class="readers-search-modal-body">
+            {% csrf_token %}
+
+            <input type="hidden" name="view_reads" value="1">
+            <input 
+                type="hidden" 
+                name="item_id" 
+                id="readersSearchItemId"
+                value="{{ view_read_selected_item_id }}"
+            >
+
+            <div class="readers-search-help">
+                <i class="fa-solid fa-circle-info"></i>
+                Informe os filtros desejados para consultar quais usuários realizaram a leitura deste item.
+            </div>
+
+            <div class="readers-layout">
+                <div class="readers-filter-panel">
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input 
+                            type="text" 
+                            name="username" 
+                            id="readersSearchUsername" 
+                            class="form-control"
+                            placeholder="Ex: ARC0007"
+                            value="{{ view_read_filters.username }}"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Nome do usuário</label>
+                        <input 
+                            type="text" 
+                            name="name" 
+                            id="readersSearchName" 
+                            class="form-control"
+                            placeholder="Ex: Felipe"
+                            value="{{ view_read_filters.name }}"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">GAI</label>
+
+                        <input 
+                            type="hidden" 
+                            name="gai_id" 
+                            id="readersSearchGaiId"
+                            value="{{ view_read_filters.gai_id }}"
+                        >
+
+                        <div class="readers-gai-picker">
+                            <div class="readers-gai-search">
+                                <input 
+                                    type="text"
+                                    id="readersSearchGaiText"
+                                    class="form-control"
+                                    placeholder="Digite para pesquisar o GAI..."
+                                    autocomplete="off"
+                                >
+                            </div>
+
+                            <div class="readers-gai-list" id="readersGaiList">
+                                <button 
+                                    type="button" 
+                                    class="readers-gai-option" 
+                                    data-id="" 
+                                    data-label="Todos os GAIs"
+                                >
+                                    <strong>Todos os GAIs</strong>
+                                    <small>Sem filtro por GAI</small>
+                                </button>
+
+                                {% for gai in target_gais %}
+                                    <button 
+                                        type="button" 
+                                        class="readers-gai-option" 
+                                        data-id="{{ gai.id }}" 
+                                        data-label="{{ gai.nome }}{% if gai.group_name %} - {{ gai.group_name }}{% endif %}"
+                                    >
+                                        <strong>{{ gai.nome }}</strong>
+                                        <small>{{ gai.group_name|default:"GAI" }}</small>
+                                    </button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Visualizar</label>
+
+                        <input 
+                            type="number" 
+                            name="limit" 
+                            id="readersSearchLimit" 
+                            class="form-control"
+                            value="{{ view_read_filters.limit|default:'20' }}"
+                            min="1"
+                        >
+
+                        <label class="readers-check-option">
+                            <input 
+                                type="checkbox" 
+                                name="all_results" 
+                                id="readersSearchAllResults"
+                                {% if view_read_filters.all_results %}checked{% endif %}
+                            >
+
+                            <span class="readers-check-text">
+                                Trazer todos os registros
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="readers-search-actions">
+                        <button type="button" class="action-btn" id="cancelReadersSearchModalBtn">
+                            Cancelar
+                        </button>
+
+                        <button type="submit" class="action-btn primary">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            Pesquisar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="readers-result-panel">
+                    <div class="readers-result-header">
+                        <strong>
+                            <i class="fa-solid fa-users"></i>
+                            Resultado da consulta
+                        </strong>
+
+                        <span>
+                            {{ view_read_results|length }} encontrado(s)
+                        </span>
+                    </div>
+
+                    {% if view_read_search_done %}
+                        {% if view_read_results %}
+                            <div class="readers-result-list">
+                                {% for reader in view_read_results %}
+                                    <div class="reader-result-card">
+                                        <div class="reader-avatar">
+                                            {{ reader.user_name|default:reader.username|slice:":2"|upper }}
+                                        </div>
+
+                                        <div class="reader-result-info">
+                                            <strong>
+                                                {{ reader.user_name|default:"Nome não informado" }}
+                                            </strong>
+
+                                            <small>
+                                                <i class="fa-regular fa-user"></i>
+                                                {{ reader.username|default:"-" }}
+                                            </small>
+
+                                            <small>
+                                                <i class="fa-regular fa-clock"></i>
+                                                {{ reader.read_at_formatted|default:"-" }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="readers-empty-result">
+                                <i class="fa-regular fa-folder-open"></i>
+                                Nenhum usuário encontrado para os filtros informados.
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="readers-empty-result">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            Faça uma pesquisa para visualizar os usuários que leram este item.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL PARA EDITAR ITEM -->
+<div class="create-modal-overlay" id="editItemModal">
+    <div class="create-modal">
+        <div class="create-modal-header">
+            <h3>Editar item do mural</h3>
+            <button type="button" class="create-modal-close" id="closeEditItemModalBtn">×</button>
+        </div>
+
+        <form method="post" class="create-form" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <input type="hidden" name="edit_mural_item" value="1">
+            <input type="hidden" name="edit_item_id" id="editItemId">
+            <input type="hidden" name="current_attachments" id="editCurrentAttachments">
+            <input type="hidden" name="current_image_url" id="editCurrentImageUrl">
+
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label class="form-label">Título</label>
+                    <input type="text" name="title" id="editTitle" class="form-control" required>
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Resumo</label>
+                    <textarea name="summary" id="editSummary" class="form-textarea" required></textarea>
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Conteúdo</label>
+                    <textarea name="content" id="editContent" class="form-textarea"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tipo do item</label>
+                    <select name="item_type" id="editItemType" class="form-select" required>
+                        <option value="announcement">Comunicado</option>
+                        <option value="notice">Aviso</option>
+                        <option value="script">Script</option>
+                        <option value="manual">Manual</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Severidade</label>
+                    <select name="severity" id="editSeverity" class="form-select" required>
+                        <option value="informational">Informativo</option>
+                        <option value="moderate">Moderado</option>
+                        <option value="important">Importante</option>
+                        <option value="critical">Crítico</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Início</label>
+                    <input type="datetime-local" name="starts_at" id="editStartsAt" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Fim</label>
+                    <input type="datetime-local" name="ends_at" id="editEndsAt" class="form-control">
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Link externo</label>
+                    <input type="url" name="external_link" id="editExternalLink" class="form-control">
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Anexos</label>
+
+                    <div class="attachments-box">
+                        <div class="attachments-head">
+                            <span class="attachments-title">
+                                <i class="fa-solid fa-paperclip"></i>
+                                Anexos atuais
+                            </span>
+                        </div>
+
+                        <div class="attachments-list" id="editCurrentAttachmentsList"></div>
+
+                        <div class="attachment-upload-area">
+                            <label class="form-label">Adicionar novos anexos</label>
+
+                            <input 
+                                type="file" 
+                                name="attachment_files" 
+                                id="editAttachmentFiles" 
+                                class="form-control"
+                                multiple
+                            >
+
+                            <small style="color: var(--muted); font-size: 12px;">
+                                Os novos arquivos serão adicionados aos anexos já existentes.
+                            </small>
+                        </div>
+
+                        <div class="attachments-list" id="editAttachmentDescriptionsList"></div>
+                    </div>
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Imagem atual</label>
+
+                    <div class="mural-image-preview" id="editCurrentImageBox">
+                        <img id="editCurrentImagePreview" src="" alt="Imagem atual do item">
+                        <div class="mural-image-preview-caption">
+                            Imagem atualmente vinculada ao item
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nova imagem</label>
+                    <input 
+                        type="file" 
+                        name="image_file" 
+                        id="editImageFile" 
+                        class="form-control"
+                        accept="image/*"
+                    >
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Opções</label>
+                    <div class="form-checks">
+                        <label class="form-check">
+                            <input type="checkbox" name="is_active" id="editIsActive">
+                            Ativo
+                        </label>
+                        <label class="form-check">
+                            <input type="checkbox" name="is_pinned" id="editIsPinned">
+                            Fixado
+                        </label>
+                        <label class="form-check">
+                            <input type="checkbox" name="is_indefinite" id="editIsIndefinite">
+                            Prazo indefinido
+                        </label>
+                        <label class="form-check">
+                            <input type="checkbox" name="until_read" id="editUntilRead">
+                            Até leitura
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="create-form-actions">
+                <button type="button" class="action-btn" id="cancelEditItemModalBtn">Cancelar</button>
+                <button type="submit" class="action-btn primary">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    Salvar alterações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    const editItemModal = document.getElementById('editItemModal');
+    const openEditItemModalBtn = document.getElementById('openEditItemModalBtn');
+    const closeEditItemModalBtn = document.getElementById('closeEditItemModalBtn');
+    const cancelEditItemModalBtn = document.getElementById('cancelEditItemModalBtn');
+
+    const editItemId = document.getElementById('editItemId');
+    const editTitle = document.getElementById('editTitle');
+    const editSummary = document.getElementById('editSummary');
+    const editContent = document.getElementById('editContent');
+    const editCurrentImageBox = document.getElementById('editCurrentImageBox');
+    const editCurrentImagePreview = document.getElementById('editCurrentImagePreview');
+    const editItemType = document.getElementById('editItemType');
+    const editSeverity = document.getElementById('editSeverity');
+    const editStartsAt = document.getElementById('editStartsAt');
+    const editEndsAt = document.getElementById('editEndsAt');
+    const editExternalLink = document.getElementById('editExternalLink');
+    const editAttachmentFiles = document.getElementById('editAttachmentFiles');
+    const editCurrentAttachments = document.getElementById('editCurrentAttachments');
+    const editCurrentAttachmentsList = document.getElementById('editCurrentAttachmentsList');
+    const editAttachmentDescriptionsList = document.getElementById('editAttachmentDescriptionsList');
+    const editImageFile = document.getElementById('editImageFile');
+    const editCurrentImageUrl = document.getElementById('editCurrentImageUrl');
+    const editIsActive = document.getElementById('editIsActive');
+    const editIsPinned = document.getElementById('editIsPinned');
+    const editIsIndefinite = document.getElementById('editIsIndefinite');
+    const editUntilRead = document.getElementById('editUntilRead');
+
+    function renderEditCurrentAttachments(attachments) {
+        if (!editCurrentAttachmentsList) return;
+
+        editCurrentAttachmentsList.innerHTML = '';
+
+        if (!attachments || !attachments.length) {
+            editCurrentAttachmentsList.innerHTML = `
+                <div class="target-empty">
+                    Nenhum anexo atual.
+                </div>
+            `;
+            return;
+        }
+
+        attachments.forEach((attachment, index) => {
+            const fileName = attachment.file_name || `Anexo ${index + 1}`;
+            const fileUrl = attachment.file_url || '#';
+            const description = attachment.file_description || 'Sem descrição';
+
+            const row = document.createElement('div');
+            row.className = 'attachment-current-row';
+
+            row.innerHTML = `
+                <div class="attachment-current-info">
+                    <span class="attachment-current-icon">
+                        <i class="fa-solid fa-paperclip"></i>
+                    </span>
+
+                    <div class="attachment-current-text">
+                        <a href="${fileUrl}" target="_blank" title="${fileName}">
+                            ${fileName}
+                        </a>
+                        <small title="${description}">${description}</small>
+                    </div>
+                </div>
+
+                <label class="attachment-remove">
+                    <input 
+                        type="checkbox" 
+                        name="remove_attachment_url" 
+                        value="${fileUrl}"
+                    >
+                    Remover
+                </label>
+            `;
+
+            editCurrentAttachmentsList.appendChild(row);
+        });
+    }
+
+    function renderAttachmentDescriptions(inputElement, containerElement) {
+        if (!inputElement || !containerElement) return;
+
+        containerElement.innerHTML = '';
+
+        const files = Array.from(inputElement.files || []);
+
+        if (!files.length) return;
+
+        files.forEach((file) => {
+            const row = document.createElement('div');
+            row.className = 'attachment-item';
+
+            row.innerHTML = `
+                <div class="attachment-item-name">
+                    <i class="fa-solid fa-file"></i>
+                    <span>${file.name}</span>
+                </div>
+
+                <input 
+                    type="text" 
+                    name="attachment_descriptions" 
+                    class="form-control"
+                    placeholder="Descrição do anexo, opcional"
+                >
+            `;
+
+            containerElement.appendChild(row);
+        });
+    }
+
+    function openEditItemModal(item) {
+        if (!item) return;
+
+        editItemId.value = item.id || '';
+        editTitle.value = item.title || '';
+        editSummary.value = item.summary || '';
+
+        if (window.editContentEditor) {
+            window.editContentEditor.setData(item.content || '');
+        } else if (editContent) {
+            editContent.value = item.content || '';
+        }
+
+        editItemType.value = item.item_type || 'notice';
+        editSeverity.value = item.severity || 'informational';
+
+        editStartsAt.value = item.starts_at_input || '';
+        editEndsAt.value = item.ends_at_input || '';
+
+        editExternalLink.value = item.external_link || '';
+
+        const attachments = item.attachments || [];
+        editCurrentAttachments.value = JSON.stringify(attachments);
+
+        renderEditCurrentAttachments(attachments);
+
+        editCurrentImageUrl.value = item.image_url || '';
+
+        if (item.image_url) {
+            editCurrentImagePreview.src = item.image_url;
+            editCurrentImageBox.classList.add('show');
+        } else {
+            editCurrentImagePreview.src = '';
+            editCurrentImageBox.classList.remove('show');
+        }
+
+        if (editAttachmentFiles) {
+            editAttachmentFiles.value = '';
+        }
+
+        if (editAttachmentDescriptionsList) {
+            editAttachmentDescriptionsList.innerHTML = '';
+        }
+
+        if (editImageFile) {
+            editImageFile.value = '';
+        }
+
+        editIsActive.checked = item.is_active === true;
+        editIsPinned.checked = item.is_pinned === true;
+        editIsIndefinite.checked = item.is_indefinite === true;
+        editUntilRead.checked = item.until_read === true;
+
+        if (editSeverity.value === 'critical' && editStartsAt.value) {
+            const startsAt = new Date(editStartsAt.value);
+            const maxEndAt = new Date(startsAt);
+            maxEndAt.setDate(maxEndAt.getDate() + 7);
+
+            const year = maxEndAt.getFullYear();
+            const month = String(maxEndAt.getMonth() + 1).padStart(2, '0');
+            const day = String(maxEndAt.getDate()).padStart(2, '0');
+            const hours = String(maxEndAt.getHours()).padStart(2, '0');
+            const minutes = String(maxEndAt.getMinutes()).padStart(2, '0');
+
+            editEndsAt.max = `${year}-${month}-${day}T${hours}:${minutes}`;
+        } else {
+            editEndsAt.removeAttribute('max');
+        }
+
+        editItemModal.classList.add('show');
+    }
+
+    function closeEditItemModal() {
+        editItemModal.classList.remove('show');
+    }
+
+    if (editAttachmentFiles) {
+        editAttachmentFiles.addEventListener('change', function () {
+            renderAttachmentDescriptions(
+                editAttachmentFiles,
+                editAttachmentDescriptionsList
+            );
+        });
+    }
+
+    if (openEditItemModalBtn) {
+        openEditItemModalBtn.addEventListener('click', function () {
+            if (!currentViewItem) {
+                alert('Nenhum item selecionado para edição.');
+                return;
+            }
+
+            openEditItemModal(currentViewItem);
+        });
+    }
+
+    if (closeEditItemModalBtn) {
+        closeEditItemModalBtn.addEventListener('click', closeEditItemModal);
+    }
+
+    if (cancelEditItemModalBtn) {
+        cancelEditItemModalBtn.addEventListener('click', closeEditItemModal);
+    }
+
+    if (editItemModal) {
+        editItemModal.addEventListener('click', function (event) {
+            if (event.target === editItemModal) {
+                closeEditItemModal();
+            }
+        });
+    }
+</script>
 
 <script>
     const muralPayload = JSON.parse(document.getElementById('mural-management-data').textContent);
@@ -1873,6 +2446,24 @@
                                         title="Visualizar"
                                     >
                                         <i class="fa-regular fa-eye"></i>
+                                    </button>
+
+                                    <button 
+                                        type="button" 
+                                        class="icon-btn js-edit-item" 
+                                        data-id="${item.id}"
+                                        title="Editar item"
+                                    >
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+
+                                    <button 
+                                        type="button" 
+                                        class="icon-btn js-readers-item" 
+                                        data-id="${item.id}"
+                                        title="Quem leu"
+                                    >
+                                        <i class="fa-solid fa-users-viewfinder"></i>
                                     </button>
                                 </div>
                             </td>
@@ -2178,6 +2769,182 @@
     renderCounters();
     renderTable();
 </script>
+
+<script>
+    const readersSearchModal = document.getElementById('readersSearchModal');
+    const openReadersSearchModalBtn = document.getElementById('openReadersSearchModalBtn');
+    const closeReadersSearchModalBtn = document.getElementById('closeReadersSearchModalBtn');
+    const cancelReadersSearchModalBtn = document.getElementById('cancelReadersSearchModalBtn');
+
+    const readersSearchModalTitle = document.getElementById('readersSearchModalTitle');
+    const readersSearchItemId = document.getElementById('readersSearchItemId');
+
+    const readersSearchUsername = document.getElementById('readersSearchUsername');
+    const readersSearchName = document.getElementById('readersSearchName');
+    const readersSearchGaiId = document.getElementById('readersSearchGaiId');
+    const readersSearchLimit = document.getElementById('readersSearchLimit');
+    const readersSearchGaiText = document.getElementById('readersSearchGaiText');
+    const readersGaiList = document.getElementById('readersGaiList');
+    const readersSearchAllResults = document.getElementById('readersSearchAllResults');
+
+    function openReadersSearchModal() {
+        if (!currentViewItem || !currentViewItem.id) {
+            alert('Selecione um item antes de pesquisar os leitores.');
+            return;
+        }
+
+        readersSearchItemId.value = currentViewItem.id;
+        readersSearchModalTitle.textContent = `Pesquisar leitores: ${currentViewItem.title || 'Item'}`;
+
+        if (!readersSearchModal.dataset.keepFilters) {
+            readersSearchUsername.value = '';
+            readersSearchName.value = '';
+            readersSearchGaiId.value = '';
+
+            if (readersSearchGaiText) {
+                readersSearchGaiText.value = 'Todos os GAIs';
+            }
+
+            if (readersSearchAllResults) {
+                readersSearchAllResults.checked = false;
+            }
+
+            if (readersSearchLimit) {
+                readersSearchLimit.disabled = false;
+                readersSearchLimit.value = '20';
+            }
+
+            document.querySelectorAll('.readers-gai-option').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            const allGaiOption = document.querySelector('.readers-gai-option[data-id=""]');
+
+            if (allGaiOption) {
+                allGaiOption.classList.add('active');
+            }
+        }
+
+        readersSearchModal.classList.add('show');
+    }
+
+    function closeReadersSearchModal() {
+        readersSearchModal.classList.remove('show');
+    }
+
+    if (openReadersSearchModalBtn) {
+        openReadersSearchModalBtn.addEventListener('click', openReadersSearchModal);
+    }
+
+    if (closeReadersSearchModalBtn) {
+        closeReadersSearchModalBtn.addEventListener('click', closeReadersSearchModal);
+    }
+
+    if (cancelReadersSearchModalBtn) {
+        cancelReadersSearchModalBtn.addEventListener('click', closeReadersSearchModal);
+    }
+
+    if (readersSearchModal) {
+        readersSearchModal.addEventListener('click', function (event) {
+            if (event.target === readersSearchModal) {
+                closeReadersSearchModal();
+            }
+        });
+    }
+
+    function normalizeReaderText(value) {
+        return String(value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function selectReaderGai(option) {
+        if (!option || !readersSearchGaiId || !readersSearchGaiText) return;
+
+        readersSearchGaiId.value = option.dataset.id || '';
+        readersSearchGaiText.value = option.dataset.label || '';
+
+        document.querySelectorAll('.readers-gai-option').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        option.classList.add('active');
+    }
+
+    function filterReaderGais() {
+        if (!readersSearchGaiText || !readersGaiList) return;
+
+        const search = normalizeReaderText(readersSearchGaiText.value);
+
+        readersGaiList.querySelectorAll('.readers-gai-option').forEach(option => {
+            const label = normalizeReaderText(option.dataset.label);
+            const shouldShow = !search || label.includes(search);
+
+            option.classList.toggle('hidden', !shouldShow);
+        });
+    }
+
+    function restoreSelectedReaderGai() {
+        if (!readersSearchGaiId || !readersSearchGaiText) return;
+
+        const selectedId = readersSearchGaiId.value;
+
+        const selectedOption = Array.from(
+            document.querySelectorAll('.readers-gai-option')
+        ).find(option => String(option.dataset.id || '') === String(selectedId || ''));
+
+        if (selectedOption) {
+            readersSearchGaiText.value = selectedOption.dataset.label || '';
+            selectedOption.classList.add('active');
+        }
+    }
+
+    if (readersGaiList) {
+        readersGaiList.querySelectorAll('.readers-gai-option').forEach(option => {
+            option.addEventListener('click', function () {
+                selectReaderGai(option);
+            });
+        });
+    }
+
+    if (readersSearchGaiText) {
+        readersSearchGaiText.addEventListener('input', function () {
+            readersSearchGaiId.value = '';
+            filterReaderGais();
+        });
+    }
+
+    if (readersSearchAllResults && readersSearchLimit) {
+        function toggleReadersLimit() {
+            if (readersSearchAllResults.checked) {
+                readersSearchLimit.disabled = true;
+                readersSearchLimit.value = '';
+            } else {
+                readersSearchLimit.disabled = false;
+
+                if (!readersSearchLimit.value) {
+                    readersSearchLimit.value = '20';
+                }
+            }
+        }
+
+        readersSearchAllResults.addEventListener('change', toggleReadersLimit);
+        toggleReadersLimit();
+    }
+
+    restoreSelectedReaderGai();
+</script>
+
+{% if view_read_search_done %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (readersSearchModal) {
+            readersSearchModal.classList.add('show');
+        }
+    });
+</script>
+{% endif %}
 
 {{ target_users|json_script:"target-users-data" }}
 {{ target_gais|json_script:"target-gais-data" }}
