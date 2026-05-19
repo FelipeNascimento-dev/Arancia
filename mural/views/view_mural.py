@@ -562,6 +562,8 @@ def mural(request):
             "ids": ids
         }
 
+        print(payload)
+
         try:
             create_url = (
                 f"{MURAL_API_URL}/v1/items/create-item/"

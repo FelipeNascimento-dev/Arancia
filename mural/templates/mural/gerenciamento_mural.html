@@ -1,0 +1,1065 @@
+{% extends 'global/base.html' %}
+{% block content %}
+
+<style>
+    :root {
+        --bg: #eef2f6;
+        --surface: #ffffff;
+        --surface-soft: #f8fafc;
+        --border: #d9e2ec;
+        --text: #0f172a;
+        --muted: #64748b;
+        --primary: #22c55e;
+        --primary-dark: #16a34a;
+        --primary-soft: #ecfdf3;
+        --danger: #dc2626;
+        --danger-dark: #b91c1c;
+        --danger-soft: #fef2f2;
+        --warning: #f59e0b;
+        --warning-soft: #fffbeb;
+        --info: #2563eb;
+        --info-soft: #eff6ff;
+        --shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .container {
+        max-width: 100% !important;
+        width: 100%;
+    }
+
+    .page {
+        max-width: 1550px;
+        margin-top: 50px;
+        margin-left: 65px;
+        padding: 28px;
+        font-family: "Inter", sans-serif;
+    }
+
+    .mural-shell {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .mural-topbar {
+        padding: 28px 30px 22px;
+        background:
+            radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 28%),
+            linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .mural-head {
+        display: grid;
+        grid-template-columns: 1.8fr 1fr;
+        gap: 18px;
+        align-items: start;
+    }
+
+    .kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: var(--primary-soft);
+        color: var(--primary-dark);
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 14px;
+    }
+
+    .mural-title {
+        margin: 0;
+        font-size: 34px;
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+        color: var(--text);
+    }
+
+    .mural-subtitle {
+        margin: 12px 0 0;
+        max-width: 850px;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.65;
+    }
+
+    .mural-overview {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .overview-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        min-height: 98px;
+    }
+
+    .overview-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 10px;
+    }
+
+    .overview-value {
+        font-size: 28px;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 8px;
+        color: var(--text);
+    }
+
+    .overview-help {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .mural-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        padding: 18px 30px;
+        background: var(--surface-soft);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .toolbar-left,
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        position: relative;
+        min-width: 360px;
+        flex: 1;
+    }
+
+    .search-box i {
+        position: absolute;
+        top: 50%;
+        left: 14px;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+
+    .search-box input {
+        width: 100%;
+        border: 1px solid var(--border);
+        background: #fff;
+        border-radius: 12px;
+        padding: 12px 14px 12px 40px;
+        font-size: 14px;
+        outline: none;
+        transition: 0.2s ease;
+    }
+
+    .search-box input:focus {
+        border-color: #86efac;
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+    }
+
+    .filter-btn,
+    .action-btn {
+        border: 1px solid var(--border);
+        background: #fff;
+        color: #334155;
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .filter-btn:hover,
+    .action-btn:hover {
+        background: #f8fafc;
+    }
+
+    .filter-btn.active {
+        background: var(--primary-soft);
+        color: var(--primary-dark);
+        border-color: #bbf7d0;
+    }
+
+    .action-btn.primary {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border-color: transparent;
+        color: white;
+    }
+
+    .action-btn.dark {
+        background: #0f172a;
+        border-color: #0f172a;
+        color: #fff;
+    }
+
+    .action-btn.danger {
+        background: linear-gradient(135deg, var(--danger) 0%, var(--danger-dark) 100%);
+        border-color: transparent;
+        color: #fff;
+    }
+
+    .mural-body {
+        padding: 28px 30px 30px;
+        display: grid;
+        gap: 18px;
+    }
+
+    .table-card {
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: #fff;
+        overflow: hidden;
+    }
+
+    .table-header {
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .table-title {
+        display: grid;
+        gap: 4px;
+    }
+
+    .table-title strong {
+        color: var(--text);
+        font-size: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .table-title small {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .management-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1100px;
+    }
+
+    .management-table th,
+    .management-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #eef2f7;
+        text-align: left;
+        vertical-align: middle;
+        font-size: 14px;
+    }
+
+    .management-table th {
+        background: #f8fafc;
+        color: #475569;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 900;
+        white-space: nowrap;
+    }
+
+    .management-table td {
+        color: var(--text);
+    }
+
+    .management-table tbody tr:hover {
+        background: #fbfefc;
+    }
+
+    .item-title-cell {
+        display: grid;
+        gap: 5px;
+        min-width: 280px;
+    }
+
+    .item-title-cell strong {
+        font-size: 14px;
+        color: var(--text);
+        line-height: 1.3;
+    }
+
+    .item-title-cell small {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 12px;
+        font-weight: 900;
+        white-space: nowrap;
+    }
+
+    .pill.green {
+        background: var(--primary-soft);
+        color: var(--primary-dark);
+    }
+
+    .pill.blue {
+        background: var(--info-soft);
+        color: var(--info);
+    }
+
+    .pill.orange {
+        background: var(--warning-soft);
+        color: #b45309;
+    }
+
+    .pill.red {
+        background: var(--danger-soft);
+        color: var(--danger-dark);
+    }
+
+    .pill.gray {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .severity-informational {
+        background: var(--info-soft);
+        color: var(--info);
+    }
+
+    .severity-moderate {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .severity-important {
+        background: var(--warning-soft);
+        color: #b45309;
+    }
+
+    .severity-critical {
+        background: var(--danger-soft);
+        color: var(--danger-dark);
+    }
+
+    .row-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .icon-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: #fff;
+        color: #334155;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.2s ease;
+    }
+
+    .icon-btn:hover {
+        background: var(--primary-soft);
+        border-color: #bbf7d0;
+        color: var(--primary-dark);
+    }
+
+    .icon-btn.danger:hover {
+        background: var(--danger-soft);
+        border-color: #fecaca;
+        color: var(--danger-dark);
+    }
+
+    .empty-state {
+        text-align: center;
+        background: #fff;
+        border: 1px dashed #cbd5e1;
+        border-radius: 18px;
+        padding: 44px 22px;
+        color: var(--muted);
+    }
+
+    .empty-state i {
+        font-size: 32px;
+        margin-bottom: 12px;
+        color: #94a3b8;
+    }
+
+    .empty-state h3 {
+        margin: 0 0 6px;
+        color: var(--text);
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .view-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        z-index: 9998;
+    }
+
+    .view-modal-overlay.show {
+        display: flex;
+    }
+
+    .view-modal {
+        width: min(850px, 100%);
+        max-height: 90vh;
+        overflow: auto;
+        background: #fff;
+        border-radius: 22px;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+        border: 1px solid var(--border);
+    }
+
+    .view-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        padding: 22px 24px;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 2;
+    }
+
+    .view-modal-title {
+        margin: 0;
+        font-size: 24px;
+        color: var(--text);
+        line-height: 1.2;
+    }
+
+    .view-modal-close {
+        border: 1px solid var(--border);
+        background: #fff;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 18px;
+    }
+
+    .view-modal-body {
+        padding: 24px;
+        display: grid;
+        gap: 18px;
+    }
+
+    .view-modal-badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .view-modal-summary {
+        padding: 16px;
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        color: var(--text);
+        line-height: 1.6;
+    }
+
+    .view-content-box {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        background: #fff;
+    }
+
+    .view-info-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 10px;
+    }
+
+    .view-modal-content {
+        padding-top: 8px;
+        color: var(--text);
+        line-height: 1.75;
+        white-space: pre-wrap;
+        font-size: 15px;
+    }
+
+    .view-modal-info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .view-info-card {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 16px;
+        background: #fff;
+        min-width: 0;
+    }
+
+    .view-info-value {
+        font-size: 14px;
+        color: var(--text);
+        font-weight: 800;
+        line-height: 1.4;
+    }
+
+    .view-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 0 24px 24px;
+    }
+
+    .view-modal-content h1,
+    .view-modal-content h2,
+    .view-modal-content h3,
+    .view-modal-content h4 {
+        color: var(--text);
+        font-weight: 800;
+        line-height: 1.25;
+        margin: 16px 0 10px;
+    }
+
+    .view-modal-content p {
+        margin: 0 0 12px;
+        color: var(--text);
+        line-height: 1.75;
+    }
+
+    .view-modal-content ul,
+    .view-modal-content ol {
+        display: block;
+        margin: 12px 0 16px 24px;
+        padding-left: 22px;
+        color: var(--text);
+    }
+
+    .view-modal-content li {
+        display: list-item;
+        margin: 6px 0;
+        padding-left: 4px;
+        color: var(--text);
+        line-height: 1.65;
+    }
+
+    .view-modal-content a {
+        color: var(--primary-dark);
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    @media (max-width: 1080px) {
+        .mural-head {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 820px) {
+        .page {
+            margin-left: 0;
+            padding: 14px;
+        }
+
+        .mural-topbar,
+        .mural-toolbar,
+        .mural-body {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+
+        .mural-title {
+            font-size: 28px;
+        }
+
+        .mural-overview,
+        .view-modal-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .search-box {
+            min-width: 100%;
+        }
+    }
+</style>
+
+<div class="page">
+    <section class="mural-shell">
+        <header class="mural-topbar">
+            <div class="mural-head">
+                <div>
+                    <span class="kicker">
+                        <i class="fa-solid fa-table-list"></i>
+                        gerenciamento do mural
+                    </span>
+
+                    <h1 class="mural-title">Meus itens criados no Mural</h1>
+
+                    <p class="mural-subtitle">
+                        Acompanhe, consulte e gerencie os comunicados, avisos, scripts e manuais criados por você.
+                        Esta visualização apresenta os itens em formato de tabela para facilitar controle, revisão e manutenção.
+                    </p>
+                </div>
+
+                <div class="mural-overview">
+                    <div class="overview-card">
+                        <span class="overview-label">Total criado</span>
+                        <div class="overview-value" id="count-total">0</div>
+                        <div class="overview-help">Quantidade total de itens criados por você.</div>
+                    </div>
+
+                    <div class="overview-card">
+                        <span class="overview-label">Ativos</span>
+                        <div class="overview-value" id="count-active">0</div>
+                        <div class="overview-help">Itens disponíveis para visualização dos usuários.</div>
+                    </div>
+
+                    <div class="overview-card">
+                        <span class="overview-label">Fixados</span>
+                        <div class="overview-value" id="count-pinned">0</div>
+                        <div class="overview-help">Itens com destaque prioritário no mural.</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="mural-toolbar">
+            <div class="toolbar-left">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Pesquisar por título, resumo, tipo ou severidade...">
+                </div>
+            </div>
+
+            <div class="toolbar-right">
+                <button class="filter-btn active" data-filter="all">Todos</button>
+                <button class="filter-btn" data-filter="active">Ativos</button>
+                <button class="filter-btn" data-filter="inactive">Inativos</button>
+                <button class="filter-btn" data-filter="pinned">Fixados</button>
+                <button class="filter-btn" data-filter="critical">Críticos</button>
+
+                <a class="action-btn" href="{% url 'mural:mural' %}">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Voltar ao mural
+                </a>
+            </div>
+        </div>
+
+        <section class="mural-body">
+            <div class="table-card">
+                <div class="table-header">
+                    <div class="table-title">
+                        <strong>
+                            <i class="fa-solid fa-list-check"></i>
+                            Itens criados por mim
+                        </strong>
+                        <small id="tableHelp">Visualização administrativa em tabela.</small>
+                    </div>
+                </div>
+
+                <div id="tableContainer" class="table-responsive"></div>
+            </div>
+        </section>
+    </section>
+</div>
+
+{{ mural_data|json_script:"mural-management-data" }}
+
+<div class="view-modal-overlay" id="viewItemModal">
+    <div class="view-modal">
+        <div class="view-modal-header">
+            <h3 class="view-modal-title" id="viewItemTitle">Detalhes do item</h3>
+            <button type="button" class="view-modal-close" id="closeViewItemModalBtn">×</button>
+        </div>
+
+        <div class="view-modal-body">
+            <div class="view-modal-badges" id="viewItemBadges"></div>
+
+            <div class="view-modal-summary" id="viewItemSummary"></div>
+
+            <div class="view-content-box">
+                <span class="view-info-label">Conteúdo</span>
+                <div class="view-modal-content" id="viewItemContent"></div>
+            </div>
+
+            <div class="view-modal-info-grid">
+                <div class="view-info-card">
+                    <span class="view-info-label">Início</span>
+                    <div class="view-info-value" id="viewItemStartsAt"></div>
+                </div>
+
+                <div class="view-info-card">
+                    <span class="view-info-label">Fim</span>
+                    <div class="view-info-value" id="viewItemEndsAt"></div>
+                </div>
+
+                <div class="view-info-card">
+                    <span class="view-info-label">Status</span>
+                    <div class="view-info-value" id="viewItemStatus"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="view-modal-actions">
+            <div id="viewItemActions"></div>
+
+            <button type="button" class="action-btn" id="closeViewItemModalBtnFooter">
+                Fechar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.3/dist/purify.min.js"></script>
+
+<script>
+    const muralPayload = JSON.parse(document.getElementById('mural-management-data').textContent);
+    const muralItems = muralPayload.items || [];
+
+    const searchInput = document.getElementById('searchInput');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const tableContainer = document.getElementById('tableContainer');
+    const tableHelp = document.getElementById('tableHelp');
+
+    const viewItemModal = document.getElementById('viewItemModal');
+    const viewItemTitle = document.getElementById('viewItemTitle');
+    const viewItemBadges = document.getElementById('viewItemBadges');
+    const viewItemSummary = document.getElementById('viewItemSummary');
+    const viewItemContent = document.getElementById('viewItemContent');
+    const viewItemStartsAt = document.getElementById('viewItemStartsAt');
+    const viewItemEndsAt = document.getElementById('viewItemEndsAt');
+    const viewItemStatus = document.getElementById('viewItemStatus');
+    const viewItemActions = document.getElementById('viewItemActions');
+
+    const closeViewItemModalBtn = document.getElementById('closeViewItemModalBtn');
+    const closeViewItemModalBtnFooter = document.getElementById('closeViewItemModalBtnFooter');
+
+    let activeFilter = 'all';
+
+    function truncateText(text, limit = 90) {
+        const value = String(text || '').trim();
+
+        if (value.length <= limit) {
+            return value;
+        }
+
+        return value.substring(0, limit).trim() + '...';
+    }
+
+    function sanitizeMuralHtml(html) {
+        return DOMPurify.sanitize(html || '', {
+            ALLOWED_TAGS: [
+                'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's',
+                'h1', 'h2', 'h3', 'h4',
+                'ul', 'ol', 'li',
+                'a', 'blockquote',
+                'table', 'thead', 'tbody', 'tr', 'th', 'td'
+            ],
+            ALLOWED_ATTR: [
+                'href', 'target', 'rel', 'colspan', 'rowspan'
+            ]
+        });
+    }
+
+    function severityClass(severity) {
+        return `severity-${severity || 'informational'}`;
+    }
+
+    function getStatusPill(item) {
+        if (item.is_active) {
+            return `<span class="pill green"><i class="fa-solid fa-check"></i> Ativo</span>`;
+        }
+
+        return `<span class="pill red"><i class="fa-solid fa-ban"></i> Inativo</span>`;
+    }
+
+    function getPinnedPill(item) {
+        if (item.is_pinned) {
+            return `<span class="pill orange"><i class="fa-solid fa-thumbtack"></i> Fixado</span>`;
+        }
+
+        return `<span class="pill gray">Não</span>`;
+    }
+
+    function getIndefinitePill(item) {
+        if (item.is_indefinite) {
+            return `<span class="pill blue"><i class="fa-solid fa-infinity"></i> Sim</span>`;
+        }
+
+        return `<span class="pill gray">Não</span>`;
+    }
+
+    function filterItems(items) {
+        const search = searchInput.value.trim().toLowerCase();
+
+        return items.filter(item => {
+            const text = `
+                ${item.title || ''}
+                ${item.summary || ''}
+                ${item.item_type_label || ''}
+                ${item.severity_label || ''}
+            `.toLowerCase();
+
+            const matchesSearch = !search || text.includes(search);
+
+            let matchesFilter = true;
+
+            if (activeFilter === 'active') {
+                matchesFilter = item.is_active === true;
+            }
+
+            if (activeFilter === 'inactive') {
+                matchesFilter = item.is_active === false;
+            }
+
+            if (activeFilter === 'pinned') {
+                matchesFilter = item.is_pinned === true;
+            }
+
+            if (activeFilter === 'critical') {
+                matchesFilter = item.severity === 'critical';
+            }
+
+            return matchesSearch && matchesFilter;
+        });
+    }
+
+    function renderCounters() {
+        document.getElementById('count-total').textContent = muralItems.length;
+        document.getElementById('count-active').textContent = muralItems.filter(item => item.is_active).length;
+        document.getElementById('count-pinned').textContent = muralItems.filter(item => item.is_pinned).length;
+    }
+
+    function renderEmpty() {
+        tableContainer.innerHTML = `
+            <div class="empty-state">
+                <i class="fa-regular fa-folder-open"></i>
+                <h3>Nenhum item encontrado</h3>
+                <p>Você ainda não criou itens no mural ou os filtros não retornaram resultados.</p>
+            </div>
+        `;
+    }
+
+    function renderTable() {
+        const filteredItems = filterItems(muralItems);
+
+        tableHelp.textContent = `${filteredItems.length} item(ns) encontrado(s).`;
+
+        if (!filteredItems.length) {
+            renderEmpty();
+            return;
+        }
+
+        tableContainer.innerHTML = `
+            <table class="management-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Tipo</th>
+                        <th>Severidade</th>
+                        <th>Início</th>
+                        <th>Fim</th>
+                        <th>Prazo indefinido</th>
+                        <th>Fixado</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    ${filteredItems.map(item => `
+                        <tr>
+                            <td>
+                                <div class="item-title-cell">
+                                    <strong>${item.title || '-'}</strong>
+                                    <small>${truncateText(item.summary || 'Sem resumo informado.', 110)}</small>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="pill green">
+                                    ${item.item_type_label || 'Item'}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="pill ${severityClass(item.severity)}">
+                                    ${item.severity_label || 'Informativo'}
+                                </span>
+                            </td>
+
+                            <td>${item.starts_at || '-'}</td>
+                            <td>${item.ends_at || '-'}</td>
+                            <td>${getIndefinitePill(item)}</td>
+                            <td>${getPinnedPill(item)}</td>
+                            <td>${getStatusPill(item)}</td>
+
+                            <td>
+                                <div class="row-actions">
+                                    <button 
+                                        type="button" 
+                                        class="icon-btn js-view-item" 
+                                        data-id="${item.id}"
+                                        title="Visualizar"
+                                    >
+                                        <i class="fa-regular fa-eye"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+
+        bindViewButtons();
+    }
+
+    function openViewItemModal(item) {
+        viewItemTitle.textContent = item.title || 'Detalhes do item';
+
+        viewItemBadges.innerHTML = `
+            <span class="pill green">
+                <i class="fa-regular fa-file-lines"></i>
+                ${item.item_type_label || 'Item'}
+            </span>
+
+            <span class="pill ${severityClass(item.severity)}">
+                ${item.severity_label || 'Informativo'}
+            </span>
+
+            ${item.is_pinned ? '<span class="pill orange"><i class="fa-solid fa-thumbtack"></i> Fixado</span>' : ''}
+            ${item.until_read ? '<span class="pill blue"><i class="fa-regular fa-eye"></i> Leitura obrigatória</span>' : ''}
+        `;
+
+        viewItemSummary.textContent = item.summary || 'Sem resumo informado.';
+
+        viewItemContent.innerHTML = item.content
+            ? sanitizeMuralHtml(item.content)
+            : 'Sem conteúdo informado.';
+
+        viewItemStartsAt.textContent = item.starts_at || '-';
+        viewItemEndsAt.textContent = item.ends_at || '-';
+
+        viewItemStatus.innerHTML = item.is_active
+            ? '<span class="pill green">Ativo</span>'
+            : '<span class="pill red">Inativo</span>';
+
+        viewItemActions.innerHTML = '';
+
+        if (item.external_link) {
+            viewItemActions.innerHTML += `
+                <a href="${item.external_link}" target="_blank" class="action-btn primary">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    Abrir link externo
+                </a>
+            `;
+        }
+
+        viewItemModal.classList.add('show');
+    }
+
+    function closeViewItemModal() {
+        viewItemModal.classList.remove('show');
+    }
+
+    function bindViewButtons() {
+        document.querySelectorAll('.js-view-item').forEach(button => {
+            button.addEventListener('click', () => {
+                const id = Number(button.dataset.id);
+                const item = muralItems.find(entry => Number(entry.id) === id);
+
+                if (!item) return;
+
+                openViewItemModal(item);
+            });
+        });
+    }
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            activeFilter = button.dataset.filter;
+            renderTable();
+        });
+    });
+
+    searchInput.addEventListener('input', renderTable);
+
+    if (closeViewItemModalBtn) {
+        closeViewItemModalBtn.addEventListener('click', closeViewItemModal);
+    }
+
+    if (closeViewItemModalBtnFooter) {
+        closeViewItemModalBtnFooter.addEventListener('click', closeViewItemModal);
+    }
+
+    if (viewItemModal) {
+        viewItemModal.addEventListener('click', function (event) {
+            if (event.target === viewItemModal) {
+                closeViewItemModal();
+            }
+        });
+    }
+
+    renderCounters();
+    renderTable();
+</script>
+
+{% endblock %}

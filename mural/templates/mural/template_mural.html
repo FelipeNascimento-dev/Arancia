@@ -2122,6 +2122,16 @@
         return `severity-${severity}`;
     }
 
+    function truncateText(text, limit = 100) {
+        const value = String(text || '').trim();
+
+        if (value.length <= limit) {
+            return value;
+        }
+
+        return value.substring(0, limit).trim() + '...';
+    }
+
     function createCriticalCard(item) {
         const coverHtml = item.image_url
             ? `
@@ -2141,7 +2151,7 @@
                 </div>
 
                 <h3>${item.title}</h3>
-                <p>${item.summary}</p>
+                <p>${truncateText(item.summary, 100)}</p>
 
                 <div class="card-meta">
                 <span><i class="fa-regular fa-calendar"></i> ${item.starts_at}</span>
@@ -2184,7 +2194,7 @@
             </div>
 
             <h3>${item.title}</h3>
-            <p>${item.summary}</p>
+            <p>${truncateText(item.summary, 100)}</p>
 
             <div class="card-meta" style="color: var(--muted); margin-top: 14px;">
                 <span><i class="fa-regular fa-clock"></i> ${item.starts_at}</span>
@@ -2223,7 +2233,7 @@
             </div>
 
             <h3>${item.title}</h3>
-            <p>${item.summary}</p>
+            <p>${truncateText(item.summary, 100)}</p>
 
             <div class="card-meta" style="color: var(--muted); margin-top: 14px;">
                 <span><i class="fa-regular fa-calendar"></i> ${item.starts_at}</span>
