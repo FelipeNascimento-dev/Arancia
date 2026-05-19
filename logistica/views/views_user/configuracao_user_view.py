@@ -39,6 +39,9 @@ def settings_view(request):
         if form.is_valid():
             user = form.save()
 
+            perfil.telefone = form.cleaned_data.get("telefone")
+            perfil.save(update_fields=["telefone"])
+
             foto = request.FILES.get("foto_perfil")
 
             if foto:

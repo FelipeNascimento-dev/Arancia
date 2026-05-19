@@ -17,6 +17,16 @@ class ConfiguracaoUserForm(forms.ModelForm):
         label="Último nome", max_length=30, required=False, disabled=True
     )
 
+    telefone = forms.CharField(
+        label="Telefone",
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={
+            "autocomplete": "off",
+            "placeholder": "(00) 00000-0000"
+        })
+    )
+
     senha_atual = forms.CharField(
         label="Senha atual",
         required=False,
@@ -116,3 +126,6 @@ class ConfiguracaoUserForm(forms.ModelForm):
         )
 
         super().__init__(*args, **kwargs)
+
+        if self.user and hasattr(self.user, "perfil"):
+            self.fields["telefone"].initial = self.user.perfil.telefone

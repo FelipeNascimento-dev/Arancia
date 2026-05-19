@@ -120,6 +120,10 @@
                 <input type="email" name="email" id="edit_email">
             </div>
             <div class="edit-form-group">
+                <label for="edit_telefone">Telefone:</label>
+                <input type="text" name="telefone" id="edit_telefone">
+            </div>
+            <div class="edit-form-group">
                 <label for="edit_cpf">CPF:</label>
                 <input type="text" name="cpf" id="edit_cpf">
             </div>
@@ -160,6 +164,7 @@
             // document.getElementById("edit_username").value = userData.username || "";
             document.getElementById("edit_full_name").value = userData.full_name || "";
             document.getElementById("edit_email").value = userData.email || "";
+            document.getElementById("edit_telefone").value = userData.telefone || "";
             document.getElementById("edit_cpf").value = userData.cpf || "";
 
             if (userData.groups) {

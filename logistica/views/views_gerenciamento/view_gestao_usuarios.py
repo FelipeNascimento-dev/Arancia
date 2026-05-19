@@ -23,6 +23,7 @@ def user_ger(request):
             user.save()
 
             cpf = form.cleaned_data.get("cpf")
+            telefone = form.cleaned_data.get("telefone")
             grupo = form.cleaned_data.get("grupo")
             adicional = form.cleaned_data.get("aditionalinformation")
 
@@ -30,6 +31,7 @@ def user_ger(request):
 
             perfil.cpf = cpf
             perfil.avatar = f"https://storage.googleapis.com/appandroidios-38136.appspot.com/Foto%20de%20perfil%20para%20redes%20sociais%20gradiente%20simples%20%284%29_02361f4b-38fb-485d-9bc6-548cb8a442e0.png"
+            perfil.telefone = telefone
             perfil.save()
 
             if grupo:
@@ -51,6 +53,7 @@ def user_ger(request):
         user_id = request.POST.get("user_id")
         full_name = request.POST.get("full_name")
         email = request.POST.get("email")
+        telefone = request.POST.get("telefone")
         cpf = request.POST.get("cpf")
         groups_ids = request.POST.getlist("groups")
         additional_info_id = request.POST.get("additional_info")
@@ -66,6 +69,7 @@ def user_ger(request):
 
         if hasattr(user, "perfil"):
             user.perfil.cpf = cpf if cpf else None
+            user.perfil.telefone = telefone if telefone else None
             user.perfil.save()
 
         if groups_ids:
@@ -121,6 +125,7 @@ def user_ger(request):
             "full_name": f"{u.first_name} {u.last_name}".strip(),
             "email": u.email,
             "cpf": u.perfil.cpf if hasattr(u, "perfil") else "",
+            "telefone": u.perfil.telefone if hasattr(u, "perfil") else "",
             "groups": list(u.groups.values_list("id", flat=True)),
             "additional_info": getattr(u.designacao.informacao_adicional, "cod_iata", None)
             if hasattr(u, "designacao") and u.designacao.informacao_adicional else None,

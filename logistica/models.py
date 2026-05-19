@@ -18,6 +18,10 @@ class UserProfile(models.Model):
     avatar = models.URLField(
         blank=True, null=True)
 
+    telefone = models.CharField(
+        max_length=20, blank=True, null=True
+    )
+
 
 class Romaneio(models.Model):
     numero = models.CharField(max_length=10, unique=True)
