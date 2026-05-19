@@ -65,6 +65,8 @@ class PersonalPermissions(models.Model):
             ("controle_chamados", "Controle de Chamados"),
             ("ver_transportes", "Pode ver telas de transportes"),
             ("transportes", "Permissão total para transporte"),
+            ("CC_rotas", "Acesso à rotas"),
+            ("CC_roteirizacao", "Acesso à roteirização"),
         ]
 
     def __str__(self):
