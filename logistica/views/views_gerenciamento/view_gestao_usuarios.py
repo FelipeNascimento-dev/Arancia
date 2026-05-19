@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from logistica.models import GroupAditionalInformation, UserDesignation
+from logistica.models import GroupAditionalInformation, UserDesignation, UserProfile
 from ...forms import CustomUserCreationForm
 import json
 from django.core.serializers.json import DjangoJSONEncoder
@@ -26,9 +26,11 @@ def user_ger(request):
             grupo = form.cleaned_data.get("grupo")
             adicional = form.cleaned_data.get("aditionalinformation")
 
-            if hasattr(user, "perfil"):
-                user.perfil.cpf = cpf
-                user.perfil.save()
+            perfil, created = UserProfile.objects.get_or_create(user=user)
+
+            perfil.cpf = cpf
+            perfil.avatar = f"https://storage.googleapis.com/appandroidios-38136.appspot.com/Foto%20de%20perfil%20para%20redes%20sociais%20gradiente%20simples%20%284%29_02361f4b-38fb-485d-9bc6-548cb8a442e0.png"
+            perfil.save()
 
             if grupo:
                 user.groups.add(grupo)
