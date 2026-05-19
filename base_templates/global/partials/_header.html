@@ -283,17 +283,19 @@
                         </a>
                     </div> 
                     {% endif %}
-                        {% if perms.transportes.CC_gerencial %}
+                        {% if perms.transportes.CC_rotas %}
                         <h5 class="submenu-toggle {% if current_submenu == 'rotas' %}active{% endif %}"
                             data-target="Ferramentas2">
                             Rotas
                         </h5>
                         <div class="sub-submenu {% if current_submenu == 'rotas' %}show{% endif %}"
                             id="Ferramentas2">
+                            {% if perms.transportes.CC_roteirizacao %}
                             <a href="{% url 'transportes:scripting' %}"
                             class="{% if current_subsubmenu == 'roteirizacao' %}active{% endif %}">
                                 Roteirização
                             </a>
+                            {% endif %}
                             <a href="{% url 'transportes:mover_rota' %}"
                             class="{% if current_subsubmenu == 'mover_rota' %}active{% endif %}">
                                 Mover Rotas
