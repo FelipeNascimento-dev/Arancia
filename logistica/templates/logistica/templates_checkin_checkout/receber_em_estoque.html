@@ -1,0 +1,287 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+  .form-card-2col {
+    height: auto;
+    margin-top: 65px;
+  }
+
+  .romaneio-wrapper {
+    margin-top: 24px;
+    padding: 20px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  }
+
+  .romaneio-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .romaneio-title {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .romaneio-counter {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #f1f1f1;
+  }
+
+  .romaneio-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .romaneio-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: #fafafa;
+    transition: 0.2s ease;
+  }
+
+  .romaneio-item strong {
+    display: block;
+    font-size: 14px;
+  }
+
+  .romaneio-item small {
+    color: #666;
+  }
+
+  .status-pill {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #ddd;
+    white-space: nowrap;
+  }
+
+  .item-pendente {
+    border-color: #ddd;
+    background: #fafafa;
+  }
+
+  .item-recebido {
+    border-color: #2e7d32;
+    background: #e8f5e9;
+  }
+
+  .item-erro {
+    border-color: #c62828;
+    background: #ffebee;
+  }
+
+  .item-alerta {
+    border-color: #ef6c00;
+    background: #fff3e0;
+  }
+
+  .bipagem-feedback {
+    margin-bottom: 12px;
+    font-weight: 600;
+    min-height: 20px;
+  }
+
+  .feedback-success {
+    color: #2e7d32;
+  }
+
+  .feedback-error {
+    color: #c62828;
+  }
+
+  .feedback-alerta {
+    color: #ef6c00;
+  }
+</style>
+
+
+<div class="form-container">
+  <div class="form-card-2col">
+
+    <form method="POST" id="form-romaneio">
+      {% include 'global/partials/_form_2colV2.html' %}
+    </form>
+
+    {% if itens_romaneio %}
+      <div class="romaneio-wrapper">
+
+        <div class="romaneio-header">
+          <div>
+            <div class="romaneio-title">
+              Romaneio {{ numero_romaneio }}
+            </div>
+            <small>
+              Lista fake para validação da tela
+            </small>
+          </div>
+
+          <div class="romaneio-counter">
+            Recebidos:
+            <span id="contador-recebidos">0</span>
+            /
+            <span id="contador-total">{{ itens_romaneio|length }}</span>
+          </div>
+        </div>
+
+        <div id="bipagem-feedback" class="bipagem-feedback"></div>
+
+        <div class="romaneio-list" id="romaneio-list">
+          {% for item in itens_romaneio %}
+            <div
+              class="romaneio-item {% if item.ck %}item-recebido{% else %}item-pendente{% endif %}"
+              data-serial="{{ item.serial }}"
+              data-ck="{{ item.ck|yesno:'true,false' }}"
+            >
+              <div>
+                <strong>{{ item.serial }}</strong>
+                <small>{{ item.descricao }}</small>
+              </div>
+
+              <span class="status-pill">
+                {% if item.ck %}
+                  Recebido
+                {% else %}
+                  Pendente
+                {% endif %}
+              </span>
+            </div>
+          {% endfor %}
+        </div>
+
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+
+
+<script>
+  function normalizarSerial(serial) {
+    return String(serial || "").trim().toUpperCase();
+  }
+
+  function atualizarContadorRecebidos() {
+    const itensRecebidos = document.querySelectorAll(".romaneio-item[data-ck='true']");
+    const contador = document.getElementById("contador-recebidos");
+
+    if (contador) {
+      contador.textContent = itensRecebidos.length;
+    }
+  }
+
+  function mostrarFeedback(mensagem, tipo) {
+    const feedback = document.getElementById("bipagem-feedback");
+
+    if (!feedback) return;
+
+    feedback.textContent = mensagem;
+    feedback.className = "bipagem-feedback";
+
+    if (tipo === "success") {
+      feedback.classList.add("feedback-success");
+    } else if (tipo === "alerta") {
+      feedback.classList.add("feedback-alerta");
+    } else {
+      feedback.classList.add("feedback-error");
+    }
+  }
+
+  function pintarItemFake(serial) {
+    const serialNormalizado = normalizarSerial(serial);
+
+    if (!serialNormalizado) {
+      mostrarFeedback("Informe um serial para bipar.", "error");
+      return;
+    }
+
+    const item = document.querySelector(
+      `.romaneio-item[data-serial="${serialNormalizado}"]`
+    );
+
+    if (!item) {
+      mostrarFeedback(
+        `Serial ${serialNormalizado} não encontrado no romaneio.`,
+        "error"
+      );
+      return;
+    }
+
+    const jaRecebido = item.dataset.ck === "true";
+
+    if (jaRecebido) {
+      item.classList.remove("item-pendente", "item-recebido", "item-erro");
+      item.classList.add("item-alerta");
+
+      const pill = item.querySelector(".status-pill");
+
+      if (pill) {
+        pill.textContent = "Já recebido";
+      }
+
+      mostrarFeedback(
+        `Serial ${serialNormalizado} já estava recebido.`,
+        "alerta"
+      );
+
+      return;
+    }
+
+    item.classList.remove("item-pendente", "item-erro", "item-alerta");
+    item.classList.add("item-recebido");
+    item.dataset.ck = "true";
+
+    const pill = item.querySelector(".status-pill");
+
+    if (pill) {
+      pill.textContent = "Recebido";
+    }
+
+    mostrarFeedback(
+      `Serial ${serialNormalizado} recebido com sucesso.`,
+      "success"
+    );
+
+    atualizarContadorRecebidos();
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    atualizarContadorRecebidos();
+
+    const serialInput = document.getElementById("id_serial");
+
+    if (!serialInput) return;
+
+    serialInput.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+
+        const serial = serialInput.value;
+
+        pintarItemFake(serial);
+
+        serialInput.value = "";
+        serialInput.focus();
+      }
+    });
+  });
+</script>
+
+{% endblock %}

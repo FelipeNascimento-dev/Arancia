@@ -107,7 +107,7 @@ urls_Checkin = [
     path('check-in/registro/', client_checkin, name='client_checkin'),
     path('check-in/product/create/', product_create, name='product_create'),
     path("print-serial/<str:serial>/", print_serial, name="print_serial"),
-
+    path("check-in/receber/", receber_em_estoque, name="receber_em_estoque"),
 
     path("check/<str:vetor>/reverse/consulta/",
          checkout_reverse, name='checkout_reverse'),

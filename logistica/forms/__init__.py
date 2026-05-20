@@ -34,3 +34,4 @@ from .forms_fluxo_entrega.forms_recebimento_insucesso import RecebimentoInsucess
 from .forms_reverse.forms_lista_romaneios import ListaRomaneiosForm
 from .forms_reverse.froms_consulta_cotacao import ConsultaQuoteForm
 from .forms_user.user_password_forms import LoginComCodigoForm, UserProfilePasswordForm
+from .forms_checkin_checkout.forms_receber_em_estoque import ReceberEmEstoqueForm
