@@ -17,7 +17,7 @@ class ClientCheckInForm(forms.Form):
 
     product = forms.ChoiceField(
         label="Produto",
-        required=True,
+        required=False,
         choices=[],
         widget=forms.Select(attrs={'class': 'form-control'})
     )
@@ -30,6 +30,7 @@ class ClientCheckInForm(forms.Form):
 
     to_location = forms.ChoiceField(
         label='Destino',
+        required=False,
         choices=[]
     )
 
@@ -52,7 +53,9 @@ class ClientCheckInForm(forms.Form):
         if product_choices:
             self.fields['product'].choices = product_choices
 
-        if not self.pode_visualizar_produto(user):
+        self.can_view_product = self.pode_visualizar_produto(user)
+
+        if not self.can_view_product:
             self.fields.pop("product", None)
 
     def pode_visualizar_produto(self, user):
@@ -71,18 +74,12 @@ class ClientCheckInForm(forms.Form):
             None
         )
 
-        if (
-            informacao_adicional
-            and informacao_adicional.nome
-            and informacao_adicional.nome.strip().lower() == "tatuape"
-        ):
-            return True
+        if not informacao_adicional:
+            return False
 
-        usuario_tem_grupo_tatuape = user.groups.filter(
-            informacoes_adicionais__nome__iexact="PA CTB Tatuapé"
-        ).exists()
+        nome_gai = (informacao_adicional.nome or "").strip().lower()
 
-        if usuario_tem_grupo_tatuape:
+        if nome_gai == "pa ctb tatuapé".lower():
             return True
 
         return False
