@@ -1295,6 +1295,102 @@
             width: 100%;
         }
     }
+
+    .pagination-bar {
+        padding: 16px 20px;
+        border-top: 1px solid var(--border);
+        background: var(--surface-soft);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .pagination-info {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .pagination-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .pagination-btn {
+        border: 1px solid var(--border);
+        background: #fff;
+        color: #334155;
+        border-radius: 12px;
+        padding: 9px 13px;
+        font-weight: 800;
+        font-size: 13px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        transition: 0.2s ease;
+    }
+
+    .pagination-btn:hover {
+        background: var(--primary-soft);
+        border-color: #bbf7d0;
+        color: var(--primary-dark);
+    }
+
+    .pagination-btn.disabled {
+        opacity: 0.45;
+        pointer-events: none;
+        cursor: not-allowed;
+    }
+
+    .pagination-current {
+        border: 1px solid #bbf7d0;
+        background: var(--primary-soft);
+        color: var(--primary-dark);
+        border-radius: 12px;
+        padding: 9px 13px;
+        font-weight: 900;
+        font-size: 13px;
+    }
+
+    .limit-form {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .limit-form select {
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--text);
+        border-radius: 12px;
+        padding: 9px 12px;
+        font-size: 13px;
+        font-weight: 800;
+        outline: none;
+    }
+
+    @media (max-width: 820px) {
+        .pagination-bar {
+            align-items: stretch;
+        }
+
+        .pagination-actions,
+        .limit-form {
+            width: 100%;
+        }
+
+        .pagination-btn,
+        .pagination-current,
+        .limit-form select {
+            flex: 1;
+            justify-content: center;
+        }
+    }
 </style>
 
 <div class="page">
@@ -1379,6 +1475,52 @@
                 </div>
 
                 <div id="tableContainer" class="table-responsive"></div>
+                <div class="pagination-bar">
+                    <div class="pagination-info">
+                        Página {{ pagination.page }} de {{ pagination.total_pages }}
+
+                        {% if pagination.total_known %}
+                            • {{ pagination.total_items }} item(ns) no total
+                        {% else %}
+                            • Total aproximado
+                        {% endif %}
+
+                        • Exibindo {{ pagination.limit }} por página
+                    </div>
+
+                    <div class="pagination-actions">
+                        <form method="get" class="limit-form">
+                            <input type="hidden" name="page" value="1">
+
+                            <select name="limit" onchange="this.form.submit()">
+                                <option value="10" {% if pagination.limit == 10 %}selected{% endif %}>10 por página</option>
+                                <option value="20" {% if pagination.limit == 20 %}selected{% endif %}>20 por página</option>
+                                <option value="50" {% if pagination.limit == 50 %}selected{% endif %}>50 por página</option>
+                                <option value="100" {% if pagination.limit == 100 %}selected{% endif %}>100 por página</option>
+                            </select>
+                        </form>
+
+                        <a 
+                            href="{{ pagination.previous_url }}" 
+                            class="pagination-btn {% if not pagination.has_previous %}disabled{% endif %}"
+                        >
+                            <i class="fa-solid fa-chevron-left"></i>
+                            Anterior
+                        </a>
+
+                        <span class="pagination-current">
+                            {{ pagination.page }}
+                        </span>
+
+                        <a 
+                            href="{{ pagination.next_url }}" 
+                            class="pagination-btn {% if not pagination.has_next %}disabled{% endif %}"
+                        >
+                            Próxima
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
         </section>
     </section>
@@ -2367,10 +2509,19 @@
         });
     }
 
+    const paginationPayload = {
+        totalItems: Number('{{ pagination.total_items|default:0 }}'),
+        totalKnown: '{{ pagination.total_known|yesno:"true,false" }}' === 'true'
+    };
+
     function renderCounters() {
-        document.getElementById('count-total').textContent = muralItems.length;
-        document.getElementById('count-active').textContent = muralItems.filter(item => item.is_active).length;
-        document.getElementById('count-pinned').textContent = muralItems.filter(item => item.is_pinned).length;
+        document.getElementById('count-total').textContent = paginationPayload.totalItems || muralItems.length;
+
+        document.getElementById('count-active').textContent =
+            muralItems.filter(item => item.is_active).length;
+
+        document.getElementById('count-pinned').textContent =
+            muralItems.filter(item => item.is_pinned).length;
     }
 
     function renderEmpty() {

@@ -1,12 +1,11 @@
-
 from urllib.parse import urlencode
-
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 import requests
 import json
+import math
 from pathlib import Path
 from logistica.models import GroupAditionalInformation, Group
 from setup.local_settings import MURAL_API_URL, TRANSP_API_URL
@@ -276,6 +275,21 @@ def validate_critical_duration(severity, starts_at_raw, ends_at_raw):
     return True, None
 
 
+def get_positive_int(value, default=1, min_value=1, max_value=None):
+    try:
+        value = int(value)
+    except Exception:
+        return default
+
+    if value < min_value:
+        return default
+
+    if max_value is not None and value > max_value:
+        return max_value
+
+    return value
+
+
 @login_required(login_url='logistica:login')
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def gerenciar_mural(request):
@@ -293,6 +307,21 @@ def gerenciar_mural(request):
     }
 
     user_id = request.user.id
+
+    page = get_positive_int(
+        request.GET.get("page"),
+        default=1,
+        min_value=1
+    )
+
+    limit = get_positive_int(
+        request.GET.get("limit"),
+        default=50,
+        min_value=5,
+        max_value=100
+    )
+
+    offset = (page - 1) * limit
 
     User = get_user_model()
 
@@ -335,9 +364,6 @@ def gerenciar_mural(request):
         for gai in target_gais_raw
     ]
 
-    # ==========================================================
-    # CONSULTAR QUEM LEU O ITEM
-    # ==========================================================
     if "view_reads" in request.POST:
         view_read_search_done = True
 
@@ -423,9 +449,6 @@ def gerenciar_mural(request):
             )
             view_read_results = []
 
-    # ==========================================================
-    # CRIAR ITEM
-    # ==========================================================
     if "create_mural_item" in request.POST:
         if not request.user.has_perm("mural.ger_mural"):
             messages.error(
@@ -543,9 +566,6 @@ def gerenciar_mural(request):
         except Exception as e:
             messages.error(request, f"Erro ao criar item no mural. Erro: {e}")
 
-    # ==========================================================
-    # EDITAR ITEM
-    # ==========================================================
     if "edit_mural_item" in request.POST:
         if not request.user.has_perm("mural.ger_mural"):
             messages.error(
@@ -675,9 +695,6 @@ def gerenciar_mural(request):
         except Exception as e:
             messages.error(request, f"Erro ao editar item no mural. Erro: {e}")
 
-    # ==========================================================
-    # DESABILITAR ITEM
-    # ==========================================================
     if "disable_item" in request.POST:
         if not request.user.has_perm("mural.ger_mural"):
             messages.error(
@@ -712,9 +729,6 @@ def gerenciar_mural(request):
                 f"Erro ao desabilitar item no mural. Erro: {e}"
             )
 
-    # ==========================================================
-    # MARCAR COMO LIDO
-    # ==========================================================
     if "mark_read_item" in request.POST:
         mark_read_item_id = request.POST.get("mark_read_item_id")
 
@@ -751,14 +765,11 @@ def gerenciar_mural(request):
                 f"Não foi possível marcar o item como lido. Erro: {e}"
             )
 
-    # ==========================================================
-    # CARREGAR ITENS CRIADOS PELO USUÁRIO
-    # ==========================================================
     try:
         params = {
             "created_by_id": user_id,
-            "offset": 0,
-            "limit": 200,
+            "offset": offset,
+            "limit": limit,
         }
 
         url = f"{MURAL_API_URL}/v1/items/by-created-by/?{urlencode(params)}"
@@ -791,6 +802,57 @@ def gerenciar_mural(request):
         else:
             items = []
 
+        total_items = None
+
+        if isinstance(resp, dict):
+            total_items = (
+                resp.get("total")
+                or resp.get("count")
+                or resp.get("total_items")
+                or resp.get("total_count")
+            )
+
+        try:
+            total_items = int(total_items) if total_items is not None else None
+        except Exception:
+            total_items = None
+
+        total_known = total_items is not None
+
+        if total_known:
+            total_pages = max(1, math.ceil(total_items / limit))
+            has_previous = page > 1
+            has_next = page < total_pages
+        else:
+            total_items = offset + len(items)
+            total_pages = page + 1 if len(items) == limit else page
+            has_previous = page > 1
+            has_next = len(items) == limit
+
+        previous_page = page - 1 if has_previous else None
+        next_page = page + 1 if has_next else None
+
+        def build_page_url(page_number):
+            query_params = request.GET.copy()
+            query_params["page"] = page_number
+            query_params["limit"] = limit
+            return f"{request.path}?{query_params.urlencode()}"
+
+        pagination = {
+            "page": page,
+            "limit": limit,
+            "offset": offset,
+            "total_items": total_items,
+            "total_pages": total_pages,
+            "total_known": total_known,
+            "has_previous": has_previous,
+            "has_next": has_next,
+            "previous_page": previous_page,
+            "next_page": next_page,
+            "previous_url": build_page_url(previous_page) if previous_page else "",
+            "next_url": build_page_url(next_page) if next_page else "",
+        }
+
         mural_data["items"] = [
             normalize_item(item)
             for item in items
@@ -805,15 +867,13 @@ def gerenciar_mural(request):
     return render(request, "mural/gerenciamento_mural.html", {
         "site_title": "Gerenciar Mural",
         "current_menu": "mural",
-
         "mural_data": mural_data,
-
         "target_users": target_users,
         "target_gais": target_gais,
         "target_groups": target_groups,
-
         "view_read_results": view_read_results,
         "view_read_search_done": view_read_search_done,
         "view_read_selected_item_id": view_read_selected_item_id,
         "view_read_filters": view_read_filters,
+        "pagination": pagination,
     })
