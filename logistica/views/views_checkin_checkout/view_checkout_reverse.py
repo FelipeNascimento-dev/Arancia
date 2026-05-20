@@ -71,12 +71,12 @@ def checkout_reverse(request, vetor):
 
     try:
         pa_tatuape = GroupAditionalInformation.objects.get(
-            nome__iexact="PA CTB Tatuapé"
+            nome__iexact="CTB Tatuapé 81"
         )
 
         destination_choices.append({
             "id": pa_tatuape.id,
-            "label": "PA CTB Tatuapé"
+            "label": "CD CTB Tatuapé"
         })
 
     except GroupAditionalInformation.DoesNotExist:
