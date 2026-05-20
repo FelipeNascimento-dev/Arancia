@@ -110,6 +110,21 @@
   .feedback-alerta {
     color: #ef6c00;
   }
+
+   .item-fora-romaneio {
+    border-color: #ef6c00;
+    background: #fff3e0;
+  }
+
+  .item-ultimo-bipado {
+    box-shadow: 0 0 0 2px rgba(239, 108, 0, 0.25);
+    transform: scale(1.01);
+  }
+
+  .item-nao-confirmado {
+    border-color: #c62828;
+    background: #ffebee;
+  }
 </style>
 
 
@@ -187,6 +202,15 @@
     }
   }
 
+  function atualizarContadorTotal() {
+    const itens = document.querySelectorAll(".romaneio-item");
+    const contadorTotal = document.getElementById("contador-total");
+
+    if (contadorTotal) {
+      contadorTotal.textContent = itens.length;
+    }
+  }
+
   function mostrarFeedback(mensagem, tipo) {
     const feedback = document.getElementById("bipagem-feedback");
 
@@ -204,6 +228,110 @@
     }
   }
 
+  function buscarItemPorSerial(serial) {
+    const serialNormalizado = normalizarSerial(serial);
+    const itens = document.querySelectorAll(".romaneio-item");
+
+    for (const item of itens) {
+      const serialItem = normalizarSerial(item.dataset.serial);
+
+      if (serialItem === serialNormalizado) {
+        return item;
+      }
+    }
+
+    return null;
+  }
+
+  function moverItemParaTopo(item) {
+    const lista = document.getElementById("romaneio-list");
+
+    if (!lista || !item) return;
+
+    document.querySelectorAll(".romaneio-item").forEach(function (el) {
+      el.classList.remove("item-ultimo-bipado");
+    });
+
+    lista.prepend(item);
+    item.classList.add("item-ultimo-bipado");
+
+    setTimeout(function () {
+      item.classList.remove("item-ultimo-bipado");
+    }, 1200);
+  }
+
+  function limparClassesStatus(item) {
+    item.classList.remove(
+      "item-pendente",
+      "item-recebido",
+      "item-erro",
+      "item-alerta",
+      "item-fora-romaneio",
+      "item-nao-confirmado"
+    );
+  }
+
+  function atualizarStatusItem(item, textoStatus) {
+    const pill = item.querySelector(".status-pill");
+
+    if (pill) {
+      pill.textContent = textoStatus;
+    }
+  }
+
+  function inserirSerialForaRomaneio(serial) {
+    const serialNormalizado = normalizarSerial(serial);
+    const lista = document.getElementById("romaneio-list");
+
+    if (!lista) return;
+
+    const novoItem = document.createElement("div");
+
+    novoItem.className = "romaneio-item item-fora-romaneio";
+    novoItem.dataset.serial = serialNormalizado;
+    novoItem.dataset.ck = "false";
+    novoItem.dataset.foraRomaneio = "true";
+
+    novoItem.innerHTML = `
+      <div>
+        <strong>${serialNormalizado}</strong>
+        <small>Serial inserido manualmente fora do romaneio</small>
+      </div>
+
+      <span class="status-pill">
+        Fora do romaneio
+      </span>
+    `;
+
+    lista.prepend(novoItem);
+
+    moverItemParaTopo(novoItem);
+    atualizarContadorTotal();
+
+    mostrarFeedback(
+      `Serial ${serialNormalizado} inserido na lista como fora do romaneio.`,
+      "alerta"
+    );
+  }
+
+  function tratarSerialForaRomaneio(serial) {
+    const serialNormalizado = normalizarSerial(serial);
+
+    const confirmar = confirm(
+      `O serial ${serialNormalizado} não pertence ao romaneio. Deseja inserir mesmo assim na tabela?`
+    );
+
+    if (confirmar) {
+      inserirSerialForaRomaneio(serialNormalizado);
+      return;
+    }
+
+    mostrarFeedback(
+      `Serial ${serialNormalizado} não encontrado no romaneio e não foi inserido.`,
+      "error"
+    );
+  }
+
   function pintarItemFake(serial) {
     const serialNormalizado = normalizarSerial(serial);
 
@@ -212,29 +340,37 @@
       return;
     }
 
-    const item = document.querySelector(
-      `.romaneio-item[data-serial="${serialNormalizado}"]`
-    );
+    const item = buscarItemPorSerial(serialNormalizado);
 
     if (!item) {
-      mostrarFeedback(
-        `Serial ${serialNormalizado} não encontrado no romaneio.`,
-        "error"
-      );
+      tratarSerialForaRomaneio(serialNormalizado);
       return;
     }
 
     const jaRecebido = item.dataset.ck === "true";
+    const foraRomaneio = item.dataset.foraRomaneio === "true";
+
+    if (foraRomaneio) {
+      limparClassesStatus(item);
+      item.classList.add("item-fora-romaneio");
+
+      atualizarStatusItem(item, "Fora do romaneio");
+      moverItemParaTopo(item);
+
+      mostrarFeedback(
+        `Serial ${serialNormalizado} já está na lista como fora do romaneio.`,
+        "alerta"
+      );
+
+      return;
+    }
 
     if (jaRecebido) {
-      item.classList.remove("item-pendente", "item-recebido", "item-erro");
+      limparClassesStatus(item);
       item.classList.add("item-alerta");
 
-      const pill = item.querySelector(".status-pill");
-
-      if (pill) {
-        pill.textContent = "Já recebido";
-      }
+      atualizarStatusItem(item, "Já recebido");
+      moverItemParaTopo(item);
 
       mostrarFeedback(
         `Serial ${serialNormalizado} já estava recebido.`,
@@ -244,15 +380,12 @@
       return;
     }
 
-    item.classList.remove("item-pendente", "item-erro", "item-alerta");
+    limparClassesStatus(item);
     item.classList.add("item-recebido");
     item.dataset.ck = "true";
 
-    const pill = item.querySelector(".status-pill");
-
-    if (pill) {
-      pill.textContent = "Recebido";
-    }
+    atualizarStatusItem(item, "Recebido");
+    moverItemParaTopo(item);
 
     mostrarFeedback(
       `Serial ${serialNormalizado} recebido com sucesso.`,
@@ -260,10 +393,12 @@
     );
 
     atualizarContadorRecebidos();
+    atualizarContadorTotal();
   }
 
   document.addEventListener("DOMContentLoaded", function () {
     atualizarContadorRecebidos();
+    atualizarContadorTotal();
 
     const serialInput = document.getElementById("id_serial");
 
