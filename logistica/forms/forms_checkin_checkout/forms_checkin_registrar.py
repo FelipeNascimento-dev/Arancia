@@ -79,7 +79,7 @@ class ClientCheckInForm(forms.Form):
 
         nome_gai = (informacao_adicional.nome or "").strip().lower()
 
-        if nome_gai == "pa ctb tatuapé".lower():
+        if nome_gai == "ctb tatuapé 81".lower():
             return True
 
         return False

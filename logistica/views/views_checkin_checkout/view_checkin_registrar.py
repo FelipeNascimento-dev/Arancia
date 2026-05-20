@@ -310,8 +310,6 @@ def client_checkin(request):
                     "created_by": request.user.username.upper(),
                 }
 
-                print(payload)
-
                 res = RequestClient(
                     url=f"{STOCK_API_URL}/v1/movements/",
                     method="POST",
