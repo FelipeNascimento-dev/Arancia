@@ -10,7 +10,7 @@
 
   .romaneio-wrapper {
     margin-top: 24px;
-    padding: 20px;
+    padding: 0px 20px 20px 20px;
     border-radius: 14px;
     background: #fff;
     box-shadow: 0 4px 14px rgba(0,0,0,0.08);
@@ -125,6 +125,81 @@
     border-color: #c62828;
     background: #ffebee;
   }
+
+  .romaneio-info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 14px 0 16px 0;
+  }
+
+  .romaneio-info-card {
+    border: 1px solid #e3e3e3;
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: #fafafa;
+  }
+
+  .romaneio-info-card span {
+    display: block;
+    font-size: 11px;
+    color: #777;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .romaneio-info-card strong {
+    display: block;
+    font-size: 13px;
+    color: #222;
+  }
+
+  .romaneio-item-main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .romaneio-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: #666;
+    font-size: 12px;
+  }
+
+  .romaneio-meta span {
+    background: rgba(0,0,0,0.04);
+    padding: 3px 7px;
+    border-radius: 999px;
+  }
+
+  .status-romaneio {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    background: #fff3e0;
+    color: #ef6c00;
+  }
+
+  @media (max-width: 900px) {
+    .romaneio-info-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .romaneio-info-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .romaneio-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
 </style>
 
 
@@ -135,55 +210,89 @@
       {% include 'global/partials/_form_2colV2.html' %}
     </form>
 
-    {% if itens_romaneio %}
-      <div class="romaneio-wrapper">
+    {% if romaneio_data %}
+    <div class="romaneio-wrapper">
 
-        <div class="romaneio-header">
-          <div>
-            <div class="romaneio-title">
-              Romaneio {{ numero_romaneio }}
-            </div>
-            <small>
-              Lista fake para validação da tela
-            </small>
+      <div class="romaneio-header">
+        <div>
+          <div class="romaneio-title">
+            Romaneio {{ romaneio_data.romaneio }}
           </div>
-
-          <div class="romaneio-counter">
-            Recebidos:
-            <span id="contador-recebidos">0</span>
-            /
-            <span id="contador-total">{{ itens_romaneio|length }}</span>
-          </div>
+          <small>
+            {{ romaneio_data.origin }} → {{ romaneio_data.destination }}
+          </small>
         </div>
 
-        <div id="bipagem-feedback" class="bipagem-feedback"></div>
-
-        <div class="romaneio-list" id="romaneio-list">
-          {% for item in itens_romaneio %}
-            <div
-              class="romaneio-item {% if item.ck %}item-recebido{% else %}item-pendente{% endif %}"
-              data-serial="{{ item.serial }}"
-              data-ck="{{ item.ck|yesno:'true,false' }}"
-            >
-              <div>
-                <strong>{{ item.serial }}</strong>
-                <small>{{ item.descricao }}</small>
-              </div>
-
-              <span class="status-pill">
-                {% if item.ck %}
-                  Recebido
-                {% else %}
-                  Pendente
-                {% endif %}
-              </span>
-            </div>
-          {% endfor %}
+        <div class="status-romaneio">
+          {{ romaneio_data.status }}
         </div>
-
       </div>
-    {% endif %}
 
+      <div class="romaneio-info-grid">
+        <div class="romaneio-info-card">
+          <span>Origem</span>
+          <strong>{{ romaneio_data.origin }}</strong>
+        </div>
+
+        <div class="romaneio-info-card">
+          <span>Destino</span>
+          <strong>{{ romaneio_data.destination }}</strong>
+        </div>
+
+        <div class="romaneio-info-card">
+          <span>Volumes</span>
+          <strong>{{ romaneio_data.volumns }}</strong>
+        </div>
+
+        <div class="romaneio-info-card">
+          <span>Itens</span>
+          <strong>
+            <span id="contador-total">{{ itens_romaneio|length }}</span>
+          </strong>
+        </div>
+      </div>
+
+      <div class="romaneio-counter" style="margin-bottom: 12px; display: inline-block;">
+        Recebidos:
+        <span id="contador-recebidos">0</span>
+        /
+        <span id="contador-total-label">{{ itens_romaneio|length }}</span>
+      </div>
+
+      <div id="bipagem-feedback" class="bipagem-feedback"></div>
+
+      <div class="romaneio-list" id="romaneio-list">
+        {% for item in itens_romaneio %}
+          <div
+            class="romaneio-item {% if item.ck %}item-recebido{% else %}item-pendente{% endif %}"
+            data-serial="{{ item.serial }}"
+            data-ck="{{ item.ck|yesno:'true,false' }}"
+            data-order-number="{{ item.order_number }}"
+            data-product-id="{{ item.product_id }}"
+          >
+            <div class="romaneio-item-main">
+              <strong>{{ item.serial }}</strong>
+
+              <div class="romaneio-meta">
+                <span>OS: {{ item.order_number }}</span>
+                <span>Produto: {{ item.product_id }}</span>
+                <span>Atualizado: {{ item.updated_at }}</span>
+              </div>
+            </div>
+
+            <span class="status-pill">
+              {% if item.ck %}
+                Recebido
+              {% else %}
+                Pendente
+              {% endif %}
+            </span>
+          </div>
+        {% endfor %}
+      </div>
+
+    </div>
+  {% endif %}
   </div>
 </div>
 
@@ -204,10 +313,16 @@
 
   function atualizarContadorTotal() {
     const itens = document.querySelectorAll(".romaneio-item");
+
     const contadorTotal = document.getElementById("contador-total");
+    const contadorTotalLabel = document.getElementById("contador-total-label");
 
     if (contadorTotal) {
       contadorTotal.textContent = itens.length;
+    }
+
+    if (contadorTotalLabel) {
+      contadorTotalLabel.textContent = itens.length;
     }
   }
 
@@ -291,11 +406,18 @@
     novoItem.dataset.serial = serialNormalizado;
     novoItem.dataset.ck = "false";
     novoItem.dataset.foraRomaneio = "true";
+    novoItem.dataset.orderNumber = "FORA-ROMANEIO";
+    novoItem.dataset.productId = "";
 
     novoItem.innerHTML = `
-      <div>
+      <div class="romaneio-item-main">
         <strong>${serialNormalizado}</strong>
-        <small>Serial inserido manualmente fora do romaneio</small>
+
+        <div class="romaneio-meta">
+          <span>OS: FORA DO ROMANEIO</span>
+          <span>Produto: -</span>
+          <span>Inserido manualmente na tela</span>
+        </div>
       </div>
 
       <span class="status-pill">
