@@ -298,6 +298,22 @@
 
 
 <script>
+  const NUMERO_ROMANEIO = "{{ romaneio_data.romaneio|default:'' }}";
+
+  function getCookie(name) {
+    const cookies = document.cookie ? document.cookie.split(";") : [];
+
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+
+      if (cookie.startsWith(name + "=")) {
+        return decodeURIComponent(cookie.substring(name.length + 1));
+      }
+    }
+
+    return null;
+  }
+
   function normalizarSerial(serial) {
     return String(serial || "").trim().toUpperCase();
   }
@@ -532,13 +548,136 @@
 
         const serial = serialInput.value;
 
-        pintarItemFake(serial);
+        enviarSerialParaApiCK(serial);
 
         serialInput.value = "";
         serialInput.focus();
       }
     });
   });
+
+  function pintarItemComoRecebido(serial, mensagem) {
+    const serialNormalizado = normalizarSerial(serial);
+    const item = buscarItemPorSerial(serialNormalizado);
+
+    if (!item) {
+      mostrarFeedback(
+        `Serial ${serialNormalizado} recebido, mas não encontrado na tela.`,
+        "alerta"
+      );
+      return;
+    }
+
+    limparClassesStatus(item);
+    item.classList.add("item-recebido");
+    item.dataset.ck = "true";
+
+    atualizarStatusItem(item, "Recebido");
+    moverItemParaTopo(item);
+
+    mostrarFeedback(
+      mensagem || `Serial ${serialNormalizado} recebido com sucesso.`,
+      "success"
+    );
+
+    atualizarContadorRecebidos();
+    atualizarContadorTotal();
+  }
 </script>
 
+<script>
+  async function enviarSerialParaApiCK(serial) {
+    const serialNormalizado = normalizarSerial(serial);
+
+    if (!NUMERO_ROMANEIO) {
+      mostrarFeedback("Consulte um romaneio antes de bipar.", "error");
+      return;
+    }
+
+    if (!serialNormalizado) {
+      mostrarFeedback("Informe um serial para bipar.", "error");
+      return;
+    }
+
+    const item = buscarItemPorSerial(serialNormalizado);
+
+    if (!item) {
+      tratarSerialForaRomaneio(serialNormalizado);
+      return;
+    }
+
+    const jaRecebido = item.dataset.ck === "true";
+    const productId = item.dataset.productId;
+
+    if (!productId) {
+      mostrarFeedback(
+        `Produto não encontrado para o serial ${serialNormalizado}.`,
+        "error"
+      );
+      return;
+    }
+
+    if (jaRecebido) {
+      limparClassesStatus(item);
+      item.classList.add("item-alerta");
+
+      atualizarStatusItem(item, "Já recebido");
+      moverItemParaTopo(item);
+
+      mostrarFeedback(
+        `Serial ${serialNormalizado} já estava recebido.`,
+        "alerta"
+      );
+
+      return;
+    }
+
+    try {
+      mostrarFeedback(`Enviando serial ${serialNormalizado}...`, "alerta");
+
+      const response = await fetch("{% url 'logistica:bipar_serial_recebimento' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: JSON.stringify({
+          romaneio: NUMERO_ROMANEIO,
+          serial: serialNormalizado,
+          product_id: productId
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.status === "SUCCESS") {
+        pintarItemComoRecebido(serialNormalizado, data.message);
+        return;
+      }
+
+      limparClassesStatus(item);
+      item.classList.add("item-erro");
+
+      atualizarStatusItem(item, "Erro");
+      moverItemParaTopo(item);
+
+      mostrarFeedback(
+        data.message || `Erro ao receber o serial ${serialNormalizado}.`,
+        "error"
+      );
+
+    } catch (error) {
+      limparClassesStatus(item);
+      item.classList.add("item-erro");
+
+      atualizarStatusItem(item, "Erro");
+      moverItemParaTopo(item);
+
+      mostrarFeedback(
+        `Erro de comunicação ao bipar o serial ${serialNormalizado}.`,
+        "error"
+      );
+    }
+  }
+</script>
 {% endblock %}

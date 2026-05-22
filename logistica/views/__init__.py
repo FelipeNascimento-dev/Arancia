@@ -43,4 +43,4 @@ from .views_user.password_reset_view import esqueci_minha_senha
 from .view_gestao_contas import *
 from .view_contas_privilegiadas import gestao_contas_privilegiadas
 from .view_iframe_acompanhamento import acompanhamento_iframe
-from .views_checkin_checkout.view_receber_em_estoque import receber_em_estoque
+from .views_checkin_checkout.view_receber_em_estoque import receber_em_estoque, bipar_serial_recebimento

@@ -108,11 +108,14 @@ urls_Checkin = [
     path('check-in/product/create/', product_create, name='product_create'),
     path("print-serial/<str:serial>/", print_serial, name="print_serial"),
     path("check-in/receber/", receber_em_estoque, name="receber_em_estoque"),
+    path("check-in/receber/bipar/", bipar_serial_recebimento,
+         name="bipar_serial_recebimento"),
 
     path("check/<str:vetor>/reverse/consulta/",
          checkout_reverse, name='checkout_reverse'),
     path("check/OUT/reverse/create/<str:rom>", checkout_reverse_create,
          name='checkout_reverse_create'),
+
 
 ]
 
