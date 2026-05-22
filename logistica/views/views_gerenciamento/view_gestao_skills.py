@@ -27,28 +27,49 @@ def skill_ger(request):
 
     selected_group = None
     usuarios_vinculados = []
-    all_users = User.objects.filter(
-        username__startswith='ARC').order_by("username")
 
-    form = CreateGAIForm()
+    all_users = User.objects.filter(
+        username__startswith='ARC'
+    ).order_by("username")
+
+    all_users = User.objects.filter(
+        username__startswith='ARC'
+    ).order_by("username")
+
+    grupos_disponiveis = Group.objects.filter(
+        name__startswith="arancia_"
+    ).order_by("name")
+
+    form = CreateGAIForm(grupos_disponiveis=grupos_disponiveis)
 
     if request.method == "POST" and "create_group" in request.POST:
-        form = CreateGAIForm(request.POST)
+        form = CreateGAIForm(
+            request.POST,
+            grupos_disponiveis=grupos_disponiveis
+        )
+
         if form.is_valid():
-            _group = Group.objects.get(name='arancia_PA')
+            dados = form.cleaned_data.copy()
+
+            grupo_django = dados.pop("group")
+
             grupo = GroupAditionalInformation.objects.create(
-                group=_group,
-                **form.cleaned_data
+                group=grupo_django,
+                **dados
             )
 
             messages.success(
-                request, f"Grupo {grupo.nome} criado com sucesso!")
+                request,
+                f"GAI {grupo.nome} criado com sucesso no grupo {grupo_django.name}!"
+            )
             return redirect("logistica:skill_ger")
 
     group_id = request.GET.get("group_id")
     if group_id:
         selected_group = get_object_or_404(
-            GroupAditionalInformation, id=group_id)
+            GroupAditionalInformation,
+            id=group_id
+        )
         usuarios_vinculados = User.objects.filter(
             designacao__informacao_adicional=selected_group
         )
@@ -80,7 +101,9 @@ def skill_ger(request):
         grupo.save()
 
         messages.success(
-            request, f"Grupo {grupo.nome} atualizado com sucesso!")
+            request,
+            f"Grupo {grupo.nome} atualizado com sucesso!"
+        )
         return redirect(f"{request.path}?group_id={grupo.id}")
 
     if request.method == "POST" and "add_user" in request.POST and selected_group:
@@ -92,7 +115,9 @@ def skill_ger(request):
         designation.save()
 
         messages.success(
-            request, f"Usuário {user.username} vinculado a {selected_group.nome}")
+            request,
+            f"Usuário {user.username} vinculado a {selected_group.nome}"
+        )
         return redirect(f"{request.path}?group_id={selected_group.id}")
 
     context = {
@@ -105,4 +130,9 @@ def skill_ger(request):
         "current_menu": "gestao_gai",
         "current_parent_menu": "gerenciamento",
     }
-    return render(request, "logistica/templates_gerenciamento/gestao_skills.html", context)
+
+    return render(
+        request,
+        "logistica/templates_gerenciamento/gestao_skills.html",
+        context
+    )
