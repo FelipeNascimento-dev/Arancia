@@ -27,6 +27,8 @@ def receber_em_estoque(request):
     numero_romaneio = None
     result = None
     itens_romaneio = []
+    produtos_choices = []
+    client_code = None
 
     if request.method == "POST":
         numero_romaneio = request.POST.get("numero_romaneio")
@@ -55,6 +57,41 @@ def receber_em_estoque(request):
                 else:
                     itens_romaneio = result.get("items", []) if result else []
 
+                    client_code = result.get("client_code") if result else None
+
+                    if client_code:
+                        try:
+                            url_produtos = f"{STOCK_API_URL}/v1/products/{client_code}"
+
+                            product_client = RequestClient(
+                                url=url_produtos,
+                                method="GET",
+                                headers={
+                                    "Accept": JSON_CT,
+                                    "Content-Type": JSON_CT,
+                                },
+                            )
+
+                            produtos_result = product_client.send_api_request()
+
+                            if isinstance(produtos_result, list):
+                                produtos_choices = produtos_result
+
+                            elif isinstance(produtos_result, dict):
+                                produtos_choices = (
+                                    produtos_result.get("items")
+                                    or produtos_result.get("results")
+                                    or produtos_result.get("products")
+                                    or []
+                                )
+
+                        except Exception:
+                            produtos_choices = []
+                            messages.warning(
+                                request,
+                                "Romaneio encontrado, mas não foi possível carregar a lista de produtos."
+                            )
+
                     messages.success(
                         request,
                         f"Romaneio {numero_romaneio} encontrado com sucesso!"
@@ -78,6 +115,8 @@ def receber_em_estoque(request):
             'romaneio_data': result,
             'itens_romaneio': itens_romaneio,
             'numero_romaneio': numero_romaneio,
+            'produtos_choices': produtos_choices,
+            'client_code': client_code,
         }
     )
 
@@ -87,8 +126,6 @@ def receber_em_estoque(request):
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 @require_POST
 def bipar_serial_recebimento(request):
-    modal_sem_produto = False
-
     try:
         body = json.loads(request.body.decode("utf-8"))
 
@@ -97,22 +134,40 @@ def bipar_serial_recebimento(request):
         product_id = body.get("product_id")
 
         if not numero_romaneio:
-            messages.error(request, "Número do romaneio não informado.")
+            return JsonResponse({
+                "status": "ERROR",
+                "message": "Número do romaneio não informado.",
+            }, status=400)
 
         if not serial:
-            messages.error(request, "Serial não informado.")
-
-        if not product_id:
-            modal_sem_produto = True
-            messages.error(request, "ID do produto não informado.")
+            return JsonResponse({
+                "status": "ERROR",
+                "message": "Serial não informado.",
+            }, status=400)
 
         numero_romaneio = str(numero_romaneio).strip()
         serial = str(serial).strip().upper()
 
+        if product_id in [None, "", "None", "null", 0, "0"]:
+            return JsonResponse({
+                "status": "NEED_PRODUCT",
+                "serial": serial,
+                "message": "Produto não informado para este serial.",
+            }, status=400)
+
+        try:
+            product_id = int(product_id)
+        except ValueError:
+            return JsonResponse({
+                "status": "NEED_PRODUCT",
+                "serial": serial,
+                "message": "Produto inválido. Informe um ID numérico.",
+            }, status=400)
+
         payload = {
             "romaneio_number": numero_romaneio,
             "serial": serial,
-            "product_id": int(product_id),
+            "product_id": product_id,
             "updated_by": request.user.username,
         }
 
@@ -138,12 +193,14 @@ def bipar_serial_recebimento(request):
             return JsonResponse({
                 "status": "SUCCESS",
                 "serial": serial,
+                "product_id": product_id,
                 "message": result.get("message", "Serial recebido com sucesso."),
             })
 
         return JsonResponse({
             "status": "ERROR",
             "serial": serial,
+            "product_id": product_id,
             "message": result.get("message", "Não foi possível receber o serial."),
             "api_response": result,
         }, status=400)

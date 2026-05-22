@@ -200,6 +200,116 @@
       align-items: flex-start;
     }
   }
+
+  .modal-produto-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+
+  .modal-produto-overlay.ativo {
+    display: flex;
+  }
+
+  .modal-produto {
+    width: min(420px, calc(100% - 32px));
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
+  }
+
+  .modal-produto h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: #222;
+  }
+
+  .modal-produto p {
+    margin: 0 0 14px 0;
+    font-size: 13px;
+    color: #555;
+  }
+
+  .modal-produto-info {
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #fff3e0;
+    color: #ef6c00;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .modal-produto label {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    margin-bottom: 5px;
+    color: #333;
+  }
+
+  .modal-produto input {
+    width: 100%;
+    height: 38px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0 10px;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .modal-produto input:focus {
+    border-color: #ef6c00;
+    box-shadow: 0 0 0 3px rgba(239, 108, 0, 0.15);
+  }
+
+  .modal-produto-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .modal-btn {
+    border: 0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .modal-btn-cancelar {
+    background: #f1f1f1;
+    color: #333;
+  }
+
+  .modal-btn-confirmar {
+    background: #ef6c00;
+    color: #fff;
+  }
+
+  .modal-produto-select {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0 10px;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+  }
+
+  .modal-produto-select:focus {
+    border-color: #ef6c00;
+    box-shadow: 0 0 0 3px rgba(239, 108, 0, 0.15);
+  }
 </style>
 
 
@@ -259,14 +369,14 @@
             data-serial="{{ item.serial }}"
             data-ck="{{ item.ck|yesno:'true,false' }}"
             data-order-number="{{ item.order_number }}"
-            data-product-id="{{ item.product_id }}"
+            data-product-id="{{ item.product_id|default:'' }}"
           >
             <div class="romaneio-item-main">
               <strong>{{ item.serial }}</strong>
 
               <div class="romaneio-meta">
                 <span>OS: {{ item.order_number }}</span>
-                <span>Produto: {{ item.product_id }}</span>
+                <span>Produto: {{ item.product_id|default:"-" }}</span>
                 <span>Atualizado: {{ item.updated_at }}</span>
               </div>
             </div>
@@ -284,6 +394,48 @@
 
     </div>
   {% endif %}
+  </div>
+</div>
+
+<div id="modal-produto-overlay" class="modal-produto-overlay">
+  <div class="modal-produto">
+    <h3>Selecionar produto</h3>
+
+    <p>
+      Este serial não possui produto vinculado. Selecione o produto correto para continuar a bipagem.
+    </p>
+
+    <div class="modal-produto-info">
+      Serial:
+      <span id="modal-produto-serial">-</span>
+    </div>
+
+    <label for="modal-produto-select">Produto</label>
+
+    <select id="modal-produto-select" class="modal-produto-select">
+      <option value="">Selecione um produto</option>
+
+      {% for produto in produtos_choices %}
+        <option
+          value="{{ produto.id }}"
+          data-sku="{{ produto.sku }}"
+          data-category="{{ produto.category }}"
+          data-description="{{ produto.description }}"
+        >
+          {{ produto.id }} - {{ produto.sku }} - {{ produto.description }} - {{ produto.category }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <div class="modal-produto-actions">
+      <button type="button" class="modal-btn modal-btn-cancelar" id="modal-produto-cancelar">
+        Cancelar
+      </button>
+
+      <button type="button" class="modal-btn modal-btn-confirmar" id="modal-produto-confirmar">
+        Confirmar
+      </button>
+    </div>
   </div>
 </div>
 
@@ -531,20 +683,55 @@
 
     const serialInput = document.getElementById("id_serial");
 
-    if (!serialInput) return;
+    if (serialInput) {
+      serialInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
 
-    serialInput.addEventListener("keydown", function (event) {
-      if (event.key === "Enter") {
-        event.preventDefault();
+          const serial = serialInput.value;
 
-        const serial = serialInput.value;
+          enviarSerialParaApiCK(serial);
 
-        enviarSerialParaApiCK(serial);
+          serialInput.value = "";
+          serialInput.focus();
+        }
+      });
+    }
 
-        serialInput.value = "";
-        serialInput.focus();
-      }
-    });
+    const btnCancelarProduto = document.getElementById("modal-produto-cancelar");
+    const btnConfirmarProduto = document.getElementById("modal-produto-confirmar");
+    const selectProduto = document.getElementById("modal-produto-select");
+    const overlayProduto = document.getElementById("modal-produto-overlay");
+
+    if (btnCancelarProduto) {
+      btnCancelarProduto.addEventListener("click", fecharModalProduto);
+    }
+
+    if (btnConfirmarProduto) {
+      btnConfirmarProduto.addEventListener("click", confirmarProdutoManual);
+    }
+
+    if (selectProduto) {
+      selectProduto.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          confirmarProdutoManual();
+        }
+
+        if (event.key === "Escape") {
+          event.preventDefault();
+          fecharModalProduto();
+        }
+      });
+    }
+
+    if (overlayProduto) {
+      overlayProduto.addEventListener("click", function (event) {
+        if (event.target === overlayProduto) {
+          fecharModalProduto();
+        }
+      });
+    }
   });
 
   function pintarItemComoRecebido(serial, mensagem) {
@@ -577,98 +764,196 @@
 </script>
 
 <script>
-  async function enviarSerialParaApiCK(serial) {
-    const serialNormalizado = normalizarSerial(serial);
+  async function enviarSerialParaApiCK(serial, productIdManual = null) {
+  const serialNormalizado = normalizarSerial(serial);
 
-    if (!NUMERO_ROMANEIO) {
-      mostrarFeedback("Consulte um romaneio antes de bipar.", "error");
-      return;
-    }
+  if (!NUMERO_ROMANEIO) {
+    mostrarFeedback("Consulte um romaneio antes de bipar.", "error");
+    return;
+  }
 
-    if (!serialNormalizado) {
-      mostrarFeedback("Informe um serial para bipar.", "error");
-      return;
-    }
+  if (!serialNormalizado) {
+    mostrarFeedback("Informe um serial para bipar.", "error");
+    return;
+  }
 
-    const item = buscarItemPorSerial(serialNormalizado);
+  const item = buscarItemPorSerial(serialNormalizado);
 
-    if (!item) {
-      tratarSerialForaRomaneio(serialNormalizado);
-      return;
-    }
+  if (!item) {
+    tratarSerialForaRomaneio(serialNormalizado);
+    return;
+  }
 
-    const jaRecebido = item.dataset.ck === "true";
-    const productId = item.dataset.productId;
+  const jaRecebido = item.dataset.ck === "true";
 
-    if (!productId) {
-      mostrarFeedback(
-        `Produto não encontrado para o serial ${serialNormalizado}.`,
-        "error"
-      );
-      return;
-    }
+  if (jaRecebido) {
+    limparClassesStatus(item);
+    item.classList.add("item-alerta");
 
-    if (jaRecebido) {
-      limparClassesStatus(item);
-      item.classList.add("item-alerta");
+    atualizarStatusItem(item, "Já recebido");
+    moverItemParaTopo(item);
 
-      atualizarStatusItem(item, "Já recebido");
-      moverItemParaTopo(item);
+    mostrarFeedback(
+      `Serial ${serialNormalizado} já estava recebido.`,
+      "alerta"
+    );
 
-      mostrarFeedback(
-        `Serial ${serialNormalizado} já estava recebido.`,
-        "alerta"
-      );
+    return;
+  }
 
-      return;
-    }
+  let productId = productIdManual || item.dataset.productId;
 
-    try {
-      mostrarFeedback(`Enviando serial ${serialNormalizado}...`, "alerta");
+  if (!productId || productId === "None" || productId === "null" || productId === "0") {
+    abrirModalProduto(serialNormalizado);
+    return;
+  }
 
-      const response = await fetch("{% url 'logistica:bipar_serial_recebimento' %}", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken")
-        },
-        body: JSON.stringify({
-          romaneio: NUMERO_ROMANEIO,
-          serial: serialNormalizado,
-          product_id: productId
-        })
-      });
+  try {
+    mostrarFeedback(`Enviando serial ${serialNormalizado}...`, "alerta");
 
-      const data = await response.json();
+    const response = await fetch("{% url 'logistica:bipar_serial_recebimento' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken")
+      },
+      body: JSON.stringify({
+        romaneio: NUMERO_ROMANEIO,
+        serial: serialNormalizado,
+        product_id: productId
+      })
+    });
 
-      if (data.status === "SUCCESS") {
-        pintarItemComoRecebido(serialNormalizado, data.message);
-        return;
+    const data = await response.json();
+
+    if (data.status === "SUCCESS") {
+      item.dataset.productId = String(productId);
+
+      const produtoSpan = item.querySelector("[data-produto-label]");
+      if (produtoSpan) {
+        produtoSpan.textContent = `Produto: ${productId}`;
       }
 
-      limparClassesStatus(item);
-      item.classList.add("item-erro");
-
-      atualizarStatusItem(item, "Erro");
-      moverItemParaTopo(item);
-
-      mostrarFeedback(
-        data.message || `Erro ao receber o serial ${serialNormalizado}.`,
-        "error"
-      );
-
-    } catch (error) {
-      limparClassesStatus(item);
-      item.classList.add("item-erro");
-
-      atualizarStatusItem(item, "Erro");
-      moverItemParaTopo(item);
-
-      mostrarFeedback(
-        `Erro de comunicação ao bipar o serial ${serialNormalizado}.`,
-        "error"
-      );
+      pintarItemComoRecebido(serialNormalizado, data.message);
+      return;
     }
+
+    if (data.status === "NEED_PRODUCT") {
+      abrirModalProduto(serialNormalizado);
+      return;
+    }
+
+    limparClassesStatus(item);
+    item.classList.add("item-erro");
+
+    atualizarStatusItem(item, "Erro");
+    moverItemParaTopo(item);
+
+    mostrarFeedback(
+      data.message || `Erro ao receber o serial ${serialNormalizado}.`,
+      "error"
+    );
+
+  } catch (error) {
+    limparClassesStatus(item);
+    item.classList.add("item-erro");
+
+    atualizarStatusItem(item, "Erro");
+    moverItemParaTopo(item);
+
+    mostrarFeedback(
+      `Erro de comunicação ao bipar o serial ${serialNormalizado}.`,
+      "error"
+    );
   }
+}
+</script>
+
+<script>
+let serialAguardandoProduto = null;
+
+function abrirModalProduto(serial) {
+  serialAguardandoProduto = normalizarSerial(serial);
+
+  const overlay = document.getElementById("modal-produto-overlay");
+  const serialLabel = document.getElementById("modal-produto-serial");
+  const select = document.getElementById("modal-produto-select");
+
+  if (!overlay || !serialLabel || !select) return;
+
+  serialLabel.textContent = serialAguardandoProduto;
+  select.value = "";
+
+  overlay.classList.add("ativo");
+
+  setTimeout(function () {
+    select.focus();
+  }, 100);
+
+  mostrarFeedback(
+    `Selecione o produto do serial ${serialAguardandoProduto}.`,
+    "alerta"
+  );
+}
+
+function fecharModalProduto() {
+  const overlay = document.getElementById("modal-produto-overlay");
+  const select = document.getElementById("modal-produto-select");
+
+  if (overlay) {
+    overlay.classList.remove("ativo");
+  }
+
+  if (select) {
+    select.value = "";
+  }
+
+  serialAguardandoProduto = null;
+
+  const serialInput = document.getElementById("id_serial");
+  if (serialInput) {
+    serialInput.focus();
+  }
+}
+
+function confirmarProdutoManual() {
+  const select = document.getElementById("modal-produto-select");
+
+  if (!serialAguardandoProduto || !select) return;
+
+  const productId = String(select.value || "").trim();
+
+  if (!productId || productId === "0") {
+    mostrarFeedback("Selecione um produto válido.", "error");
+    select.focus();
+    return;
+  }
+
+  const item = buscarItemPorSerial(serialAguardandoProduto);
+
+  if (!item) {
+    mostrarFeedback(
+      `Serial ${serialAguardandoProduto} não encontrado na tela.`,
+      "error"
+    );
+    return;
+  }
+
+  const selectedOption = select.options[select.selectedIndex];
+  const productText = selectedOption ? selectedOption.textContent.trim() : `Produto: ${productId}`;
+
+  item.dataset.productId = productId;
+
+  const produtoSpan = item.querySelector("[data-produto-label]");
+  if (produtoSpan) {
+    produtoSpan.textContent = productText;
+  }
+
+  const serialParaEnviar = serialAguardandoProduto;
+
+  fecharModalProduto();
+
+  enviarSerialParaApiCK(serialParaEnviar, productId);
+}
 </script>
 {% endblock %}
