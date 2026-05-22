@@ -1,7 +1,15 @@
 from django import forms
+from django.contrib.auth.models import Group
 
 
 class CreateGAIForm(forms.Form):
+    group = forms.ModelChoiceField(
+        label="Grupo",
+        queryset=Group.objects.none(),
+        required=True,
+        empty_label="Selecione um grupo"
+    )
+
     razao_social = forms.CharField(
         label="Razão Social", max_length=100, required=True)
     nome = forms.CharField(label="Nome", max_length=100, required=True)
@@ -37,7 +45,16 @@ class CreateGAIForm(forms.Form):
     email = forms.EmailField(label="E-mail", required=False)
 
     def __init__(self, *args, **kwargs):
+        grupos_disponiveis = kwargs.pop("grupos_disponiveis", None)
+
         super().__init__(*args, **kwargs)
+
+        if grupos_disponiveis is not None:
+            self.fields["group"].queryset = grupos_disponiveis
+        else:
+            self.fields["group"].queryset = Group.objects.all().order_by(
+                "name")
+
         for field in self.fields.values():
             field.widget.attrs.update({"class": "form-control"})
 
