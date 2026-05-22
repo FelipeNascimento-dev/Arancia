@@ -87,6 +87,8 @@ def receber_em_estoque(request):
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 @require_POST
 def bipar_serial_recebimento(request):
+    modal_sem_produto = False
+
     try:
         body = json.loads(request.body.decode("utf-8"))
 
@@ -95,22 +97,14 @@ def bipar_serial_recebimento(request):
         product_id = body.get("product_id")
 
         if not numero_romaneio:
-            return JsonResponse({
-                "status": "ERROR",
-                "message": "Número do romaneio não informado.",
-            }, status=400)
+            messages.error(request, "Número do romaneio não informado.")
 
         if not serial:
-            return JsonResponse({
-                "status": "ERROR",
-                "message": "Serial não informado.",
-            }, status=400)
+            messages.error(request, "Serial não informado.")
 
         if not product_id:
-            return JsonResponse({
-                "status": "ERROR",
-                "message": "Produto não informado.",
-            }, status=400)
+            modal_sem_produto = True
+            messages.error(request, "ID do produto não informado.")
 
         numero_romaneio = str(numero_romaneio).strip()
         serial = str(serial).strip().upper()
