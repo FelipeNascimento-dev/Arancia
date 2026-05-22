@@ -141,10 +141,7 @@
             <div class="edit-form-group">
                 <label for="edit_additional_info">Informação Adicional:</label>
                 <select name="additional_info" id="edit_additional_info">
-                    <option value="">- Selecione -</option>
-                    {% for info in additional_infos %}
-                    <option value="{{ info.id }}">{{ info.nome }}</option>
-                    {% endfor %}
+                    <option value="">- Selecione um grupo primeiro -</option>
                 </select>
             </div>
             <div class="edit-form-actions">
@@ -159,25 +156,73 @@
     const closeBtn = document.querySelector(".close-edit-modal");
     const editForm = document.getElementById("editUserForm");
 
+    const editGroupsSelect = document.getElementById("edit_groups");
+    const editAdditionalInfoSelect = document.getElementById("edit_additional_info");
+
+    function getSelectedGroupIds() {
+        return [...editGroupsSelect.selectedOptions].map(opt => parseInt(opt.value));
+    }
+
+    function renderAdditionalInfos(selectedAdditionalInfoId = null) {
+        const selectedGroupIds = getSelectedGroupIds();
+
+        editAdditionalInfoSelect.innerHTML = "";
+
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+
+        if (selectedGroupIds.length === 0) {
+            defaultOption.textContent = "- Selecione um grupo primeiro -";
+            editAdditionalInfoSelect.appendChild(defaultOption);
+            return;
+        }
+
+        defaultOption.textContent = "- Selecione -";
+        editAdditionalInfoSelect.appendChild(defaultOption);
+
+        const filteredInfos = additionalInfosData.filter(info => {
+            return selectedGroupIds.includes(parseInt(info.group_id));
+        });
+
+        if (filteredInfos.length === 0) {
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "Nenhum GAI encontrado para este grupo";
+            editAdditionalInfoSelect.appendChild(option);
+            return;
+        }
+
+        filteredInfos.forEach(info => {
+            const option = document.createElement("option");
+            option.value = info.id;
+            option.textContent = `${info.nome} - ${info.group_name}`;
+
+            if (
+                selectedAdditionalInfoId &&
+                parseInt(selectedAdditionalInfoId) === parseInt(info.id)
+            ) {
+                option.selected = true;
+            }
+
+            editAdditionalInfoSelect.appendChild(option);
+        });
+    }
+
     function openEditUserModal(userData) {
         if (userData) {
             document.getElementById("edit_user_id").value = userData.id || "";
-            // document.getElementById("edit_username").value = userData.username || "";
             document.getElementById("edit_full_name").value = userData.full_name || "";
             document.getElementById("edit_email").value = userData.email || "";
             document.getElementById("edit_telefone").value = userData.telefone || "";
             document.getElementById("edit_cpf").value = userData.cpf || "";
 
             if (userData.groups) {
-                const groupSelect = document.getElementById("edit_groups");
-                [...groupSelect.options].forEach(opt => {
+                [...editGroupsSelect.options].forEach(opt => {
                     opt.selected = userData.groups.includes(parseInt(opt.value));
                 });
             }
 
-            if (userData.additional_info) {
-                document.getElementById("edit_additional_info").value = userData.additional_info;
-            }
+            renderAdditionalInfos(userData.additional_info);
         }
 
         editUserModal.style.display = "flex";
@@ -188,6 +233,10 @@
         editUserModal.style.display = "none";
         document.body.style.overflow = "auto";
     }
+
+    editGroupsSelect.addEventListener("change", function () {
+        renderAdditionalInfos();
+    });
 
     closeBtn.addEventListener("click", closeEditUserModal);
 
@@ -227,6 +276,7 @@
 
 <script>
     const usuariosData = {{ usuarios_json | safe }};
+    const additionalInfosData = {{ additional_infos_json | safe }};
 </script>
 
 <script>

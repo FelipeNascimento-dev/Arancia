@@ -81,7 +81,9 @@ def user_ger(request):
             if additional_info_id:
                 try:
                     info = GroupAditionalInformation.objects.get(
-                        id=additional_info_id)
+                        id=additional_info_id,
+                        group_id__in=groups_ids
+                    )
                     user.designacao.informacao_adicional = info
                 except GroupAditionalInformation.DoesNotExist:
                     user.designacao.informacao_adicional = None
@@ -115,7 +117,23 @@ def user_ger(request):
 
     all_groups = Group.objects.filter(
         name__startswith="arancia_").order_by("name")
-    additional_infos = GroupAditionalInformation.objects.all().order_by("cod_iata")
+    additional_infos = (
+        GroupAditionalInformation.objects
+        .select_related("group")
+        .filter(group__name__startswith="arancia_")
+        .order_by("group__name", "nome")
+    )
+
+    additional_infos_data = []
+
+    for info in additional_infos:
+        additional_infos_data.append({
+            "id": info.id,
+            "nome": info.nome,
+            "cod_iata": info.cod_iata,
+            "group_id": info.group_id,
+            "group_name": info.group.name if info.group else "",
+        })
 
     usuarios_data = []
     for u in usuarios:
@@ -127,7 +145,7 @@ def user_ger(request):
             "cpf": u.perfil.cpf if hasattr(u, "perfil") else "",
             "telefone": u.perfil.telefone if hasattr(u, "perfil") else "",
             "groups": list(u.groups.values_list("id", flat=True)),
-            "additional_info": getattr(u.designacao.informacao_adicional, "cod_iata", None)
+            "additional_info": u.designacao.informacao_adicional.id
             if hasattr(u, "designacao") and u.designacao.informacao_adicional else None,
         })
 
@@ -143,6 +161,7 @@ def user_ger(request):
             "usuarios_json": json.dumps(usuarios_data, cls=DjangoJSONEncoder),
             "form": CustomUserCreationForm(),
             "current_menu": "gestao_user",
-            "current_parent_menu": "gerenciamento"
+            "current_parent_menu": "gerenciamento",
+            "additional_infos_json": json.dumps(additional_infos_data, cls=DjangoJSONEncoder),
         },
     )
