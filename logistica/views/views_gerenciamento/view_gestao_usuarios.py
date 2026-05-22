@@ -49,7 +49,7 @@ def user_ger(request):
             messages.error(
                 request, "Erro ao criar usuário, verifique os campos.")
 
-    if request.method == "POST":
+    elif request.method == "POST" and "edit_user" in request.POST:
         user_id = request.POST.get("user_id")
         full_name = request.POST.get("full_name")
         email = request.POST.get("email")

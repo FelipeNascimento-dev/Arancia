@@ -106,6 +106,7 @@
         <h2>Editar Usuário</h2>
         <form id="editUserForm" method="post" action="{% url 'logistica:user_ger' %}">
             {% csrf_token %}
+            <input type="hidden" name="edit_user" value="1">
             <input type="hidden" name="user_id" id="edit_user_id">
             <!-- <div class="edit-form-group">
                 <label for="edit_username">Usuário:</label>
