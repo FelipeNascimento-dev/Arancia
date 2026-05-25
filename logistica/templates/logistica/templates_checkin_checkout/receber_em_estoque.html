@@ -332,6 +332,22 @@
   .btn-remover-ck:hover {
     background: #ffcdd2;
   }
+
+  .btn-resetar-ck {
+    border: 0;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    background: #fff3e0;
+    color: #ef6c00;
+    white-space: nowrap;
+  }
+
+  .btn-resetar-ck:hover {
+    background: #ffe0b2;
+  }
 </style>
 
 
@@ -381,6 +397,30 @@
         /
         <span id="contador-total-label">{{ itens_romaneio|length }}</span>
       </div>
+
+      <form
+        method="POST"
+        style="display: inline-block; margin-left: 10px;"
+        onsubmit="return confirm('Tem certeza que deseja resetar o CK deste romaneio? Todos os itens terão que ser bipados novamente.');"
+      >
+        {% csrf_token %}
+
+        <input type="hidden" name="numero_romaneio" value="{{ romaneio_data.romaneio }}">
+
+        {% for item in itens_romaneio %}
+          <input type="hidden" name="serials" value="{{ item.serial }}">
+        {% endfor %}
+
+        <button
+          type="submit"
+          name="resetar_ck_romaneio"
+          value="1"
+          class="btn-resetar-ck"
+          title="Resetar CK de todos os itens do romaneio"
+        >
+          Resetar CK do romaneio
+        </button>
+      </form>
 
       <div id="bipagem-feedback" class="bipagem-feedback"></div>
 

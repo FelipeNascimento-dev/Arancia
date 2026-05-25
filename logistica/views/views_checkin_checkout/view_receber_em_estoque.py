@@ -36,6 +36,65 @@ def receber_em_estoque(request):
     produtos_choices = []
     client_code = None
 
+    if request.method == "POST" and "resetar_ck_romaneio" in request.POST:
+        numero_romaneio = request.POST.get("numero_romaneio")
+        updated_by = request.user.username
+        serials = request.POST.getlist("serials")
+
+        if not numero_romaneio:
+            messages.error(request, "Número do romaneio não informado.")
+            return redirect("logistica:receber_em_estoque")
+
+        if not serials:
+            messages.error(
+                request, "Nenhum serial encontrado para resetar o CK.")
+            return redirect(
+                f"{reverse('logistica:receber_em_estoque')}?numero_romaneio={numero_romaneio}"
+            )
+
+        try:
+            numero_romaneio = numero_romaneio.strip()
+
+            reset_ck_payload = [
+                str(serial).strip().upper()
+                for serial in serials
+                if serial
+            ]
+
+            reset_ck_url = (
+                f"{STOCK_API_URL}/v2/romaneios/remove-ck/{numero_romaneio}?updated_by={updated_by}"
+            )
+
+            reset_ck_client = RequestClient(
+                url=reset_ck_url,
+                method="POST",
+                headers={
+                    "Accept": JSON_CT,
+                    "Content-Type": JSON_CT,
+                },
+                request_data=reset_ck_payload,
+            )
+
+            reset_ck_result = reset_ck_client.send_api_request()
+
+            if isinstance(reset_ck_result, dict) and "detail" in reset_ck_result:
+                messages.error(request, reset_ck_result.get("detail"))
+            else:
+                messages.success(
+                    request,
+                    f"CK resetado para todos os itens do romaneio {numero_romaneio} com sucesso!"
+                )
+
+        except Exception:
+            messages.error(
+                request,
+                "Erro ao resetar marcações de CK do romaneio."
+            )
+
+        return redirect(
+            f"{reverse('logistica:receber_em_estoque')}?numero_romaneio={numero_romaneio}"
+        )
+
     if request.method == "POST" and "remover_ck" in request.POST:
         numero_romaneio = request.POST.get("numero_romaneio")
         updated_by = request.user.username
