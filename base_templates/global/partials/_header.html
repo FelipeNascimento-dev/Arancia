@@ -198,6 +198,12 @@
                     class="{% if current_submenu == 'consulta_produtos' %}active{% endif %}">
                         Consulta de Produtos
                     </a>
+                    {% if perms.logistica.receber_checkin %}
+                    <a href="{% url 'logistica:receber_em_estoque' %}"
+                    class="{% if current_submenu == 'receber_estoque' %}active{% endif %}">
+                        Receber em Estoque
+                    </a>
+                    {% endif %}
                 </div>
                 {% endif %}
                 {% if perms.logistica.checkout_principal %}
