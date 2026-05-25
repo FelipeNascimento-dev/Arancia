@@ -1,9 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 import json
 
 from django.http import JsonResponse
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 from ...forms import ReceberEmEstoqueForm
 from setup.local_settings import STOCK_API_URL
@@ -19,20 +20,135 @@ JSON_CT = "application/json"
 def receber_em_estoque(request):
     titulo = "Receber em Estoque"
 
+    numero_romaneio = request.POST.get(
+        "numero_romaneio") or request.GET.get("numero_romaneio")
+
     form = ReceberEmEstoqueForm(
         request.POST or None,
-        nome_form=titulo
+        nome_form=titulo,
+        initial={
+            "numero_romaneio": numero_romaneio or ""
+        }
     )
 
-    numero_romaneio = None
     result = None
     itens_romaneio = []
     produtos_choices = []
     client_code = None
 
-    if request.method == "POST":
+    if request.method == "POST" and "resetar_ck_romaneio" in request.POST:
         numero_romaneio = request.POST.get("numero_romaneio")
+        updated_by = request.user.username
+        serials = request.POST.getlist("serials")
 
+        if not numero_romaneio:
+            messages.error(request, "Número do romaneio não informado.")
+            return redirect("logistica:receber_em_estoque")
+
+        if not serials:
+            messages.error(
+                request, "Nenhum serial encontrado para resetar o CK.")
+            return redirect(
+                f"{reverse('logistica:receber_em_estoque')}?numero_romaneio={numero_romaneio}"
+            )
+
+        try:
+            numero_romaneio = numero_romaneio.strip()
+
+            reset_ck_payload = [
+                str(serial).strip().upper()
+                for serial in serials
+                if serial
+            ]
+
+            reset_ck_url = (
+                f"{STOCK_API_URL}/v2/romaneios/remove-ck/{numero_romaneio}?updated_by={updated_by}"
+            )
+
+            reset_ck_client = RequestClient(
+                url=reset_ck_url,
+                method="POST",
+                headers={
+                    "Accept": JSON_CT,
+                    "Content-Type": JSON_CT,
+                },
+                request_data=reset_ck_payload,
+            )
+
+            reset_ck_result = reset_ck_client.send_api_request()
+
+            if isinstance(reset_ck_result, dict) and "detail" in reset_ck_result:
+                messages.error(request, reset_ck_result.get("detail"))
+            else:
+                messages.success(
+                    request,
+                    f"CK resetado para todos os itens do romaneio {numero_romaneio} com sucesso!"
+                )
+
+        except Exception:
+            messages.error(
+                request,
+                "Erro ao resetar marcações de CK do romaneio."
+            )
+
+        return redirect(
+            f"{reverse('logistica:receber_em_estoque')}?numero_romaneio={numero_romaneio}"
+        )
+
+    if request.method == "POST" and "remover_ck" in request.POST:
+        numero_romaneio = request.POST.get("numero_romaneio")
+        updated_by = request.user.username
+        serial = request.POST.get("serial")
+
+        if not numero_romaneio:
+            messages.error(request, "Número do romaneio não informado.")
+            return redirect("logistica:receber_em_estoque")
+
+        if not serial:
+            messages.error(request, "Serial não informado.")
+            return redirect(f"{reverse('logistica:receber_em_estoque')}?numero_romaneio={numero_romaneio}")
+
+        try:
+            numero_romaneio = numero_romaneio.strip()
+            serial = serial.strip().upper()
+
+            remove_ck_payload = [serial]
+
+            remove_ck_url = (
+                f"{STOCK_API_URL}/v2/romaneios/remove-ck/{numero_romaneio}?updated_by={updated_by}"
+            )
+
+            remove_ck_client = RequestClient(
+                url=remove_ck_url,
+                method="POST",
+                headers={
+                    "Accept": JSON_CT,
+                    "Content-Type": JSON_CT,
+                },
+                request_data=remove_ck_payload,
+            )
+
+            remove_ck_result = remove_ck_client.send_api_request()
+
+            if isinstance(remove_ck_result, dict) and "detail" in remove_ck_result:
+                messages.error(request, remove_ck_result.get("detail"))
+            else:
+                messages.success(
+                    request,
+                    f"CK removido do serial {serial} com sucesso!"
+                )
+
+        except Exception:
+            messages.error(
+                request,
+                "Erro ao remover marcação de CK do romaneio."
+            )
+
+        return redirect(
+            f"{reverse('logistica:receber_em_estoque')}?numero_romaneio={numero_romaneio}"
+        )
+
+    if request.method == "POST" or request.GET.get("numero_romaneio"):
         if numero_romaneio:
             numero_romaneio = numero_romaneio.strip()
 

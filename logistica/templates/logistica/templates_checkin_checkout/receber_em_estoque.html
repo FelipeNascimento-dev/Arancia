@@ -310,6 +310,44 @@
     border-color: #ef6c00;
     box-shadow: 0 0 0 3px rgba(239, 108, 0, 0.15);
   }
+
+  .romaneio-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-remover-ck {
+    border: 0;
+    border-radius: 999px;
+    padding: 5px 9px;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    background: #ffebee;
+    color: #c62828;
+    white-space: nowrap;
+  }
+
+  .btn-remover-ck:hover {
+    background: #ffcdd2;
+  }
+
+  .btn-resetar-ck {
+    border: 0;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    background: #fff3e0;
+    color: #ef6c00;
+    white-space: nowrap;
+  }
+
+  .btn-resetar-ck:hover {
+    background: #ffe0b2;
+  }
 </style>
 
 
@@ -360,6 +398,30 @@
         <span id="contador-total-label">{{ itens_romaneio|length }}</span>
       </div>
 
+      <form
+        method="POST"
+        style="display: inline-block; margin-left: 10px;"
+        onsubmit="return confirm('Tem certeza que deseja resetar o CK deste romaneio? Todos os itens terão que ser bipados novamente.');"
+      >
+        {% csrf_token %}
+
+        <input type="hidden" name="numero_romaneio" value="{{ romaneio_data.romaneio }}">
+
+        {% for item in itens_romaneio %}
+          <input type="hidden" name="serials" value="{{ item.serial }}">
+        {% endfor %}
+
+        <button
+          type="submit"
+          name="resetar_ck_romaneio"
+          value="1"
+          class="btn-resetar-ck"
+          title="Resetar CK de todos os itens do romaneio"
+        >
+          Resetar CK do romaneio
+        </button>
+      </form>
+
       <div id="bipagem-feedback" class="bipagem-feedback"></div>
 
       <div class="romaneio-list" id="romaneio-list">
@@ -381,13 +443,35 @@
               </div>
             </div>
 
-            <span class="status-pill">
+            <div class="romaneio-actions">
+              <span class="status-pill">
+                {% if item.ck %}
+                  Recebido
+                {% else %}
+                  Pendente
+                {% endif %}
+              </span>
+
               {% if item.ck %}
-                Recebido
-              {% else %}
-                Pendente
+                <form method="POST" style="margin: 0;">
+                  {% csrf_token %}
+
+                  <input type="hidden" name="numero_romaneio" value="{{ romaneio_data.romaneio }}">
+                  <input type="hidden" name="serial" value="{{ item.serial }}">
+                  <input type="hidden" name="product_id" value="{{ item.product_id|default:'' }}">
+
+                  <button
+                    type="submit"
+                    name="remover_ck"
+                    value="1"
+                    class="btn-remover-ck"
+                    title="Remover CK"
+                  >
+                    Remover CK
+                  </button>
+                </form>
               {% endif %}
-            </span>
+            </div>
           </div>
         {% endfor %}
       </div>
