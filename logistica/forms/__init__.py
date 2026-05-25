@@ -35,3 +35,4 @@ from .forms_reverse.forms_lista_romaneios import ListaRomaneiosForm
 from .forms_reverse.froms_consulta_cotacao import ConsultaQuoteForm
 from .forms_user.user_password_forms import LoginComCodigoForm, UserProfilePasswordForm
 from .forms_checkin_checkout.forms_receber_em_estoque import ReceberEmEstoqueForm
+from .forms_checkin_checkout.forms_pre_recebimento import PreRecebimentoForm
