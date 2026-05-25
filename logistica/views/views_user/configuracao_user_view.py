@@ -21,7 +21,7 @@ def settings_view(request):
 
     troca_senha_obrigatoria = control.is_password_expired()
 
-    permitir_sem_senha_atual = request.session.get(
+    permitir_sem_senha_atual = True if troca_senha_obrigatoria else request.session.get(
         "allow_password_change_without_current",
         False
     )

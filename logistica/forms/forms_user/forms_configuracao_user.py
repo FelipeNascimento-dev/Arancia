@@ -50,14 +50,22 @@ class ConfiguracaoUserForm(forms.ModelForm):
         fields = ["username", "email", "first_name", "last_name"]
 
     def clean_email(self):
+        if self.instance and self.instance.pk:
+            return self.instance.email
+
         email = self.cleaned_data.get("email", "").strip().lower()
+
         if not email:
             return email
 
-        qs = User.objects.filter(
-            email__iexact=email).exclude(pk=self.instance.pk)
+        qs = User.objects.filter(email__iexact=email)
+
+        if self.instance and self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+
         if qs.exists():
             raise forms.ValidationError("Este e-mail já está em uso.")
+
         return email
 
     def clean(self):
@@ -102,20 +110,21 @@ class ConfiguracaoUserForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
+
         nova1 = self.cleaned_data.get("nova_senha1") or ""
-        senha_atual = self.cleaned_data.get("senha_atual") or ""
         self._password_changed = False
 
-        if nova1 and senha_atual and not self.errors:
+        if nova1 and not self.errors:
             user.set_password(nova1)
             self._password_changed = True
 
         if commit:
             user.save()
+
         return user
 
     def password_changed(self):
-        return bool(self.cleaned_data.get("nova_senha1"))
+        return getattr(self, "_password_changed", False)
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
@@ -124,8 +133,18 @@ class ConfiguracaoUserForm(forms.ModelForm):
             "allow_without_current_password",
             False
         )
+        self._password_changed = False
 
         super().__init__(*args, **kwargs)
 
         if self.user and hasattr(self.user, "perfil"):
             self.fields["telefone"].initial = self.user.perfil.telefone
+
+        if self.password_required:
+            self.fields["nova_senha1"].required = True
+            self.fields["nova_senha2"].required = True
+
+            if self.allow_without_current_password:
+                self.fields["senha_atual"].required = False
+            else:
+                self.fields["senha_atual"].required = True
