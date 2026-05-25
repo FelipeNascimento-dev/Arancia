@@ -2,8 +2,8 @@ from django import forms
 
 
 class PreRecebimentoForm(forms.Form):
-    numero_pedido = forms.CharField(
-        label="Número do Pedido",
+    numero_romaneio = forms.CharField(
+        label="Número do Romaneio",
         max_length=100,
         required=True,
         widget=forms.TextInput(attrs={'class': 'form-control'})
@@ -13,7 +13,6 @@ class PreRecebimentoForm(forms.Form):
         label="Seriais",
         max_length=200,
         required=True,
-        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3})
     )
 
     def __init__(self, *args, nome_form=None, **kwargs):
