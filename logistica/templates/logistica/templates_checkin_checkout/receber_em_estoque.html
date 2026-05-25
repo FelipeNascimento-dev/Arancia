@@ -348,6 +348,22 @@
   .btn-resetar-ck:hover {
     background: #ffe0b2;
   }
+
+  .btn-finalizar-romaneio {
+    border: 0;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    background: #e8f5e9;
+    color: #2e7d32;
+    white-space: nowrap;
+  }
+
+  .btn-finalizar-romaneio:hover {
+    background: #c8e6c9;
+  }
 </style>
 
 
@@ -398,29 +414,53 @@
         <span id="contador-total-label">{{ itens_romaneio|length }}</span>
       </div>
 
-      <form
-        method="POST"
-        style="display: inline-block; margin-left: 10px;"
-        onsubmit="return confirm('Tem certeza que deseja resetar o CK deste romaneio? Todos os itens terão que ser bipados novamente.');"
-      >
-        {% csrf_token %}
+      <div style="display: inline-flex; gap: 8px; margin-left: 10px; align-items: center;">
 
-        <input type="hidden" name="numero_romaneio" value="{{ romaneio_data.romaneio }}">
-
-        {% for item in itens_romaneio %}
-          <input type="hidden" name="serials" value="{{ item.serial }}">
-        {% endfor %}
-
-        <button
-          type="submit"
-          name="resetar_ck_romaneio"
-          value="1"
-          class="btn-resetar-ck"
-          title="Resetar CK de todos os itens do romaneio"
+        <form
+          method="POST"
+          style="margin: 0;"
+          onsubmit="return confirm('Tem certeza que deseja resetar o CK deste romaneio? Todos os itens terão que ser bipados novamente.');"
         >
-          Resetar CK do romaneio
-        </button>
-      </form>
+          {% csrf_token %}
+
+          <input type="hidden" name="numero_romaneio" value="{{ romaneio_data.romaneio }}">
+
+          {% for item in itens_romaneio %}
+            <input type="hidden" name="serials" value="{{ item.serial }}">
+          {% endfor %}
+
+          <button
+            type="submit"
+            name="resetar_ck_romaneio"
+            value="1"
+            class="btn-resetar-ck"
+            title="Resetar CK de todos os itens do romaneio"
+          >
+            Resetar CK
+          </button>
+        </form>
+
+        <form
+          method="POST"
+          style="margin: 0;"
+          onsubmit="return confirm('Tem certeza que deseja finalizar este romaneio? Após finalizar, não será possível continuar a bipagem nesta tela.');"
+        >
+          {% csrf_token %}
+
+          <input type="hidden" name="numero_romaneio" value="{{ romaneio_data.romaneio }}">
+
+          <button
+            type="submit"
+            name="finish_romaneio"
+            value="1"
+            class="btn-finalizar-romaneio"
+            title="Finalizar romaneio"
+          >
+            Finalizar romaneio
+          </button>
+        </form>
+
+      </div>
 
       <div id="bipagem-feedback" class="bipagem-feedback"></div>
 

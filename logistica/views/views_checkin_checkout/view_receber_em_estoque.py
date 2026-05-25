@@ -2,7 +2,7 @@ from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 import json
-
+from datetime import datetime
 from django.http import JsonResponse
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -147,6 +147,69 @@ def receber_em_estoque(request):
         return redirect(
             f"{reverse('logistica:receber_em_estoque')}?numero_romaneio={numero_romaneio}"
         )
+
+    if request.method == "POST" and "finish_romaneio" in request.POST:
+        numero_romaneio = request.POST.get("numero_romaneio")
+        user = request.user
+        sales_channel = user.designacao.informacao_adicional.sales_channel
+        if sales_channel == 'all':
+            location_id = 0
+        else:
+            location_id = user.designacao.informacao_adicional_id
+
+        if not numero_romaneio:
+            messages.error(request, "Número do romaneio não informado.")
+            return redirect("logistica:receber_em_estoque")
+
+        try:
+            numero_romaneio = numero_romaneio.strip()
+
+            finish_payload = {
+                "finished_by": request.user.username,
+                "finished_at": datetime.utcnow().isoformat() + "Z",
+                "movement_type": "RECEIVE",
+                "external_order_number": numero_romaneio
+            }
+
+            finish_url = (
+                f"{STOCK_API_URL}/v2/romaneios/finish/{numero_romaneio}?location_id={location_id}"
+            )
+
+            finish_client = RequestClient(
+                url=finish_url,
+                method="POST",
+                headers={
+                    "Accept": JSON_CT,
+                    "Content-Type": JSON_CT,
+                },
+                request_data=finish_payload
+            )
+
+            finish_result = finish_client.send_api_request()
+
+            if isinstance(finish_result, dict) and "detail" in finish_result:
+                messages.error(request, finish_result.get("detail"))
+
+                return redirect(
+                    f"{reverse('logistica:receber_em_estoque')}?numero_romaneio={numero_romaneio}"
+                )
+
+            messages.success(
+                request,
+                f"Romaneio {numero_romaneio} finalizado com sucesso!"
+            )
+
+            return redirect("logistica:receber_em_estoque")
+
+        except Exception:
+            messages.error(
+                request,
+                "Erro ao finalizar o romaneio."
+            )
+
+            return redirect(
+                f"{reverse('logistica:receber_em_estoque')}?numero_romaneio={numero_romaneio}"
+            )
 
     if request.method == "POST" or request.GET.get("numero_romaneio"):
         if numero_romaneio:
