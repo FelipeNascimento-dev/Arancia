@@ -296,6 +296,9 @@ def receber_em_estoque(request):
             'numero_romaneio': numero_romaneio,
             'produtos_choices': produtos_choices,
             'client_code': client_code,
+            "current_parent_menu": "logistica",
+            "current_menu": "checkin",
+            "current_submenu": "receber_estoque",
         }
     )
 

@@ -162,6 +162,7 @@ class PermissaoUsuarioDummy(models.Model):
             ("reverse", "Reversa"),
             ("desinstalacao", "Pode fazer Desinstalação"),
             ("full_checkin", "Acesso Completo ao Check-in"),
+            ("receber_checkin", "Permissão para Receber Check-in"),
         ]
 
     def __str__(self):
