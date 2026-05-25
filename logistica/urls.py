@@ -110,6 +110,8 @@ urls_Checkin = [
     path("check-in/receber/", receber_em_estoque, name="receber_em_estoque"),
     path("check-in/receber/bipar/", bipar_serial_recebimento,
          name="bipar_serial_recebimento"),
+    path("check-in/pre-recebimento/", pre_recebimento,
+         name="pre_recebimento_checkin"),
 
     path("check/<str:vetor>/reverse/consulta/",
          checkout_reverse, name='checkout_reverse'),
