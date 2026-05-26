@@ -13,6 +13,8 @@ from datetime import datetime
 from urllib.parse import urlencode
 from django.http import JsonResponse
 import json
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 
 from transportes.models import FiltroPadraoTela, FiltroFavoritoUsuario
 from transportes.utils.filtros import (
@@ -682,10 +684,30 @@ def lista_viagens(request):
 
         if selected_travel_ids:
             try:
-                client_id = (request.POST.get("cliente")
-                             or filtros.get("cliente") or "").strip()
-                tipo_servico_id = (request.POST.get(
-                    "tipo_servico") or filtros.get("tipo_servico") or "").strip()
+                client_id = request.POST.get(
+                    "cliente") or filtros.get("cliente") or ""
+                tipo_servico_id = request.POST.get(
+                    "tipo_servico") or filtros.get("tipo_servico") or ""
+
+                if isinstance(client_id, list):
+                    client_id = client_id[0] if client_id else ""
+
+                client_id = str(client_id).strip()
+
+                if isinstance(tipo_servico_id, list):
+                    tipo_servico_id = tipo_servico_id[0] if tipo_servico_id else ""
+
+                tipo_servico_id = str(tipo_servico_id).strip()
+
+                if tipo_servico_id.startswith("[") and tipo_servico_id.endswith("]"):
+                    tipo_servico_id = (
+                        tipo_servico_id
+                        .replace("[", "")
+                        .replace("]", "")
+                        .replace("'", "")
+                        .replace('"', "")
+                        .strip()
+                    )
 
                 cliente_nome = ""
                 if client_id:
@@ -739,7 +761,7 @@ def lista_viagens(request):
                 else:
                     messages.warning(
                         request,
-                        f"Selecione cliente e tipo de serviço válidos. Cliente='{client_id}' | Tipo='{tipo_servico_id}'"
+                        f"Selecione cliente e tipo de serviço válidos. Cliente='{cliente_nome}' | Tipo='{tipo_servico_id}'"
                     )
 
             except Exception as e:
@@ -836,9 +858,30 @@ def lista_viagens(request):
         location_lat = (request.POST.get("location_lat") or "").strip()
         location_long = (request.POST.get("location_long") or "").strip()
 
+        shipping_date_input = (request.POST.get("shipping_date") or "").strip()
+
+        if not shipping_date_input:
+            messages.error(request, "Informe a data de envio.")
+            return redirect("transportes:lista_viagens")
+
+        shipping_date = parse_datetime(shipping_date_input)
+
+        if shipping_date is None:
+            messages.error(request, "Data de envio inválida.")
+            return redirect("transportes:lista_viagens")
+
+        if timezone.is_naive(shipping_date):
+            shipping_date = timezone.make_aware(
+                shipping_date,
+                timezone.get_current_timezone()
+            )
+
+        shipping_date_iso = shipping_date.isoformat()
+
         payload_event = {
             "event_type_id": event_type_id,
             "created_by": created_by,
+            "shipping_date": shipping_date_iso,
         }
 
         if description:
@@ -854,8 +897,12 @@ def lista_viagens(request):
                 "Content-Type": "application/json",
             }
 
-            ids_limpos = [str(i)
-                          for i in selected_travel_ids if str(i).strip()]
+            ids_limpos = [
+                str(i).strip()
+                for i in selected_travel_ids
+                if str(i).strip()
+            ]
+
             query_ids = "&".join([f"ids={i}" for i in ids_limpos])
 
             url = f"{TRANSP_API_URL}/v2/order_tracking/create?destination=travel&{query_ids}"
@@ -866,6 +913,8 @@ def lista_viagens(request):
                 headers=headers_api,
                 request_data=payload_event
             )
+
+            print(payload_event)
 
             response_event = client.send_api_request()
 
