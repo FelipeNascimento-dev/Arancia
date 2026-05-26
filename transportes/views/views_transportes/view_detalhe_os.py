@@ -3,13 +3,15 @@ from django.contrib.auth.decorators import login_required, permission_required
 from setup.local_settings import TRANSP_API_URL, URL_LABEL_INTELIPOST, API_KEY_INTELIPOST
 from utils.request import RequestClient
 from django.contrib import messages
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.db.models import Q
 from logistica.models import Group, GroupAditionalInformation
 import json
 import requests
 from django.http import JsonResponse
-from django.utils.dateparse import parse_datetime
 from django.utils.timezone import localtime
+from datetime import timezone as dt_timezone
 
 
 def _get_items_from_response(response):
@@ -597,11 +599,45 @@ def detalhe_os_transp(request, order_number):
             selected_items = [int(i)
                               for i in request.POST.getlist("items") if i]
 
+            shipping_date_input = (request.POST.get(
+                "shipping_date") or "").strip()
+
+            if not shipping_date_input:
+                messages.error(request, "Informe a data/hora do evento.")
+                return redirect(
+                    "transportes:detalhe_os_transp",
+                    order_number=order_number
+                )
+
+            shipping_date = parse_datetime(shipping_date_input)
+
+            if shipping_date is None:
+                messages.error(request, "Data/hora do evento inválida.")
+                return redirect(
+                    "transportes:detalhe_os_transp",
+                    order_number=order_number
+                )
+
+            if timezone.is_naive(shipping_date):
+                shipping_date = timezone.make_aware(
+                    shipping_date,
+                    timezone.get_current_timezone()
+                )
+
+            shipping_date_iso = (
+                shipping_date
+                .astimezone(dt_timezone.utc)
+                .isoformat()
+                .replace("+00:00", "Z")
+            )
+
             payload_event = {
                 "event_type_id": event_type_id,
                 "created_by": created_by,
             }
 
+            if shipping_date_iso:
+                payload_event["shipping_date"] = shipping_date_iso
             if description:
                 payload_event["description"] = description
             if location_lat:
