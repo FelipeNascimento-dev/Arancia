@@ -58,6 +58,9 @@ urls_LastmileB2C = [
     path('ip-spl/<str:code>/', trackingIPV2, name='consolidacao_simpl'),
     path('ip-spl/<str:code>/', trackingIPV2, name='expedicao_simpl'),
     path('ip-spl/<str:code>/', trackingIPV2, name='troca_custodia_simpl'),
+    path('ip-spl/<str:code>/', trackingIPV2,
+         name='estorno_retorno_picking_simpl'),
+
 
     path('ip/<str:code>/', trackingIP, name='pcp'),
     path('ip/<str:code>/', trackingIP, name='retorno_picking'),

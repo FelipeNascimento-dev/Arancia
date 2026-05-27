@@ -303,7 +303,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script>
     (function () {
-        if ("{{ etapa_ativa }}" !== "retorno_picking") return;
+        if (!["retorno_picking", "estorno_retorno_picking"].includes("{{ etapa_ativa }}")) return;
 
         function focusSerial() {
             var el = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
@@ -346,7 +346,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script>
     (function () {
-        if ("{{ etapa_ativa }}" !== "retorno_picking") return;
+        if (!["retorno_picking", "estorno_retorno_picking"].includes("{{ etapa_ativa }}")) return;
 
         const modal = document.getElementById('confirm-clear');
         const openBtn = document.querySelector('button[name="clear_serials"]');

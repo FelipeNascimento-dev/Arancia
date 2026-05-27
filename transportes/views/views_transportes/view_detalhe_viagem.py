@@ -2,6 +2,9 @@ from django.shortcuts import render, redirect
 from ...forms import ListaViagensForm
 from django.contrib import messages
 from setup.local_settings import TRANSP_API_URL
+from datetime import timezone as dt_timezone
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from utils.request import RequestClient
 from django.contrib.auth.decorators import login_required, permission_required
 import json
@@ -70,11 +73,38 @@ def detalhe_viagem(request, id_viagem):
         selected_items = [int(i)
                           for i in request.POST.getlist("items") if i]
 
+        shipping_date_input = (request.POST.get("shipping_date") or "").strip()
+
+        if not shipping_date_input:
+            messages.error(request, "Informe a data/hora do evento.")
+            return redirect('transportes:detalhe_viagem', id_viagem=id_viagem)
+
+        shipping_date = parse_datetime(shipping_date_input)
+
+        if shipping_date is None:
+            messages.error(request, "Data/hora do evento inválida.")
+            return redirect('transportes:detalhe_viagem', id_viagem=id_viagem)
+
+        if timezone.is_naive(shipping_date):
+            shipping_date = timezone.make_aware(
+                shipping_date,
+                timezone.get_current_timezone()
+            )
+
+        shipping_date_iso = (
+            shipping_date
+            .astimezone(dt_timezone.utc)
+            .isoformat()
+            .replace("+00:00", "Z")
+        )
+
         payload_event = {
             "event_type_id": event_type_id,
             "created_by": created_by,
         }
 
+        if shipping_date_iso:
+            payload_event["shipping_date"] = shipping_date_iso
         if description:
             payload_event["description"] = description
         if location_lat:
