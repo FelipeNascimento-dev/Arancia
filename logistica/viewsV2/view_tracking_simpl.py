@@ -44,7 +44,7 @@ class TrackingOriginalCode:
         }
         self.description, self.etapa_ativa = etapas.get(
             code, ("Etapa desconhecida", None))
-        if code in ["202", "212"]:
+        if code == "202":
             self.show_serial = True
 
 
@@ -102,7 +102,7 @@ def _render_pcp(request: HttpRequest, form, code_info: TrackingOriginalCode, ser
             "form": form,
             "etapa_ativa": code_info.etapa_ativa,
             "botao_texto": "Enviar",
-            "serials": serials if code_info.original_code in ["202", "212"] else [],
+            "serials": serials if code_info.original_code == "202" else [],
             "show_serial": code_info.show_serial,
             "site_title": f"IP - {code_info.description}",
             "chip_map": request.session.get("chip_map", {}),
@@ -258,7 +258,7 @@ def _handle_clear_serials(request, code_info, pedido_atual, form, menu_context):
 
 
 def _dispatch_serial_actions_if_any(request, code_info, pedido_atual, form, menu_context):
-    if code_info.original_code not in ["202", "212"]:
+    if code_info.original_code != "202":
         return None
     if "add_serial" in request.POST:
         return _handle_add_serial(request, code_info, _get_pedido_atual(request), form, menu_context)
@@ -281,7 +281,7 @@ def _build_request_data(code_info: TrackingOriginalCode, numero_pedido: str, ser
         "from_location_id": location_id,
     }
 
-    if code_info.original_code in ["202", "212"] and seriais_concat:
+    if code_info.original_code == "202" and seriais_concat:
         serials = seriais_concat.split("|")
         chip_map = request.session.get("chip_map", {})
 
@@ -330,7 +330,7 @@ def _post_success_redirect(code_info: TrackingOriginalCode, numero_pedido: str) 
         "203": ("logistica:pcp_simpl", 204),
         "204": ("logistica:pcp_simpl", 205),
         "205": ("logistica:consulta_etiquetas", None),
-        "212": ("logistica:pcp_simpl", None),
+        "212": ("logistica:pcp_simpl", 202),
     }
     view_name, next_code = redirect_map.get(
         code_info.original_code,
@@ -353,13 +353,13 @@ def _process_enviar_evento(request, code_info, form, serials, menu_context):
     numero_pedido = str(form.cleaned_data.get("pedido"))
     _ensure_pedido_in_session(request, numero_pedido)
 
-    if code_info.original_code in ["202", "212"]:
+    if code_info.original_code == "202":
         serials = _dedup_upper(
             _get_serials_from_session(request, numero_pedido))
         if not serials:
             messages.warning(
                 request,
-                f"Adicione ao menos 1 serial antes de enviar o {code_info.description}."
+                "Adicione ao menos 1 serial antes de enviar o Retorno do picking."
             )
             return _render_pcp(request, form, code_info, serials, menu_context)
         seriais_concat = "|".join(serials)
@@ -389,7 +389,7 @@ def _process_enviar_evento(request, code_info, form, serials, menu_context):
                 else str(resp)
             )
 
-            if code_info.original_code in ["202", "212"]:
+            if code_info.original_code == "202":
                 _save_serials_to_session(request, numero_pedido, [])
                 request.session["chip_map"] = {}
                 request.session.modified = True
@@ -437,7 +437,7 @@ def trackingIPV2(request: HttpRequest, code: str) -> HttpResponse:
 
     pedido_atual = _get_pedido_atual(request)
     serials = _get_serials_from_session(
-        request, pedido_atual) if code in ["202", "212"] else []
+        request, pedido_atual) if code == "202" else []
 
     if request.method == "POST":
         pedido_atual = _force_pedido(request)
