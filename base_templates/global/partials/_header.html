@@ -119,6 +119,11 @@
                             IP - Insucesso de Entrega
                         </a>
 
+                        <a href="{% url 'logistica:estorno_retorno_picking_simpl' 212 %}"
+                        class="{% if current_subsubmenu == 'estorno_retorno_picking' %}active{% endif %}">
+                            IP - Estorno Retorno do Picking
+                        </a>
+
                         <a href="{% url 'logistica:unsuccessful_insert' %}"
                         class="{% if current_subsubmenu == 'conferencia_insucesso' %}active{% endif %}">
                             IP - Conferência de Insucesso
