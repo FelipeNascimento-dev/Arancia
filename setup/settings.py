@@ -160,7 +160,7 @@ def db_host_context(request):
 
 # RESET DE SENHAS / ENVIO POR EMAIL
 
-EMAIL_SMTP_HOST = "smtp.c-trends.com.br"
+EMAIL_SMTP_HOST = "email-ssl.com.br"
 EMAIL_SMTP_PORT = 465
 EMAIL_USER = "system@c-trends.com.br"
 EMAIL_PASS = "@System#CTB2026"
