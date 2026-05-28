@@ -247,7 +247,7 @@ def reverse_createV2(request):
             request.session.modified = True
 
     status_romaneio = (result.get("status") or "").strip().upper()
-    disable_enviar_evento = status_romaneio != "ABERTO"
+    disable_enviar_evento = status_romaneio != "STARTED"
 
     volums = result.get("volums", [])
     for v in volums:
