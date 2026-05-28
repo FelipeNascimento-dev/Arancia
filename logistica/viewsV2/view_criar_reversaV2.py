@@ -223,7 +223,7 @@ def reverse_createV2(request):
 
     if request.method == "POST" and "cancelar_rom" in request.POST:
         payload = {
-            "status_rom": "CANCELADO",
+            "status_rom": "CANCELLED",
             "update_by": request.user.username if request.user.is_authenticated else "SYSTEM"
         }
         url = f"{STOCK_API_URL}/v1/romaneios/{romaneio_in}"
@@ -242,7 +242,7 @@ def reverse_createV2(request):
         else:
             messages.success(
                 request, f"Romaneio {romaneio_in} cancelado com sucesso!")
-            result['status'] = 'CANCELADO'
+            result['status'] = 'CANCELLED'
             request.session["result"] = result
             request.session.modified = True
 
@@ -318,7 +318,7 @@ def cancel_btnV2(request, id):
 
     if "cancelar_rom" in request.POST:
         payload = {
-            "status_rom": "CANCELADO",
+            "status_rom": "CANCELLED",
             "update_by": request.user.username if request.user.is_authenticated else "SYSTEM"
         }
 
@@ -338,7 +338,7 @@ def cancel_btnV2(request, id):
 
         if not result:
             messages.warning(request, f"API retornou vazio para romaneio {id}")
-            result = {"status": "CANCELADO"}
+            result = {"status": "CANCELLED"}
 
         if isinstance(result, dict) and "detail" in result:
             messages.error(

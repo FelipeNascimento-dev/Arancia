@@ -130,7 +130,7 @@ def checkout_reverse_create(request, rom):
 
     if request.method == "POST" and 'cancelar_romaneio' in request.POST:
         payload_put = {
-            "status_rom": "CANCELADO",
+            "status_rom": "CANCELLED",
             "update_by": user.username,
             "updated_at": datetime.utcnow().isoformat() + "Z"
         }
