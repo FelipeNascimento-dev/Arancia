@@ -9,9 +9,11 @@ class ListaRomaneiosForm(forms.Form):
             ('', 'Selecione o status do romaneio'),
             ('STARTED', 'Aberto'),
             ('READY', 'Pronto'),
+            ('AWAITING_COLLECTION', 'Aguardando Coleta'),
+            ('DISPATCHED', 'Despachado'),
+            ('PRE_RECEIVED', 'Pré-Recebido'),
             ('IN_PROCESSING', 'Em Processamento'),
-            ('DISPATCHED', 'Fechado'),
-            ('CANCELADO', 'Cancelado'),
+            ('CANCELLED', 'Cancelado'),
         ],
         required=False,)
 
