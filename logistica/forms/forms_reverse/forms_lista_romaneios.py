@@ -7,10 +7,10 @@ class ListaRomaneiosForm(forms.Form):
         label="Status do Romaneio",
         choices=[
             ('', 'Selecione o status do romaneio'),
-            ('ABERTO', 'Aberto'),
-            ('PRONTO', 'Pronto'),
-            ('EM PROCESSAMENTO', 'Em Processamento'),
-            ('FECHADO', 'Fechado'),
+            ('STARTED', 'Aberto'),
+            ('READY', 'Pronto'),
+            ('IN_PROCESSING', 'Em Processamento'),
+            ('DISPATCHED', 'Fechado'),
             ('CANCELADO', 'Cancelado'),
         ],
         required=False,)

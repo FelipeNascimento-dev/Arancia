@@ -188,7 +188,7 @@
                 <div class="romaneio-card">
                     <div class="romaneio-card-header">
                         <div class="romaneio-number">
-                            {% if item.status_rom == 'PRONTO' %}
+                            {% if item.status_rom == 'READY' %}
                                 <a href="{% url 'logistica:consulta_cotacao' item.romaneio_number %}">
                                     {{ item.romaneio_number }}
                                 </a>
@@ -197,9 +197,9 @@
                             {% endif %}
                         </div>
 
-                        {% if item.status_rom == 'ABERTO' %}
+                        {% if item.status_rom == 'STARTED' %}
                             <span class="romaneio-status status-aberto">{{ item.status_rom }}</span>
-                        {% elif item.status_rom == 'FECHADO' %}
+                        {% elif item.status_rom == 'DISPATCHED' %}
                             <span class="romaneio-status status-fechado">{{ item.status_rom }}</span>
                         {% else %}
                             <span class="romaneio-status status-default">{{ item.status_rom }}</span>

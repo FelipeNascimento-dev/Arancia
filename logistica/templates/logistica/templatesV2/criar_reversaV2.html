@@ -469,7 +469,7 @@
                 {{ result.status }}
             </div>
             {% include 'global/partials/_form_2colV2.html' %}
-            {% if result.status == 'ABERTO' or result.status == 'PRONTO' %}
+            {% if result.status == 'STARTED' or result.status == 'READY' %}
             <button type="button" class="btn-actions" onclick="toggleActionsMenu()">
                 Ações ▾
             </button>
@@ -524,7 +524,7 @@
                         <th>Pedido</th>
                         <th>Criado por</th>
                         <th>Criado em</th>
-                        {% if result.status == 'ABERTO' %}
+                        {% if result.status == 'STARTED' %}
                         <th>Ações</th>
                         {% endif %}
                     </tr>
@@ -538,7 +538,7 @@
                         <td>{{ kit.created_by }}</td>
                         <td class="date-br">{{ kit.created_at }}</td>
 
-                        {% if result.status == 'ABERTO' %}
+                        {% if result.status == 'STARTED' %}
                         <td>
                             <form method="post" action="{% url 'logistica:delete_btnV2' kit.serial %}">
                                 {% csrf_token %}

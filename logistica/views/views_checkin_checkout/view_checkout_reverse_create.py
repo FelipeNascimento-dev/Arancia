@@ -161,7 +161,7 @@ def checkout_reverse_create(request, rom):
 
     if request.method == "POST" and 'finalizar_romaneio' in request.POST:
 
-        if result.get("status") != "ABERTO":
+        if result.get("status") != "STARTED":
             messages.error(request, "Romaneio não pode ser finalizado.")
             return redirect(request.path)
 
@@ -207,7 +207,7 @@ def checkout_reverse_create(request, rom):
             'botao_texto': 'Inserir',
             'site_title': titulo,
             'romaneio': result,
-            'disable_enviar_evento': result.get("status") != "ABERTO",
+            'disable_enviar_evento': result.get("status") != "STARTED",
             "current_parent_menu": "logistica",
             "current_menu": "checkout",
             "current_submenu": "iniciar_checkout"
