@@ -30,10 +30,6 @@ class PasswordExpirationMiddleware:
             )
 
             if control.is_password_expired() and view_name not in rotas_liberadas:
-                messages.error(
-                    request,
-                    "Sua senha venceu. Para continuar usando o sistema, altere sua senha."
-                )
                 return redirect("logistica:settings")
 
             if control.should_warn():
