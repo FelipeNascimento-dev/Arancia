@@ -277,10 +277,9 @@
         grid-template-columns: 1fr;
     }
 
-    .card-grid,
-    .manual-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        align-items: stretch;
+    .card-grid.mural-carousel-mounted,
+    .manual-grid.mural-carousel-mounted {
+        display: block;
     }
 
     @media (max-width: 1280px) {
@@ -2061,6 +2060,112 @@
     .manual-grid {
         gap: 12px;
     }
+
+    /* =========================
+    CARROSSEL DO MURAL
+    ========================= */
+
+    .mural-carousel {
+        position: relative;
+        width: 100%;
+    }
+
+    .mural-carousel-viewport {
+        width: 100%;
+        overflow: hidden;
+        border-radius: 18px;
+    }
+
+    .mural-carousel-track {
+        display: flex;
+        transition: transform 0.35s ease;
+        will-change: transform;
+    }
+
+    .mural-carousel-slide {
+        min-width: 100%;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    .mural-carousel-controls {
+        margin-top: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .carousel-arrow {
+        width: 38px;
+        height: 38px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--text);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.2s ease;
+    }
+
+    .carousel-arrow:hover {
+        background: var(--primary-soft);
+        color: var(--primary-dark);
+        border-color: #bbf7d0;
+    }
+
+    .carousel-arrow:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        background: #f8fafc;
+    }
+
+    .carousel-dots {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .carousel-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        border: none;
+        background: #cbd5e1;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .carousel-dot.active {
+        width: 24px;
+        background: var(--primary-dark);
+    }
+
+    @media (max-width: 1280px) {
+        .mural-carousel-slide {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 900px) {
+        .mural-carousel-slide {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 620px) {
+        .mural-carousel-slide {
+            grid-template-columns: 1fr;
+        }
+
+        .mural-carousel-controls {
+            gap: 10px;
+        }
+    }
 </style>
 
 <div class="page">
@@ -2359,8 +2464,131 @@
       `;
     }
 
+    function getCardsPerSlide() {
+        const width = window.innerWidth;
+
+        if (width <= 620) return 1;
+        if (width <= 900) return 2;
+        if (width <= 1280) return 3;
+
+        return 4;
+    }
+
+    function chunkArray(array, size) {
+        const chunks = [];
+
+        for (let i = 0; i < array.length; i += size) {
+            chunks.push(array.slice(i, i + size));
+        }
+
+        return chunks;
+    }
+
+    function renderCarousel(container, items, cardRenderer, carouselId) {
+        const cardsPerSlide = getCardsPerSlide();
+        const slides = chunkArray(items, cardsPerSlide);
+
+        if (items.length <= cardsPerSlide) {
+            container.innerHTML = items.map(cardRenderer).join('');
+            container.classList.remove('mural-carousel-mounted');
+            return;
+        }
+
+        container.classList.add('mural-carousel-mounted');
+
+        container.innerHTML = `
+            <div class="mural-carousel" id="${carouselId}" data-current="0">
+                <div class="mural-carousel-viewport">
+                    <div class="mural-carousel-track">
+                        ${slides.map(slideItems => `
+                            <div class="mural-carousel-slide">
+                                ${slideItems.map(cardRenderer).join('')}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="mural-carousel-controls">
+                    <button type="button" class="carousel-arrow carousel-prev" aria-label="Anterior">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+
+                    <div class="carousel-dots">
+                        ${slides.map((_, index) => `
+                            <button 
+                                type="button" 
+                                class="carousel-dot ${index === 0 ? 'active' : ''}" 
+                                data-slide="${index}"
+                                aria-label="Ir para página ${index + 1}">
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <button type="button" class="carousel-arrow carousel-next" aria-label="Próximo">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        bindCarousel(carouselId, slides.length);
+    }
+
+    function bindCarousel(carouselId, totalSlides) {
+        const carousel = document.getElementById(carouselId);
+
+        if (!carousel) return;
+
+        const track = carousel.querySelector('.mural-carousel-track');
+        const prevBtn = carousel.querySelector('.carousel-prev');
+        const nextBtn = carousel.querySelector('.carousel-next');
+        const dots = carousel.querySelectorAll('.carousel-dot');
+
+        let currentSlide = 0;
+
+        function updateCarousel() {
+            track.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+            dots.forEach(dot => {
+                dot.classList.toggle(
+                    'active',
+                    Number(dot.dataset.slide) === currentSlide
+                );
+            });
+
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === totalSlides - 1;
+
+            carousel.dataset.current = currentSlide;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateCarousel();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateCarousel();
+            }
+        });
+
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                currentSlide = Number(dot.dataset.slide);
+                updateCarousel();
+            });
+        });
+
+        updateCarousel();
+    }
+
     function renderMural() {
         const filtered = filterItems(muralItems);
+
         const criticalItems = filtered.filter(item => item.severity === 'critical');
         const pinnedItems = filtered.filter(item => item.is_pinned && item.severity !== 'critical');
         const generalItems = filtered.filter(item => !item.is_pinned && item.severity !== 'critical');
@@ -2383,22 +2611,39 @@
 
         if (pinnedItems.length) {
             pinnedSection.classList.remove('hidden');
-            pinnedList.innerHTML = pinnedItems.map(item => createNoticeCard(item, true)).join('');
+
+            renderCarousel(
+                pinnedList,
+                pinnedItems,
+                item => createNoticeCard(item, true),
+                'pinnedCarousel'
+            );
         } else {
             pinnedSection.classList.add('hidden');
         }
 
         if (generalItems.length) {
             materialsSection.classList.remove('hidden');
-            generalList.innerHTML = generalItems.map(item => {
-                if (item.item_type === 'manual' || item.item_type === 'script') {
-                    return createManualCard(item);
-                }
-                return createNoticeCard(item, false);
-            }).join('');
+
+            renderCarousel(
+                generalList,
+                generalItems,
+                item => {
+                    if (item.item_type === 'manual' || item.item_type === 'script') {
+                        return createManualCard(item);
+                    }
+
+                    return createNoticeCard(item, false);
+                },
+                'generalCarousel'
+            );
         } else {
             materialsSection.classList.remove('hidden');
-            renderEmpty(generalList, 'Nenhum conteúdo encontrado', 'Tente mudar os filtros ou limpar a pesquisa para visualizar mais itens.');
+            renderEmpty(
+                generalList,
+                'Nenhum conteúdo encontrado',
+                'Tente mudar os filtros ou limpar a pesquisa para visualizar mais itens.'
+            );
         }
 
         bindViewButtons();
