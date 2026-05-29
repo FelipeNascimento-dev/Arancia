@@ -270,13 +270,21 @@
     .card-grid,
     .manual-grid {
         display: grid;
-        gap: 16px;
+        gap: 12px;
     }
 
     .critical-stack {
         grid-template-columns: 1fr;
     }
 
+    /* Grid padrão dos cards normais */
+    .card-grid,
+    .manual-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        align-items: stretch;
+    }
+
+    /* Quando vira carrossel, o container deixa de ser grid */
     .card-grid.mural-carousel-mounted,
     .manual-grid.mural-carousel-mounted {
         display: block;
@@ -286,6 +294,20 @@
         .card-grid,
         .manual-grid {
             grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 900px) {
+        .card-grid,
+        .manual-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 620px) {
+        .card-grid,
+        .manual-grid {
+            grid-template-columns: 1fr;
         }
     }
 
@@ -426,8 +448,9 @@
         transition: 0.2s ease;
         display: flex;
         flex-direction: column;
+        height: 255px;
         min-height: 255px;
-        height: 100%;
+        max-height: 255px;
         overflow: hidden;
     }
 
@@ -457,15 +480,6 @@
     .notice-card:hover,
     .manual-card:hover {
         border-color: #bbf7d0;
-    }
-
-    .notice-card.pinned {
-        border-left: 5px solid var(--warning);
-        background: linear-gradient(180deg, #fffef9 0%, #ffffff 100%);
-    }
-
-    .manual-card {
-        background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
     }
 
     .card-head {
@@ -2356,7 +2370,7 @@
         `;
     }
 
-    function createNoticeCard(item, pinned = false) {
+    function createMuralCard(item, pinned = false) {
         const coverHtml = item.image_url
             ? `
                 <div class="card-cover">
@@ -2369,75 +2383,70 @@
                 </div>
             `;
 
-        return `
-            <article class="notice-card ${pinned ? 'pinned' : ''}" data-type="${item.item_type}" data-read="${item.is_read}">
-            ${coverHtml}
+        const typeIconMap = {
+            announcement: 'fa-regular fa-file-lines',
+            notice: 'fa-regular fa-bell',
+            script: 'fa-solid fa-code',
+            manual: 'fa-solid fa-book-open'
+        };
 
-            <div class="card-head">
-                <div class="badges">
-                ${pinned ? '<span class="badge orange"><i class="fa-solid fa-thumbtack"></i> Fixado</span>' : ''}
-                <span class="badge green"><i class="fa-regular fa-file-lines"></i> ${item.item_type_label}</span>
-                </div>
-                <span class="severity-pill ${severityClass(item.severity)}">${item.severity_label}</span>
-            </div>
-
-            <h3>${item.title}</h3>
-            <p>${truncateText(item.summary, 100)}</p>
-
-            <div class="card-meta" style="color: var(--muted); margin-top: 14px;">
-                <span><i class="fa-regular fa-clock"></i> ${item.starts_at}</span>
-                ${item.is_indefinite ? '<span><i class="fa-solid fa-infinity"></i> Prazo indefinido</span>' : ''}
-                ${item.is_read ? '<span><i class="fa-solid fa-check"></i> Lido</span>' : '<span><i class="fa-regular fa-bell"></i> Pendente</span>'}
-            </div>
-
-            <div class="card-footer">
-                <button type="button" class="card-link js-view-item" data-id="${item.id}">
-                    Visualizar <i class="fa-solid fa-arrow-right"></i>
-                </button>
-                <div class="card-actions"></div>
-            </div>
-            </article>
-        `;
-    }
-
-    function createManualCard(item) {
-        const coverHtml = item.image_url
-            ? `
-                <div class="card-cover">
-                    <img src="${item.image_url}" alt="Imagem de capa do material">
-                </div>
-            `
-            : `
-                <div class="card-cover placeholder">
-                    <i class="fa-regular fa-image"></i>
-                </div>
-            `;
+        const iconClass = typeIconMap[item.item_type] || 'fa-regular fa-file-lines';
 
         return `
-            <article class="manual-card" data-type="${item.item_type}" data-read="${item.is_read}">
-            ${coverHtml}
+            <article class="notice-card" data-type="${item.item_type}" data-read="${item.is_read}">
+                ${coverHtml}
 
-            <div class="card-head">
-                <div class="badges">
-                <span class="badge blue"><i class="fa-solid fa-book-open"></i> ${item.item_type_label}</span>
+                <div class="card-head">
+                    <div class="badges">
+                        ${pinned ? `
+                            <span class="badge orange">
+                                <i class="fa-solid fa-thumbtack"></i> Fixado
+                            </span>
+                        ` : ''}
+
+                        <span class="badge green">
+                            <i class="${iconClass}"></i> ${item.item_type_label}
+                        </span>
+                    </div>
+
+                    <span class="severity-pill ${severityClass(item.severity)}">
+                        ${item.severity_label}
+                    </span>
                 </div>
-                <span class="severity-pill ${severityClass(item.severity)}">${item.severity_label}</span>
-            </div>
 
-            <h3>${item.title}</h3>
-            <p>${truncateText(item.summary, 100)}</p>
+                <h3>${item.title}</h3>
 
-            <div class="card-meta" style="color: var(--muted); margin-top: 14px;">
-                <span><i class="fa-regular fa-calendar"></i> ${item.starts_at}</span>
-                ${item.is_read ? '<span><i class="fa-solid fa-check"></i> Lido</span>' : '<span><i class="fa-regular fa-bookmark"></i> Disponível</span>'}
-            </div>
+                <p>${truncateText(item.summary, 100)}</p>
 
-            <div class="card-footer">
-                <button type="button" class="card-link js-view-item" data-id="${item.id}">
-                    Abrir material <i class="fa-solid fa-arrow-right"></i>
-                </button>
-                <div class="card-actions"></div>
-            </div>
+                <div class="card-meta" style="color: var(--muted); margin-top: 14px;">
+                    <span>
+                        <i class="fa-regular fa-clock"></i> ${item.starts_at}
+                    </span>
+
+                    ${item.is_indefinite ? `
+                        <span>
+                            <i class="fa-solid fa-infinity"></i> Prazo indefinido
+                        </span>
+                    ` : ''}
+
+                    ${item.is_read ? `
+                        <span>
+                            <i class="fa-solid fa-check"></i> Lido
+                        </span>
+                    ` : `
+                        <span>
+                            <i class="fa-regular fa-bell"></i> Pendente
+                        </span>
+                    `}
+                </div>
+
+                <div class="card-footer">
+                    <button type="button" class="card-link js-view-item" data-id="${item.id}">
+                        Visualizar <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                    <div class="card-actions"></div>
+                </div>
             </article>
         `;
     }
@@ -2590,8 +2599,14 @@
         const filtered = filterItems(muralItems);
 
         const criticalItems = filtered.filter(item => item.severity === 'critical');
-        const pinnedItems = filtered.filter(item => item.is_pinned && item.severity !== 'critical');
-        const generalItems = filtered.filter(item => !item.is_pinned && item.severity !== 'critical');
+
+        const pinnedItems = filtered.filter(item => {
+            return item.is_pinned && item.severity !== 'critical';
+        });
+
+        const generalItems = filtered.filter(item => {
+            return !item.is_pinned && item.severity !== 'critical';
+        });
 
         document.getElementById('count-critical').textContent =
             muralItems.filter(item => item.severity === 'critical').length;
@@ -2602,6 +2617,11 @@
         document.getElementById('count-total').textContent =
             muralItems.length;
 
+        /*
+            Críticos continuam como estão.
+            Não entram no carrossel.
+            Não usam card normal.
+        */
         if (criticalItems.length) {
             criticalSection.classList.remove('hidden');
             criticalList.innerHTML = criticalItems.map(createCriticalCard).join('');
@@ -2609,36 +2629,39 @@
             criticalSection.classList.add('hidden');
         }
 
+        /*
+            Fixados agora usam o mesmo card dos itens normais.
+            A única diferença é a badge "Fixado".
+        */
         if (pinnedItems.length) {
             pinnedSection.classList.remove('hidden');
 
             renderCarousel(
                 pinnedList,
                 pinnedItems,
-                item => createNoticeCard(item, true),
+                item => createMuralCard(item, true),
                 'pinnedCarousel'
             );
         } else {
             pinnedSection.classList.add('hidden');
         }
 
+        /*
+            Todos os demais itens também usam o mesmo card:
+            manual, script, aviso e comunicado.
+        */
         if (generalItems.length) {
             materialsSection.classList.remove('hidden');
 
             renderCarousel(
                 generalList,
                 generalItems,
-                item => {
-                    if (item.item_type === 'manual' || item.item_type === 'script') {
-                        return createManualCard(item);
-                    }
-
-                    return createNoticeCard(item, false);
-                },
+                item => createMuralCard(item, false),
                 'generalCarousel'
             );
         } else {
             materialsSection.classList.remove('hidden');
+
             renderEmpty(
                 generalList,
                 'Nenhum conteúdo encontrado',
@@ -2672,6 +2695,16 @@
     });
 
     searchInput.addEventListener('input', renderMural);
+
+    let resizeCarouselTimer = null;
+
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeCarouselTimer);
+
+        resizeCarouselTimer = setTimeout(() => {
+            renderMural();
+        }, 250);
+    });
 
     renderMural();
 </script>
