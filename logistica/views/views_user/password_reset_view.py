@@ -43,27 +43,76 @@ def esqueci_minha_senha(request):
             control.force_change_password = True
             control.save(update_fields=["force_change_password"])
 
-            assunto = "Código de acesso único - Arancia"
+            assunto = "Senha temporária de acesso - Arancia"
 
             corpo = f"""
             <html>
-            <body>
+            <body style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.5;">
+
                 <h2>Olá, {user.first_name or user.username}!</h2>
 
-                <p>Recebemos uma solicitação para recuperação de acesso.</p>
-
-                <p>Use o código abaixo no campo <strong>senha</strong> da tela de login:</p>
-
-                <h1 style="color:#153e70; letter-spacing:4px;">{code}</h1>
-
-                <p>Este código é único e expira em 15 minutos.</p>
-
                 <p>
-                    Após entrar no sistema, você será direcionado automaticamente
-                    para alterar sua senha.
+                    Recebemos uma solicitação para recuperar o seu acesso ao sistema Arancia.
                 </p>
 
-                <p>Se você não solicitou essa alteração, ignore este e-mail.</p>
+                <p>
+                    Para entrar no sistema, use a senha temporária abaixo no campo
+                    <strong>Senha</strong> da tela de login.
+                </p>
+
+                <div style="
+                    background-color: #f3f6fb;
+                    border: 1px solid #d8e2f0;
+                    padding: 18px;
+                    margin: 20px 0;
+                    text-align: center;
+                    border-radius: 8px;
+                ">
+                    <p style="margin: 0 0 8px 0; font-size: 14px;">
+                        Sua senha temporária é:
+                    </p>
+
+                    <h1 style="
+                        color: #153e70;
+                        letter-spacing: 4px;
+                        margin: 0;
+                        font-size: 32px;
+                    ">
+                        {code}
+                    </h1>
+                </div>
+
+                <p>
+                    Essa senha temporária é única e expira em <strong>15 minutos</strong>.
+                </p>
+
+                <p>
+                    Depois que você entrar no sistema usando essa senha temporária,
+                    será necessário criar uma nova senha definitiva.
+                </p>
+
+                <p>
+                    Resumo do que fazer:
+                </p>
+
+                <ol>
+                    <li>Acesse a tela de login do Arancia.</li>
+                    <li>Informe seu usuário ou e-mail.</li>
+                    <li>No campo <strong>Senha</strong>, digite a senha temporária acima.</li>
+                    <li>Após entrar, cadastre uma nova senha.</li>
+                </ol>
+
+                <p>
+                    Se você não solicitou a recuperação de acesso, ignore este e-mail.
+                </p>
+
+                <br>
+
+                <p>
+                    Atenciosamente,<br>
+                    Equipe Arancia
+                </p>
+
             </body>
             </html>
             """
@@ -82,7 +131,7 @@ def esqueci_minha_senha(request):
 
         messages.success(
             request,
-            "Se o usuário/e-mail estiver cadastrado, enviaremos um código de acesso."
+            "Se o usuário estiver cadastrado, enviaremos uma senha temporária de acesso. Use essa senha para entrar no sistema e criar uma nova senha definitiva."
         )
         return redirect("logistica:login")
 
