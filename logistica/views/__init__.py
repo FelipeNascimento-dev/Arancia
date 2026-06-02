@@ -45,3 +45,4 @@ from .view_contas_privilegiadas import gestao_contas_privilegiadas
 from .view_iframe_acompanhamento import acompanhamento_iframe
 from .views_checkin_checkout.view_receber_em_estoque import receber_em_estoque, bipar_serial_recebimento
 from .views_checkin_checkout.view_pre_recebimento import pre_recebimento
+from .views_checkin_checkout.view_checkin_bag_tec import checkin_bag_tec
