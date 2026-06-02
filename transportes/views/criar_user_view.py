@@ -31,6 +31,8 @@ def criar_user_view(request):
                 "Content-Type": "application/json",
             }
 
+            print(data)
+
             try:
                 client = RequestClient(
                     method="post",
