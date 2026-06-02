@@ -27,22 +27,22 @@ class CreateGAIForm(forms.Form):
         label="CNPJ", max_length=30, required=False)
     inscricao_estadual = forms.CharField(
         label="Inscrição Estadual", max_length=20, required=False)
-    CEP = forms.CharField(label="CEP", max_length=20, required=False)
+    CEP = forms.CharField(label="CEP", max_length=20, required=True)
     logradouro = forms.CharField(
-        label="Logradouro", max_length=150, required=False)
-    numero = forms.CharField(label="Número", max_length=20, required=False)
+        label="Logradouro", max_length=150, required=True)
+    numero = forms.CharField(label="Número", max_length=20, required=True)
     complemento = forms.CharField(
         label="Complemento", max_length=100, required=False)
-    bairro = forms.CharField(label="Bairro", max_length=100, required=False)
-    cidade = forms.CharField(label="Cidade", max_length=100, required=False)
-    UF = forms.CharField(label="UF", max_length=50, required=False)
+    bairro = forms.CharField(label="Bairro", max_length=100, required=True)
+    cidade = forms.CharField(label="Cidade", max_length=100, required=True)
+    UF = forms.CharField(label="UF", max_length=50, required=True)
     codigo_ibge = forms.CharField(
         label="Código IBGE", max_length=50, required=True)
     telefone1 = forms.CharField(
-        label="Telefone 1", max_length=20, required=False)
+        label="Telefone 1", max_length=20, required=True)
     telefone2 = forms.CharField(
         label="Telefone 2", max_length=20, required=False)
-    email = forms.EmailField(label="E-mail", required=False)
+    email = forms.EmailField(label="E-mail", required=True)
 
     def __init__(self, *args, **kwargs):
         grupos_disponiveis = kwargs.pop("grupos_disponiveis", None)
