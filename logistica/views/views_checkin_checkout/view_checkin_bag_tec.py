@@ -2,23 +2,33 @@ import json
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_protect
-from django.views.decorators.http import require_POST
 
 from logistica.models import GroupAditionalInformation
 from setup.local_settings import API_BASE, STOCK_API_URL, TOKEN
 from transportes.views.views_controle_chamados.view_consulta_os_pend import (
     get_base_usuario,
     get_bases_from_arancia_pa,
-    usuario_pode_ver_todas_bases,
 )
 from utils.request import RequestClient
 
 from ...forms import CheckInBagTecForm
 
 JSON_CT = "application/json"
+SESSION_BAG_TEC = "bag_tec_consulta"
+
+
+def usuario_pode_ver_todas_bases(user):
+    if user.has_perm("transportes.CC_admin"):
+        return True
+
+    gai = getattr(getattr(user, "designacao", None), "informacao_adicional", None)
+    if gai and gai.group and gai.group.name == "arancia_CD":
+        return True
+
+    return False
 
 
 def _configurar_choices_base(form, user, bases):
@@ -30,11 +40,23 @@ def _configurar_choices_base(form, user, bases):
 
     if base_usuario:
         form.fields["base"].widget.choices = [
-            ("", "Selecione a base"),
             (base_usuario["value"], base_usuario["label"]),
         ]
+        form.fields["base"].initial = base_usuario["value"]
+        form.fields["base"].widget.attrs["disabled"] = "disabled"
     else:
         form.fields["base"].widget.choices = [("", "Selecione a base")]
+
+
+def _base_selecionada_post(request):
+    if usuario_pode_ver_todas_bases(request.user):
+        return (request.POST.get("base") or "").strip()
+
+    base_usuario = get_base_usuario(request.user)
+    if base_usuario:
+        return base_usuario["value"]
+
+    return (request.POST.get("base") or "").strip()
 
 
 def _resolver_base(user, base_informada):
@@ -178,27 +200,56 @@ def _formatar_itens_bag(itens):
     return formatados
 
 
-def _carregar_produtos(client_code):
+def _carregar_clientes():
+    try:
+        url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=1000"
+        res = RequestClient(url=url, method="GET", headers={"Accept": JSON_CT})
+        result = res.send_api_request()
+
+        if isinstance(result, list):
+            data = result
+        elif isinstance(result, dict):
+            data = result.get("items") or result.get("results") or []
+        else:
+            data = json.loads(result) if result else []
+
+        if not isinstance(data, list):
+            return []
+
+        return [
+            (str(item.get("client_code", "")), item.get("client_name", "Sem nome"))
+            for item in data
+            if item.get("client_code")
+        ]
+
+    except Exception:
+        return []
+
+
+def _listar_produtos(client_code):
     if not client_code:
         return []
 
-    url = f"{STOCK_API_URL}/v1/products/{client_code.lower()}"
-    client = RequestClient(
+    url_produtos = f"{STOCK_API_URL}/v1/products/{client_code.lower()}"
+    product_client = RequestClient(
+        url=url_produtos,
         method="GET",
-        url=url,
-        headers={"Accept": JSON_CT},
+        headers={
+            "Accept": JSON_CT,
+            "Content-Type": JSON_CT,
+        },
     )
 
-    resp = client.send_api_request()
+    produtos_result = product_client.send_api_request()
 
-    if isinstance(resp, list):
-        return resp
+    if isinstance(produtos_result, list):
+        return produtos_result
 
-    if isinstance(resp, dict):
+    if isinstance(produtos_result, dict):
         return (
-            resp.get("items")
-            or resp.get("results")
-            or resp.get("products")
+            produtos_result.get("items")
+            or produtos_result.get("results")
+            or produtos_result.get("products")
             or []
         )
 
@@ -282,6 +333,8 @@ def _registrar_movimento_in(serial, gai, tecnico_uid, username, product_id=None,
         "created_by": str(tecnico_uid),
     }
 
+    print(payload)
+
     client = RequestClient(
         url=f"{STOCK_API_URL}/v1/movements/",
         method="POST",
@@ -302,169 +355,138 @@ def _nome_tecnico(tecnicos_choices, tecnico_uid):
     return ""
 
 
-@csrf_protect
-@login_required(login_url="logistica:login")
-@permission_required("logistica.checkin_principal", raise_exception=True)
-@permission_required("logistica.acesso_arancia", raise_exception=True)
-def checkin_bag_tec(request):
-    titulo = "Check-In de Bag Tec"
-    bases = get_bases_from_arancia_pa()
-    tecnicos_choices = [("", "Selecione o técnico")]
-    itens_bag = []
-    produtos_choices = []
-    bag_consultada = False
-    tecnico_nome = ""
-    base_label = ""
-
-    if request.method == "POST":
-        form = CheckInBagTecForm(request.POST, nome_form=titulo)
-        _configurar_choices_base(form, request.user, bases)
-
-        base_selecionada = (request.POST.get("base") or "").strip()
-
-        if base_selecionada:
-            try:
-                tecnicos_choices = _buscar_tecnicos(base_selecionada)
-                if len(tecnicos_choices) <= 1 and "enviar_evento" not in request.POST:
-                    messages.warning(
-                        request,
-                        "Essa base não possui técnicos cadastrados.",
-                    )
-            except Exception as exc:
-                messages.error(request, f"Erro ao buscar técnicos: {exc}")
-
-        form.fields["tecnico"].widget.choices = tecnicos_choices
-
-        if "enviar_evento" in request.POST:
-            tecnico_uid = (request.POST.get("tecnico") or "").strip()
-            tipo_filtro = request.POST.get("tipo_filtro") or "ambos"
-
-            if not base_selecionada:
-                messages.error(request, "Selecione uma base.")
-            elif not tecnico_uid:
-                messages.error(request, "Selecione um técnico.")
-            else:
-                base = _resolver_base(request.user, base_selecionada)
-                gai = _get_gai_por_base(base)
-
-                if not gai:
-                    messages.error(request, "Base selecionada inválida.")
-                else:
-                    base_label = gai.nome or base
-                    tecnico_nome = _nome_tecnico(tecnicos_choices, tecnico_uid)
-                    client_code = (gai.sales_channel or "cielo").lower()
-
-                    try:
-                        resp = _consultar_bag(tecnico_uid, tipo_filtro)
-
-                        if isinstance(resp, dict) and resp.get("detail"):
-                            messages.error(request, resp.get("detail"))
-                        else:
-                            itens_bag = _formatar_itens_bag(_normalizar_itens_bag(resp))
-                            bag_consultada = True
-                            messages.success(
-                                request,
-                                f"Bag consultada com sucesso. Itens encontrados: {len(itens_bag)}",
-                            )
-
-                        produtos_choices = _carregar_produtos(client_code)
-
-                    except Exception as exc:
-                        messages.error(request, f"Erro ao consultar bag: {exc}")
-
-    else:
-        form = CheckInBagTecForm(nome_form=titulo)
-        _configurar_choices_base(form, request.user, bases)
-        form.fields["tecnico"].widget.choices = tecnicos_choices
-
-    return render(
-        request,
-        "logistica/templates_checkin_checkout/checkin_bag_tec.html",
-        {
-            "form": form,
-            "itens_bag": itens_bag,
-            "produtos_choices": produtos_choices,
-            "bag_consultada": bag_consultada,
-            "tecnico_nome": tecnico_nome,
-            "base_label": base_label,
-            "site_title": titulo,
-            "botao_texto": "Consultar Bag",
-            "current_parent_menu": "logistica",
-            "current_menu": "checkin",
-            "current_submenu": "checkin_bag_tec",
-        },
-    )
+def _redirect_checkin_bag_tec():
+    return redirect(reverse("logistica:checkin_bag_tec"))
 
 
-@login_required(login_url="logistica:login")
-@permission_required("logistica.checkin_principal", raise_exception=True)
-@permission_required("logistica.acesso_arancia", raise_exception=True)
-@require_POST
-def bipar_serial_bag_tec(request):
+def _obter_estado_sessao(request):
+    return request.session.get(SESSION_BAG_TEC) or {}
+
+
+def _salvar_estado_sessao(request, base, tecnico_uid, tipo_filtro, modal_serial="", modal_client_code=""):
+    request.session[SESSION_BAG_TEC] = {
+        "base": base,
+        "tecnico_uid": tecnico_uid,
+        "tipo_filtro": tipo_filtro or "ambos",
+        "modal_serial": modal_serial or "",
+        "modal_client_code": modal_client_code or "",
+    }
+    request.session.modified = True
+
+
+def _limpar_estado_sessao(request):
+    request.session.pop(SESSION_BAG_TEC, None)
+    request.session.modified = True
+
+
+def _limpar_modal_sessao(request):
+    estado = _obter_estado_sessao(request)
+    if not estado:
+        return
+
+    estado["modal_serial"] = ""
+    estado["modal_client_code"] = ""
+    request.session[SESSION_BAG_TEC] = estado
+    request.session.modified = True
+
+
+def _consultar_bag_contexto(request, user, bases, base, tecnico_uid, tipo_filtro):
+    base = _resolver_base(user, base)
+    gai = _get_gai_por_base(base)
+
+    if not gai:
+        messages.error(request, "Base selecionada inválida.")
+        return None
+
     try:
-        body = json.loads(request.body.decode("utf-8"))
-    except json.JSONDecodeError:
-        return JsonResponse({
-            "status": "ERROR",
-            "message": "JSON inválido.",
-        }, status=400)
+        tecnicos_choices = _buscar_tecnicos(base)
+    except Exception as exc:
+        messages.error(request, f"Erro ao buscar técnicos: {exc}")
+        tecnicos_choices = [("", "Selecione o técnico")]
 
-    base = body.get("base")
-    tecnico_uid = body.get("tecnico_uid")
-    serial = str(body.get("serial") or "").strip().upper()
-    product_id = body.get("product_id")
+    try:
+        resp = _consultar_bag(tecnico_uid, tipo_filtro)
+    except Exception as exc:
+        messages.error(request, f"Erro ao consultar bag: {exc}")
+        return None
+
+    if isinstance(resp, dict) and resp.get("detail"):
+        messages.error(request, resp.get("detail"))
+        return None
+
+    itens_bag = _formatar_itens_bag(_normalizar_itens_bag(resp))
+    client_choices = _carregar_clientes()
+
+    if not client_choices:
+        messages.warning(request, "Não foi possível carregar a lista de clientes.")
+
+    return {
+        "itens_bag": itens_bag,
+        "client_choices": client_choices,
+        "bag_consultada": True,
+        "base_consulta": base,
+        "base_label": gai.nome or base,
+        "tecnico_nome": _nome_tecnico(tecnicos_choices, tecnico_uid),
+        "tecnico_uid_consulta": tecnico_uid,
+        "tipo_filtro_consulta": tipo_filtro or "ambos",
+        "tecnicos_choices": tecnicos_choices,
+    }
+
+
+def _processar_bipar_serial(
+    request,
+    base,
+    tecnico_uid,
+    serial,
+    client_code=None,
+    product_id=None,
+):
+    serial = str(serial or "").strip().upper()
+    client_code = (client_code or "").strip().lower() or None
 
     if not base:
-        return JsonResponse({
-            "status": "ERROR",
-            "message": "Base não informada.",
-        }, status=400)
+        messages.error(request, "Base não informada.")
+        return "error"
 
     if not tecnico_uid:
-        return JsonResponse({
-            "status": "ERROR",
-            "message": "Técnico não informado.",
-        }, status=400)
+        messages.error(request, "Técnico não informado.")
+        return "error"
 
     if not serial:
-        return JsonResponse({
-            "status": "ERROR",
-            "message": "Serial não informado.",
-        }, status=400)
+        messages.error(request, "Serial não informado.")
+        return "error"
 
     base = _resolver_base(request.user, base)
     gai = _get_gai_por_base(base)
 
     if not gai:
-        return JsonResponse({
-            "status": "ERROR",
-            "message": "Base inválida.",
-        }, status=400)
-
-    client_code = (gai.sales_channel or "cielo").lower()
+        messages.error(request, "Base inválida.")
+        return "error"
 
     if product_id not in [None, "", "None", "null", 0, "0"]:
         try:
             product_id = int(product_id)
         except (TypeError, ValueError):
-            return JsonResponse({
-                "status": "NEED_PRODUCT",
-                "serial": serial,
-                "message": "Produto inválido. Informe um ID numérico.",
-            }, status=400)
+            messages.warning(request, "Produto inválido. Informe um ID numérico.")
+            return "need_modal"
     else:
         product_id = None
+
+    if not client_code:
+        messages.warning(request, "Selecione o cliente e o produto.")
+        return "need_modal"
 
     item_info = _consultar_item_por_serial(serial, gai, client_code)
 
     if _produto_obrigatorio(gai, item_info, product_id):
-        return JsonResponse({
-            "status": "NEED_PRODUCT",
-            "serial": serial,
-            "message": "Informe o produto para este serial.",
-        }, status=400)
+        messages.warning(request, "Selecione o produto para este serial.")
+        return "need_modal"
 
     product_id_final = product_id or _extrair_product_id(item_info)
+
+    if _is_pa_sao_paulo(gai) and not product_id_final:
+        messages.warning(request, "Selecione o produto para este serial.")
+        return "need_modal"
 
     try:
         result = _registrar_movimento_in(
@@ -479,23 +501,311 @@ def bipar_serial_bag_tec(request):
         if isinstance(result, dict) and (
             result.get("id") or "success" in str(result).lower()
         ):
-            return JsonResponse({
-                "status": "SUCCESS",
-                "serial": serial,
-                "product_id": product_id_final,
-                "message": "Movimento IN registrado com sucesso.",
-            })
+            messages.success(request, "Movimento IN registrado com sucesso.")
+            return "success"
 
         detail = result.get("detail") if isinstance(result, dict) else str(result)
-        return JsonResponse({
-            "status": "ERROR",
-            "serial": serial,
-            "message": detail or "Não foi possível registrar o movimento.",
-            "api_response": result,
-        }, status=400)
+        messages.error(
+            request,
+            detail or "Não foi possível registrar o movimento.",
+        )
+        return "error"
 
     except Exception:
-        return JsonResponse({
-            "status": "ERROR",
-            "message": "Erro ao comunicar com a API de movimentos.",
-        }, status=500)
+        messages.error(request, "Erro ao comunicar com a API de movimentos.")
+        return "error"
+
+
+def _montar_form_consulta(request, titulo, bases, estado=None):
+    if estado:
+        initial = {
+            "base": estado.get("base", ""),
+            "tecnico": estado.get("tecnico_uid", ""),
+            "tipo_filtro": estado.get("tipo_filtro", "ambos"),
+        }
+        form = CheckInBagTecForm(initial=initial, nome_form=titulo)
+    else:
+        form = CheckInBagTecForm(nome_form=titulo)
+
+    _configurar_choices_base(form, request.user, bases)
+
+    base_ref = (estado or {}).get("base") or _base_selecionada_post(request)
+    if base_ref:
+        try:
+            tecnicos_choices = _buscar_tecnicos(base_ref)
+        except Exception as exc:
+            messages.error(request, f"Erro ao buscar técnicos: {exc}")
+            tecnicos_choices = [("", "Selecione o técnico")]
+    else:
+        tecnicos_choices = [("", "Selecione o técnico")]
+
+    form.fields["tecnico"].widget.choices = tecnicos_choices
+
+    base_travada = not usuario_pode_ver_todas_bases(request.user)
+    if base_travada and base_ref:
+        form.fields["base"].initial = base_ref
+
+    return form, tecnicos_choices
+
+
+@csrf_protect
+@login_required(login_url="logistica:login")
+@permission_required("logistica.checkin_principal", raise_exception=True)
+@permission_required("logistica.acesso_arancia", raise_exception=True)
+def checkin_bag_tec(request):
+    titulo = "Check-In de Bag Tec"
+    bases = get_bases_from_arancia_pa()
+    base_travada = not usuario_pode_ver_todas_bases(request.user)
+
+    itens_bag = []
+    client_choices = []
+    produtos_modal_choices = []
+    bag_consultada = False
+    tecnico_nome = ""
+    base_label = ""
+    base_consulta = ""
+    tecnico_uid_consulta = ""
+    tipo_filtro_consulta = "ambos"
+    modal_serial = ""
+    modal_client_code = ""
+    abrir_modal = False
+
+    estado_sessao = _obter_estado_sessao(request)
+
+    if request.method == "POST":
+        if "cancelar_modal_bag_tec" in request.POST:
+            _limpar_modal_sessao(request)
+            messages.warning(request, "Seleção de cliente/produto cancelada.")
+            return _redirect_checkin_bag_tec()
+
+        if "carregar_produtos_modal" in request.POST:
+            estado = _obter_estado_sessao(request)
+            modal_serial = (request.POST.get("modal_serial") or estado.get("modal_serial") or "").strip().upper()
+            modal_client_code = (request.POST.get("client_code") or "").strip()
+
+            if not modal_serial:
+                messages.error(request, "Serial não informado.")
+                return _redirect_checkin_bag_tec()
+
+            if not modal_client_code:
+                messages.error(request, "Cliente não informado.")
+            else:
+                produtos = _listar_produtos(modal_client_code)
+                if not produtos:
+                    messages.warning(request, "Nenhum produto encontrado para este cliente.")
+
+            _salvar_estado_sessao(
+                request,
+                estado.get("base", ""),
+                estado.get("tecnico_uid", ""),
+                estado.get("tipo_filtro", "ambos"),
+                modal_serial=modal_serial,
+                modal_client_code=modal_client_code,
+            )
+            return _redirect_checkin_bag_tec()
+
+        if "confirmar_bipar_modal" in request.POST:
+            estado = _obter_estado_sessao(request)
+            resultado = _processar_bipar_serial(
+                request,
+                base=estado.get("base"),
+                tecnico_uid=estado.get("tecnico_uid"),
+                serial=request.POST.get("modal_serial") or estado.get("modal_serial"),
+                client_code=request.POST.get("client_code") or estado.get("modal_client_code"),
+                product_id=request.POST.get("product_id"),
+            )
+
+            if resultado == "success":
+                _salvar_estado_sessao(
+                    request,
+                    estado.get("base", ""),
+                    estado.get("tecnico_uid", ""),
+                    estado.get("tipo_filtro", "ambos"),
+                )
+            elif resultado == "need_modal":
+                _salvar_estado_sessao(
+                    request,
+                    estado.get("base", ""),
+                    estado.get("tecnico_uid", ""),
+                    estado.get("tipo_filtro", "ambos"),
+                    modal_serial=(request.POST.get("modal_serial") or estado.get("modal_serial") or "").strip().upper(),
+                    modal_client_code=(request.POST.get("client_code") or estado.get("modal_client_code") or "").strip(),
+                )
+            else:
+                _salvar_estado_sessao(
+                    request,
+                    estado.get("base", ""),
+                    estado.get("tecnico_uid", ""),
+                    estado.get("tipo_filtro", "ambos"),
+                    modal_serial=(request.POST.get("modal_serial") or estado.get("modal_serial") or "").strip().upper(),
+                    modal_client_code=(request.POST.get("client_code") or estado.get("modal_client_code") or "").strip(),
+                )
+
+            return _redirect_checkin_bag_tec()
+
+        if "bipar_serial" in request.POST:
+            estado = _obter_estado_sessao(request)
+            base = estado.get("base") or _base_selecionada_post(request)
+            tecnico_uid = estado.get("tecnico_uid") or (request.POST.get("tecnico") or "").strip()
+            tipo_filtro = estado.get("tipo_filtro") or request.POST.get("tipo_filtro") or "ambos"
+            serial = request.POST.get("serial")
+
+            resultado = _processar_bipar_serial(
+                request,
+                base=base,
+                tecnico_uid=tecnico_uid,
+                serial=serial,
+            )
+
+            if resultado == "need_modal":
+                _salvar_estado_sessao(
+                    request,
+                    base,
+                    tecnico_uid,
+                    tipo_filtro,
+                    modal_serial=str(serial or "").strip().upper(),
+                )
+            elif resultado == "success":
+                _salvar_estado_sessao(request, base, tecnico_uid, tipo_filtro)
+            else:
+                _salvar_estado_sessao(request, base, tecnico_uid, tipo_filtro)
+
+            return _redirect_checkin_bag_tec()
+
+        form = CheckInBagTecForm(request.POST, nome_form=titulo)
+        _configurar_choices_base(form, request.user, bases)
+
+        base_selecionada = _base_selecionada_post(request)
+
+        if base_selecionada and "enviar_evento" not in request.POST:
+            _limpar_estado_sessao(request)
+            estado_sessao = {}
+
+        if base_selecionada:
+            try:
+                tecnicos_choices = _buscar_tecnicos(base_selecionada)
+                if len(tecnicos_choices) <= 1 and "enviar_evento" not in request.POST:
+                    messages.warning(
+                        request,
+                        "Essa base não possui técnicos cadastrados.",
+                    )
+            except Exception as exc:
+                messages.error(request, f"Erro ao buscar técnicos: {exc}")
+                tecnicos_choices = [("", "Selecione o técnico")]
+        else:
+            tecnicos_choices = [("", "Selecione o técnico")]
+
+        form.fields["tecnico"].widget.choices = tecnicos_choices
+
+        if base_travada and base_selecionada:
+            form.fields["base"].initial = base_selecionada
+
+        if "enviar_evento" in request.POST:
+            tecnico_uid = (request.POST.get("tecnico") or "").strip()
+            tipo_filtro = request.POST.get("tipo_filtro") or "ambos"
+
+            if not base_selecionada:
+                messages.error(request, "Selecione uma base.")
+            elif not tecnico_uid:
+                messages.error(request, "Selecione um técnico.")
+            else:
+                base = _resolver_base(request.user, base_selecionada)
+                consulta = _consultar_bag_contexto(
+                    request,
+                    request.user,
+                    bases,
+                    base,
+                    tecnico_uid,
+                    tipo_filtro,
+                )
+
+                if consulta:
+                    itens_bag = consulta["itens_bag"]
+                    client_choices = consulta["client_choices"]
+                    bag_consultada = consulta["bag_consultada"]
+                    base_consulta = consulta["base_consulta"]
+                    base_label = consulta["base_label"]
+                    tecnico_nome = consulta["tecnico_nome"]
+                    tecnico_uid_consulta = consulta["tecnico_uid_consulta"]
+                    tipo_filtro_consulta = consulta["tipo_filtro_consulta"]
+                    form.fields["tecnico"].widget.choices = consulta["tecnicos_choices"]
+
+                    messages.success(
+                        request,
+                        f"Bag consultada com sucesso. Itens encontrados: {len(itens_bag)}",
+                    )
+
+                    _salvar_estado_sessao(
+                        request,
+                        base_consulta,
+                        tecnico_uid_consulta,
+                        tipo_filtro_consulta,
+                    )
+                    estado_sessao = _obter_estado_sessao(request)
+
+    else:
+        form, _ = _montar_form_consulta(request, titulo, bases, estado_sessao)
+
+        if estado_sessao.get("base") and estado_sessao.get("tecnico_uid"):
+            consulta = _consultar_bag_contexto(
+                request,
+                request.user,
+                bases,
+                estado_sessao["base"],
+                estado_sessao["tecnico_uid"],
+                estado_sessao.get("tipo_filtro", "ambos"),
+            )
+
+            if consulta:
+                itens_bag = consulta["itens_bag"]
+                client_choices = consulta["client_choices"]
+                bag_consultada = consulta["bag_consultada"]
+                base_consulta = consulta["base_consulta"]
+                base_label = consulta["base_label"]
+                tecnico_nome = consulta["tecnico_nome"]
+                tecnico_uid_consulta = consulta["tecnico_uid_consulta"]
+                tipo_filtro_consulta = consulta["tipo_filtro_consulta"]
+                form.fields["tecnico"].widget.choices = consulta["tecnicos_choices"]
+
+                modal_serial = (estado_sessao.get("modal_serial") or "").strip().upper()
+                modal_client_code = (estado_sessao.get("modal_client_code") or "").strip()
+                abrir_modal = bool(modal_serial)
+
+                if modal_client_code:
+                    produtos_modal_choices = _listar_produtos(modal_client_code)
+
+        elif not bag_consultada and not estado_sessao:
+            if base_travada:
+                base_usuario = get_base_usuario(request.user)
+                if base_usuario:
+                    try:
+                        tecnicos_choices = _buscar_tecnicos(base_usuario["value"])
+                        form.fields["tecnico"].widget.choices = tecnicos_choices
+                    except Exception as exc:
+                        messages.error(request, f"Erro ao buscar técnicos: {exc}")
+
+    return render(
+        request,
+        "logistica/templates_checkin_checkout/checkin_bag_tec.html",
+        {
+            "form": form,
+            "itens_bag": itens_bag,
+            "client_choices": client_choices,
+            "produtos_modal_choices": produtos_modal_choices,
+            "bag_consultada": bag_consultada,
+            "base_travada": base_travada,
+            "base_consulta": base_consulta,
+            "tecnico_nome": tecnico_nome,
+            "tecnico_uid_consulta": tecnico_uid_consulta,
+            "tipo_filtro_consulta": tipo_filtro_consulta,
+            "base_label": base_label,
+            "modal_serial": modal_serial,
+            "modal_client_code": modal_client_code,
+            "abrir_modal": abrir_modal,
+            "site_title": titulo,
+            "botao_texto": "Consultar Bag",
+            "current_parent_menu": "logistica",
+            "current_menu": "checkin",
+            "current_submenu": "checkin_bag_tec",
+        },
+    )
