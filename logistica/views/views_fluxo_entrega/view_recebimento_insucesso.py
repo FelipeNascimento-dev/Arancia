@@ -42,6 +42,8 @@ def recebimento_insucesso(request):
             )
             result = client.send_api_request()
 
+            print(payload)
+
             if 'detail' in result:
                 messages.error(request, f"Erro: {result['detail']}")
             else:

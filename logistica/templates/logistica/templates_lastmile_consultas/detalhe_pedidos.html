@@ -148,17 +148,20 @@
         font-weight: bold;
         color: var(--form-titulo);
         margin: 0;
-        text-align: center;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        z-index: 8 ;
+        z-index: 8;
         background-color: #fff;
+        
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: flex-end;
     }
 
     #id_sales_channel {
         background-color: transparent !important;
         border: none !important;
+        text-align: right;
+        font-weight: bold;
+        color: inherit;
     }
 
     .card-2col form .card-group:has([name="operation"]),
@@ -1036,4 +1039,31 @@
     });
 </script>
 
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Busca o campo gerado pelo Django dentro da assinatura
+        const salesChannel = document.getElementById("id_sales_channel");
+        
+        if (salesChannel) {
+            // Cria um elemento invisível para medir o tamanho real do texto
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+            
+            // Pega a fonte exata aplicada ao elemento
+            const computedStyle = window.getComputedStyle(salesChannel);
+            context.font = `${computedStyle.fontWeight} ${computedStyle.fontSize} ${computedStyle.fontFamily}`;
+            
+            // Pega o texto atual (funciona para <select> ou <input>)
+            let texto = salesChannel.value;
+            if (salesChannel.tagName === "SELECT" && salesChannel.options[salesChannel.selectedIndex]) {
+                texto = salesChannel.options[salesChannel.selectedIndex].text;
+            }
+            
+            // Mede a largura do texto e aplica ao campo (com uma margem de segurança)
+            const larguraTexto = context.measureText(texto).width;
+            salesChannel.style.width = (larguraTexto + 10) + "px";
+        }
+    });
+</script>
 {% endblock %}

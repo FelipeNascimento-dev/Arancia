@@ -3,19 +3,420 @@
 {% block content %}
 
 <style>
-    .form-card-2col {
-        margin-top: 65px;
-        margin-bottom: auto;
-    }
+  .form-card-2col {
+    height: auto;
+    margin-top: 65px;
+  }
+
+  .bag-wrapper {
+    margin-top: 24px;
+    margin-left: 65px;
+    padding: 0 20px 20px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  }
+
+  .bag-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .bag-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 20px;
+  }
+ 
+  .bag-counter {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #f1f1f1;
+  }
+
+  .bag-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 420px;
+    overflow-y: auto;
+  }
+
+  .bag-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: #fafafa;
+  }
+
+  .bag-item strong {
+    display: block;
+    font-size: 14px;
+  }
+
+  .bag-item small {
+    color: #666;
+  }
+
+  .status-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #e3f2fd;
+    color: #1565c0;
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+
+  .bipagem-feedback {
+    margin-bottom: 12px;
+    font-weight: 600;
+    min-height: 20px;
+  }
+
+  .feedback-success { color: #2e7d32; }
+  .feedback-error { color: #c62828; }
+  .feedback-alerta { color: #ef6c00; }
+
+  .bipagem-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: end;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+  }
+
+  .modal-produto-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+
+  .modal-produto-overlay.ativo {
+    display: flex;
+  }
+
+  .modal-produto {
+    width: min(420px, calc(100% - 32px));
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
+  }
+
+  .modal-produto h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .modal-produto-select {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0 10px;
+    font-size: 14px;
+    background: #fff;
+  }
+
+  .modal-produto-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .modal-btn {
+    border: 0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .modal-btn-cancelar {
+    background: #f1f1f1;
+    color: #333;
+  }
+
+  .modal-btn-confirmar {
+    background: #ef6c00;
+    color: #fff;
+  }
 </style>
 
 <div class="form-container">
-    <div class="form-card-2col" action="{{ form_action }}" method="POST">
-        <form method="POST" id="romaneioForm">
-            {% csrf_token %}
-            {% include 'global/partials/_form_2col.html' %}
-        </form>
-    </div>
+  <div class="form-card-2col">
+    <form method="POST">
+      {% csrf_token %}
+      {% include 'global/partials/_form_2col.html' %}
+    </form>
+  </div>
 </div>
+
+{% if bag_consultada %}
+<div class="bag-wrapper">
+  <div class="bag-header">
+    <div>
+      <div class="bag-title">Bag do técnico</div>
+      <small>{{ tecnico_nome }} · {{ base_label }}</small>
+    </div>
+    <span class="bag-counter" id="contador-bag">{{ itens_bag|length }} item(ns)</span>
+  </div>
+
+  {% if itens_bag %}
+  <div class="bag-list" id="bag-list">
+    {% for item in itens_bag %}
+    <div class="bag-item"
+         data-serial="{{ item.serial }}"
+         data-product-id="{{ item.product_id|default:'' }}">
+      <div>
+        <strong>{{ item.serial }}</strong>
+        <small>{{ item.product_name }}</small>
+      </div>
+      <span class="status-pill">{{ item.tipo }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p>Nenhum serial encontrado na bag para os filtros selecionados.</p>
+  {% endif %}
+
+  <div class="bipagem-row">
+    <div class="form-group">
+      <label for="serial-input">Bipar serial</label>
+      <input type="text"
+             id="serial-input"
+             class="form-control"
+             autocomplete="off"
+             placeholder="Leia ou digite o serial">
+    </div>
+    <button type="button" class="submit-button-right" id="btn-bipar">
+      Registrar IN
+    </button>
+  </div>
+
+  <div id="bipagem-feedback" class="bipagem-feedback"></div>
+</div>
+{% endif %}
+
+<div class="modal-produto-overlay" id="modal-produto-overlay">
+  <div class="modal-produto">
+    <h3>Informe o produto</h3>
+    <p>Serial: <strong id="modal-serial-label"></strong></p>
+
+    <label for="modal-produto-select">Produto</label>
+    <select id="modal-produto-select" class="modal-produto-select">
+      <option value="">Selecione...</option>
+      {% for produto in produtos_choices %}
+      <option value="{{ produto.id }}">
+        {{ produto.sku|default:produto.product_code }} - {{ produto.description|default:produto.product_name }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <div class="modal-produto-actions">
+      <button type="button" class="modal-btn modal-btn-cancelar" id="modal-produto-cancelar">
+        Cancelar
+      </button>
+      <button type="button" class="modal-btn modal-btn-confirmar" id="modal-produto-confirmar">
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+
+{% if bag_consultada %}
+<script>
+  const BASE_SELECIONADA = "{{ form.base.value|escapejs }}";
+  const TECNICO_UID = "{{ form.tecnico.value|escapejs }}";
+  const BIPAR_URL = "{% url 'logistica:bipar_serial_bag_tec' %}";
+
+  let serialPendenteProduto = null;
+
+  function getCookie(name) {
+    const cookies = document.cookie ? document.cookie.split(";") : [];
+
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + "=")) {
+        return decodeURIComponent(cookie.substring(name.length + 1));
+      }
+    }
+
+    return null;
+  }
+
+  function normalizarSerial(serial) {
+    return String(serial || "").trim().toUpperCase();
+  }
+
+  function mostrarFeedback(mensagem, tipo) {
+    const feedback = document.getElementById("bipagem-feedback");
+    if (!feedback) return;
+
+    feedback.textContent = mensagem;
+    feedback.className = "bipagem-feedback";
+
+    if (tipo === "success") {
+      feedback.classList.add("feedback-success");
+    } else if (tipo === "alerta") {
+      feedback.classList.add("feedback-alerta");
+    } else {
+      feedback.classList.add("feedback-error");
+    }
+  }
+
+  function abrirModalProduto(serial) {
+    serialPendenteProduto = serial;
+    document.getElementById("modal-serial-label").textContent = serial;
+    document.getElementById("modal-produto-overlay").classList.add("ativo");
+    document.getElementById("modal-produto-select").focus();
+  }
+
+  function fecharModalProduto() {
+    serialPendenteProduto = null;
+    document.getElementById("modal-produto-overlay").classList.remove("ativo");
+    document.getElementById("modal-produto-select").value = "";
+  }
+
+  function adicionarItemNaLista(serial, productId, productName, tipo) {
+    let lista = document.getElementById("bag-list");
+
+    if (!lista) {
+      lista = document.createElement("div");
+      lista.id = "bag-list";
+      lista.className = "bag-list";
+      document.querySelector(".bag-wrapper").insertBefore(
+        lista,
+        document.querySelector(".bipagem-row")
+      );
+    }
+
+    const item = document.createElement("div");
+    item.className = "bag-item";
+    item.dataset.serial = serial;
+    item.dataset.productId = productId || "";
+
+    item.innerHTML = `
+      <div>
+        <strong>${serial}</strong>
+        <small>${productName || "-"}</small>
+      </div>
+      <span class="status-pill">${tipo || "IN"}</span>
+    `;
+
+    lista.prepend(item);
+
+    const contador = document.getElementById("contador-bag");
+    if (contador) {
+      contador.textContent = `${lista.querySelectorAll(".bag-item").length} item(ns)`;
+    }
+  }
+
+  async function enviarSerial(serial, productId = null) {
+    const serialNormalizado = normalizarSerial(serial);
+
+    if (!serialNormalizado) {
+      mostrarFeedback("Informe um serial para bipar.", "error");
+      return;
+    }
+
+    try {
+      mostrarFeedback(`Enviando serial ${serialNormalizado}...`, "alerta");
+
+      const payload = {
+        base: BASE_SELECIONADA,
+        tecnico_uid: TECNICO_UID,
+        serial: serialNormalizado,
+      };
+
+      if (productId) {
+        payload.product_id = productId;
+      }
+
+      const response = await fetch(BIPAR_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (data.status === "SUCCESS") {
+        mostrarFeedback(data.message || "Movimento registrado com sucesso.", "success");
+        adicionarItemNaLista(serialNormalizado, data.product_id, "", "IN");
+        document.getElementById("serial-input").value = "";
+        document.getElementById("serial-input").focus();
+        return;
+      }
+
+      if (data.status === "NEED_PRODUCT") {
+        abrirModalProduto(serialNormalizado);
+        mostrarFeedback(data.message || "Selecione o produto.", "alerta");
+        return;
+      }
+
+      mostrarFeedback(data.message || "Erro ao registrar movimento.", "error");
+    } catch (error) {
+      mostrarFeedback("Erro de comunicação com o servidor.", "error");
+    }
+  }
+
+  document.getElementById("btn-bipar")?.addEventListener("click", function () {
+    enviarSerial(document.getElementById("serial-input")?.value);
+  });
+
+  document.getElementById("serial-input")?.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      enviarSerial(event.target.value);
+    }
+  });
+
+  document.getElementById("modal-produto-cancelar")?.addEventListener("click", fecharModalProduto);
+  document.getElementById("modal-produto-confirmar")?.addEventListener("click", function () {
+    const productId = document.getElementById("modal-produto-select")?.value;
+
+    if (!productId) {
+      mostrarFeedback("Selecione um produto.", "error");
+      return;
+    }
+
+    if (serialPendenteProduto) {
+      enviarSerial(serialPendenteProduto, productId);
+      fecharModalProduto();
+    }
+  });
+
+  document.getElementById("modal-produto-overlay")?.addEventListener("click", function (event) {
+    if (event.target === this) {
+      fecharModalProduto();
+    }
+  });
+</script>
+{% endif %}
 
 {% endblock %}

@@ -209,6 +209,10 @@
                         Receber em Estoque
                     </a>
                     {% endif %}
+                    <a href="{% url 'logistica:checkin_bag_tec' %}"
+                    class="{% if current_submenu == 'checkin_bag_tec' %}active{% endif %}">
+                        Bag do Técnico
+                    </a>
                 </div>
                 {% endif %}
                 {% if perms.logistica.checkout_principal %}
