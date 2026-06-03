@@ -169,6 +169,33 @@ def _normalizar_itens_bag(resposta):
     return []
 
 
+def _limpar_serial(serial):
+    return str(serial or "").strip()
+
+
+def _chave_serial(serial):
+    return _limpar_serial(serial).upper()
+
+
+def _extrair_order_number_consulta(item):
+    if not isinstance(item, dict):
+        return ""
+
+    last_mov = item.get("last_movement") or item.get("last_mov") or {}
+    extra_info = item.get("extra_info") or last_mov.get("extra_info") or {}
+
+    order_number = (
+        last_mov.get("order_number")
+        or item.get("order_number")
+        or last_mov.get("external_order_number")
+        or item.get("external_order_number")
+        or extra_info.get("order_number")
+        or ""
+    )
+
+    return str(order_number).strip() if order_number else ""
+
+
 def _formatar_itens_bag(itens):
     formatados = []
 
@@ -178,8 +205,10 @@ def _formatar_itens_bag(itens):
 
         product = item.get("product") or {}
         last_mov = item.get("last_movement") or item.get("last_mov") or {}
+        order_number = _extrair_order_number_consulta(item)
         formatados.append({
             "serial": item.get("serial") or item.get("serial_number") or "-",
+            "order_number": order_number,
             "product_id": item.get("product_id") or product.get("id") or "",
             "product_name": (
                 item.get("product_name")
@@ -198,6 +227,56 @@ def _formatar_itens_bag(itens):
         })
 
     return formatados
+
+
+def _montar_mapa_ordens_bag(itens):
+    mapa = {}
+
+    for item in itens:
+        if not isinstance(item, dict):
+            continue
+
+        serial = item.get("serial") or item.get("serial_number")
+        order_number = _extrair_order_number_consulta(item)
+
+        if serial and order_number:
+            mapa[_chave_serial(serial)] = order_number
+
+    return mapa
+
+
+def _buscar_order_number_na_bag(tecnico_uid, tipo_filtro, serial):
+    if not tecnico_uid or not serial:
+        return ""
+
+    try:
+        resp = _consultar_bag(tecnico_uid, tipo_filtro)
+    except Exception:
+        return ""
+
+    if isinstance(resp, dict) and resp.get("detail"):
+        return ""
+
+    for item in _normalizar_itens_bag(resp):
+        item_serial = item.get("serial") or item.get("serial_number")
+        if item_serial and _chave_serial(item_serial) == _chave_serial(serial):
+            return _extrair_order_number_consulta(item)
+
+    return ""
+
+
+def _resolver_order_number_bag(request, tecnico_uid, tipo_filtro, serial):
+    estado = _obter_estado_sessao(request)
+    order_number = (estado.get("seriais_ordens") or {}).get(_chave_serial(serial), "")
+
+    if not order_number:
+        order_number = _buscar_order_number_na_bag(
+            tecnico_uid,
+            tipo_filtro or estado.get("tipo_filtro") or "ambos",
+            serial,
+        )
+
+    return order_number
 
 
 def _carregar_clientes():
@@ -308,7 +387,15 @@ def _produto_obrigatorio(gai, item_info, product_id_informado):
     return not product_id_existente
 
 
-def _registrar_movimento_in(serial, gai, tecnico_uid, username, product_id=None, client_code="cielo"):
+def _registrar_movimento_in(
+    serial,
+    gai,
+    tecnico_uid,
+    username,
+    product_id=None,
+    client_code="cielo",
+    order_number=None,
+):
     item_payload = {
         "serial": serial,
         "extra_info": {
@@ -321,19 +408,19 @@ def _registrar_movimento_in(serial, gai, tecnico_uid, username, product_id=None,
 
     payload = {
         "item": item_payload,
-        "client_name": client_code.lower(),
+        "client_name": client_code.upper(),
         "movement_type": "IN",
-        "from_location_id": 0,
         "to_location_id": gai.id,
         "order_origin_id": 3,
         "extra_info": {
             "technician_uid": str(tecnico_uid),
             "bag_operation": True,
         },
-        "created_by": str(tecnico_uid),
+        "created_by": username or str(tecnico_uid),
     }
 
-    print(payload)
+    if order_number:
+        payload["order_number"] = str(order_number).strip()
 
     client = RequestClient(
         url=f"{STOCK_API_URL}/v1/movements/",
@@ -344,6 +431,8 @@ def _registrar_movimento_in(serial, gai, tecnico_uid, username, product_id=None,
         },
         request_data=payload,
     )
+
+    print(payload)
 
     return client.send_api_request()
 
@@ -363,13 +452,27 @@ def _obter_estado_sessao(request):
     return request.session.get(SESSION_BAG_TEC) or {}
 
 
-def _salvar_estado_sessao(request, base, tecnico_uid, tipo_filtro, modal_serial="", modal_client_code=""):
+def _salvar_estado_sessao(
+    request,
+    base,
+    tecnico_uid,
+    tipo_filtro,
+    modal_serial="",
+    modal_client_code="",
+    seriais_ordens=None,
+):
+    estado_atual = _obter_estado_sessao(request)
+
+    if seriais_ordens is None:
+        seriais_ordens = estado_atual.get("seriais_ordens") or {}
+
     request.session[SESSION_BAG_TEC] = {
         "base": base,
         "tecnico_uid": tecnico_uid,
         "tipo_filtro": tipo_filtro or "ambos",
         "modal_serial": modal_serial or "",
         "modal_client_code": modal_client_code or "",
+        "seriais_ordens": seriais_ordens,
     }
     request.session.modified = True
 
@@ -414,7 +517,8 @@ def _consultar_bag_contexto(request, user, bases, base, tecnico_uid, tipo_filtro
         messages.error(request, resp.get("detail"))
         return None
 
-    itens_bag = _formatar_itens_bag(_normalizar_itens_bag(resp))
+    itens_raw = _normalizar_itens_bag(resp)
+    itens_bag = _formatar_itens_bag(itens_raw)
     client_choices = _carregar_clientes()
 
     if not client_choices:
@@ -423,6 +527,7 @@ def _consultar_bag_contexto(request, user, bases, base, tecnico_uid, tipo_filtro
     return {
         "itens_bag": itens_bag,
         "client_choices": client_choices,
+        "seriais_ordens": _montar_mapa_ordens_bag(itens_raw),
         "bag_consultada": True,
         "base_consulta": base,
         "base_label": gai.nome or base,
@@ -441,7 +546,7 @@ def _processar_bipar_serial(
     client_code=None,
     product_id=None,
 ):
-    serial = str(serial or "").strip().upper()
+    serial = _limpar_serial(serial)
     client_code = (client_code or "").strip().lower() or None
 
     if not base:
@@ -488,6 +593,13 @@ def _processar_bipar_serial(
         messages.warning(request, "Selecione o produto para este serial.")
         return "need_modal"
 
+    estado = _obter_estado_sessao(request)
+    tipo_filtro = estado.get("tipo_filtro") or "ambos"
+    order_number = _resolver_order_number_bag(request, tecnico_uid, tipo_filtro, serial)
+
+    if not order_number and item_info:
+        order_number = _extrair_order_number_consulta(item_info)
+
     try:
         result = _registrar_movimento_in(
             serial=serial,
@@ -496,6 +608,7 @@ def _processar_bipar_serial(
             username=request.user.username,
             product_id=product_id_final,
             client_code=client_code,
+            order_number=order_number,
         )
 
         if isinstance(result, dict) and (
@@ -580,7 +693,9 @@ def checkin_bag_tec(request):
 
         if "carregar_produtos_modal" in request.POST:
             estado = _obter_estado_sessao(request)
-            modal_serial = (request.POST.get("modal_serial") or estado.get("modal_serial") or "").strip().upper()
+            modal_serial = _limpar_serial(
+                request.POST.get("modal_serial") or estado.get("modal_serial")
+            )
             modal_client_code = (request.POST.get("client_code") or "").strip()
 
             if not modal_serial:
@@ -628,7 +743,9 @@ def checkin_bag_tec(request):
                     estado.get("base", ""),
                     estado.get("tecnico_uid", ""),
                     estado.get("tipo_filtro", "ambos"),
-                    modal_serial=(request.POST.get("modal_serial") or estado.get("modal_serial") or "").strip().upper(),
+                    modal_serial=_limpar_serial(
+                        request.POST.get("modal_serial") or estado.get("modal_serial")
+                    ),
                     modal_client_code=(request.POST.get("client_code") or estado.get("modal_client_code") or "").strip(),
                 )
             else:
@@ -637,7 +754,9 @@ def checkin_bag_tec(request):
                     estado.get("base", ""),
                     estado.get("tecnico_uid", ""),
                     estado.get("tipo_filtro", "ambos"),
-                    modal_serial=(request.POST.get("modal_serial") or estado.get("modal_serial") or "").strip().upper(),
+                    modal_serial=_limpar_serial(
+                        request.POST.get("modal_serial") or estado.get("modal_serial")
+                    ),
                     modal_client_code=(request.POST.get("client_code") or estado.get("modal_client_code") or "").strip(),
                 )
 
@@ -663,7 +782,7 @@ def checkin_bag_tec(request):
                     base,
                     tecnico_uid,
                     tipo_filtro,
-                    modal_serial=str(serial or "").strip().upper(),
+                    modal_serial=_limpar_serial(serial),
                 )
             elif resultado == "success":
                 _salvar_estado_sessao(request, base, tecnico_uid, tipo_filtro)
@@ -740,6 +859,7 @@ def checkin_bag_tec(request):
                         base_consulta,
                         tecnico_uid_consulta,
                         tipo_filtro_consulta,
+                        seriais_ordens=consulta.get("seriais_ordens"),
                     )
                     estado_sessao = _obter_estado_sessao(request)
 
@@ -767,9 +887,20 @@ def checkin_bag_tec(request):
                 tipo_filtro_consulta = consulta["tipo_filtro_consulta"]
                 form.fields["tecnico"].widget.choices = consulta["tecnicos_choices"]
 
-                modal_serial = (estado_sessao.get("modal_serial") or "").strip().upper()
+                modal_serial = _limpar_serial(estado_sessao.get("modal_serial"))
                 modal_client_code = (estado_sessao.get("modal_client_code") or "").strip()
                 abrir_modal = bool(modal_serial)
+
+                _salvar_estado_sessao(
+                    request,
+                    base_consulta,
+                    tecnico_uid_consulta,
+                    tipo_filtro_consulta,
+                    modal_serial=modal_serial,
+                    modal_client_code=modal_client_code,
+                    seriais_ordens=consulta.get("seriais_ordens"),
+                )
+                estado_sessao = _obter_estado_sessao(request)
 
                 if modal_client_code:
                     produtos_modal_choices = _listar_produtos(modal_client_code)

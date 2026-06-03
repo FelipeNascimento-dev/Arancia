@@ -15,6 +15,7 @@
         border-radius: 14px;
         background: #fff;
         box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        margin-bottom: 50px;
     }
 
     .bag-header {
@@ -250,7 +251,7 @@
         <div class="bag-item">
             <div>
                 <strong>{{ item.serial }}</strong>
-                <small>{{ item.product_name }}</small>
+                <small>{% if item.order_number %}OS: {{ item.order_number }}{% else %}-{% endif %}</small>
             </div>
             <span class="status-pill">{{ item.tipo }}</span>
         </div>
