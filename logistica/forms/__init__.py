@@ -36,3 +36,4 @@ from .forms_reverse.froms_consulta_cotacao import ConsultaQuoteForm
 from .forms_user.user_password_forms import LoginComCodigoForm, UserProfilePasswordForm
 from .forms_checkin_checkout.forms_receber_em_estoque import ReceberEmEstoqueForm
 from .forms_checkin_checkout.forms_pre_recebimento import PreRecebimentoForm
+from .forms_checkin_checkout.forms_checkin_bag_tec import CheckInBagTecForm

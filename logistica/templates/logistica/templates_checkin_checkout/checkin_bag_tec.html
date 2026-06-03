@@ -1,0 +1,320 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+    .form-card-2col {
+        height: auto;
+        margin-top: 65px;
+    }
+
+    .bag-wrapper {
+        margin-top: 24px;
+        margin-left: 65px;
+        padding: 0 20px 20px;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    }
+
+    .bag-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+
+    .bag-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-top: 20px;
+    }
+
+    .bag-counter {
+        font-size: 14px;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: #f1f1f1;
+    }
+
+    .bag-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 420px;
+        overflow-y: auto;
+    }
+
+    .bag-item {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        background: #fafafa;
+    }
+
+    .bag-item strong {
+        display: block;
+        font-size: 14px;
+    }
+
+    .bag-item small {
+        color: #666;
+    }
+
+    .status-pill {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #e3f2fd;
+        color: #1565c0;
+        white-space: nowrap;
+        text-transform: uppercase;
+    }
+
+    .bipagem-feedback {
+        margin-bottom: 12px;
+        font-weight: 600;
+        min-height: 20px;
+    }
+
+    .feedback-success {
+        color: #2e7d32;
+    }
+
+    .feedback-error {
+        color: #c62828;
+    }
+
+    .feedback-alerta {
+        color: #ef6c00;
+    }
+
+    .bipagem-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: end;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid #eee;
+    }
+
+    .modal-produto-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .modal-produto-overlay.ativo {
+        display: flex;
+    }
+
+    .modal-produto {
+        width: min(420px, calc(100% - 32px));
+        background: #fff;
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
+    }
+
+  .modal-produto h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: #222;
+  }
+
+  .modal-produto p {
+    margin: 0 0 14px 0;
+    font-size: 13px;
+    color: #555;
+  }
+
+  .modal-produto-info {
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #fff3e0;
+    color: #ef6c00;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .modal-produto label {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    margin-bottom: 5px;
+    color: #333;
+  }
+
+  .modal-produto-select {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0 10px;
+    font-size: 14px;
+    background: #fff;
+    outline: none;
+  }
+
+  .modal-produto-select:focus {
+    border-color: #ef6c00;
+    box-shadow: 0 0 0 3px rgba(239, 108, 0, 0.15);
+  }
+
+    .modal-produto-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .modal-btn {
+        border: 0;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .modal-btn-cancelar {
+        background: #f1f1f1;
+        color: #333;
+    }
+
+    .modal-btn-confirmar {
+        background: #ef6c00;
+        color: #fff;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST">
+            {% csrf_token %}
+            {% if base_travada %}
+            {% if form.base.value %}
+            <input type="hidden" name="base" value="{{ form.base.value }}">
+            {% elif form.base.field.initial %}
+            <input type="hidden" name="base" value="{{ form.base.field.initial }}">
+            {% endif %}
+            {% endif %}
+            {% include 'global/partials/_form_2col.html' %}
+        </form>
+    </div>
+</div>
+
+{% if bag_consultada %}
+<div class="bag-wrapper">
+    <form method="POST" class="bipagem-row">
+        {% csrf_token %}
+        <input type="hidden" name="base" value="{{ base_consulta }}">
+        <input type="hidden" name="tecnico" value="{{ tecnico_uid_consulta }}">
+        <input type="hidden" name="tipo_filtro" value="{{ tipo_filtro_consulta }}">
+        <div class="form-group">
+            <label for="serial-input">Bipar serial</label>
+            <input type="text" id="serial-input" name="serial" class="form-control" autocomplete="off"
+                placeholder="Leia ou digite o serial">
+        </div>
+        <button type="submit" name="bipar_serial" value="1" class="submit-button-right">
+            Registrar IN
+        </button>
+    </form>
+
+    <div class="bag-header">
+        <div>
+            <div class="bag-title">Bag do técnico</div>
+            <small>{{ tecnico_nome }} · {{ base_label }}</small>
+        </div>
+        <span class="bag-counter">{{ itens_bag|length }} item(ns)</span>
+    </div>
+
+    {% if itens_bag %}
+    <div class="bag-list">
+        {% for item in itens_bag %}
+        <div class="bag-item">
+            <div>
+                <strong>{{ item.serial }}</strong>
+                <small>{{ item.product_name }}</small>
+            </div>
+            <span class="status-pill">{{ item.tipo }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>Nenhum serial encontrado na bag para os filtros selecionados.</p>
+    {% endif %}
+</div>
+{% endif %}
+
+<div id="modal-produto-overlay" class="modal-produto-overlay{% if abrir_modal %} ativo{% endif %}">
+  <div class="modal-produto">
+    <h3>Cliente e produto</h3>
+
+    <p>
+      Selecione o cliente e, se necessário, o produto vinculado ao serial para continuar a bipagem.
+    </p>
+
+    <div class="modal-produto-info">
+      Serial:
+      <span>{{ modal_serial|default:"-" }}</span>
+    </div>
+
+    <form method="POST" id="form-modal-cliente">
+      {% csrf_token %}
+      <input type="hidden" name="modal_serial" value="{{ modal_serial }}">
+      <input type="hidden" name="carregar_produtos_modal" value="1">
+
+      <label for="modal-cliente-select">Cliente</label>
+      <select id="modal-cliente-select" name="client_code" class="modal-produto-select" onchange="this.form.submit();">
+        <option value="">Selecione um cliente</option>
+        {% for code, name in client_choices %}
+        <option value="{{ code }}"{% if modal_client_code == code %} selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+      </select>
+    </form>
+
+    <form method="POST" id="form-modal-confirmar">
+      {% csrf_token %}
+      <input type="hidden" name="modal_serial" value="{{ modal_serial }}">
+      <input type="hidden" name="client_code" value="{{ modal_client_code }}">
+
+      <label for="modal-produto-select" style="margin-top: 10px; display: block;">Produto</label>
+      <select id="modal-produto-select" name="product_id" class="modal-produto-select"{% if not modal_client_code %} disabled{% endif %}>
+        <option value="">Selecione um produto</option>
+        {% for produto in produtos_modal_choices %}
+        <option value="{{ produto.id }}">
+          {{ produto.id }} - {{ produto.sku|default:"" }} - {{ produto.description|default:"" }} - {{ produto.category|default:"" }}
+        </option>
+        {% endfor %}
+      </select>
+
+      <div class="modal-produto-actions">
+        <button type="submit" name="cancelar_modal_bag_tec" value="1" class="modal-btn modal-btn-cancelar">
+          Cancelar
+        </button>
+
+        <button type="submit" name="confirmar_bipar_modal" value="1" class="modal-btn modal-btn-confirmar">
+          Confirmar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

@@ -115,6 +115,7 @@ urls_Checkin = [
          name="bipar_serial_recebimento"),
     path("check-in/pre-recebimento/", pre_recebimento,
          name="pre_recebimento_checkin"),
+    path("check-in/bag-tec/", checkin_bag_tec, name="checkin_bag_tec"),
 
     path("check/<str:vetor>/reverse/consulta/",
          checkout_reverse, name='checkout_reverse'),
