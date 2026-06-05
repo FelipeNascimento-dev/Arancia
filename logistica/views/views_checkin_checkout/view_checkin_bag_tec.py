@@ -83,21 +83,22 @@ def _get_gai_por_base(base_value):
     )
 
 
-def _is_pa_sao_paulo(gai):
+_GAIS_NAO_EXIGEM_PRODUTO = frozenset({
+    "ctb tatuapé 81",
+    "ctb tatuapé 128",
+})
+
+
+def _normalizar_nome_gai(nome):
+    return (nome or "").strip().lower()
+
+
+def _usuario_nao_exige_produto(user):
+    gai = getattr(getattr(user, "designacao", None), "informacao_adicional", None)
     if not gai:
         return False
 
-    nome = (gai.nome or "").strip().lower()
-    cod = (gai.cod_iata or "").strip().upper()
-
-    if nome == "ctb tatuapé 81":
-        return True
-    if "são paulo" in nome or "sao paulo" in nome:
-        return True
-    if cod in ("SPO", "SAO", "SP"):
-        return True
-
-    return False
+    return _normalizar_nome_gai(gai.nome) in _GAIS_NAO_EXIGEM_PRODUTO
 
 
 def _buscar_tecnicos(base):
@@ -199,6 +200,46 @@ def _extrair_order_number_consulta(item):
     return str(order_number).strip() if order_number else ""
 
 
+def _extrair_nome_produto(item):
+    if not isinstance(item, dict):
+        return "-"
+
+    product = item.get("product") or {}
+
+    nome = (
+        item.get("product_name")
+        or product.get("description")
+        or product.get("name")
+        or product.get("product_name")
+        or product.get("sku")
+        or ""
+    )
+
+    return str(nome).strip() or "-"
+
+
+def _extrair_client_code_item(item):
+    if not isinstance(item, dict):
+        return ""
+
+    product = item.get("product") or {}
+    last_mov = item.get("last_movement") or item.get("last_mov") or {}
+    extra_info = item.get("extra_info") or last_mov.get("extra_info") or {}
+
+    client_code = (
+        item.get("client_code")
+        or item.get("client_name")
+        or last_mov.get("client_name")
+        or last_mov.get("client_code")
+        or product.get("client_code")
+        or extra_info.get("client_code")
+        or extra_info.get("client_name")
+        or ""
+    )
+
+    return str(client_code).strip().lower()
+
+
 def _formatar_itens_bag(itens):
     formatados = []
 
@@ -212,13 +253,8 @@ def _formatar_itens_bag(itens):
         formatados.append({
             "serial": item.get("serial") or item.get("serial_number") or "-",
             "order_number": order_number,
-            "product_id": item.get("product_id") or product.get("id") or "",
-            "product_name": (
-                item.get("product_name")
-                or product.get("description")
-                or product.get("sku")
-                or "-"
-            ),
+            "product_id": _extrair_product_id(item) or "",
+            "product_name": _extrair_nome_produto(item),
             "tipo": (
                 last_mov.get("movement_type")
                 or item.get("movement_type")
@@ -232,7 +268,7 @@ def _formatar_itens_bag(itens):
     return formatados
 
 
-def _montar_mapa_ordens_bag(itens):
+def _montar_mapa_seriais_bag(itens):
     mapa = {}
 
     for item in itens:
@@ -240,12 +276,91 @@ def _montar_mapa_ordens_bag(itens):
             continue
 
         serial = item.get("serial") or item.get("serial_number")
-        order_number = _extrair_order_number_consulta(item)
+        if not serial:
+            continue
 
-        if serial and order_number:
-            mapa[_chave_serial(serial)] = order_number
+        product_id = _extrair_product_id(item)
+        mapa[_chave_serial(serial)] = {
+            "order_number": _extrair_order_number_consulta(item),
+            "product_id": product_id,
+            "client_code": _extrair_client_code_item(item),
+            "product_name": _extrair_nome_produto(item),
+        }
 
     return mapa
+
+
+def _resolver_dados_serial_bag(request, serial):
+    estado = _obter_estado_sessao(request)
+    seriais_bag = estado.get("seriais_bag") or estado.get("seriais_ordens") or {}
+    dados = seriais_bag.get(_chave_serial(serial), {})
+
+    if isinstance(dados, str):
+        return {"order_number": dados}
+
+    return dados if isinstance(dados, dict) else {}
+
+
+def _buscar_dados_serial_na_bag(tecnico_uid, tipo_filtro, serial):
+    if not tecnico_uid or not serial:
+        return {}
+
+    try:
+        resp = _consultar_bag(tecnico_uid, tipo_filtro)
+    except Exception:
+        return {}
+
+    if isinstance(resp, dict) and resp.get("detail"):
+        return {}
+
+    for item in _normalizar_itens_bag(resp):
+        item_serial = item.get("serial") or item.get("serial_number")
+        if item_serial and _chave_serial(item_serial) == _chave_serial(serial):
+            return {
+                "order_number": _extrair_order_number_consulta(item),
+                "product_id": _extrair_product_id(item),
+                "client_code": _extrair_client_code_item(item),
+                "product_name": _extrair_nome_produto(item),
+            }
+
+    return {}
+
+
+def _serial_tem_produto(product_id, dados_bag=None):
+    if product_id:
+        return True
+
+    if not dados_bag:
+        return False
+
+    if dados_bag.get("product_id"):
+        return True
+
+    nome = (dados_bag.get("product_name") or "").strip()
+    return bool(nome and nome != "-")
+
+
+def _resolver_dados_serial_completos(request, tecnico_uid, tipo_filtro, serial):
+    dados = _resolver_dados_serial_bag(request, serial)
+
+    if dados.get("product_id"):
+        return dados
+
+    dados_api = _buscar_dados_serial_na_bag(
+        tecnico_uid,
+        tipo_filtro or _obter_estado_sessao(request).get("tipo_filtro") or "ambos",
+        serial,
+    )
+
+    if not dados_api:
+        return dados
+
+    return {
+        "order_number": dados_api.get("order_number") or dados.get("order_number") or "",
+        "product_id": dados_api.get("product_id") or dados.get("product_id"),
+        "client_code": dados_api.get("client_code") or dados.get("client_code") or "",
+        "product_name": dados_api.get("product_name") or dados.get("product_name") or "-",
+    }
 
 
 def _buscar_order_number_na_bag(tecnico_uid, tipo_filtro, serial):
@@ -269,13 +384,13 @@ def _buscar_order_number_na_bag(tecnico_uid, tipo_filtro, serial):
 
 
 def _resolver_order_number_bag(request, tecnico_uid, tipo_filtro, serial):
-    estado = _obter_estado_sessao(request)
-    order_number = (estado.get("seriais_ordens") or {}).get(_chave_serial(serial), "")
+    dados = _resolver_dados_serial_bag(request, serial)
+    order_number = dados.get("order_number") or ""
 
     if not order_number:
         order_number = _buscar_order_number_na_bag(
             tecnico_uid,
-            tipo_filtro or estado.get("tipo_filtro") or "ambos",
+            tipo_filtro or _obter_estado_sessao(request).get("tipo_filtro") or "ambos",
             serial,
         )
 
@@ -338,24 +453,204 @@ def _listar_produtos(client_code):
     return []
 
 
+def _normalizar_product_id(valor):
+    if valor in [None, "", "0", 0]:
+        return None
+
+    try:
+        return int(valor)
+    except (TypeError, ValueError):
+        return None
+
+
+def _extrair_product_id_deep(data, profundidade=0, dentro_product=False):
+    if profundidade > 12 or data is None:
+        return None
+
+    if isinstance(data, dict):
+        for chave in ("product_id", "productId", "id_product"):
+            pid = _normalizar_product_id(data.get(chave))
+            if pid:
+                return pid
+
+        if dentro_product:
+            pid = _normalizar_product_id(data.get("id"))
+            if pid:
+                return pid
+
+        for chave, valor in data.items():
+            if chave == "product":
+                pid = _extrair_product_id_deep(valor, profundidade + 1, dentro_product=True)
+            elif isinstance(valor, dict):
+                pid = _extrair_product_id_deep(valor, profundidade + 1, dentro_product=False)
+            elif isinstance(valor, list):
+                pid = None
+                for elemento in valor:
+                    pid = _extrair_product_id_deep(elemento, profundidade + 1, dentro_product=False)
+                    if pid:
+                        break
+            else:
+                continue
+
+            if pid:
+                return pid
+
+    return None
+
+
 def _extrair_product_id(item_info):
     if not isinstance(item_info, dict):
         return None
 
     product = item_info.get("product") or {}
+    item_nested = item_info.get("item") or {}
+    last_mov = item_info.get("last_movement") or item_info.get("last_mov") or {}
+    last_mov_item = last_mov.get("item") or {}
+    last_mov_product = last_mov.get("product") or {}
+    extra_info = item_info.get("extra_info") or last_mov.get("extra_info") or {}
     product_id = (
         item_info.get("product_id")
+        or item_info.get("productId")
+        or item_nested.get("product_id")
+        or item_nested.get("productId")
         or product.get("id")
+        or product.get("product_id")
+        or product.get("productId")
         or item_info.get("id_product")
+        or last_mov.get("product_id")
+        or last_mov.get("productId")
+        or last_mov_item.get("product_id")
+        or last_mov_item.get("productId")
+        or last_mov_product.get("id")
+        or last_mov_product.get("product_id")
+        or extra_info.get("product_id")
+        or extra_info.get("productId")
     )
 
-    if product_id in [None, "", 0, "0"]:
+    pid = _normalizar_product_id(product_id)
+    if pid:
+        return pid
+
+    return _extrair_product_id_deep(item_info)
+
+
+def _buscar_product_id_por_nome(client_code, product_name):
+    nome_busca = (product_name or "").strip().lower()
+    if not client_code or not nome_busca or nome_busca == "-":
         return None
 
-    try:
-        return int(product_id)
-    except (TypeError, ValueError):
-        return None
+    for produto in _listar_produtos(client_code):
+        descricao = (produto.get("description") or produto.get("product_name") or "").strip().lower()
+        sku = (produto.get("sku") or produto.get("product_code") or "").strip().lower()
+
+        if nome_busca == descricao or nome_busca == sku:
+            pid = _normalizar_product_id(produto.get("id"))
+            if pid:
+                return pid
+
+    return None
+
+
+def _consultar_item_por_serial_com_clientes(serial, gai, client_codes=None):
+    vistos = set()
+    candidatos = []
+
+    for code in client_codes or []:
+        code = (code or "").strip().lower()
+        if not code or code in vistos:
+            continue
+        vistos.add(code)
+        candidatos.append(code)
+
+    for code_padrao in ("cielo", "claro"):
+        if code_padrao not in vistos:
+            candidatos.append(code_padrao)
+
+    item_encontrado = None
+    client_encontrado = None
+
+    for code in candidatos:
+        item = _consultar_item_por_serial(serial, gai, code)
+        if not item:
+            continue
+
+        if not item_encontrado:
+            item_encontrado = item
+            client_encontrado = code
+
+        pid = _extrair_product_id(item)
+        if pid:
+            return item, code, pid
+
+    return item_encontrado, client_encontrado, (
+        _extrair_product_id(item_encontrado) if item_encontrado else None
+    )
+
+
+def _resolver_product_id_serial(
+    serial,
+    gai,
+    tecnico_uid,
+    tipo_filtro,
+    dados_bag,
+    client_code=None,
+    item_info=None,
+    product_id_informado=None,
+):
+    pid = _normalizar_product_id(product_id_informado)
+    if pid:
+        return pid
+
+    pid = _normalizar_product_id((dados_bag or {}).get("product_id"))
+    if pid:
+        return pid
+
+    dados_frescos = _buscar_dados_serial_na_bag(tecnico_uid, tipo_filtro, serial)
+    pid = _normalizar_product_id(dados_frescos.get("product_id"))
+    if pid:
+        return pid
+
+    clientes = []
+    for code in (
+        client_code,
+        (dados_bag or {}).get("client_code"),
+        dados_frescos.get("client_code"),
+    ):
+        code = (code or "").strip().lower()
+        if code and code not in clientes:
+            clientes.append(code)
+
+    if item_info:
+        pid = _extrair_product_id(item_info)
+        if pid:
+            return pid
+
+    item_resolvido, client_resolvido, pid = _consultar_item_por_serial_com_clientes(
+        serial,
+        gai,
+        clientes,
+    )
+    if pid:
+        return pid
+
+    product_name = (
+        (dados_bag or {}).get("product_name")
+        or dados_frescos.get("product_name")
+        or (_extrair_nome_produto(item_resolvido) if item_resolvido else "")
+    )
+
+    for code in clientes + ([client_resolvido] if client_resolvido else []) + ["cielo", "claro"]:
+        code = (code or "").strip().lower()
+        if not code:
+            continue
+        pid = _buscar_product_id_por_nome(code, product_name)
+        if pid:
+            return pid
+
+    if item_resolvido:
+        return _extrair_product_id(item_resolvido)
+
+    return None
 
 
 def _consultar_item_por_serial(serial, gai, client_code):
@@ -378,16 +673,11 @@ def _consultar_item_por_serial(serial, gai, client_code):
     return None
 
 
-def _produto_obrigatorio(gai, item_info, product_id_informado):
-    if product_id_informado:
+def _precisa_modal_produto(user, product_id):
+    if product_id:
         return False
 
-    product_id_existente = _extrair_product_id(item_info)
-
-    if product_id_existente and not _is_pa_sao_paulo(gai):
-        return False
-
-    return not product_id_existente
+    return not _usuario_nao_exige_produto(user)
 
 
 def _registrar_movimento_in(
@@ -399,15 +689,16 @@ def _registrar_movimento_in(
     client_code="cielo",
     order_number=None,
 ):
+    if product_id is None:
+        raise ValueError("product_id é obrigatório para registrar movimento IN.")
+
     item_payload = {
         "serial": serial,
+        "product_id": int(product_id),
         "extra_info": {
             "technician_uid": str(tecnico_uid),
         },
     }
-
-    if product_id:
-        item_payload["product_id"] = int(product_id)
 
     payload = {
         "item": item_payload,
@@ -435,8 +726,6 @@ def _registrar_movimento_in(
         request_data=payload,
     )
 
-    print(payload)
-
     return client.send_api_request()
 
 
@@ -462,12 +751,12 @@ def _salvar_estado_sessao(
     tipo_filtro,
     modal_serial="",
     modal_client_code="",
-    seriais_ordens=None,
+    seriais_bag=None,
 ):
     estado_atual = _obter_estado_sessao(request)
 
-    if seriais_ordens is None:
-        seriais_ordens = estado_atual.get("seriais_ordens") or {}
+    if seriais_bag is None:
+        seriais_bag = estado_atual.get("seriais_bag") or estado_atual.get("seriais_ordens") or {}
 
     request.session[SESSION_BAG_TEC] = {
         "base": base,
@@ -475,7 +764,7 @@ def _salvar_estado_sessao(
         "tipo_filtro": tipo_filtro or "ambos",
         "modal_serial": modal_serial or "",
         "modal_client_code": modal_client_code or "",
-        "seriais_ordens": seriais_ordens,
+        "seriais_bag": seriais_bag,
     }
     request.session.modified = True
 
@@ -530,7 +819,7 @@ def _consultar_bag_contexto(request, user, bases, base, tecnico_uid, tipo_filtro
     return {
         "itens_bag": itens_bag,
         "client_choices": client_choices,
-        "seriais_ordens": _montar_mapa_ordens_bag(itens_raw),
+        "seriais_bag": _montar_mapa_seriais_bag(itens_raw),
         "bag_consultada": True,
         "base_consulta": base,
         "base_label": gai.nome or base,
@@ -580,24 +869,55 @@ def _processar_bipar_serial(
     else:
         product_id = None
 
-    if not client_code:
+    estado = _obter_estado_sessao(request)
+    tipo_filtro = estado.get("tipo_filtro") or "ambos"
+    dados_bag = _resolver_dados_serial_completos(
+        request,
+        tecnico_uid,
+        tipo_filtro,
+        serial,
+    )
+
+    if not product_id and dados_bag.get("product_id"):
+        product_id = dados_bag["product_id"]
+
+    if not client_code and dados_bag.get("client_code"):
+        client_code = dados_bag["client_code"]
+
+    client_code_consulta = client_code or "cielo"
+    item_info, client_resolvido, _ = _consultar_item_por_serial_com_clientes(
+        serial,
+        gai,
+        [client_code_consulta, dados_bag.get("client_code")],
+    )
+    if client_resolvido and not client_code:
+        client_code = client_resolvido
+
+    product_id = _resolver_product_id_serial(
+        serial=serial,
+        gai=gai,
+        tecnico_uid=tecnico_uid,
+        tipo_filtro=tipo_filtro,
+        dados_bag=dados_bag,
+        client_code=client_code,
+        item_info=item_info,
+        product_id_informado=product_id,
+    )
+
+    if _precisa_modal_produto(request.user, product_id):
         messages.warning(request, "Selecione o cliente e o produto.")
         return "need_modal"
 
-    item_info = _consultar_item_por_serial(serial, gai, client_code)
+    client_code_final = client_code or _extrair_client_code_item(item_info) or "cielo"
+    product_id_final = product_id
 
-    if _produto_obrigatorio(gai, item_info, product_id):
-        messages.warning(request, "Selecione o produto para este serial.")
+    if product_id_final is None and _usuario_nao_exige_produto(request.user):
+        product_id_final = 0
+
+    if product_id_final is None:
+        messages.warning(request, "Selecione o cliente e o produto.")
         return "need_modal"
 
-    product_id_final = product_id or _extrair_product_id(item_info)
-
-    if _is_pa_sao_paulo(gai) and not product_id_final:
-        messages.warning(request, "Selecione o produto para este serial.")
-        return "need_modal"
-
-    estado = _obter_estado_sessao(request)
-    tipo_filtro = estado.get("tipo_filtro") or "ambos"
     order_number = _resolver_order_number_bag(request, tecnico_uid, tipo_filtro, serial)
 
     if not order_number and item_info:
@@ -610,7 +930,7 @@ def _processar_bipar_serial(
             tecnico_uid=tecnico_uid,
             username=request.user.username,
             product_id=product_id_final,
-            client_code=client_code,
+            client_code=client_code_final,
             order_number=order_number,
         )
 
@@ -862,7 +1182,7 @@ def checkin_bag_tec(request):
                         base_consulta,
                         tecnico_uid_consulta,
                         tipo_filtro_consulta,
-                        seriais_ordens=consulta.get("seriais_ordens"),
+                        seriais_bag=consulta.get("seriais_bag"),
                     )
                     estado_sessao = _obter_estado_sessao(request)
 
@@ -901,7 +1221,7 @@ def checkin_bag_tec(request):
                     tipo_filtro_consulta,
                     modal_serial=modal_serial,
                     modal_client_code=modal_client_code,
-                    seriais_ordens=consulta.get("seriais_ordens"),
+                    seriais_bag=consulta.get("seriais_bag"),
                 )
                 estado_sessao = _obter_estado_sessao(request)
 
