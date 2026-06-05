@@ -213,6 +213,10 @@
                     class="{% if current_submenu == 'checkin_bag_tec' %}active{% endif %}">
                         Bag do Técnico
                     </a>
+                    <a href="{% url 'logistica:atrelar_motoboy' %}"
+                    class="{% if current_submenu == 'atrelar_motoboy' %}active{% endif %}">
+                        Atrelar ao Motoboy
+                    </a>
                 </div>
                 {% endif %}
                 {% if perms.logistica.checkout_principal %}
