@@ -1,0 +1,68 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+    .form-card-2col {
+        height: auto;
+        margin-top: 65px;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST">
+                {% if base_travada %}
+                    {% if form.base.value %}
+                    <input type="hidden" name="base" value="{{ form.base.value }}">
+                    {% elif form.base.field.initial %}
+                    <input type="hidden" name="base" value="{{ form.base.field.initial }}">
+                    {% endif %}
+                {% endif %}
+            {% include 'global/partials/_form_2col.html' %}
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    function focusSerial() {
+        var el = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
+        if (!el || el.disabled || el.offsetParent === null) return;
+        el.focus({ preventScroll: true });
+        try { el.setSelectionRange(el.value.length, el.value.length); } catch (_) {}
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', focusSerial);
+    } else {
+        focusSerial();
+    }
+
+    var input = document.getElementById('id_serial') || document.querySelector('input[name="serial"]');
+    if (!input) return;
+    var form = input.closest('form');
+    if (!form) return;
+
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            var v = (input.value || '').trim();
+            if (!v) return;
+
+            var hidden = form.querySelector('input[name="add_serial"]');
+            if (!hidden) {
+                hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'add_serial';
+                form.appendChild(hidden);
+            }
+            hidden.value = '1';
+            form.noValidate = true;
+            form.submit();
+        }
+    });
+})();
+</script>
+
+{% endblock %}

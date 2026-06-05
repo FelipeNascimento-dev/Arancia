@@ -116,6 +116,7 @@ urls_Checkin = [
     path("check-in/pre-recebimento/", pre_recebimento,
          name="pre_recebimento_checkin"),
     path("check-in/bag-tec/", checkin_bag_tec, name="checkin_bag_tec"),
+    path("check-in/atrelar-motoboy/", atrelar_motoboy, name="atrelar_motoboy"),
 
     path("check/<str:vetor>/reverse/consulta/",
          checkout_reverse, name='checkout_reverse'),

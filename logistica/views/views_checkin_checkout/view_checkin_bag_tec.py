@@ -122,9 +122,12 @@ def _buscar_tecnicos(base):
 
 
 def _movement_types_por_filtro(tipo_filtro):
+    if not tipo_filtro or tipo_filtro == "ambos":
+        return None
+
     mapa = {
-        "entrega": ["OUT"],
-        "coletado": ["IN"],
+        "TO_BE_DELIVERED": ["TO_BE_DELIVERED"],
+        "COLLECTED": ["COLLECTED"],
     }
     return mapa.get(tipo_filtro)
 

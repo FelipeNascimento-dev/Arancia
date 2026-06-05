@@ -4,8 +4,8 @@ from django import forms
 class CheckInBagTecForm(forms.Form):
     TIPO_FILTRO_CHOICES = [
         ("ambos", "Ambos"),
-        ("entrega", "Suprimento de entrega"),
-        ("coletado", "Coletados"),
+        ("TO_BE_DELIVERED", "Suprimento de entrega"),
+        ("COLLECTED", "Coletados"),
     ]
 
     base = forms.CharField(
