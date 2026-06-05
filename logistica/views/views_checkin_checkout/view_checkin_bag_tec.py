@@ -680,53 +680,91 @@ def _precisa_modal_produto(user, product_id):
     return not _usuario_nao_exige_produto(user)
 
 
-def _registrar_movimento_in(
-    serial,
-    gai,
-    tecnico_uid,
-    username,
-    product_id=None,
-    client_code="cielo",
-    order_number=None,
-):
-    if product_id is None:
-        raise ValueError("product_id é obrigatório para registrar movimento IN.")
-
-    item_payload = {
-        "serial": serial,
-        "product_id": int(product_id),
-        "extra_info": {
-            "technician_uid": str(tecnico_uid),
-        },
-    }
-
+def _montar_payload_in_lote(itens, gai, tecnico_uid, username, client_code, order_number=None):
+    tecnico_uid = str(tecnico_uid)
     payload = {
-        "item": item_payload,
-        "client_name": client_code.upper(),
+        "item": [
+            {
+                "serial": item["serial"],
+                "product_id": int(item["product_id"]),
+                "extra_info": {
+                    "technician_uid": tecnico_uid,
+                    "volume_number": 1,
+                    "kit_number": 1,
+                },
+            }
+            for item in itens
+        ],
+        "client_name": (client_code or "cielo").upper(),
         "movement_type": "IN",
         "to_location_id": gai.id,
         "order_origin_id": 3,
         "extra_info": {
-            "technician_uid": str(tecnico_uid),
+            "technician_uid": tecnico_uid,
             "bag_operation": True,
         },
-        "created_by": username or str(tecnico_uid),
+        "created_by": username or tecnico_uid,
     }
 
     if order_number:
         payload["order_number"] = str(order_number).strip()
 
+    return payload
+
+
+def _agrupar_pendentes_para_lote(pendentes):
+    grupos = {}
+
+    for item in pendentes:
+        chave = (
+            (item.get("client_code") or "cielo").strip().lower(),
+            (item.get("order_number") or "").strip(),
+        )
+        grupos.setdefault(chave, []).append(item)
+
+    return grupos
+
+
+def _enviar_movimentos_in_lote(itens, gai, tecnico_uid, username, client_code, order_number=None):
     client = RequestClient(
-        url=f"{STOCK_API_URL}/v1/movements/",
+        url=f"{STOCK_API_URL}/v1/movements/move-list-items",
         method="POST",
         headers={
             "Accept": JSON_CT,
             "Content-Type": JSON_CT,
         },
-        request_data=payload,
+        request_data=_montar_payload_in_lote(
+            itens,
+            gai,
+            tecnico_uid,
+            username,
+            client_code,
+            order_number,
+        ),
     )
 
     return client.send_api_request()
+
+
+def _resposta_lote_sucesso(result):
+    if isinstance(result, dict) and result.get("detail"):
+        return False, result.get("detail")
+
+    if result is None:
+        return False, "Não foi possível registrar os movimentos."
+
+    if isinstance(result, dict) and (
+        result.get("id")
+        or result.get("items")
+        or result.get("success")
+        or "success" in str(result).lower()
+    ):
+        return True, ""
+
+    if isinstance(result, list) and result:
+        return True, ""
+
+    return True, ""
 
 
 def _nome_tecnico(tecnicos_choices, tecnico_uid):
@@ -744,6 +782,24 @@ def _obter_estado_sessao(request):
     return request.session.get(SESSION_BAG_TEC) or {}
 
 
+def _obter_seriais_pendentes_in(estado):
+    pendentes = estado.get("seriais_pendentes_in") or []
+    return pendentes if isinstance(pendentes, list) else []
+
+
+def _chaves_seriais_pendentes(pendentes):
+    return {_chave_serial(item.get("serial")) for item in pendentes if item.get("serial")}
+
+
+def _marcar_itens_inseridos(itens_bag, pendentes):
+    chaves_pendentes = _chaves_seriais_pendentes(pendentes)
+
+    for item in itens_bag:
+        item["inserido"] = _chave_serial(item.get("serial")) in chaves_pendentes
+
+    return itens_bag
+
+
 def _salvar_estado_sessao(
     request,
     base,
@@ -752,11 +808,15 @@ def _salvar_estado_sessao(
     modal_serial="",
     modal_client_code="",
     seriais_bag=None,
+    seriais_pendentes_in=None,
 ):
     estado_atual = _obter_estado_sessao(request)
 
     if seriais_bag is None:
         seriais_bag = estado_atual.get("seriais_bag") or estado_atual.get("seriais_ordens") or {}
+
+    if seriais_pendentes_in is None:
+        seriais_pendentes_in = _obter_seriais_pendentes_in(estado_atual)
 
     request.session[SESSION_BAG_TEC] = {
         "base": base,
@@ -765,6 +825,7 @@ def _salvar_estado_sessao(
         "modal_serial": modal_serial or "",
         "modal_client_code": modal_client_code or "",
         "seriais_bag": seriais_bag,
+        "seriais_pendentes_in": seriais_pendentes_in,
     }
     request.session.modified = True
 
@@ -923,33 +984,101 @@ def _processar_bipar_serial(
     if not order_number and item_info:
         order_number = _extrair_order_number_consulta(item_info)
 
-    try:
-        result = _registrar_movimento_in(
-            serial=serial,
-            gai=gai,
-            tecnico_uid=tecnico_uid,
-            username=request.user.username,
-            product_id=product_id_final,
-            client_code=client_code_final,
-            order_number=order_number,
-        )
+    pendentes = _obter_seriais_pendentes_in(estado)
+    chave = _chave_serial(serial)
 
-        if isinstance(result, dict) and (
-            result.get("id") or "success" in str(result).lower()
-        ):
-            messages.success(request, "Movimento IN registrado com sucesso.")
-            return "success"
+    if chave in _chaves_seriais_pendentes(pendentes):
+        messages.warning(request, "Serial já inserido na lista de envio.")
+        return "already_queued"
 
-        detail = result.get("detail") if isinstance(result, dict) else str(result)
-        messages.error(
-            request,
-            detail or "Não foi possível registrar o movimento.",
-        )
-        return "error"
+    pendentes.append({
+        "serial": serial,
+        "product_id": product_id_final,
+        "client_code": client_code_final,
+        "order_number": order_number or "",
+    })
 
-    except Exception:
-        messages.error(request, "Erro ao comunicar com a API de movimentos.")
-        return "error"
+    request.session[SESSION_BAG_TEC] = {
+        **estado,
+        "seriais_pendentes_in": pendentes,
+    }
+    request.session.modified = True
+
+    messages.success(request, f"Serial {serial} inserido. Total pendente: {len(pendentes)}.")
+    return "success"
+
+
+def _processar_finalizar_in(request, base, tecnico_uid):
+    if not base:
+        messages.error(request, "Base não informada.")
+        return False
+
+    if not tecnico_uid:
+        messages.error(request, "Técnico não informado.")
+        return False
+
+    estado = _obter_estado_sessao(request)
+    pendentes = _obter_seriais_pendentes_in(estado)
+
+    if not pendentes:
+        messages.warning(request, "Nenhum serial pendente para registrar.")
+        return False
+
+    base = _resolver_base(request.user, base)
+    gai = _get_gai_por_base(base)
+
+    if not gai:
+        messages.error(request, "Base inválida.")
+        return False
+
+    grupos = _agrupar_pendentes_para_lote(pendentes)
+    username = request.user.username
+    enviados = 0
+    erros = []
+    chaves_enviadas = set()
+
+    for (client_code, order_number), itens_grupo in grupos.items():
+        try:
+            result = _enviar_movimentos_in_lote(
+                itens_grupo,
+                gai,
+                tecnico_uid,
+                username,
+                client_code,
+                order_number or None,
+            )
+            sucesso, detalhe = _resposta_lote_sucesso(result)
+
+            if sucesso:
+                enviados += len(itens_grupo)
+                for item in itens_grupo:
+                    chaves_enviadas.add(_chave_serial(item.get("serial")))
+            else:
+                erros.append(detalhe or f"Falha ao registrar lote ({client_code}).")
+
+        except Exception:
+            erros.append(f"Erro ao comunicar com a API ({client_code}).")
+
+    if enviados:
+        messages.success(request, f"{enviados} movimento(s) IN registrado(s) com sucesso.")
+
+    if erros:
+        for erro in erros:
+            messages.error(request, erro)
+
+    restantes = [
+        item for item in pendentes
+        if _chave_serial(item.get("serial")) not in chaves_enviadas
+    ]
+    _salvar_estado_sessao(
+        request,
+        base,
+        tecnico_uid,
+        estado.get("tipo_filtro") or "ambos",
+        seriais_pendentes_in=restantes,
+    )
+
+    return bool(enviados)
 
 
 def _montar_form_consulta(request, titulo, bases, estado=None):
@@ -1005,8 +1134,10 @@ def checkin_bag_tec(request):
     modal_serial = ""
     modal_client_code = ""
     abrir_modal = False
+    pendentes_count = 0
 
     estado_sessao = _obter_estado_sessao(request)
+    pendentes_count = len(_obter_seriais_pendentes_in(estado_sessao))
 
     if request.method == "POST":
         if "cancelar_modal_bag_tec" in request.POST:
@@ -1085,6 +1216,38 @@ def checkin_bag_tec(request):
 
             return _redirect_checkin_bag_tec()
 
+        if "finalizar_in" in request.POST:
+            estado = _obter_estado_sessao(request)
+            base = estado.get("base") or _base_selecionada_post(request)
+            tecnico_uid = estado.get("tecnico_uid") or (request.POST.get("tecnico") or "").strip()
+            tipo_filtro = estado.get("tipo_filtro") or request.POST.get("tipo_filtro") or "ambos"
+
+            _processar_finalizar_in(request, base, tecnico_uid)
+
+            if estado.get("base") and estado.get("tecnico_uid"):
+                consulta = _consultar_bag_contexto(
+                    request,
+                    request.user,
+                    bases,
+                    _resolver_base(request.user, base),
+                    tecnico_uid,
+                    tipo_filtro,
+                )
+
+                if consulta:
+                    pendentes = _obter_seriais_pendentes_in(_obter_estado_sessao(request))
+                    itens_bag = _marcar_itens_inseridos(consulta["itens_bag"], pendentes)
+                    _salvar_estado_sessao(
+                        request,
+                        consulta["base_consulta"],
+                        consulta["tecnico_uid_consulta"],
+                        consulta["tipo_filtro_consulta"],
+                        seriais_bag=consulta.get("seriais_bag"),
+                        seriais_pendentes_in=pendentes,
+                    )
+
+            return _redirect_checkin_bag_tec()
+
         if "bipar_serial" in request.POST:
             estado = _obter_estado_sessao(request)
             base = estado.get("base") or _base_selecionada_post(request)
@@ -1119,9 +1282,10 @@ def checkin_bag_tec(request):
 
         base_selecionada = _base_selecionada_post(request)
 
-        if base_selecionada and "enviar_evento" not in request.POST:
+        if base_selecionada and {"enviar_evento", "finalizar_in"} & request.POST.keys() == set():
             _limpar_estado_sessao(request)
             estado_sessao = {}
+            pendentes_count = 0
 
         if base_selecionada:
             try:
@@ -1162,7 +1326,8 @@ def checkin_bag_tec(request):
                 )
 
                 if consulta:
-                    itens_bag = consulta["itens_bag"]
+                    pendentes = []
+                    itens_bag = _marcar_itens_inseridos(consulta["itens_bag"], pendentes)
                     client_choices = consulta["client_choices"]
                     bag_consultada = consulta["bag_consultada"]
                     base_consulta = consulta["base_consulta"]
@@ -1183,8 +1348,10 @@ def checkin_bag_tec(request):
                         tecnico_uid_consulta,
                         tipo_filtro_consulta,
                         seriais_bag=consulta.get("seriais_bag"),
+                        seriais_pendentes_in=[],
                     )
                     estado_sessao = _obter_estado_sessao(request)
+                    pendentes_count = len(pendentes)
 
     else:
         form, _ = _montar_form_consulta(request, titulo, bases, estado_sessao)
@@ -1200,7 +1367,8 @@ def checkin_bag_tec(request):
             )
 
             if consulta:
-                itens_bag = consulta["itens_bag"]
+                pendentes = _obter_seriais_pendentes_in(estado_sessao)
+                itens_bag = _marcar_itens_inseridos(consulta["itens_bag"], pendentes)
                 client_choices = consulta["client_choices"]
                 bag_consultada = consulta["bag_consultada"]
                 base_consulta = consulta["base_consulta"]
@@ -1222,8 +1390,10 @@ def checkin_bag_tec(request):
                     modal_serial=modal_serial,
                     modal_client_code=modal_client_code,
                     seriais_bag=consulta.get("seriais_bag"),
+                    seriais_pendentes_in=pendentes,
                 )
                 estado_sessao = _obter_estado_sessao(request)
+                pendentes_count = len(pendentes)
 
                 if modal_client_code:
                     produtos_modal_choices = _listar_produtos(modal_client_code)
@@ -1256,6 +1426,7 @@ def checkin_bag_tec(request):
             "modal_serial": modal_serial,
             "modal_client_code": modal_client_code,
             "abrir_modal": abrir_modal,
+            "pendentes_count": pendentes_count,
             "site_title": titulo,
             "botao_texto": "Consultar Bag",
             "current_parent_menu": "logistica",
