@@ -72,16 +72,21 @@ def _configurar_form(request, form, bases, post_data=None):
     return base_travada
 
 
-def _montar_payload_movimento(serial, gai, motoboy_uid, order_number=None):
+def _montar_payload_movimento_lote(serials, gai, motoboy_uid, order_number=None):
     motoboy_uid = str(motoboy_uid)
     payload = {
-        "item": {
-            "product_id": 0,
-            "serial": serial,
-            "extra_info": {
-                "motoboy_uid": motoboy_uid,
-            },
-        },
+        "item": [
+            {
+                "product_id": 0,
+                "serial": serial,
+                "extra_info": {
+                    "motoboy_uid": motoboy_uid,
+                    "volume_number": 1,
+                    "kit_number": 1,
+                },
+            }
+            for serial in serials
+        ],
         "client_name": "",
         "movement_type": "TO_BE_DELIVERED",
         "to_location_id": gai.id,
@@ -97,6 +102,25 @@ def _montar_payload_movimento(serial, gai, motoboy_uid, order_number=None):
         payload["order_number"] = str(order_number).strip()
 
     return payload
+
+
+def _enviar_movimentos_motoboy(serials, gai, motoboy_uid, order_number=None):
+    client = RequestClient(
+        url=f"{STOCK_API_URL}/v1/movements/move-list-items",
+        method="POST",
+        headers={
+            "Accept": JSON_CT,
+            "Content-Type": JSON_CT,
+        },
+        request_data=_montar_payload_movimento_lote(
+            serials,
+            gai,
+            motoboy_uid,
+            order_number,
+        ),
+    )
+
+    return client.send_api_request()
 
 
 @csrf_protect
@@ -156,38 +180,23 @@ def atrelar_motoboy(request):
                 if not gai:
                     messages.error(request, "Base selecionada inválida.")
                 else:
-                    atrelados = []
+                    result = _enviar_movimentos_motoboy(
+                        serials,
+                        gai,
+                        motoboy_uid,
+                        order_number,
+                    )
 
-                    for serial in serials:
-                        result = RequestClient(
-                            url=f"{STOCK_API_URL}/v1/movements/",
-                            method="POST",
-                            headers={
-                                "Accept": JSON_CT,
-                                "Content-Type": JSON_CT,
-                            },
-                            request_data=_montar_payload_movimento(
-                                serial, gai, motoboy_uid, order_number
-                            ),
-                        ).send_api_request()
-
-                        if isinstance(result, dict) and result.get("detail"):
-                            messages.error(request, result.get("detail"))
-                        elif isinstance(result, dict) and (
-                            result.get("id")
-                            or "success" in str(result).lower()
-                        ):
-                            atrelados.append(serial)
-                        else:
-                            messages.error(request, "Erro ao atrelar serial.")
-
-                    if atrelados:
+                    if isinstance(result, dict) and result.get("detail"):
+                        messages.error(request, result.get("detail"))
+                    elif result is None:
+                        messages.error(request, "Erro ao atrelar seriais.")
+                    else:
                         messages.success(
                             request,
-                            f"{len(atrelados)} serial(is) atrelado(s) ao motoboy.",
+                            f"{len(serials)} serial(is) atrelado(s) ao motoboy.",
                         )
-                        if len(atrelados) == len(serials):
-                            serials = []
+                        serials = []
 
         request.session[SESSION_SERIALS_KEY] = serials
         request.session.modified = True
