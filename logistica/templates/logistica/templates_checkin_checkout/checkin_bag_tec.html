@@ -60,6 +60,11 @@
       background: #fafafa;
   }
 
+  .bag-item.inserido {
+      border-color: #2e7d32;
+      background: #e8f5e9;
+  }
+
   .bag-item strong {
       display: block;
       font-size: 14px;
@@ -78,6 +83,39 @@
       color: #1565c0;
       white-space: nowrap;
       text-transform: uppercase;
+  }
+
+  .status-pill.inserido {
+      background: #c8e6c9;
+      color: #2e7d32;
+  }
+
+  .bag-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+  }
+
+  .bag-counter.pendente {
+      background: #e8f5e9;
+      color: #2e7d32;
+  }
+
+  .btn-finalizar-in {
+      border: 0;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      background: #2e7d32;
+      color: #fff;
+  }
+
+  .btn-finalizar-in:disabled {
+      background: #bdbdbd;
+      cursor: not-allowed;
   }
 
   .bipagem-feedback {
@@ -233,7 +271,7 @@
                 placeholder="Leia ou digite o serial">
         </div>
         <button type="submit" name="bipar_serial" value="1" class="submit-button-right">
-            Registrar IN
+            Inserir serial
         </button>
     </form>
 
@@ -242,13 +280,27 @@
             <div class="bag-title">Bag do técnico</div>
             <small>{{ tecnico_nome }} · {{ base_label }}</small>
         </div>
-        <span class="bag-counter">{{ itens_bag|length }} item(ns)</span>
+        <div class="bag-actions">
+            <span class="bag-counter">{{ itens_bag|length }} item(ns)</span>
+            {% if pendentes_count %}
+            <span class="bag-counter pendente">{{ pendentes_count }} inserido(s)</span>
+            {% endif %}
+            <form method="POST" style="margin: 0;">
+                {% csrf_token %}
+                <input type="hidden" name="base" value="{{ base_consulta }}">
+                <input type="hidden" name="tecnico" value="{{ tecnico_uid_consulta }}">
+                <input type="hidden" name="tipo_filtro" value="{{ tipo_filtro_consulta }}">
+                <button type="submit" name="finalizar_in" value="1" class="btn-finalizar-in"{% if not pendentes_count %} disabled{% endif %}>
+                    Registrar todos ({{ pendentes_count }})
+                </button>
+            </form>
+        </div>
     </div>
 
     {% if itens_bag %}
     <div class="bag-list">
         {% for item in itens_bag %}
-        <div class="bag-item">
+        <div class="bag-item{% if item.inserido %} inserido{% endif %}">
             <div>
                 <strong>{{ item.serial }}</strong>
                 <small>
@@ -256,7 +308,9 @@
                     · {{ item.product_name }}
                 </small>
             </div>
-            <span class="status-pill">{{ item.tipo }}</span>
+            <span class="status-pill{% if item.inserido %} inserido{% endif %}">
+                {% if item.inserido %}INSERIDO{% else %}{{ item.tipo }}{% endif %}
+            </span>
         </div>
         {% endfor %}
     </div>
