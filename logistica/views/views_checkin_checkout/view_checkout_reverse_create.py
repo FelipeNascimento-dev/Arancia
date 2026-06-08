@@ -168,7 +168,7 @@ def checkout_reverse_create(request, rom):
         payload_finish = {
             "finished_by": user.username,
             "finished_at": datetime.utcnow().isoformat() + "Z",
-            "movement_type": "RETURN",
+            "movement_type": "PACKING",
             "external_order_number": numero_romaneio
         }
 
