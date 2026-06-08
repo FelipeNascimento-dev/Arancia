@@ -1,18 +1,15 @@
 from django import forms
 
 
-class PreRecebimentoForm(forms.Form):
+class PreRecebimentoCheckinForm(forms.Form):
     numero_romaneio = forms.CharField(
-        label="Número do Romaneio",
-        max_length=100,
-        required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control'})
+        label="Número do romaneio",
+        required=False,
     )
 
-    seriais = forms.CharField(
-        label="Seriais",
-        max_length=200,
-        required=True,
+    serial = forms.CharField(
+        label="Bipar serial",
+        required=False,
     )
 
     def __init__(self, *args, nome_form=None, **kwargs):
