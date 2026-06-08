@@ -208,6 +208,10 @@
                     class="{% if current_submenu == 'receber_estoque' %}active{% endif %}">
                         Receber em Estoque
                     </a>
+                    <a href="{% url 'logistica:pre_recebimento_checkin' %}"
+                    class="{% if current_submenu == 'pre_recebimento' %}active{% endif %}">
+                        Pré-Recebimento
+                    </a>
                     {% endif %}
                     <a href="{% url 'logistica:checkin_bag_tec' %}"
                     class="{% if current_submenu == 'checkin_bag_tec' %}active{% endif %}">
