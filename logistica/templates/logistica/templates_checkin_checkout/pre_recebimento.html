@@ -1,20 +1,1082 @@
 {% extends 'global/base.html' %}
 
 {% block content %}
+
 <style>
   .form-card-2col {
     height: auto;
     margin-top: 65px;
   }
+
+  .romaneio-wrapper {
+    margin-top: 24px;
+    padding: 0px 20px 20px 20px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  }
+
+  .romaneio-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .romaneio-title {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .romaneio-counter {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #f1f1f1;
+  }
+
+  .romaneio-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .romaneio-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: #fafafa;
+    transition: 0.2s ease;
+  }
+
+  .romaneio-item strong {
+    display: block;
+    font-size: 14px;
+  }
+
+  .romaneio-item small {
+    color: #666;
+  }
+
+  .status-pill {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #ddd;
+    white-space: nowrap;
+  }
+
+  .item-pendente {
+    border-color: #ddd;
+    background: #fafafa;
+  }
+
+  .item-recebido {
+    border-color: #2e7d32;
+    background: #e8f5e9;
+  }
+
+  .item-erro {
+    border-color: #c62828;
+    background: #ffebee;
+  }
+
+  .item-alerta {
+    border-color: #ef6c00;
+    background: #fff3e0;
+  }
+
+  .bipagem-feedback {
+    margin-bottom: 12px;
+    font-weight: 600;
+    min-height: 20px;
+  }
+
+  .feedback-success {
+    color: #2e7d32;
+  }
+
+  .feedback-error {
+    color: #c62828;
+  }
+
+  .feedback-alerta {
+    color: #ef6c00;
+  }
+
+   .item-fora-romaneio {
+    border-color: #ef6c00;
+    background: #fff3e0;
+  }
+
+  .item-ultimo-bipado {
+    box-shadow: 0 0 0 2px rgba(239, 108, 0, 0.25);
+    transform: scale(1.01);
+  }
+
+  .item-nao-confirmado {
+    border-color: #c62828;
+    background: #ffebee;
+  }
+
+  .romaneio-info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 14px 0 16px 0;
+  }
+
+  .romaneio-info-card {
+    border: 1px solid #e3e3e3;
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: #fafafa;
+  }
+
+  .romaneio-info-card span {
+    display: block;
+    font-size: 11px;
+    color: #777;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .romaneio-info-card strong {
+    display: block;
+    font-size: 13px;
+    color: #222;
+  }
+
+  .romaneio-item-main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .romaneio-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: #666;
+    font-size: 12px;
+  }
+
+  .romaneio-meta span {
+    background: rgba(0,0,0,0.04);
+    padding: 3px 7px;
+    border-radius: 999px;
+  }
+
+  .status-romaneio {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    background: #fff3e0;
+    color: #ef6c00;
+  }
+
+  @media (max-width: 900px) {
+    .romaneio-info-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .romaneio-info-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .romaneio-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  .modal-produto-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+
+  .modal-produto-overlay.ativo {
+    display: flex;
+  }
+
+  .modal-produto {
+    width: min(420px, calc(100% - 32px));
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
+  }
+
+  .modal-produto h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: #222;
+  }
+
+  .modal-produto p {
+    margin: 0 0 14px 0;
+    font-size: 13px;
+    color: #555;
+  }
+
+  .modal-produto-info {
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #fff3e0;
+    color: #ef6c00;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .modal-produto label {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    margin-bottom: 5px;
+    color: #333;
+  }
+
+  .modal-produto input {
+    width: 100%;
+    height: 38px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0 10px;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .modal-produto input:focus {
+    border-color: #ef6c00;
+    box-shadow: 0 0 0 3px rgba(239, 108, 0, 0.15);
+  }
+
+  .modal-produto-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .modal-btn {
+    border: 0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .modal-btn-cancelar {
+    background: #f1f1f1;
+    color: #333;
+  }
+
+  .modal-btn-confirmar {
+    background: #ef6c00;
+    color: #fff;
+  }
+
+  .modal-produto-select {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0 10px;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+  }
+
+  .modal-produto-select:focus {
+    border-color: #ef6c00;
+    box-shadow: 0 0 0 3px rgba(239, 108, 0, 0.15);
+  }
+
+  .romaneio-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-remover-ck {
+    border: 0;
+    border-radius: 999px;
+    padding: 5px 9px;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    background: #ffebee;
+    color: #c62828;
+    white-space: nowrap;
+  }
+
+  .btn-remover-ck:hover {
+    background: #ffcdd2;
+  }
+
+  .btn-resetar-ck {
+    border: 0;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    background: #fff3e0;
+    color: #ef6c00;
+    white-space: nowrap;
+  }
+
+  .btn-resetar-ck:hover {
+    background: #ffe0b2;
+  }
+
+  .btn-finalizar-romaneio {
+    border: 0;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    background: #e8f5e9;
+    color: #2e7d32;
+    white-space: nowrap;
+  }
+
+  .btn-finalizar-romaneio:hover {
+    background: #c8e6c9;
+  }
 </style>
 
 <div class="form-container">
   <div class="form-card-2col">
-    <form method="get">
-      {% csrf_token %}
+
+    <form method="POST" id="form-romaneio">
       {% include 'global/partials/_form_2colV2.html' %}
     </form>
+
+    {% if romaneio_data %}
+    <div class="romaneio-wrapper">
+
+      <div class="romaneio-header">
+        <div class="status-romaneio" style="margin-top: 20px;">
+          {{ romaneio_data.status }}
+        </div>
+      </div>
+
+      <div class="romaneio-info-grid">
+        <div class="romaneio-info-card">
+          <span>Origem</span>
+          <strong>{{ romaneio_data.origin }}</strong>
+        </div>
+
+        <div class="romaneio-info-card">
+          <span>Destino</span>
+          <strong>{{ romaneio_data.destination }}</strong>
+        </div>
+
+        <div class="romaneio-info-card">
+          <span>Volumes</span>
+          <strong>{{ romaneio_data.volumns }}</strong>
+        </div>
+
+        <div class="romaneio-info-card">
+          <span>Itens</span>
+          <strong>
+            <span id="contador-total">{{ itens_romaneio|length }}</span>
+          </strong>
+        </div>
+      </div>
+
+      <div class="romaneio-counter" style="margin-bottom: 12px; display: inline-block;">
+        Recebidos:
+        <span id="contador-recebidos">0</span>
+        /
+        <span id="contador-total-label">{{ itens_romaneio|length }}</span>
+      </div>
+
+      <div style="display: inline-flex; gap: 8px; margin-left: 10px; align-items: center;">
+
+        <form
+          method="POST"
+          style="margin: 0;"
+          onsubmit="return confirm('Tem certeza que deseja resetar o CK deste romaneio? Todos os itens terão que ser bipados novamente.');"
+        >
+          {% csrf_token %}
+
+          <input type="hidden" name="numero_romaneio" value="{{ romaneio_data.romaneio }}">
+
+          {% for item in itens_romaneio %}
+            <input type="hidden" name="serials" value="{{ item.serial }}">
+          {% endfor %}
+
+          <button
+            type="submit"
+            name="resetar_ck_romaneio"
+            value="1"
+            class="btn-resetar-ck"
+            title="Resetar CK de todos os itens do romaneio"
+          >
+            Resetar CK
+          </button>
+        </form>
+
+        <form
+          method="POST"
+          style="margin: 0;"
+          onsubmit="return confirm('Tem certeza que deseja finalizar este romaneio? Após finalizar, não será possível continuar a bipagem nesta tela.');"
+        >
+          {% csrf_token %}
+
+          <input type="hidden" name="numero_romaneio" value="{{ romaneio_data.romaneio }}">
+
+          <button
+            type="submit"
+            name="finish_romaneio"
+            value="1"
+            class="btn-finalizar-romaneio"
+            title="Finalizar romaneio"
+          >
+            Finalizar romaneio
+          </button>
+        </form>
+
+      </div>
+
+      <div id="bipagem-feedback" class="bipagem-feedback"></div>
+
+      <div class="romaneio-list" id="romaneio-list">
+        {% for item in itens_romaneio %}
+          <div
+            class="romaneio-item {% if item.ck %}item-recebido{% else %}item-pendente{% endif %}"
+            data-serial="{{ item.serial }}"
+            data-ck="{{ item.ck|yesno:'true,false' }}"
+            data-order-number="{{ item.order_number }}"
+            data-product-id="{{ item.product_id|default:'' }}"
+          >
+            <div class="romaneio-item-main">
+              <strong>{{ item.serial }}</strong>
+
+              <div class="romaneio-meta">
+                <span>OS: {{ item.order_number }}</span>
+                <span>Produto: {{ item.product_id|default:"-" }}</span>
+                <span>Atualizado: {{ item.updated_at }}</span>
+              </div>
+            </div>
+
+            <div class="romaneio-actions">
+              <span class="status-pill">
+                {% if item.ck %}
+                  Recebido
+                {% else %}
+                  Pendente
+                {% endif %}
+              </span>
+
+              {% if item.ck %}
+                <form method="POST" style="margin: 0;">
+                  {% csrf_token %}
+
+                  <input type="hidden" name="numero_romaneio" value="{{ romaneio_data.romaneio }}">
+                  <input type="hidden" name="serial" value="{{ item.serial }}">
+                  <input type="hidden" name="product_id" value="{{ item.product_id|default:'' }}">
+
+                  <button
+                    type="submit"
+                    name="remover_ck"
+                    value="1"
+                    class="btn-remover-ck"
+                    title="Remover CK"
+                  >
+                    Remover CK
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+    </div>
+  {% endif %}
   </div>
 </div>
 
-{% endblock content %}
+<div id="modal-produto-overlay" class="modal-produto-overlay">
+  <div class="modal-produto">
+    <h3>Selecionar produto</h3>
+
+    <p>
+      Este serial não possui produto vinculado. Selecione o produto correto para continuar a bipagem.
+    </p>
+
+    <div class="modal-produto-info">
+      Serial:
+      <span id="modal-produto-serial">-</span>
+    </div>
+
+    <label for="modal-produto-select">Produto</label>
+
+    <select id="modal-produto-select" class="modal-produto-select">
+      <option value="">Selecione um produto</option>
+
+      {% for produto in produtos_choices %}
+        <option
+          value="{{ produto.id }}"
+          data-sku="{{ produto.sku }}"
+          data-category="{{ produto.category }}"
+          data-description="{{ produto.description }}"
+        >
+          {{ produto.id }} - {{ produto.sku }} - {{ produto.description }} - {{ produto.category }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <div class="modal-produto-actions">
+      <button type="button" class="modal-btn modal-btn-cancelar" id="modal-produto-cancelar">
+        Cancelar
+      </button>
+
+      <button type="button" class="modal-btn modal-btn-confirmar" id="modal-produto-confirmar">
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  const NUMERO_ROMANEIO = "{{ romaneio_data.romaneio|default:'' }}";
+
+  function getCookie(name) {
+    const cookies = document.cookie ? document.cookie.split(";") : [];
+
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+
+      if (cookie.startsWith(name + "=")) {
+        return decodeURIComponent(cookie.substring(name.length + 1));
+      }
+    }
+
+    return null;
+  }
+
+  function normalizarSerial(serial) {
+    return String(serial || "").trim().toUpperCase();
+  }
+
+  function atualizarContadorRecebidos() {
+    const itensRecebidos = document.querySelectorAll(".romaneio-item[data-ck='true']");
+    const contador = document.getElementById("contador-recebidos");
+
+    if (contador) {
+      contador.textContent = itensRecebidos.length;
+    }
+  }
+
+  function atualizarContadorTotal() {
+    const itens = document.querySelectorAll(".romaneio-item");
+
+    const contadorTotal = document.getElementById("contador-total");
+    const contadorTotalLabel = document.getElementById("contador-total-label");
+
+    if (contadorTotal) {
+      contadorTotal.textContent = itens.length;
+    }
+
+    if (contadorTotalLabel) {
+      contadorTotalLabel.textContent = itens.length;
+    }
+  }
+
+  function mostrarFeedback(mensagem, tipo) {
+    const feedback = document.getElementById("bipagem-feedback");
+
+    if (!feedback) return;
+
+    feedback.textContent = mensagem;
+    feedback.className = "bipagem-feedback";
+
+    if (tipo === "success") {
+      feedback.classList.add("feedback-success");
+    } else if (tipo === "alerta") {
+      feedback.classList.add("feedback-alerta");
+    } else {
+      feedback.classList.add("feedback-error");
+    }
+  }
+
+  function buscarItemPorSerial(serial) {
+    const serialNormalizado = normalizarSerial(serial);
+    const itens = document.querySelectorAll(".romaneio-item");
+
+    for (const item of itens) {
+      const serialItem = normalizarSerial(item.dataset.serial);
+
+      if (serialItem === serialNormalizado) {
+        return item;
+      }
+    }
+
+    return null;
+  }
+
+  function moverItemParaTopo(item) {
+    const lista = document.getElementById("romaneio-list");
+
+    if (!lista || !item) return;
+
+    document.querySelectorAll(".romaneio-item").forEach(function (el) {
+      el.classList.remove("item-ultimo-bipado");
+    });
+
+    lista.prepend(item);
+    item.classList.add("item-ultimo-bipado");
+
+    setTimeout(function () {
+      item.classList.remove("item-ultimo-bipado");
+    }, 1200);
+  }
+
+  function limparClassesStatus(item) {
+    item.classList.remove(
+      "item-pendente",
+      "item-recebido",
+      "item-erro",
+      "item-alerta",
+      "item-fora-romaneio",
+      "item-nao-confirmado"
+    );
+  }
+
+  function atualizarStatusItem(item, textoStatus) {
+    const pill = item.querySelector(".status-pill");
+
+    if (pill) {
+      pill.textContent = textoStatus;
+    }
+  }
+
+  function inserirSerialForaRomaneio(serial) {
+    const serialNormalizado = normalizarSerial(serial);
+    const lista = document.getElementById("romaneio-list");
+
+    if (!lista) return;
+
+    const novoItem = document.createElement("div");
+
+    novoItem.className = "romaneio-item item-fora-romaneio";
+    novoItem.dataset.serial = serialNormalizado;
+    novoItem.dataset.ck = "false";
+    novoItem.dataset.foraRomaneio = "true";
+    novoItem.dataset.orderNumber = "FORA-ROMANEIO";
+    novoItem.dataset.productId = "";
+
+    novoItem.innerHTML = `
+      <div class="romaneio-item-main">
+        <strong>${serialNormalizado}</strong>
+
+        <div class="romaneio-meta">
+          <span>OS: FORA DO ROMANEIO</span>
+          <span>Produto: -</span>
+          <span>Inserido manualmente na tela</span>
+        </div>
+      </div>
+
+      <span class="status-pill">
+        Fora do romaneio
+      </span>
+    `;
+
+    lista.prepend(novoItem);
+
+    moverItemParaTopo(novoItem);
+    atualizarContadorTotal();
+
+    mostrarFeedback(
+      `Serial ${serialNormalizado} inserido na lista como fora do romaneio.`,
+      "alerta"
+    );
+  }
+
+  function tratarSerialForaRomaneio(serial) {
+    const serialNormalizado = normalizarSerial(serial);
+
+    const confirmar = confirm(
+      `O serial ${serialNormalizado} não pertence ao romaneio. Deseja inserir mesmo assim na tabela?`
+    );
+
+    if (confirmar) {
+      inserirSerialForaRomaneio(serialNormalizado);
+      return;
+    }
+
+    mostrarFeedback(
+      `Serial ${serialNormalizado} não encontrado no romaneio e não foi inserido.`,
+      "error"
+    );
+  }
+
+  function pintarItemFake(serial) {
+    const serialNormalizado = normalizarSerial(serial);
+
+    if (!serialNormalizado) {
+      mostrarFeedback("Informe um serial para bipar.", "error");
+      return;
+    }
+
+    const item = buscarItemPorSerial(serialNormalizado);
+
+    if (!item) {
+      tratarSerialForaRomaneio(serialNormalizado);
+      return;
+    }
+
+    const jaRecebido = item.dataset.ck === "true";
+    const foraRomaneio = item.dataset.foraRomaneio === "true";
+
+    if (foraRomaneio) {
+      limparClassesStatus(item);
+      item.classList.add("item-fora-romaneio");
+
+      atualizarStatusItem(item, "Fora do romaneio");
+      moverItemParaTopo(item);
+
+      mostrarFeedback(
+        `Serial ${serialNormalizado} já está na lista como fora do romaneio.`,
+        "alerta"
+      );
+
+      return;
+    }
+
+    if (jaRecebido) {
+      limparClassesStatus(item);
+      item.classList.add("item-alerta");
+
+      atualizarStatusItem(item, "Já recebido");
+      moverItemParaTopo(item);
+
+      mostrarFeedback(
+        `Serial ${serialNormalizado} já estava recebido.`,
+        "alerta"
+      );
+
+      return;
+    }
+
+    limparClassesStatus(item);
+    item.classList.add("item-recebido");
+    item.dataset.ck = "true";
+
+    atualizarStatusItem(item, "Recebido");
+    moverItemParaTopo(item);
+
+    mostrarFeedback(
+      `Serial ${serialNormalizado} recebido com sucesso.`,
+      "success"
+    );
+
+    atualizarContadorRecebidos();
+    atualizarContadorTotal();
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    atualizarContadorRecebidos();
+    atualizarContadorTotal();
+
+    const serialInput = document.getElementById("id_serial");
+
+    if (serialInput) {
+      serialInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+
+          const serial = serialInput.value;
+
+          enviarSerialParaApiCK(serial);
+
+          serialInput.value = "";
+          serialInput.focus();
+        }
+      });
+    }
+
+    const btnCancelarProduto = document.getElementById("modal-produto-cancelar");
+    const btnConfirmarProduto = document.getElementById("modal-produto-confirmar");
+    const selectProduto = document.getElementById("modal-produto-select");
+    const overlayProduto = document.getElementById("modal-produto-overlay");
+
+    if (btnCancelarProduto) {
+      btnCancelarProduto.addEventListener("click", fecharModalProduto);
+    }
+
+    if (btnConfirmarProduto) {
+      btnConfirmarProduto.addEventListener("click", confirmarProdutoManual);
+    }
+
+    if (selectProduto) {
+      selectProduto.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          confirmarProdutoManual();
+        }
+
+        if (event.key === "Escape") {
+          event.preventDefault();
+          fecharModalProduto();
+        }
+      });
+    }
+
+    if (overlayProduto) {
+      overlayProduto.addEventListener("click", function (event) {
+        if (event.target === overlayProduto) {
+          fecharModalProduto();
+        }
+      });
+    }
+  });
+
+  function pintarItemComoRecebido(serial, mensagem) {
+    const serialNormalizado = normalizarSerial(serial);
+    const item = buscarItemPorSerial(serialNormalizado);
+
+    if (!item) {
+      mostrarFeedback(
+        `Serial ${serialNormalizado} recebido, mas não encontrado na tela.`,
+        "alerta"
+      );
+      return;
+    }
+
+    limparClassesStatus(item);
+    item.classList.add("item-recebido");
+    item.dataset.ck = "true";
+
+    atualizarStatusItem(item, "Recebido");
+    moverItemParaTopo(item);
+
+    mostrarFeedback(
+      mensagem || `Serial ${serialNormalizado} recebido com sucesso.`,
+      "success"
+    );
+
+    atualizarContadorRecebidos();
+    atualizarContadorTotal();
+  }
+</script>
+
+<script>
+  async function enviarSerialParaApiCK(serial, productIdManual = null) {
+  const serialNormalizado = normalizarSerial(serial);
+
+  if (!NUMERO_ROMANEIO) {
+    mostrarFeedback("Consulte um romaneio antes de bipar.", "error");
+    return;
+  }
+
+  if (!serialNormalizado) {
+    mostrarFeedback("Informe um serial para bipar.", "error");
+    return;
+  }
+
+  const item = buscarItemPorSerial(serialNormalizado);
+
+  if (!item) {
+    tratarSerialForaRomaneio(serialNormalizado);
+    return;
+  }
+
+  const jaRecebido = item.dataset.ck === "true";
+
+  if (jaRecebido) {
+    limparClassesStatus(item);
+    item.classList.add("item-alerta");
+
+    atualizarStatusItem(item, "Já recebido");
+    moverItemParaTopo(item);
+
+    mostrarFeedback(
+      `Serial ${serialNormalizado} já estava recebido.`,
+      "alerta"
+    );
+
+    return;
+  }
+
+  let productId = productIdManual || item.dataset.productId;
+
+  if (!productId || productId === "None" || productId === "null" || productId === "0") {
+    abrirModalProduto(serialNormalizado);
+    return;
+  }
+
+  try {
+    mostrarFeedback(`Enviando serial ${serialNormalizado}...`, "alerta");
+
+    const response = await fetch("{% url 'logistica:bipar_serial_recebimento' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken")
+      },
+      body: JSON.stringify({
+        romaneio: NUMERO_ROMANEIO,
+        serial: serialNormalizado,
+        product_id: productId
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.status === "SUCCESS") {
+      item.dataset.productId = String(productId);
+
+      const produtoSpan = item.querySelector("[data-produto-label]");
+      if (produtoSpan) {
+        produtoSpan.textContent = `Produto: ${productId}`;
+      }
+
+      pintarItemComoRecebido(serialNormalizado, data.message);
+      return;
+    }
+
+    if (data.status === "NEED_PRODUCT") {
+      abrirModalProduto(serialNormalizado);
+      return;
+    }
+
+    limparClassesStatus(item);
+    item.classList.add("item-erro");
+
+    atualizarStatusItem(item, "Erro");
+    moverItemParaTopo(item);
+
+    mostrarFeedback(
+      data.message || `Erro ao receber o serial ${serialNormalizado}.`,
+      "error"
+    );
+
+  } catch (error) {
+    limparClassesStatus(item);
+    item.classList.add("item-erro");
+
+    atualizarStatusItem(item, "Erro");
+    moverItemParaTopo(item);
+
+    mostrarFeedback(
+      `Erro de comunicação ao bipar o serial ${serialNormalizado}.`,
+      "error"
+    );
+  }
+}
+</script>
+
+<script>
+let serialAguardandoProduto = null;
+
+function abrirModalProduto(serial) {
+  serialAguardandoProduto = normalizarSerial(serial);
+
+  const overlay = document.getElementById("modal-produto-overlay");
+  const serialLabel = document.getElementById("modal-produto-serial");
+  const select = document.getElementById("modal-produto-select");
+
+  if (!overlay || !serialLabel || !select) return;
+
+  serialLabel.textContent = serialAguardandoProduto;
+  select.value = "";
+
+  overlay.classList.add("ativo");
+
+  setTimeout(function () {
+    select.focus();
+  }, 100);
+
+  mostrarFeedback(
+    `Selecione o produto do serial ${serialAguardandoProduto}.`,
+    "alerta"
+  );
+}
+
+function fecharModalProduto() {
+  const overlay = document.getElementById("modal-produto-overlay");
+  const select = document.getElementById("modal-produto-select");
+
+  if (overlay) {
+    overlay.classList.remove("ativo");
+  }
+
+  if (select) {
+    select.value = "";
+  }
+
+  serialAguardandoProduto = null;
+
+  const serialInput = document.getElementById("id_serial");
+  if (serialInput) {
+    serialInput.focus();
+  }
+}
+
+function confirmarProdutoManual() {
+  const select = document.getElementById("modal-produto-select");
+
+  if (!serialAguardandoProduto || !select) return;
+
+  const productId = String(select.value || "").trim();
+
+  if (!productId || productId === "0") {
+    mostrarFeedback("Selecione um produto válido.", "error");
+    select.focus();
+    return;
+  }
+
+  const item = buscarItemPorSerial(serialAguardandoProduto);
+
+  if (!item) {
+    mostrarFeedback(
+      `Serial ${serialAguardandoProduto} não encontrado na tela.`,
+      "error"
+    );
+    return;
+  }
+
+  const selectedOption = select.options[select.selectedIndex];
+  const productText = selectedOption ? selectedOption.textContent.trim() : `Produto: ${productId}`;
+
+  item.dataset.productId = productId;
+
+  const produtoSpan = item.querySelector("[data-produto-label]");
+  if (produtoSpan) {
+    produtoSpan.textContent = productText;
+  }
+
+  const serialParaEnviar = serialAguardandoProduto;
+
+  fecharModalProduto();
+
+  enviarSerialParaApiCK(serialParaEnviar, productId);
+}
+</script>
+{% endblock %}

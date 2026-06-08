@@ -122,8 +122,6 @@ urls_Checkin = [
          checkout_reverse, name='checkout_reverse'),
     path("check/OUT/reverse/create/<str:rom>", checkout_reverse_create,
          name='checkout_reverse_create'),
-
-
 ]
 
 urlpatterns = urls_User + urls_LastmileB2C + urls_Gerenciamento + urls_Checkin + \
