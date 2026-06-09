@@ -1,6 +1,11 @@
+import json
+from datetime import datetime
+from urllib.parse import quote
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_protect
 
 from setup.local_settings import STOCK_API_URL
@@ -9,12 +14,7 @@ from utils.request import RequestClient
 from ...forms import PreRecebimentoCheckinForm
 
 JSON_CT = "application/json"
-SESSION_ROMANEIO = "pre_rec_romaneio"
-SESSION_SERIALS = "pre_rec_serials"
-
-
-def _normalizar_serial(serial):
-    return str(serial or "").strip().upper()
+SESSION_MODAL = "pre_rec_modal_sucesso"
 
 
 def _location_id_usuario(user):
@@ -24,77 +24,65 @@ def _location_id_usuario(user):
     return getattr(getattr(user, "designacao", None), "informacao_adicional_id", None)
 
 
-def _montar_payload_pre_receive(serials, numero_romaneio, location_id, username):
-    return {
-        "item": [
-            {
-                "serial": serial,
-                "product_id": 0,
-                "extra_info": {},
-            }
-            for serial in serials
-        ],
-        "client_name": "",
+def _carregar_clientes():
+    try:
+        url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=1000"
+        res = RequestClient(url=url, method="GET", headers={"Accept": JSON_CT})
+        result = res.send_api_request()
+
+        if isinstance(result, list):
+            data = result
+        elif isinstance(result, dict):
+            data = result.get("items") or result.get("results") or []
+        else:
+            data = json.loads(result) if result else []
+
+        if not isinstance(data, list):
+            return []
+
+        return [
+            (str(item.get("client_code", "")), item.get("client_name", "Sem nome"))
+            for item in data
+            if item.get("client_code")
+        ]
+
+    except Exception:
+        return []
+
+
+def _nome_cliente_por_code(client_choices, client_code):
+    client_code = str(client_code or "").strip()
+    for code, name in client_choices:
+        if code == client_code:
+            return name
+    return client_code
+
+
+def _finalizar_romaneio_pre_receive(numero_romaneio, location_id, username):
+    finish_payload = {
+        "finished_by": username,
+        "finished_at": datetime.utcnow().isoformat() + "Z",
         "movement_type": "PRE_RECEIVE",
-        "to_location_id": location_id,
-        "order_origin_id": 3,
-        "order_number": numero_romaneio,
-        "created_by": username,
+        "external_order_number": numero_romaneio,
     }
 
+    finish_url = (
+        f"{STOCK_API_URL}/v2/romaneios/finish/{numero_romaneio}?location_id={location_id}"
+    )
 
-def _enviar_pre_recebimento_lote(serials, numero_romaneio, location_id, username):
     client = RequestClient(
-        url=f"{STOCK_API_URL}/v1/movements/move-list-items",
+        url=finish_url,
         method="POST",
         headers={
             "Accept": JSON_CT,
             "Content-Type": JSON_CT,
         },
-        request_data=_montar_payload_pre_receive(
-            serials,
-            numero_romaneio,
-            location_id,
-            username,
-        ),
+        request_data=finish_payload,
     )
 
+    print(finish_payload)
+
     return client.send_api_request()
-
-
-def _resposta_lote_sucesso(result):
-    if isinstance(result, dict) and result.get("detail"):
-        return False, result.get("detail")
-
-    if result is None:
-        return False, "Não foi possível registrar o pré-recebimento."
-
-    if isinstance(result, dict) and (
-        result.get("id")
-        or result.get("items")
-        or result.get("success")
-        or "success" in str(result).lower()
-    ):
-        return True, ""
-
-    if isinstance(result, list) and result:
-        return True, ""
-
-    return True, ""
-
-
-def _salvar_romaneio_sessao(request, numero_romaneio):
-    numero_romaneio = str(numero_romaneio or "").strip()
-    if not numero_romaneio:
-        return ""
-
-    anterior = request.session.get(SESSION_ROMANEIO)
-    if anterior and anterior != numero_romaneio:
-        request.session[SESSION_SERIALS] = []
-
-    request.session[SESSION_ROMANEIO] = numero_romaneio
-    request.session.modified = True
-    return numero_romaneio
 
 
 @csrf_protect
@@ -103,100 +91,84 @@ def _salvar_romaneio_sessao(request, numero_romaneio):
 @permission_required("logistica.acesso_arancia", raise_exception=True)
 def pre_recebimento_checkin(request):
     titulo = "Pré-Recebimento"
+    client_choices = _carregar_clientes()
+    modal_sucesso = request.session.get(SESSION_MODAL) or {}
 
-    numero_romaneio = (
-        request.session.get(SESSION_ROMANEIO)
-        or ""
-    )
-    serials = list(request.session.get(SESSION_SERIALS) or [])
+    if request.method == "POST" and "voltar_modal" in request.POST:
+        request.session.pop(SESSION_MODAL, None)
+        request.session.modified = True
+        return redirect("logistica:pre_recebimento_checkin")
 
-    if request.method == "POST":
-        numero_informado = _salvar_romaneio_sessao(
-            request,
-            request.POST.get("numero_romaneio"),
+    if request.method == "POST" and "iniciar_checkin" in request.POST:
+        dados = request.session.get(SESSION_MODAL) or {}
+        client_code = dados.get("client_code", "")
+        client_name = dados.get("client_name", "")
+
+        if not client_code:
+            messages.error(request, "Cliente não encontrado para iniciar o check-in.")
+            return redirect("logistica:pre_recebimento_checkin")
+
+        request.session["selected_client"] = {
+            "client_code": client_code,
+            "client_name": client_name,
+        }
+        request.session.pop(SESSION_MODAL, None)
+        request.session.modified = True
+
+        return redirect(
+            f"{reverse('logistica:client_checkin')}?client={quote(client_name)}"
         )
-        if numero_informado:
-            numero_romaneio = numero_informado
-        serials = list(request.session.get(SESSION_SERIALS) or [])
-
-        if "add_serial" in request.POST:
-            serial = _normalizar_serial(request.POST.get("serial"))
-
-            if not numero_romaneio:
-                messages.error(request, "Informe o número do romaneio antes de bipar.")
-            elif not serial:
-                messages.info(request, "Digite um serial.")
-            elif serial in serials:
-                messages.warning(request, "Serial já inserido.")
-            else:
-                serials.append(serial)
-                request.session[SESSION_SERIALS] = serials
-                request.session.modified = True
-                messages.success(request, f"Serial {serial} inserido.")
-
-            return redirect("logistica:pre_recebimento_checkin")
-
-        if "remove_serial" in request.POST:
-            try:
-                idx = int(request.POST.get("remove_serial"))
-                if 0 <= idx < len(serials):
-                    removido = serials.pop(idx)
-                    request.session[SESSION_SERIALS] = serials
-                    request.session.modified = True
-                    messages.success(request, f"Serial {removido} removido.")
-            except (TypeError, ValueError):
-                messages.error(request, "Não foi possível remover o serial.")
-            return redirect("logistica:pre_recebimento_checkin")
-
-        if "clear_serials" in request.POST:
-            request.session[SESSION_SERIALS] = []
-            request.session.modified = True
-            messages.success(request, "Lista de seriais limpa.")
-            return redirect("logistica:pre_recebimento_checkin")
-
-        if "enviar_evento" in request.POST:
-            if not numero_romaneio:
-                messages.error(request, "Informe o número do romaneio.")
-            elif not serials:
-                messages.error(request, "Bipe ao menos um serial antes de enviar.")
-            else:
-                location_id = _location_id_usuario(request.user)
-                if location_id is None:
-                    messages.error(request, "Usuário sem designação/GAI configurado.")
-                else:
-                    try:
-                        result = _enviar_pre_recebimento_lote(
-                            serials,
-                            numero_romaneio,
-                            location_id,
-                            request.user.username,
-                        )
-                        sucesso, detalhe = _resposta_lote_sucesso(result)
-
-                        if sucesso:
-                            messages.success(
-                                request,
-                                f"Pré-recebimento do romaneio {numero_romaneio} enviado com sucesso.",
-                            )
-                            request.session.pop(SESSION_ROMANEIO, None)
-                            request.session.pop(SESSION_SERIALS, None)
-                            request.session.modified = True
-                            numero_romaneio = ""
-                            serials = []
-                        else:
-                            messages.error(
-                                request,
-                                detalhe or "Não foi possível enviar o pré-recebimento.",
-                            )
-                    except Exception:
-                        messages.error(request, "Erro ao comunicar com a API de movimentos.")
-
-            return redirect("logistica:pre_recebimento_checkin")
 
     form = PreRecebimentoCheckinForm(
-        initial={"numero_romaneio": numero_romaneio},
+        request.POST or None,
         nome_form=titulo,
+        client_choices=client_choices,
     )
+
+    if request.method == "POST" and "enviar_evento" in request.POST:
+        if not form.is_valid():
+            messages.warning(request, "Preencha o cliente e o número do romaneio.")
+        else:
+            client_code = form.cleaned_data["client"]
+            numero_romaneio = form.cleaned_data["numero_romaneio"].strip()
+            location_id = _location_id_usuario(request.user)
+
+            if location_id is None:
+                messages.error(request, "Usuário sem designação/GAI configurado.")
+            else:
+                try:
+                    result = _finalizar_romaneio_pre_receive(
+                        numero_romaneio,
+                        location_id,
+                        request.user.username,
+                    )
+
+                    if isinstance(result, dict) and result.get("detail"):
+                        messages.error(request, result.get("detail"))
+                    else:
+                        client_name = _nome_cliente_por_code(client_choices, client_code)
+                        request.session[SESSION_MODAL] = {
+                            "client_code": client_code,
+                            "client_name": client_name,
+                            "numero_romaneio": numero_romaneio,
+                        }
+                        request.session.modified = True
+                        modal_sucesso = request.session[SESSION_MODAL]
+                        messages.success(
+                            request,
+                            f"Pré-recebimento do romaneio {numero_romaneio} realizado com sucesso.",
+                        )
+                        form = PreRecebimentoCheckinForm(
+                            nome_form=titulo,
+                            client_choices=client_choices,
+                        )
+
+                except Exception:
+                    messages.error(request, "Erro ao finalizar o romaneio.")
+
+    elif request.method != "POST":
+        if not client_choices:
+            messages.warning(request, "Não foi possível carregar a lista de clientes.")
 
     return render(
         request,
@@ -205,8 +177,9 @@ def pre_recebimento_checkin(request):
             "form": form,
             "site_title": titulo,
             "botao_texto": "Enviar pré-recebimento",
-            "numero_romaneio": numero_romaneio,
-            "serials": serials,
+            "abrir_modal": bool(modal_sucesso),
+            "modal_client_name": modal_sucesso.get("client_name", ""),
+            "modal_numero_romaneio": modal_sucesso.get("numero_romaneio", ""),
             "current_parent_menu": "logistica",
             "current_menu": "checkin",
             "current_submenu": "pre_recebimento",
