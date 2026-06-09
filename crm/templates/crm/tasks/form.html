@@ -1,0 +1,43 @@
+﻿{% extends 'crm/base_crm.html' %}
+
+{% block crm_content %}
+<div class="user-table-header">
+    {% if form_mode == 'new' %}
+    {% include 'crm/partials/_page_title.html' with title="Nova tarefa" subtitle="Cadastro de tarefa no projeto" icon="fa-list-check" %}
+    {% else %}
+    {% include 'crm/partials/_page_title.html' with title="Editar tarefa" icon="fa-list-check" %}
+    {% endif %}
+    <div class="user-create">
+        {% if form_mode == 'edit' and task_id %}
+        <a href="{% url 'crm:task_detail' task_id=task_id %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+        {% else %}
+        <a href="{% url 'crm:task_list' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if missing_gai %}
+    {% include 'crm/partials/_error_alert.html' with message="Usuário sem GAI configurado." error=True %}
+{% else %}
+<form method="post">
+    {% csrf_token %}
+    <div class="crm-form-grid">
+        {% for field in form %}
+        <div class="crm-field{% if field.field.widget.attrs.rows %} crm-field-wide{% endif %}">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<span class="error">{{ field.errors|join:", " }}</span>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <div class="crm-form-actions">
+        <button type="submit" class="submit-button-right">Salvar</button>
+        {% if form_mode == 'edit' and task_id %}
+        <a href="{% url 'crm:task_detail' task_id=task_id %}" class="btn btn-secondary">Cancelar</a>
+        {% else %}
+        <a href="{% url 'crm:task_list' %}" class="btn btn-secondary">Cancelar</a>
+        {% endif %}
+    </div>
+</form>
+{% endif %}
+{% endblock %}

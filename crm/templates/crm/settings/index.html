@@ -1,0 +1,27 @@
+﻿{% extends 'crm/base_crm.html' %}
+
+{% block crm_content %}
+<div class="user-table-header">
+    {% include 'crm/partials/_page_title.html' with title="Configurações CRM" subtitle="Catálogos administrativos" icon="fa-gear" %}
+</div>
+
+<div class="crm-dashboard-grid">
+    {% if perms.crm.view_settings %}
+    <div class="crm-dashboard-card">
+        <h3>Tipos de serviço</h3>
+        <p class="muted">Catálogo de serviços oferecidos</p>
+        <p style="margin-top:12px;"><a href="{% url 'crm:settings_service_types' %}" class="btn btn-primary">Gerenciar</a></p>
+    </div>
+    <div class="crm-dashboard-card">
+        <h3>Prioridades</h3>
+        <p class="muted">Níveis de prioridade de tarefas</p>
+        <p style="margin-top:12px;"><a href="{% url 'crm:settings_priorities' %}" class="btn btn-primary">Gerenciar</a></p>
+    </div>
+    <div class="crm-dashboard-card">
+        <h3>Status de tarefas</h3>
+        <p class="muted">Colunas globais legadas</p>
+        <p style="margin-top:12px;"><a href="{% url 'crm:settings_status_tasks' %}" class="btn btn-primary">Gerenciar</a></p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

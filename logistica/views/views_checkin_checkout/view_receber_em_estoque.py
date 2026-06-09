@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 import json
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from django.http import JsonResponse
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -12,6 +13,28 @@ from utils.request import RequestClient
 
 
 JSON_CT = "application/json"
+TZ_BR = ZoneInfo("America/Sao_Paulo")
+
+
+def _formatar_data_brasilia(valor):
+    if not valor:
+        return "-"
+
+    try:
+        dt = datetime.fromisoformat(str(valor).replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=ZoneInfo("UTC"))
+        return dt.astimezone(TZ_BR).strftime("%d/%m/%Y %H:%M:%S")
+    except (TypeError, ValueError):
+        return str(valor)
+
+
+def _formatar_itens_romaneio(itens):
+    for item in itens:
+        if not isinstance(item, dict):
+            continue
+        item["updated_at"] = _formatar_data_brasilia(item.get("updated_at"))
+    return itens
 
 
 @login_required(login_url='logistica:login')
@@ -234,7 +257,9 @@ def receber_em_estoque(request):
                     result = None
                     itens_romaneio = []
                 else:
-                    itens_romaneio = result.get("items", []) if result else []
+                    itens_romaneio = _formatar_itens_romaneio(
+                        result.get("items", []) if result else []
+                    )
 
                     client_code = result.get("client_code") if result else None
 

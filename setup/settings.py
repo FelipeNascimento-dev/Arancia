@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "logistica.apps.LogisticaConfig",
     'transportes', 'backoffice',
     'mural',
+    'crm',
 ]
 
 MIDDLEWARE = [
@@ -62,7 +63,8 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'setup.settings.db_host_context',
                 'logistica.context_processors.avatar_url',
-                'logistica.context_processors.acompanhamentos_navbar'
+                'logistica.context_processors.acompanhamentos_navbar',
+                'crm.context_processors.crm_context',
             ],
         },
     },
@@ -146,12 +148,30 @@ CELERY_BEAT_SCHEDULE = {
         "task": "logistica.tasks.deactivate_inactive_users",
         "schedule": crontab(hour=3, minute=0),
     },
+    "crm-disparar-alertas-vencidos": {
+        "task": "crm.tasks.crm_fire_due_alerts",
+        "schedule": crontab(hour=6, minute=0),
+    },
+    "crm-gerar-tarefas-recorrentes": {
+        "task": "crm.tasks.crm_generate_recurring_tasks",
+        "schedule": crontab(hour=6, minute=30),
+    },
 }
 
 try:
     from setup.local_settings import *
 except ImportError:
     ...
+
+# CRM — defaults seguros quando ausentes em local_settings (Fase 0 / Fase 1)
+CRM_API_BASE_URL = globals().get('CRM_API_BASE_URL', '')
+CRM_API_V1_STR = globals().get('CRM_API_V1_STR', '/api/v1')
+CRM_INTERNAL_API_SECRET = globals().get('CRM_INTERNAL_API_SECRET', '')
+CRM_API_TIMEOUT = globals().get('CRM_API_TIMEOUT', 30)
+CRM_API_VERIFY_SSL = globals().get('CRM_API_VERIFY_SSL', False)
+CRM_DEFAULT_LIMIT = globals().get('CRM_DEFAULT_LIMIT', 100)
+CRM_SERVICE_USER_ID = globals().get('CRM_SERVICE_USER_ID', 1)
+CRM_SERVICE_USERNAME = globals().get('CRM_SERVICE_USERNAME', 'celery')
 
 
 def db_host_context(request):

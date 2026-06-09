@@ -9,6 +9,7 @@ urlpatterns = [
     path('arancia/', include('transportes.urls')),
     path('arancia/', include('backoffice.urls')),
     path('arancia/', include('mural.urls')),
+    path('arancia/', include('crm.urls')),
 
     path('arancia/admin/', admin.site.urls),
 ]

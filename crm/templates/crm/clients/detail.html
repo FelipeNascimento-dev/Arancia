@@ -1,0 +1,58 @@
+﻿{% extends 'crm/base_crm.html' %}
+
+{% block crm_content %}
+<div class="user-table-header">
+    <div class="crm-header-text">
+        <h2 class="user-table-title"><i class="fa-solid fa-building"></i> {{ client.razao_social|default:client.nome }}</h2>
+        <p class="crm-header-subtitle muted">GAI {{ client.gai_id }}{% if client.profile %} · {{ client.profile }}{% endif %}</p>
+    </div>
+    <div class="user-create crm-toolbar">
+        <a href="{% url 'crm:client_list' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+        {% if perms.crm.change_client %}
+        <a href="{% url 'crm:client_edit' gai_id=gai_id %}" class="btn btn-primary"><i class="fa-solid fa-pencil"></i> Editar</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="crm-dashboard-grid">
+    <div class="crm-dashboard-card">
+        <h3>Dados gerais</h3>
+        <dl class="crm-detail-grid">
+            <dt>Razão social</dt><dd>{{ client.razao_social|default:"—" }}</dd>
+            <dt>Nome fantasia</dt><dd>{{ client.nome|default:"—" }}</dd>
+            <dt>CNPJ</dt><dd>{{ client.cnpj|default:"—" }}</dd>
+            <dt>E-mail</dt><dd>{{ client.email|default:"—" }}</dd>
+            <dt>Telefone</dt><dd>{{ client.telefone1|default:"—" }}</dd>
+            <dt>Perfil</dt><dd>{{ client.profile|default:"—" }}</dd>
+        </dl>
+    </div>
+
+    <div class="crm-dashboard-card">
+        <h3>Contatos ({{ client.contacts|length }})</h3>
+        {% if client.contacts %}
+        <ul class="crm-list">
+            {% for contact in client.contacts %}
+            <li>
+                <strong>{{ contact.name|default:"—" }}</strong>
+                {% if contact.is_primary %}<span class="tag">Principal</span>{% endif %}
+                {% if contact.email %}<br>{{ contact.email }}{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}<p class="muted">Nenhum contato.</p>{% endif %}
+    </div>
+
+    {% if client.contracts %}
+    <div class="crm-dashboard-card">
+        <h3>Contratos ({{ client.contracts|length }})</h3>
+        <ul class="crm-list">
+            {% for contract in client.contracts %}
+            <li>
+                <a href="{% url 'crm:contract_detail' contract_id=contract.id %}">{% firstof contract.title contract.id %}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

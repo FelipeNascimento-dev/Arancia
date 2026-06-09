@@ -1,0 +1,41 @@
+﻿{% extends 'crm/base_crm.html' %}
+
+{% block crm_content %}
+<div class="user-table-header">
+    {% include 'crm/partials/_page_title.html' with title="Status de tarefas" subtitle="Configurações CRM" icon="fa-bars-staggered" %}
+    <div class="user-create crm-toolbar">
+        <a href="{% url 'crm:settings_index' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+        {% if can_manage %}
+        <a href="{% url 'crm:settings_status_task_new' %}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Novo</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if items %}
+<div class="table-wrapper">
+    <table class="user-table">
+        <thead><tr><th>Nome</th><th>Ordem</th><th>Ativo</th><th>Ações</th></tr></thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td><strong>{{ item.name|default:"—" }}</strong></td>
+                <td>{{ item.sort_order|default:"—" }}</td>
+                <td>{% if item.is_active %}<span class="tag">Sim</span>{% else %}<span class="muted">Não</span>{% endif %}</td>
+                <td>
+                    {% if can_manage %}
+                    <a href="{% url 'crm:settings_status_task_edit' record_id=item.id %}" class="action-btn edit-btn" title="Editar"><i class="fa-solid fa-pencil"></i></a>
+                    <button type="button" class="action-btn edit-btn js-delete" title="Excluir" data-id="{{ item.id }}" data-resource="status-tasks" style="border:none;background:none;cursor:pointer;">
+                        <i class="fa-solid fa-trash" style="color:#d61515;"></i>
+                    </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+    {% include 'crm/partials/_empty_state.html' with message="Nenhum status cadastrado." %}
+{% endif %}
+{% if can_manage %}{% include 'crm/settings/_delete_script.html' %}{% endif %}
+{% endblock %}

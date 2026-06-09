@@ -1,0 +1,103 @@
+﻿{% extends 'crm/base_crm.html' %}
+
+{% block crm_content %}
+<div class="user-table-header">
+    <div class="crm-header-text">
+        <h2 class="user-table-title"><i class="fa-solid fa-file-contract"></i> {% if form_mode == 'new' %}Novo contrato{% else %}Editar contrato{% endif %}</h2>
+        <p class="crm-header-subtitle muted">{% if form_mode == 'edit' %}{% firstof customer_name contract.title %}{% else %}Vincule um cliente e tipo de serviço{% endif %}</p>
+    </div>
+    <div class="user-create">
+        <a href="{% url 'crm:contract_list' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+    </div>
+</div>
+
+{% if missing_gai %}
+    {% include 'crm/partials/_error_alert.html' with message="Usuário sem GAI configurado." error=True %}
+{% else %}
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="save_contract">
+    {% if form.non_field_errors %}<div class="crm-alert crm-alert-error">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="crm-form-grid">
+        {% for field in form %}
+        <div class="crm-field{% if field.name == 'title' or field.name == 'description' %} crm-field-wide{% endif %}">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<span class="muted">{{ field.help_text }}</span>{% endif %}
+            {% if field.errors %}<span class="error">{{ field.errors|join:", " }}</span>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <div class="crm-form-actions">
+        <button type="submit" class="submit-button-right">{% if form_mode == 'new' %}Criar contrato{% else %}Salvar alterações{% endif %}</button>
+        {% if form_mode == 'edit' %}
+        <a href="{% url 'crm:contract_detail' contract_id=contract_id %}" class="btn btn-secondary">Cancelar</a>
+        {% endif %}
+    </div>
+</form>
+
+{% if form_mode == 'edit' and contract %}
+<hr class="crm-divider">
+<div class="crm-dashboard-card">
+    <h3>Arquivos ({{ contract.files|length }})</h3>
+    {% if contract.files %}
+    <ul class="crm-list">
+        {% for f in contract.files %}
+        <li>
+            {% if f.firebase_url %}
+            <a href="{{ f.firebase_url }}" target="_blank" rel="noopener noreferrer">{{ f.filename|default:f.id }}</a>
+            {% else %}{{ f.filename|default:f.id }}{% endif %}
+            {% if perms.crm.upload_contract_file %}
+            <button type="button" class="action-btn edit-btn js-delete-file" data-file-id="{{ f.id }}" style="border:none;background:none;cursor:pointer;margin-left:8px;" title="Excluir">
+                <i class="fa-solid fa-trash" style="color:#d61515;"></i>
+            </button>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}<p class="muted">Nenhum arquivo anexado.</p>{% endif %}
+    {% if perms.crm.upload_contract_file and file_form %}
+    <h4 class="crm-section-title" style="margin-top:18px;">Enviar arquivo</h4>
+    <form method="post" enctype="multipart/form-data" class="js-upload-form" action="{% url 'crm:ajax_contract_file_upload' contract_id=contract_id %}">
+        {% csrf_token %}
+        <div class="crm-field crm-field-wide">{{ file_form.file.label_tag }}{{ file_form.file }}</div>
+        <button type="submit" class="btn btn-secondary" style="margin-top:10px;"><i class="fa-solid fa-upload"></i> Enviar</button>
+    </form>
+    {% endif %}
+</div>
+{% endif %}
+{% endif %}
+
+{% if form_mode == 'edit' and perms.crm.upload_contract_file %}
+<script>
+(function () {
+    document.querySelectorAll('.js-delete-file').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            if (!confirm('Excluir este arquivo?')) return;
+            var fileId = btn.getAttribute('data-file-id');
+            var url = '{% url "crm:ajax_contract_file_delete" contract_id=contract_id file_id="00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', fileId);
+            var fd = new FormData();
+            fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            fetch(url, { method: 'POST', body: fd, credentials: 'same-origin' })
+                .then(function (r) { return r.json(); })
+                .then(function (data) { if (data.ok) location.reload(); else alert(data.error || 'Erro ao excluir.'); })
+                .catch(function () { alert('Erro de rede.'); });
+        });
+    });
+    var uploadForm = document.querySelector('.js-upload-form');
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            fetch(uploadForm.action, { method: 'POST', body: new FormData(uploadForm), headers: { 'Accept': 'application/json' } })
+                .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+                .then(function (result) {
+                    if (result.ok && result.data.ok) { window.location.reload(); return; }
+                    alert(result.data.error || 'Não foi possível enviar o arquivo.');
+                })
+                .catch(function () { alert('Erro de comunicação ao enviar o arquivo.'); });
+        });
+    }
+})();
+</script>
+{% endif %}
+{% endblock %}

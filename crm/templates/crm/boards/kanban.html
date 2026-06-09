@@ -1,0 +1,89 @@
+﻿{% extends 'crm/base_crm.html' %}
+{% load crm_tags %}
+
+{% block crm_content %}
+<div class="user-table-header">
+    <div class="crm-header-text">
+        <h2 class="user-table-title"><i class="fa-solid fa-table-columns"></i> {% firstof board.name "Board" %}</h2>
+        <p class="crm-header-subtitle muted">Kanban — arraste os cards entre colunas</p>
+    </div>
+    <div class="user-create crm-toolbar">
+        <a href="{% url 'crm:project_list' %}" class="btn btn-secondary"><i class="fa-solid fa-diagram-project"></i> Projetos</a>
+        {% if perms.crm.manage_board_access %}
+        <a href="{% url 'crm:board_access' board_id=board_id %}" class="btn btn-secondary"><i class="fa-solid fa-lock"></i> Acesso</a>
+        {% endif %}
+        {% if perms.crm.add_task %}
+        <a href="{% url 'crm:task_new' %}?board_id={{ board_id }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nova tarefa</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if missing_gai %}
+    {% include 'crm/partials/_error_alert.html' with message="Usuário sem GAI configurado." error=True %}
+{% elif api_error %}
+    {% include 'crm/partials/_error_alert.html' with message="Não foi possível carregar o board." error=True %}
+{% elif columns %}
+<div class="crm-kanban" id="kanban-board" data-can-move="{% if can_move_tasks %}1{% else %}0{% endif %}">
+    {% for col in columns %}
+    {% with status_id=col.status_id|default:col.id %}
+    <div class="crm-kanban-col" data-status-id="{{ status_id }}">
+        <h4>{% firstof col.name status_id %}</h4>
+        <div class="crm-kanban-cards" data-status-id="{{ status_id }}">
+            {% for task in tasks_by_status|crm_get_item:status_id %}
+            <div class="crm-kanban-card" draggable="{% if can_move_tasks %}true{% else %}false{% endif %}" data-task-id="{{ task.id }}">
+                <a href="{% url 'crm:task_detail' task_id=task.id %}">{{ task.title|default:task.id }}</a>
+                {% if task.due_at_formatted %}<div class="due">{{ task.due_at_formatted }}</div>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+</div>
+{% else %}
+    {% include 'crm/partials/_empty_state.html' with message="Board sem colunas configuradas." %}
+{% endif %}
+
+{% if can_move_tasks %}
+<script>
+(function() {
+    var board = document.getElementById('kanban-board');
+    if (!board || board.getAttribute('data-can-move') !== '1') return;
+    var moveUrlTemplate = '{% url "crm:ajax_task_move" task_id="00000000-0000-0000-0000-000000000000" %}';
+    var csrf = '{{ csrf_token }}';
+    var dragged = null;
+    board.querySelectorAll('.crm-kanban-card').forEach(function(card) {
+        card.addEventListener('dragstart', function(e) {
+            dragged = card; card.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move';
+        });
+        card.addEventListener('dragend', function() {
+            card.classList.remove('dragging'); dragged = null;
+            board.querySelectorAll('.crm-kanban-col').forEach(function(c) { c.classList.remove('drag-over'); });
+        });
+    });
+    board.querySelectorAll('.crm-kanban-cards').forEach(function(zone) {
+        zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.closest('.crm-kanban-col').classList.add('drag-over'); });
+        zone.addEventListener('dragleave', function() { zone.closest('.crm-kanban-col').classList.remove('drag-over'); });
+        zone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            var col = zone.closest('.crm-kanban-col');
+            col.classList.remove('drag-over');
+            if (!dragged) return;
+            var statusId = zone.getAttribute('data-status-id');
+            var taskId = dragged.getAttribute('data-task-id');
+            var position = zone.querySelectorAll('.crm-kanban-card').length;
+            zone.appendChild(dragged);
+            var url = moveUrlTemplate.replace('00000000-0000-0000-0000-000000000000', taskId);
+            fetch(url, {
+                method: 'POST', credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+                body: JSON.stringify({ status_id: statusId, kanban_position: position })
+            }).then(function(r) { return r.json(); })
+              .then(function(data) { if (!data.ok) { alert(data.error || 'Erro ao mover.'); window.location.reload(); } })
+              .catch(function() { alert('Erro de rede.'); window.location.reload(); });
+        });
+    });
+})();
+</script>
+{% endif %}
+{% endblock %}

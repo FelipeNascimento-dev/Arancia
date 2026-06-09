@@ -24,6 +24,7 @@ Dependências completas: [`requirements.txt`](./requirements.txt).
 | [`transportes/`](./transportes/) | OS, viagens, motoristas, veículos, painel de campo e ferramentas de roteirização |
 | [`backoffice/`](./backoffice/) | Importação Excel, cadastro e listagem de equipamentos |
 | [`mural/`](./mural/) | Mural operacional (home) e gerenciamento de conteúdo |
+| [`crm/`](./crm/) | CRM operacional (BFF): clientes, contratos, faturamento, tarefas, projetos, boards/Kanban — dados na API externa `api-crm` |
 
 Configuração central: [`setup/`](./setup/) (`settings`, `urls`, middleware, Celery).
 
@@ -51,6 +52,7 @@ Arancia/
 ├── transportes/
 ├── backoffice/
 ├── mural/
+├── crm/                # BFF CRM (views, services, templates; sem models de negócio)
 ├── setup/              # settings, urls, celery, middleware
 ├── base_templates/     # templates globais
 ├── base_static/        # assets estáticos
@@ -85,7 +87,7 @@ celery -A setup worker -l info
 celery -A setup beat -l info
 ```
 
-Tarefa agendada: desativação diária de usuários inativos (`logistica.tasks.deactivate_inactive_users`, 03:00).
+Tarefas agendadas: desativação diária de usuários inativos (`logistica.tasks.deactivate_inactive_users`, 03:00); alertas CRM vencidos (`crm.tasks.crm_fire_due_alerts`, 06:00); geração de tarefas recorrentes (`crm.tasks.crm_generate_recurring_tasks`, 06:30).
 
 **Admin Django:** `/arancia/admin/`.
 
@@ -101,7 +103,23 @@ Tarefa agendada: desativação diária de usuários inativos (`logistica.tasks.d
 | Reversa | reverse_create(V2), lista_romaneios, consulta cotação | `views_reverse/` |
 | Gerenciamento | user_ger, skill_ger | `views_gerenciamento/` |
 
-Rotas completas: [`logistica/urls.py`](./logistica/urls.py), [`transportes/urls.py`](./transportes/urls.py), [`backoffice/urls.py`](./backoffice/urls.py), [`mural/urls.py`](./mural/urls.py).
+Rotas completas: [`logistica/urls.py`](./logistica/urls.py), [`transportes/urls.py`](./transportes/urls.py), [`backoffice/urls.py`](./backoffice/urls.py), [`mural/urls.py`](./mural/urls.py), [`crm/urls.py`](./crm/urls.py).
+
+### CRM (`/arancia/crm/`)
+
+Integração BFF com API FastAPI CRM — **não** persiste tabelas `crm_*` no Django; permissões `crm.*` vêm do seed Alembic no banco compartilhado.
+
+| Área | Rotas principais | Permissão UX típica |
+| ---- | ---------------- | ------------------- |
+| Dashboard | `crm/` | qualquer `crm.view_*` |
+| Clientes | `crm/clients/` | `crm.view_clients` |
+| Contratos / faturamento / alertas | `crm/contracts/`, `crm/billing/`, `crm/alerts/` | `crm.view_*` do módulo |
+| Tarefas | `crm/tasks/`, `crm/tasks/my/`, AJAX move/assign/comment | `crm.view_tasks`, `crm.move_task` |
+| Projetos | `crm/projects/`, membros polimórficos | `crm.view_projects`, `crm.manage_project_members` |
+| Boards / Kanban | `crm/boards/<id>/`, acesso granular | `crm.view_boards`, `crm.manage_board_access` |
+| Configurações | `crm/settings/` (service-types, priorities, status-tasks) | `crm.view_settings` |
+
+Variáveis em `setup/local_settings.py` (não versionar secret): `CRM_API_BASE_URL`, `CRM_API_V1_STR`, `CRM_INTERNAL_API_SECRET`, `CRM_API_TIMEOUT`. Pré-requisitos: `python manage.py crm_prerequisites`.
 
 ## Documentação para desenvolvimento (Cursor)
 
@@ -114,6 +132,7 @@ Rotas completas: [`logistica/urls.py`](./logistica/urls.py), [`transportes/urls.
 
 | Data | Tipo | Módulo/Pasta | Alteração | Impacto |
 | ---- | ---- | ------------ | --------- | ------- |
+| 2026-06-09 | Adicionado | `crm/` | App CRM completo (fases 4–7): tarefas, projetos, Kanban, Celery, configurações | Usuários com permissões `crm.*` acessam módulo em `/arancia/crm/` via BFF |
 | 2026-06-02 | Ajustado | `logistica/models` (GAI) | Campos obrigatórios ao criar novo GAI | Cadastro de cliente/PA exige preenchimento adicional |
 | 2026-06-02 | Ajustado | `transportes/` | API de retenção | Integração de retenção atualizada |
 | 2026-05-29 | Adicionado | `mural/` | Visualização em carrossel e em lista nos cards | Operadores alternam forma de exibição do mural |

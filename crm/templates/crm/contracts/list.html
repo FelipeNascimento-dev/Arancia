@@ -1,0 +1,53 @@
+﻿{% extends 'crm/base_crm.html' %}
+
+{% block crm_content %}
+<div class="user-table-header">
+    {% include 'crm/partials/_page_title.html' with title="Contratos" subtitle="Contratos de serviço vinculados aos clientes" icon="fa-file-contract" %}
+    <div class="user-create">
+        {% if perms.crm.add_contract %}
+        <a href="{% url 'crm:contract_new' %}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Novo contrato</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if missing_gai %}
+    {% include 'crm/partials/_error_alert.html' with message="Usuário sem GAI configurado." error=True %}
+{% elif api_error %}
+    {% include 'crm/partials/_error_alert.html' with message="Não foi possível carregar a listagem de contratos." error=True %}
+{% elif contracts %}
+<div class="table-wrapper">
+    <table class="user-table">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Cliente</th>
+                <th>Status</th>
+                <th>Início</th>
+                <th>Término</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for contract in contracts %}
+            <tr>
+                <td><strong>{{ contract.title|default:"—" }}</strong></td>
+                <td>{% firstof contract.customer_label contract.customer_gai_id "—" %}</td>
+                <td>{{ contract.status|default:"—" }}</td>
+                <td>{{ contract.start_date|default:"—" }}</td>
+                <td>{{ contract.end_date|default:"—" }}</td>
+                <td>
+                    <a href="{% url 'crm:contract_detail' contract_id=contract.id %}" class="action-btn edit-btn" title="Ver"><i class="fa-solid fa-eye"></i></a>
+                    {% if perms.crm.change_contract %}
+                    <a href="{% url 'crm:contract_edit' contract_id=contract.id %}" class="action-btn edit-btn" title="Editar"><i class="fa-solid fa-pencil"></i></a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include 'crm/partials/_pagination.html' with has_prev=pagination.has_prev has_next=pagination.has_next prev_skip=pagination.prev_skip next_skip=pagination.next_skip limit=pagination.limit %}
+{% else %}
+    {% include 'crm/partials/_empty_state.html' with message="Nenhum contrato cadastrado." %}
+{% endif %}
+{% endblock %}

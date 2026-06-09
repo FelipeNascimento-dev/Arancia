@@ -478,7 +478,7 @@
               <div class="romaneio-meta">
                 <span>OS: {{ item.order_number }}</span>
                 <span>Produto: {{ item.product_id|default:"-" }}</span>
-                <span>Atualizado: {{ item.updated_at }}</span>
+                <span>Atualizado: {{ item.updated_at|default:"-" }}</span>
               </div>
             </div>
 

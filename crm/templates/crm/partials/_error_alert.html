@@ -1,0 +1,4 @@
+<div class="crm-alert{% if error %} crm-alert-error{% endif %}" role="alert">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    {{ message|default:"Ocorreu um erro ao processar sua solicitação." }}
+</div>

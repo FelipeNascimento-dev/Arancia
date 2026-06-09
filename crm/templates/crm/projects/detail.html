@@ -1,0 +1,27 @@
+﻿{% extends 'crm/base_crm.html' %}
+
+{% block crm_content %}
+<div class="user-table-header">
+    <div class="crm-header-text">
+        <h2 class="user-table-title"><i class="fa-solid fa-diagram-project"></i> {{ project.name|default:"Projeto" }}</h2>
+        <p class="crm-header-subtitle muted">{% firstof customer_name "—" %}</p>
+    </div>
+    <div class="user-create crm-toolbar">
+        <a href="{% url 'crm:project_list' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+        {% if perms.crm.manage_project_members %}
+        <a href="{% url 'crm:project_members' project_id=project_id %}" class="btn btn-secondary"><i class="fa-solid fa-users"></i> Membros</a>
+        {% endif %}
+        {% if perms.crm.change_project %}
+        <a href="{% url 'crm:project_edit' project_id=project_id %}" class="btn btn-primary"><i class="fa-solid fa-pencil"></i> Editar</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="crm-dashboard-card">
+    <h3>Dados do projeto</h3>
+    <dl class="crm-detail-grid">
+        <dt>Descrição</dt><dd>{{ project.description|default:"—" }}</dd>
+        <dt>Ativo</dt><dd>{% if project.is_active %}Sim{% else %}Não{% endif %}</dd>
+    </dl>
+</div>
+{% endblock %}

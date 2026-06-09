@@ -1,0 +1,28 @@
+﻿{% extends 'crm/base_crm.html' %}
+
+{% block crm_content %}
+<div class="user-table-header">
+    <div class="crm-header-text">
+        <h2 class="user-table-title"><i class="fa-solid fa-gear"></i> {% block settings_title %}{% endblock %}</h2>
+    </div>
+    <div class="user-create">
+        <a href="{% block settings_cancel_url %}{% url 'crm:settings_index' %}{% endblock %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+    </div>
+</div>
+<form method="post">
+    {% csrf_token %}
+    <div class="crm-form-grid">
+        {% for field in form %}
+        <div class="crm-field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<span class="error">{{ field.errors|join:", " }}</span>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <div class="crm-form-actions">
+        <button type="submit" class="submit-button-right">Salvar</button>
+        <a href="{% block settings_cancel_link %}{% url 'crm:settings_index' %}{% endblock %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

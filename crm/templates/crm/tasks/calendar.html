@@ -1,0 +1,38 @@
+﻿{% extends 'crm/base_crm.html' %}
+
+{% block crm_content %}
+<div class="user-table-header">
+    {% include 'crm/partials/_page_title.html' with title="Calendário de tarefas" subtitle="Tarefas com agendamento" icon="fa-calendar" %}
+    <div class="user-create">
+        <a href="{% url 'crm:task_list' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+    </div>
+</div>
+
+{% if missing_gai %}
+    {% include 'crm/partials/_error_alert.html' with message="Usuário sem GAI configurado." error=True %}
+{% elif api_error %}
+    {% include 'crm/partials/_error_alert.html' with message="Não foi possível carregar o calendário." error=True %}
+{% elif tasks %}
+<div class="table-wrapper">
+    <table class="user-table">
+        <thead>
+            <tr><th>Título</th><th>Agendamento</th><th>Vencimento</th><th>Ações</th></tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.title|default:"—" }}</td>
+                <td>{{ task.scheduled_at_formatted|default:task.scheduled_at|default:"—" }}</td>
+                <td>{{ task.due_at_formatted|default:task.due_at|default:"—" }}</td>
+                <td>
+                    <a href="{% url 'crm:task_detail' task_id=task.id %}" class="action-btn edit-btn" title="Ver"><i class="fa-solid fa-eye"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+    {% include 'crm/partials/_empty_state.html' with message="Nenhuma tarefa agendada." %}
+{% endif %}
+{% endblock %}
