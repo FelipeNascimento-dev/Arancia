@@ -9,17 +9,75 @@
     margin-bottom: 50px;
   }
 
-  .pre-rec-info {
-    margin-top: 16px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: #f5f5f5;
+  .modal-pre-rec-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+
+  .modal-pre-rec-overlay.ativo {
+    display: flex;
+  }
+
+  .modal-pre-rec {
+    width: min(420px, calc(100% - 32px));
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
+  }
+
+  .modal-pre-rec h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 800;
+    color: #222;
+  }
+
+  .modal-pre-rec p {
+    margin: 0 0 14px;
     font-size: 13px;
     color: #555;
   }
 
-  .pre-rec-info strong {
-    color: #222;
+  .modal-pre-rec-info {
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #e8f5e9;
+    color: #2e7d32;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+
+  .modal-pre-rec-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .modal-btn {
+    border: 0;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .modal-btn-voltar {
+    background: #f1f1f1;
+    color: #333;
+  }
+
+  .modal-btn-checkin {
+    background: #ef6c00;
+    color: #fff;
   }
 </style>
 
@@ -28,59 +86,35 @@
     <form method="POST" id="form-pre-recebimento">
       {% include 'global/partials/_form_2colV2.html' %}
     </form>
-
-    {% if numero_romaneio %}
-    <div class="pre-rec-info">
-      Romaneio informado: <strong>{{ numero_romaneio }}</strong>
-      · Seriais bipados: <strong>{{ serials|length }}</strong>
-    </div>
-    {% endif %}
   </div>
 </div>
 
-<script>
-(function () {
-  function focusCampoAtivo() {
-    var romaneio = document.getElementById('id_numero_romaneio');
-    var serial = document.getElementById('id_serial');
-    var alvo = romaneio && !(romaneio.value || '').trim() ? romaneio : serial;
+<div id="modal-pre-rec-overlay" class="modal-pre-rec-overlay{% if abrir_modal %} ativo{% endif %}">
+  <div class="modal-pre-rec">
+    <h3>Pré-recebimento concluído</h3>
+    <p>O romaneio foi finalizado com sucesso. O que deseja fazer agora?</p>
 
-    if (!alvo || alvo.disabled || alvo.offsetParent === null) return;
-    alvo.focus({ preventScroll: true });
-    try { alvo.setSelectionRange(alvo.value.length, alvo.value.length); } catch (_) {}
-  }
+    <div class="modal-pre-rec-info">
+      Cliente: {{ modal_client_name|default:"-" }}<br>
+      Romaneio: {{ modal_numero_romaneio|default:"-" }}
+    </div>
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', focusCampoAtivo);
-  } else {
-    focusCampoAtivo();
-  }
+    <div class="modal-pre-rec-actions">
+      <form method="POST" style="margin: 0;">
+        {% csrf_token %}
+        <button type="submit" name="voltar_modal" value="1" class="modal-btn modal-btn-voltar">
+          Voltar
+        </button>
+      </form>
 
-  var input = document.getElementById('id_serial');
-  if (!input) return;
-
-  var form = document.getElementById('form-pre-recebimento');
-  if (!form) return;
-
-  input.addEventListener('keydown', function (e) {
-    if (e.key !== 'Enter') return;
-    e.preventDefault();
-
-    var serial = (input.value || '').trim();
-    if (!serial) return;
-
-    var hidden = form.querySelector('input[name="add_serial"]');
-    if (!hidden) {
-      hidden = document.createElement('input');
-      hidden.type = 'hidden';
-      hidden.name = 'add_serial';
-      form.appendChild(hidden);
-    }
-    hidden.value = '1';
-    form.noValidate = true;
-    form.submit();
-  });
-})();
-</script>
+      <form method="POST" style="margin: 0;">
+        {% csrf_token %}
+        <button type="submit" name="iniciar_checkin" value="1" class="modal-btn modal-btn-checkin">
+          Iniciar check-in
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
 
 {% endblock %}
