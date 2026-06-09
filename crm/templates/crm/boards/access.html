@@ -1,0 +1,91 @@
+﻿{% extends 'crm/base_crm.html' %}
+
+{% block crm_content %}
+<div class="user-table-header">
+    <div class="crm-header-text">
+        <h2 class="user-table-title"><i class="fa-solid fa-lock"></i> Acesso — {% firstof board.name board_id %}</h2>
+        <p class="crm-header-subtitle muted">Permissões por usuário, designação ou equipe</p>
+    </div>
+    <div class="user-create">
+        <a href="{% url 'crm:board_kanban' board_id=board_id %}" class="btn btn-secondary"><i class="fa-solid fa-table-columns"></i> Kanban</a>
+    </div>
+</div>
+
+{% if access_list %}
+<div class="table-wrapper">
+    <table class="user-table">
+        <thead>
+            <tr>
+                <th>Alvo</th>
+                <th>Ver</th>
+                <th>Mover</th>
+                <th>Comentar</th>
+                <th>Colunas</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in access_list %}
+            <tr>
+                <td>
+                    {% if a.username %}{{ a.username }}
+                    {% elif a.user_id %}Usuário {{ a.user_id }}
+                    {% elif a.designation_id %}Designação {{ a.designation_id }}
+                    {% elif a.team_gai_id %}Equipe {{ a.team_gai_id }}
+                    {% else %}—{% endif %}
+                </td>
+                <td>{% if a.can_view %}Sim{% else %}—{% endif %}</td>
+                <td>{% if a.can_move_tasks %}Sim{% else %}—{% endif %}</td>
+                <td>{% if a.can_comment %}Sim{% else %}—{% endif %}</td>
+                <td>{% if a.can_manage_columns %}Sim{% else %}—{% endif %}</td>
+                <td>
+                    <button type="button" class="action-btn edit-btn js-remove-access" data-access-id="{{ a.id }}" title="Remover">
+                        <i class="fa-solid fa-trash" style="color:#d61515;"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+    {% include 'crm/partials/_empty_state.html' with message="Nenhuma regra de acesso." %}
+{% endif %}
+
+<hr class="crm-divider">
+<h3 class="crm-section-title">Conceder acesso</h3>
+<form method="post">
+    {% csrf_token %}
+    <div class="crm-form-grid">
+        {% for field in access_form %}
+        <div class="crm-field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<span class="error">{{ field.errors|join:", " }}</span>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% if access_form.non_field_errors %}
+    <div class="crm-alert crm-alert-error">{{ access_form.non_field_errors }}</div>
+    {% endif %}
+    <div class="crm-form-actions">
+        <button type="submit" class="submit-button-right">Salvar acesso</button>
+    </div>
+</form>
+
+<script>
+document.querySelectorAll('.js-remove-access').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        if (!confirm('Remover este acesso?')) return;
+        var accessId = btn.getAttribute('data-access-id');
+        var url = '{% url "crm:ajax_board_access_delete" board_id=board_id access_id="00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', accessId);
+        var fd = new FormData();
+        fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        fetch(url, { method: 'POST', body: fd, credentials: 'same-origin' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) { if (data.ok) location.reload(); else alert(data.error); })
+            .catch(function() { alert('Erro de rede.'); });
+    });
+});
+</script>
+{% endblock %}

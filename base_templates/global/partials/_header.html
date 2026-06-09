@@ -1,4 +1,5 @@
 {% load static %}
+{% load crm_tags %}
 
 <div class="sidebar colapsada">
     <div class="scroll-area">
@@ -415,6 +416,97 @@
                 class="{% if current_menu == 'gestao_gai' %}active{% endif %}">
                     Gestão de GAI
                 </a>
+            </div>
+        </div>
+        {% endif %}
+        <!-- CRM comercial -->
+        {% crm_commercial_perm as show_crm_commercial %}
+        {% if show_crm_commercial %}
+        <div class="dropdown {% if current_parent_menu == 'crm' %}active{% endif %}">
+            <button type="button" class="dropbtn itens-sidebar">
+                <i class="fa-solid fa-briefcase"></i>
+                <span class="texto-item">&nbsp; CRM</span>
+            </button>
+            <div class="dropdown-content">
+                <a href="{% url 'crm:dashboard' %}"
+                class="{% if current_menu == 'crm_dashboard' %}active{% endif %}">
+                    Dashboard
+                </a>
+                {% if perms.crm.view_clients %}
+                <a href="{% url 'crm:client_list' %}"
+                class="{% if current_menu == 'crm_clients' %}active{% endif %}">
+                    Clientes
+                </a>
+                {% endif %}
+                {% if perms.crm.view_contracts %}
+                <a href="{% url 'crm:contract_list' %}"
+                class="{% if current_menu == 'crm_contracts' %}active{% endif %}">
+                    Contratos
+                </a>
+                {% endif %}
+                {% if perms.crm.view_billing %}
+                <a href="{% url 'crm:billing_list' %}"
+                class="{% if current_menu == 'crm_billing' %}active{% endif %}">
+                    Faturamento
+                </a>
+                {% endif %}
+                {% if perms.crm.view_contracts %}
+                <a href="{% url 'crm:alert_list' %}"
+                class="{% if current_menu == 'crm_alerts' %}active{% endif %}">
+                    Alertas
+                </a>
+                {% endif %}
+                {% if perms.crm.view_settings %}
+                <a href="{% url 'crm:settings_index' %}"
+                class="{% if current_menu == 'crm_settings' %}active{% endif %}">
+                    Configurações
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        <!-- Projetos e tarefas -->
+        {% projects_any_perm as show_projects_menu %}
+        {% if show_projects_menu %}
+        <div class="dropdown {% if current_parent_menu == 'projetos' %}active{% endif %}">
+            <button type="button" class="dropbtn itens-sidebar">
+                <i class="fa-solid fa-diagram-project"></i>
+                <span class="texto-item">&nbsp; Projetos</span>
+            </button>
+            <div class="dropdown-content">
+                {% if perms.crm.view_projects %}
+                <a href="{% url 'crm:project_list' %}"
+                class="{% if current_menu == 'projetos_projects' %}active{% endif %}">
+                    Projetos
+                </a>
+                {% endif %}
+                {% if perms.crm.view_tasks %}
+                <a href="{% url 'crm:task_list' %}"
+                class="{% if current_menu == 'projetos_tasks' %}active{% endif %}">
+                    Tarefas
+                </a>
+                <a href="{% url 'crm:task_my' %}"
+                class="{% if current_menu == 'projetos_my_tasks' %}active{% endif %}">
+                    Minhas tarefas
+                </a>
+                <a href="{% url 'crm:task_calendar' %}"
+                class="{% if current_menu == 'projetos_calendar' %}active{% endif %}">
+                    Calendário
+                </a>
+                {% endif %}
+                {% if crm_me_context and crm_me_context.accessible_boards %}
+                <h5 class="submenu-toggle {% if current_menu == 'projetos_boards' %}active{% endif %}" data-target="projetos-boards-sub">Boards</h5>
+                <div class="sub-submenu {% if current_menu == 'projetos_boards' %}show{% endif %}" id="projetos-boards-sub">
+                    {% for board in crm_me_context.accessible_boards %}
+                    <a href="{% url 'crm:board_kanban' board_id=board.id %}"
+                    class="{% if current_submenu == board.id|stringformat:'s' %}active{% endif %}">
+                        {% firstof board.name board.id %}
+                    </a>
+                    {% endfor %}
+                </div>
+                {% elif perms.crm.view_boards %}
+                <span title="Nenhum board acessível no seu contexto">Boards</span>
+                {% endif %}
             </div>
         </div>
         {% endif %}

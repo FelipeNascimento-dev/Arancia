@@ -1,0 +1,15 @@
+{% comment %}Paginação skip/limit — padrão logística (page-btn){% endcomment %}
+{% if has_prev or has_next %}
+<div class="pagination-wrapper">
+    {% if has_prev %}
+    <a href="?skip={{ prev_skip }}&limit={{ limit }}" class="page-btn"><i class="fa-solid fa-backward"></i> Anterior</a>
+    {% else %}
+    <span class="page-btn disabled"><i class="fa-solid fa-backward"></i> Anterior</span>
+    {% endif %}
+    {% if has_next %}
+    <a href="?skip={{ next_skip }}&limit={{ limit }}" class="page-btn">Próxima <i class="fa-solid fa-forward"></i></a>
+    {% else %}
+    <span class="page-btn disabled">Próxima <i class="fa-solid fa-forward"></i></span>
+    {% endif %}
+</div>
+{% endif %}

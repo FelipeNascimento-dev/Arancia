@@ -1,0 +1,37 @@
+﻿{% extends 'crm/base_crm.html' %}
+
+{% block crm_content %}
+<div class="user-table-header">
+    <div class="crm-header-text">
+        <h2 class="user-table-title"><i class="fa-solid fa-coins"></i> {% if form_mode == 'new' %}Novo faturamento{% else %}Editar faturamento{% endif %}</h2>
+        <p class="crm-header-subtitle muted">
+            {% if form_mode == 'edit' %}{% firstof customer_name record.customer_gai_id "—" %}{% else %}Registre valores previstos e realizados por cliente{% endif %}
+        </p>
+    </div>
+    <div class="user-create">
+        <a href="{% url 'crm:billing_list' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+    </div>
+</div>
+
+{% if missing_gai %}
+    {% include 'crm/partials/_error_alert.html' with message="Usuário sem GAI configurado. O CRM exige designação válida." error=True %}
+{% else %}
+<form method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="crm-alert crm-alert-error">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="crm-form-grid">
+        {% for field in form %}
+        <div class="crm-field{% if field.name == 'notes' %} crm-field-wide{% endif %}">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<span class="muted">{{ field.help_text }}</span>{% endif %}
+            {% if field.errors %}<span class="error">{{ field.errors|join:", " }}</span>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <div class="crm-form-actions">
+        <button type="submit" class="submit-button-right">{% if form_mode == 'new' %}Criar registro{% else %}Salvar alterações{% endif %}</button>
+    </div>
+</form>
+{% endif %}
+{% endblock %}

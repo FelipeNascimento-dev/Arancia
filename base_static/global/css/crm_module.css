@@ -1,0 +1,293 @@
+/* CRM / Projetos — complemento ao padrão logística (user-list-container, user_ger.css) */
+
+.crm-page-container {
+  width: 1300px;
+  max-width: calc(100vw - 100px);
+  margin-left: 65px;
+  margin-top: 65px;
+  margin-bottom: 40px;
+  padding: 24px 28px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--borda-formularios, #cccccc3d);
+}
+
+.crm-header-text {
+  text-align: left;
+}
+
+.crm-header-subtitle {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  text-align: left;
+  font-style: normal;
+}
+
+.user-table-header .crm-toolbar,
+.user-create.crm-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.crm-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: 20px 28px;
+  margin-top: 8px;
+}
+
+.crm-form-grid .crm-field-wide {
+  grid-column: 1 / -1;
+}
+
+.crm-field label {
+  display: block;
+  font-weight: 600;
+  color: var(--form-label-color, #3f3f3f);
+  margin-bottom: 6px;
+  font-size: 15px;
+}
+
+.crm-page-container input,
+.crm-page-container select,
+.crm-page-container textarea,
+.crm-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--borda-formularios, #cccccc3d);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #fff;
+  color: var(--form-titulo, #3f3f3f);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.crm-page-container input:focus,
+.crm-page-container select:focus,
+.crm-page-container textarea:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 5px rgba(52, 152, 219, 0.25);
+}
+
+.crm-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.crm-form-actions .btn,
+.crm-form-actions .submit-button-right {
+  min-width: 140px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.crm-alert {
+  background: #fff8e6;
+  border: 1px solid #fcd34d;
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  color: #92400e;
+  font-size: 0.95rem;
+}
+
+.crm-alert-error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  border-left-color: #dc2626;
+  color: #991b1b;
+}
+
+.crm-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px 24px;
+  margin: 0;
+}
+
+.crm-detail-grid dt {
+  font-weight: 600;
+  color: #666;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.crm-detail-grid dd {
+  margin: 0 0 14px;
+  color: #222;
+  font-size: 15px;
+}
+
+.crm-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.crm-dashboard-card {
+  background: #f9f9f9;
+  border: 1px solid #eaeaea;
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+
+.crm-dashboard-card h3 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333;
+  border-bottom: 2px solid #0077b6;
+  padding-bottom: 6px;
+}
+
+.crm-stat {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0077b6;
+}
+
+.crm-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.crm-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid #eaeaea;
+  font-size: 0.95rem;
+}
+
+.crm-list li:last-child {
+  border-bottom: none;
+}
+
+.crm-divider {
+  border: none;
+  border-top: 1px solid #eaeaea;
+  margin: 28px 0;
+}
+
+.crm-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 14px;
+}
+
+.crm-kanban {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+}
+
+.crm-kanban-col {
+  min-width: 260px;
+  max-width: 300px;
+  flex: 0 0 auto;
+  background: #f9f9f9;
+  border: 1px solid #eaeaea;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.crm-kanban-col h4 {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #333;
+  border-bottom: 2px solid #0077b6;
+  padding-bottom: 6px;
+}
+
+.crm-kanban-cards {
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.crm-kanban-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: grab;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.crm-kanban-card.dragging {
+  opacity: 0.5;
+}
+
+.crm-kanban-card a {
+  color: #0077b6;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.crm-kanban-card .due {
+  color: #d61515;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.crm-kanban-col.drag-over {
+  outline: 2px dashed #0077b6;
+}
+
+.crm-card-form {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #eaeaea;
+}
+
+.crm-card-form .crm-field {
+  margin-bottom: 10px;
+}
+
+.crm-card-form .btn {
+  margin-top: 4px;
+}
+
+.crm-dashboard-card .btn.btn-secondary {
+  margin-top: 8px;
+}
+
+.crm-page-container .error {
+  display: block;
+  color: #d61515;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.crm-page-container button.action-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+@media (max-width: 900px) {
+  .crm-page-container {
+    margin-left: 20px;
+    margin-right: 12px;
+    width: auto;
+    max-width: none;
+  }
+
+  .crm-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,73 @@
+﻿{% extends 'crm/base_crm.html' %}
+
+{% block crm_content %}
+<div class="user-table-header">
+    {% include 'crm/partials/_page_title.html' with title="Dashboard CRM" subtitle="Faturamento, alertas e tarefas em atraso" icon="fa-chart-pie" %}
+</div>
+
+{% if missing_gai %}
+    {% include 'crm/partials/_error_alert.html' with message="Usuário sem GAI configurado." error=True %}
+{% else %}
+    {% if partial_errors %}
+    <div class="crm-alert">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        Alguns dados não puderam ser carregados: {{ partial_errors|join:", " }}.
+    </div>
+    {% endif %}
+
+    <div class="crm-dashboard-grid">
+        <div class="crm-dashboard-card">
+            <h3><i class="fa-solid fa-coins"></i> Faturamento</h3>
+            {% if billing_summary %}
+                <div class="crm-stat">R$ {{ billing_summary.actual_total|default:"0" }}</div>
+                <span class="muted">realizado de R$ {{ billing_summary.planned_total|default:"0" }} previsto</span>
+                {% if billing_summary.gap %}
+                <br><span class="muted">Gap: R$ {{ billing_summary.gap }}{% if billing_summary.gap_pct %} ({{ billing_summary.gap_pct }}%){% endif %}</span>
+                {% endif %}
+                {% if perms.crm.view_billing %}
+                <p style="margin-top:12px;"><a href="{% url 'crm:billing_list' %}" class="btn btn-secondary">Ver faturamento</a></p>
+                {% endif %}
+            {% else %}
+                <p class="muted">Sem dados de faturamento.</p>
+            {% endif %}
+        </div>
+
+        <div class="crm-dashboard-card">
+            <h3><i class="fa-solid fa-bell"></i> Alertas</h3>
+            {% if alerts %}
+            <ul class="crm-list">
+                {% for alert in alerts|slice:":10" %}
+                <li>{% firstof alert.alert_type alert.message alert.id %}{% if alert.due_date %} — {{ alert.due_date }}{% endif %}</li>
+                {% endfor %}
+            </ul>
+            <p style="margin-top:12px;"><a href="{% url 'crm:alert_list' %}" class="btn btn-secondary">Ver todos</a></p>
+            {% else %}
+                <p class="muted">Nenhum alerta pendente.</p>
+            {% endif %}
+        </div>
+
+        <div class="crm-dashboard-card">
+            <h3><i class="fa-solid fa-clock"></i> Tarefas em atraso</h3>
+            {% if overdue_tasks %}
+            <ul class="crm-list">
+                {% for task in overdue_tasks|slice:":10" %}
+                <li>
+                    {% if perms.crm.view_tasks %}
+                    <a href="{% url 'crm:task_detail' task_id=task.id %}">{% firstof task.title task.name task.id %}</a>
+                    {% else %}
+                    {% firstof task.title task.name task.id %}
+                    {% endif %}
+                    {% if task.due_at_formatted %} — {{ task.due_at_formatted }}{% elif task.due_at %} — {{ task.due_at }}{% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% if perms.crm.view_tasks %}
+            <p style="margin-top:12px;"><a href="{% url 'crm:task_my' %}?overdue_only=true" class="btn btn-secondary">Ver minhas em atraso</a></p>
+            {% endif %}
+            {% else %}
+                <p class="muted">Nenhuma tarefa em atraso.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
