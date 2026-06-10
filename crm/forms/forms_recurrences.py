@@ -1,13 +1,10 @@
+"""Edição de templates de recorrência (criação unificada em TaskForm)."""
+
 from django import forms
 
 from crm.forms.forms_clients import _CHECK, _INPUT, _SELECT
+from crm.forms.forms_tasks import FREQUENCY_CHOICES
 from crm.services.datetime_utils import format_datetime_to_api
-
-FREQUENCY_CHOICES = [
-    ('daily', 'Diária'),
-    ('weekly', 'Semanal'),
-    ('monthly', 'Mensal'),
-]
 
 
 class TaskRecurrenceForm(forms.Form):
@@ -15,7 +12,7 @@ class TaskRecurrenceForm(forms.Form):
     description = forms.CharField(
         label='Descrição',
         required=False,
-        widget=forms.Textarea(attrs={'class': 'crm-input', 'rows': 3}),
+        widget=forms.Textarea(attrs={'class': 'crm-input', 'id': 'taskDescription', 'rows': 8}),
     )
     board_id = forms.ChoiceField(label='Board', required=False, widget=_SELECT)
     status_id = forms.ChoiceField(label='Status', required=False, widget=_SELECT)

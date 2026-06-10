@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from crm.decorators import crm_perm_required
@@ -85,38 +86,13 @@ def recurrence_list(request):
 
 @crm_perm_required('add_task_recurrence')
 def recurrence_new(request):
-    blocked = _require_gai_or_render(request, 'crm/recurrences/form.html', {'form_mode': 'new'})
-    if blocked:
-        return blocked
-
-    lookups, _ = _load_lookups(request)
-    form_kwargs = _recurrence_form_kwargs(lookups)
-
-    if request.method == 'POST':
-        form = TaskRecurrenceForm(request.POST, **form_kwargs)
-        if form.is_valid():
-            try:
-                result = CrmApiClient(request.user).post(
-                    '/task-recurrences/',
-                    json=form.cleaned_payload(),
-                )
-                rec_id = result.get('id') if isinstance(result, dict) else None
-                messages.success(request, 'Recorrência criada.')
-                if rec_id:
-                    return redirect('crm:recurrence_detail', recurrence_id=rec_id)
-                return redirect('crm:recurrence_list')
-            except CrmApiError as exc:
-                handle_crm_error(request, exc)
-    else:
-        form = TaskRecurrenceForm(**form_kwargs)
-
-    return render(request, 'crm/recurrences/form.html', {
-        'site_title': 'CRM — Nova recorrência',
-        'form': form,
-        'form_mode': 'new',
-        'lookups': lookups,
-        **PROJECTS_MENU,
-    })
+    params = []
+    if request.GET.get('board_id'):
+        params.append(f"board_id={request.GET.get('board_id')}")
+    if request.GET.get('project_id'):
+        params.append(f"project_id={request.GET.get('project_id')}")
+    params.append('recurring=1')
+    return redirect(f"{reverse('crm:task_new')}?{'&'.join(params)}")
 
 
 @crm_perm_required('view_task_recurrences')
@@ -200,7 +176,7 @@ def recurrence_edit(request, recurrence_id):
         'lookups': lookups,
         **PROJECTS_MENU,
     })
-
+    
 
 @require_POST
 @crm_perm_required('delete_task_recurrence')

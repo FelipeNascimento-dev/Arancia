@@ -1,4 +1,7 @@
+from django.contrib.auth.models import User
+
 from .client import CrmApiClient
+from .exceptions import CrmApiError
 
 
 def parse_customer_gai_id(value):
@@ -133,6 +136,95 @@ def fetch_team_gais(user):
 def fetch_member_lookups(user):
     """GET /lookups/members — usuários e designações elegíveis."""
     return CrmApiClient(user).get('/lookups/members')
+
+
+def _user_operational_gai(user):
+    designacao = getattr(user, 'designacao', None)
+    if designacao is None:
+        return None
+    return designacao.informacao_adicional
+
+
+def _designation_label(user, gai):
+    if gai is None:
+        return user.username
+    name = (gai.nome or gai.razao_social or '').strip()
+    if name:
+        return f'{user.username} — {name}'
+    return f'{user.username} — GAI {gai.id}'
+
+
+def _scoped_member_users_qs(requesting_user):
+    """Usuários ARC ativos com GAI, filtrados pelo escopo operacional."""
+    qs = (
+        User.objects.filter(username__startswith='ARC', is_active=True)
+        .select_related('designacao__informacao_adicional')
+        .filter(designacao__informacao_adicional__isnull=False)
+        .order_by('username')
+    )
+    if requesting_user.has_perm('logistica.gestao_total'):
+        return qs
+
+    gai = _user_operational_gai(requesting_user)
+    if gai is None:
+        return qs.none()
+
+    sales_channel = (gai.sales_channel or '').strip()
+    if sales_channel == 'all':
+        return qs
+
+    if sales_channel:
+        return qs.filter(designacao__informacao_adicional__sales_channel=sales_channel)
+
+    return qs.filter(designacao__informacao_adicional_id=gai.id)
+
+
+def fetch_member_lookups_django(user):
+    """
+    Monta lookups de membros a partir do banco Django (User + UserDesignation + GAI).
+    Formato compatível com GET /lookups/members da API.
+    """
+    users = []
+    designations = []
+    for member in _scoped_member_users_qs(user):
+        designacao = getattr(member, 'designacao', None)
+        gai = designacao.informacao_adicional if designacao else None
+        full_name = member.get_full_name().strip()
+        users.append({
+            'id': member.id,
+            'username': member.username,
+            'full_name': full_name or None,
+        })
+        if designacao:
+            designations.append({
+                'id': designacao.id,
+                'username': member.username,
+                'label': _designation_label(member, gai),
+            })
+    return {'users': users, 'designations': designations}
+
+
+def _member_lookups_need_fallback(data):
+    if not isinstance(data, dict):
+        return True
+    users = data.get('users')
+    designations = data.get('designations')
+    if users is None and designations is None:
+        return True
+    return not (users or designations)
+
+
+def resolve_member_lookups(user):
+    """
+    Tenta GET /lookups/members; se ausente, vazio ou com erro, usa Django.
+    """
+    try:
+        data = fetch_member_lookups(user)
+        if not _member_lookups_need_fallback(data):
+            return data
+    except CrmApiError:
+        pass
+    return fetch_member_lookups_django(user)
 
 
 def fetch_column_templates(user):
