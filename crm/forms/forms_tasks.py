@@ -9,7 +9,7 @@ class TaskForm(forms.Form):
     description = forms.CharField(
         label='Descrição',
         required=False,
-        widget=forms.Textarea(attrs={'class': 'crm-input', 'rows': 3}),
+        widget=forms.Textarea(attrs={'class': 'crm-input', 'id': 'taskDescription', 'rows': 8}),
     )
     board_id = forms.ChoiceField(label='Board', required=False, widget=_SELECT)
     status_id = forms.ChoiceField(label='Status', required=False, widget=_SELECT)

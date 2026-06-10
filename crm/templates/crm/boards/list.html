@@ -6,7 +6,7 @@
     <div class="user-create crm-toolbar">
         <a href="{% url 'crm:project_list' %}" class="btn btn-secondary"><i class="fa-solid fa-diagram-project"></i> Projetos</a>
         {% if perms.crm.add_board %}
-        <a href="{% url 'crm:board_new' %}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Novo board</a>
+        <a href="{% url 'crm:board_new' %}?menu=projetos" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Novo board</a>
         {% endif %}
     </div>
 </div>
@@ -25,7 +25,7 @@
                 <td><strong>{% firstof board.name board.title board.id %}</strong></td>
                 <td>{% firstof board.project_name board.project_id "—" %}</td>
                 <td>
-                    <a href="{% url 'crm:board_kanban' board_id=board.id %}" class="action-btn edit-btn" title="Kanban"><i class="fa-solid fa-table-columns"></i></a>
+                    <a href="{% url 'crm:board_kanban' board_id=board.id %}?menu=projetos" class="action-btn edit-btn" title="Kanban"><i class="fa-solid fa-table-columns"></i></a>
                     {% if perms.crm.change_board %}
                     <a href="{% url 'crm:board_edit' board_id=board.id %}" class="action-btn edit-btn" title="Editar"><i class="fa-solid fa-pencil"></i></a>
                     {% endif %}

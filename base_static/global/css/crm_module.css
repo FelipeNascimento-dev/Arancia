@@ -381,6 +381,116 @@
   to { transform: rotate(360deg); }
 }
 
+/* CKEditor — descrição de tarefas (mesmo padrão do mural) */
+.crm-task-form .ck-editor__editable {
+  min-height: 220px;
+  border-radius: 0 0 12px 12px !important;
+}
+
+.crm-task-form .ck.ck-editor {
+  width: 100%;
+}
+
+.crm-task-form .ck.ck-toolbar {
+  border-radius: 12px 12px 0 0 !important;
+  border-color: var(--borda-formularios, #cccccc3d) !important;
+}
+
+.crm-task-form .ck.ck-editor__main > .ck-editor__editable {
+  border-color: var(--borda-formularios, #cccccc3d) !important;
+}
+
+.crm-task-form .ck.ck-editor__editable:focus {
+  border-color: #3498db !important;
+  box-shadow: 0 0 5px rgba(52, 152, 219, 0.25) !important;
+}
+
+.crm-rich-content {
+  color: var(--form-titulo, #3f3f3f);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.crm-rich-content h1,
+.crm-rich-content h2,
+.crm-rich-content h3,
+.crm-rich-content h4 {
+  color: var(--form-titulo, #3f3f3f);
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 16px 0 10px;
+}
+
+.crm-rich-content h1 { font-size: 28px; }
+.crm-rich-content h2 { font-size: 24px; }
+.crm-rich-content h3 { font-size: 20px; }
+.crm-rich-content h4 { font-size: 17px; }
+
+.crm-rich-content p {
+  margin: 0 0 12px;
+}
+
+.crm-rich-content ul,
+.crm-rich-content ol {
+  display: block;
+  margin: 12px 0 16px 24px;
+  padding-left: 22px;
+}
+
+.crm-rich-content ul { list-style-type: disc; }
+.crm-rich-content ol { list-style-type: decimal; }
+
+.crm-rich-content li {
+  display: list-item;
+  margin: 6px 0;
+  padding-left: 4px;
+  line-height: 1.65;
+}
+
+.crm-rich-content strong,
+.crm-rich-content b {
+  font-weight: 800;
+}
+
+.crm-rich-content em,
+.crm-rich-content i {
+  font-style: italic;
+}
+
+.crm-rich-content a {
+  color: #153e70;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.crm-rich-content blockquote {
+  margin: 16px 0;
+  padding: 14px 16px;
+  border-left: 4px solid #f58220;
+  background: #fff7ed;
+  border-radius: 12px;
+}
+
+.crm-rich-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.crm-rich-content th,
+.crm-rich-content td {
+  border: 1px solid var(--borda-formularios, #cccccc3d);
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.crm-rich-content th {
+  background: #f8f9fa;
+  font-weight: 800;
+}
+
 @media (max-width: 900px) {
   .crm-page-container {
     margin-left: 20px;
@@ -392,4 +502,61 @@
   .crm-form-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.crm-perm-filter {
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.crm-perm-presets-hint {
+  margin-bottom: 16px;
+}
+
+.crm-perm-summary {
+  margin-bottom: 20px;
+}
+
+.crm-perm-form {
+  margin-bottom: 20px;
+}
+
+.crm-perm-help {
+  margin-top: 6px;
+  font-size: 0.85rem;
+}
+
+.crm-perm-note {
+  margin-top: 10px;
+  font-size: 0.85rem;
+}
+
+.crm-field-inline-check label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.crm-field-inline-check input[type="checkbox"] {
+  width: auto;
+}
+
+.tag--level {
+  text-transform: capitalize;
+}
+
+.crm-perm-legend {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.crm-pagination {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
 }

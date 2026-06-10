@@ -52,3 +52,11 @@ def crm_get_item(dictionary, key):
     if isinstance(dictionary, dict):
         return dictionary.get(key)
     return None
+
+
+@register.filter
+def boards_of_type(boards, board_type):
+    """Filtra accessible_boards por board_type (crm, project, internal_public)."""
+    if not boards:
+        return []
+    return [board for board in boards if board.get('board_type') == board_type]

@@ -8,8 +8,12 @@
         <p class="crm-header-subtitle muted">Kanban — arraste os cards entre colunas</p>
     </div>
     <div class="user-create crm-toolbar">
-        <a href="{% url 'crm:board_list' %}" class="btn btn-secondary"><i class="fa-solid fa-list"></i> Boards</a>
+        {% if current_parent_menu == 'projetos' %}
+        <a href="{% url 'crm:board_list' %}?menu=projetos" class="btn btn-secondary"><i class="fa-solid fa-list"></i> Boards</a>
         <a href="{% url 'crm:project_list' %}" class="btn btn-secondary"><i class="fa-solid fa-diagram-project"></i> Projetos</a>
+        {% else %}
+        <a href="{% url 'crm:dashboard' %}" class="btn btn-secondary"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+        {% endif %}
         {% if perms.crm.manage_board_columns %}
         <a href="{% url 'crm:board_settings' board_id=board_id %}" class="btn btn-secondary"><i class="fa-solid fa-sliders"></i> Colunas</a>
         {% endif %}

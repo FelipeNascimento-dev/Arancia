@@ -22,7 +22,8 @@
     <div class="crm-dashboard-card">
         <h3>Detalhes</h3>
         <dl class="crm-detail-grid">
-            <dt>Descrição</dt><dd>{{ task.description|default:"—" }}</dd>
+            <dt>Descrição</dt>
+            <dd>{% include 'crm/partials/_rich_content_display.html' with html=task.description script_id='task-description-json' element_id='taskDescriptionView' %}</dd>
             <dt>Status</dt><dd>{{ task.status_name|default:task.status_id|default:"—" }}</dd>
             <dt>Prioridade</dt><dd>{{ task.priority_name|default:task.priority_id|default:"—" }}</dd>
             <dt>Agendamento</dt><dd>{{ task.scheduled_at_formatted|default:task.scheduled_at|default:"—" }}</dd>

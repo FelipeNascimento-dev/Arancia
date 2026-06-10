@@ -34,19 +34,46 @@ from crm.services.pagination import (
 )
 from crm.services.tasks import list_tasks
 
+CRM_BOARDS_MENU = {
+    'current_parent_menu': 'crm',
+    'current_menu': 'crm_boards',
+}
+
 PROJECTS_MENU = {
     'current_parent_menu': 'projetos',
     'current_menu': 'projetos_boards',
 }
 
 
-def _require_gai_or_render(request, template, extra_context=None):
+def _filter_boards_by_type(boards, board_type):
+    if not board_type:
+        return boards
+    return [board for board in boards if board.get('board_type') == board_type]
+
+
+def _board_menu_context(request, board_data=None, *, board_id=None):
+    """Destaca menu CRM ou Projetos conforme ?menu= ou board_type."""
+    menu = (request.GET.get('menu') or '').strip().lower()
+    if menu == 'crm':
+        ctx = dict(CRM_BOARDS_MENU)
+    elif menu == 'projetos':
+        ctx = dict(PROJECTS_MENU)
+    elif board_data and board_data.get('board_type') == 'crm':
+        ctx = dict(CRM_BOARDS_MENU)
+    else:
+        ctx = dict(PROJECTS_MENU)
+    if board_id is not None:
+        ctx['current_submenu'] = str(board_id)
+    return ctx
+
+
+def _require_gai_or_render(request, template, extra_context=None, *, menu_context=None):
     if get_user_gai_id(request.user) is not None:
         return None
     context = {
         'site_title': 'CRM — Boards',
         'missing_gai': True,
-        **PROJECTS_MENU,
+        **(menu_context or PROJECTS_MENU),
         **(extra_context or {}),
     }
     return render(request, template, context)
@@ -98,7 +125,13 @@ def _column_form_kwargs(request):
 
 @crm_perm_required('view_boards')
 def board_list(request):
-    blocked = _require_gai_or_render(request, 'crm/boards/list.html')
+    menu_ctx = _board_menu_context(request)
+    board_type_filter = (request.GET.get('board_type') or '').strip() or None
+    blocked = _require_gai_or_render(
+        request,
+        'crm/boards/list.html',
+        menu_context=menu_ctx,
+    )
     if blocked:
         return blocked
 
@@ -107,7 +140,7 @@ def board_list(request):
     api_error = None
     try:
         raw = CrmApiClient(request.user).get('/boards/', params={'skip': skip, 'limit': limit})
-        boards = normalize_list_response(raw)
+        boards = _filter_boards_by_type(normalize_list_response(raw), board_type_filter)
     except CrmApiError as exc:
         api_error = exc
         handle_crm_error(request, exc)
@@ -115,15 +148,23 @@ def board_list(request):
     return render(request, 'crm/boards/list.html', {
         'site_title': 'CRM — Boards',
         'boards': boards,
+        'board_type_filter': board_type_filter,
+        'menu_scope': request.GET.get('menu'),
         'pagination': build_pagination_context(skip, limit, boards),
         'api_error': api_error,
-        **PROJECTS_MENU,
+        **menu_ctx,
     })
 
 
 @crm_perm_required('add_board')
 def board_new(request):
-    blocked = _require_gai_or_render(request, 'crm/boards/form.html', {'form_mode': 'new'})
+    menu_ctx = _board_menu_context(request)
+    blocked = _require_gai_or_render(
+        request,
+        'crm/boards/form.html',
+        {'form_mode': 'new'},
+        menu_context=menu_ctx,
+    )
     if blocked:
         return blocked
 
@@ -150,16 +191,22 @@ def board_new(request):
         'form': form,
         'form_mode': 'new',
         'lookups': lookups,
-        **PROJECTS_MENU,
+        **menu_ctx,
     })
 
 
 @crm_perm_required('change_board')
 def board_edit(request, board_id):
-    blocked = _require_gai_or_render(request, 'crm/boards/form.html', {
-        'form_mode': 'edit',
-        'board_id': board_id,
-    })
+    menu_ctx = _board_menu_context(request, board_id=board_id)
+    blocked = _require_gai_or_render(
+        request,
+        'crm/boards/form.html',
+        {
+            'form_mode': 'edit',
+            'board_id': board_id,
+        },
+        menu_context=menu_ctx,
+    )
     if blocked:
         return blocked
 
@@ -172,6 +219,7 @@ def board_edit(request, board_id):
     except CrmApiError as exc:
         handle_crm_error(request, exc)
         return redirect('crm:board_list')
+    menu_ctx = _board_menu_context(request, board_data, board_id=board_id)
 
     initial = {
         'name': board_data.get('name') or board_data.get('title') or '',
@@ -197,13 +245,19 @@ def board_edit(request, board_id):
         'board_id': board_id,
         'board': board_data,
         'lookups': lookups,
-        **PROJECTS_MENU,
+        **menu_ctx,
     })
 
 
 @crm_perm_required('manage_board_columns')
 def board_settings(request, board_id):
-    blocked = _require_gai_or_render(request, 'crm/boards/settings.html', {'board_id': board_id})
+    menu_ctx = _board_menu_context(request, board_id=board_id)
+    blocked = _require_gai_or_render(
+        request,
+        'crm/boards/settings.html',
+        {'board_id': board_id},
+        menu_context=menu_ctx,
+    )
     if blocked:
         return blocked
 
@@ -214,6 +268,7 @@ def board_settings(request, board_id):
     except CrmApiError as exc:
         handle_crm_error(request, exc)
         return redirect('crm:board_list')
+    menu_ctx = _board_menu_context(request, board_data, board_id=board_id)
 
     col_kwargs = _column_form_kwargs(request)
     column_form = BoardColumnForm(**col_kwargs)
@@ -239,7 +294,7 @@ def board_settings(request, board_id):
         'board_id': board_id,
         'columns': columns,
         'column_form': column_form,
-        **PROJECTS_MENU,
+        **menu_ctx,
     })
 
 
@@ -309,7 +364,13 @@ def ajax_board_access_update(request, board_id, access_id):
 
 @crm_perm_required('view_boards')
 def board_kanban(request, board_id):
-    blocked = _require_gai_or_render(request, 'crm/boards/kanban.html', {'board_id': board_id})
+    menu_ctx = _board_menu_context(request, board_id=board_id)
+    blocked = _require_gai_or_render(
+        request,
+        'crm/boards/kanban.html',
+        {'board_id': board_id},
+        menu_context=menu_ctx,
+    )
     if blocked:
         return blocked
 
@@ -357,6 +418,7 @@ def board_kanban(request, board_id):
 
     can_move = access_me.get('can_move_tasks', request.user.has_perm('crm.move_task'))
     can_comment = access_me.get('can_comment', request.user.has_perm('crm.change_task'))
+    menu_ctx = _board_menu_context(request, board_data, board_id=board_id)
 
     return render(request, 'crm/boards/kanban.html', {
         'site_title': f'CRM — {board_data.get("name") or board_data.get("title") or board_id if board_data else board_id}',
@@ -369,14 +431,19 @@ def board_kanban(request, board_id):
         'can_comment': can_comment,
         'api_error': api_error,
         'tasks_error': tasks_error,
-        **PROJECTS_MENU,
-        'current_submenu': str(board_id),
+        **menu_ctx,
     })
 
 
 @crm_perm_required('manage_board_access')
 def board_access(request, board_id):
-    blocked = _require_gai_or_render(request, 'crm/boards/access.html', {'board_id': board_id})
+    menu_ctx = _board_menu_context(request, board_id=board_id)
+    blocked = _require_gai_or_render(
+        request,
+        'crm/boards/access.html',
+        {'board_id': board_id},
+        menu_context=menu_ctx,
+    )
     if blocked:
         return blocked
 
@@ -387,6 +454,7 @@ def board_access(request, board_id):
     except CrmApiError as exc:
         handle_crm_error(request, exc)
         return redirect('crm:dashboard')
+    menu_ctx = _board_menu_context(request, board_data, board_id=board_id)
 
     choices = _access_form_choices(request)
     access_form = BoardAccessForm(**choices)
@@ -410,7 +478,7 @@ def board_access(request, board_id):
         'board_id': board_id,
         'access_list': access_list,
         'access_form': access_form,
-        **PROJECTS_MENU,
+        **menu_ctx,
     })
 
 

@@ -23,5 +23,12 @@
         <p style="margin-top:12px;"><a href="{% url 'crm:settings_status_tasks' %}" class="btn btn-primary">Gerenciar</a></p>
     </div>
     {% endif %}
+    {% if perms.logistica.gestao_total %}
+    <div class="crm-dashboard-card">
+        <h3>Permissões de acesso</h3>
+        <p class="muted">Configure CRM Comercial e Projetos por usuário</p>
+        <p style="margin-top:12px;"><a href="{% url 'crm:permissions_list' %}" class="btn btn-primary">Gerenciar</a></p>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
