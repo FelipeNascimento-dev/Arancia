@@ -494,6 +494,18 @@
                     Calendário
                 </a>
                 {% endif %}
+                {% if perms.crm.view_task_recurrences %}
+                <a href="{% url 'crm:recurrence_list' %}"
+                class="{% if current_menu == 'projetos_recurrences' %}active{% endif %}">
+                    Recorrências
+                </a>
+                {% endif %}
+                {% if perms.crm.view_boards %}
+                <a href="{% url 'crm:board_list' %}"
+                class="{% if current_menu == 'projetos_boards' and not current_submenu %}active{% endif %}">
+                    Todos os boards
+                </a>
+                {% endif %}
                 {% if crm_me_context and crm_me_context.accessible_boards %}
                 <h5 class="submenu-toggle {% if current_menu == 'projetos_boards' %}active{% endif %}" data-target="projetos-boards-sub">Boards</h5>
                 <div class="sub-submenu {% if current_menu == 'projetos_boards' %}show{% endif %}" id="projetos-boards-sub">

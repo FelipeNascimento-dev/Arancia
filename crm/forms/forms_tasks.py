@@ -41,6 +41,7 @@ class TaskForm(forms.Form):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        self.lock_board = lock_board
         boards = [('', '— Nenhum —')] + list(board_choices or [])
         self.fields['board_id'].choices = boards
         if lock_board:
@@ -72,12 +73,21 @@ class TaskForm(forms.Form):
             ('priority_id', 'priority_id'),
             ('project_id', 'project_id'),
         ):
-            if field in self.fields and data.get(field):
+            if field not in self.fields:
+                continue
+            if field == 'board_id' and self.lock_board:
+                continue
+            if data.get(field):
                 payload[key] = data[field]
 
         if data.get('customer_gai_id'):
             payload['customer_gai_id'] = int(data['customer_gai_id'])
-        elif for_update and 'customer_gai_id' in self.fields and not data.get('customer_gai_id'):
+        elif (
+            for_update
+            and 'customer_gai_id' in self.fields
+            and 'customer_gai_id' in self.data
+            and not self.data.get('customer_gai_id')
+        ):
             payload['customer_gai_id'] = None
 
         due_at = format_datetime_to_api(data.get('due_at'))
@@ -103,7 +113,7 @@ class SubtaskForm(forms.Form):
 
 
 class TaskCommentForm(forms.Form):
-    body = forms.CharField(
+    content = forms.CharField(
         label='Comentário',
         required=True,
         widget=forms.Textarea(attrs={'class': 'crm-input', 'rows': 2}),
@@ -136,3 +146,50 @@ class TaskAttachmentForm(forms.Form):
         required=True,
         widget=forms.FileInput(attrs={'class': 'crm-input'}),
     )
+
+
+LINK_TYPE_CHOICES = [
+    ('related', 'Relacionada'),
+    ('blocks', 'Bloqueia'),
+    ('blocked_by', 'Bloqueada por'),
+    ('duplicates', 'Duplicata'),
+]
+
+
+class TaskLinkForm(forms.Form):
+    linked_task_id = forms.CharField(label='ID da tarefa vinculada', max_length=36, required=True, widget=_INPUT)
+    link_type = forms.ChoiceField(label='Tipo de vínculo', choices=LINK_TYPE_CHOICES, required=True, widget=_SELECT)
+
+    def cleaned_payload(self):
+        data = self.cleaned_data
+        return {
+            'linked_task_id': data['linked_task_id'].strip(),
+            'link_type': data['link_type'],
+        }
+
+
+class TaskWatcherForm(forms.Form):
+    user_id = forms.ChoiceField(label='Usuário', required=False, widget=_SELECT)
+    designation_id = forms.ChoiceField(label='Designação', required=False, widget=_SELECT)
+
+    def __init__(self, *args, user_choices=None, designation_choices=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['user_id'].choices = [('', '— Nenhum —')] + list(user_choices or [])
+        self.fields['designation_id'].choices = [('', '— Nenhuma —')] + list(designation_choices or [])
+
+    def clean(self):
+        cleaned = super().clean()
+        if not cleaned.get('user_id') and not cleaned.get('designation_id'):
+            raise forms.ValidationError('Informe usuário ou designação.')
+        if cleaned.get('user_id') and cleaned.get('designation_id'):
+            raise forms.ValidationError('Informe apenas um alvo: usuário ou designação.')
+        return cleaned
+
+    def cleaned_payload(self):
+        data = self.cleaned_data
+        payload = {}
+        if data.get('user_id'):
+            payload['user_id'] = int(data['user_id'])
+        if data.get('designation_id'):
+            payload['designation_id'] = int(data['designation_id'])
+        return payload

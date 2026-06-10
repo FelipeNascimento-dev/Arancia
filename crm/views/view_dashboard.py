@@ -9,6 +9,7 @@ from crm.services.client import CrmApiClient
 from crm.services.context import get_user_gai_id
 from crm.services.datetime_utils import format_datetime
 from crm.services.exceptions import CrmApiError, handle_crm_error
+from crm.services.lookups import fetch_crm_lookups, parse_customer_gai_id
 
 
 @crm_module_required
@@ -34,23 +35,26 @@ def dashboard(request):
     overdue_tasks = None
     errors = []
 
-    try:
-        billing_summary = client.get('/billing/summary')
-    except CrmApiError as exc:
-        errors.append('resumo de faturamento')
-        handle_crm_error(request, exc)
+    if request.user.has_perm('crm.view_billing'):
+        try:
+            billing_summary = client.get('/billing/summary')
+        except CrmApiError as exc:
+            errors.append('resumo de faturamento')
+            handle_crm_error(request, exc)
 
-    try:
-        alerts = client.get('/alerts/')
-    except CrmApiError as exc:
-        errors.append('alertas')
-        handle_crm_error(request, exc)
+    if request.user.has_perm('crm.view_contracts'):
+        try:
+            alerts = client.get('/alerts/')
+        except CrmApiError as exc:
+            errors.append('alertas')
+            handle_crm_error(request, exc)
 
-    try:
-        overdue_tasks = client.get('/tasks/my/', params={'overdue_only': 'true'})
-    except CrmApiError as exc:
-        errors.append('tarefas em atraso')
-        handle_crm_error(request, exc)
+    if request.user.has_perm('crm.view_tasks'):
+        try:
+            overdue_tasks = client.get('/tasks/my/', params={'overdue_only': 'true'})
+        except CrmApiError as exc:
+            errors.append('tarefas em atraso')
+            handle_crm_error(request, exc)
 
     if isinstance(alerts, dict):
         alerts_list = alerts.get('items') or alerts.get('results') or []
@@ -110,3 +114,17 @@ def validate_context(request):
     except CrmApiError as exc:
         handle_crm_error(request, exc)
         return JsonResponse({'ok': False, 'error': str(exc)}, status=exc.status_code or 502)
+
+
+@require_GET
+@crm_module_required
+def ajax_crm_lookups(request):
+    """GET /lookups/crm com filtro opcional customer_gai_id (service_types por GAI)."""
+    if get_user_gai_id(request.user) is None:
+        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    customer_gai_id = parse_customer_gai_id(request.GET.get('customer_gai_id'))
+    try:
+        lookups = fetch_crm_lookups(request.user, customer_gai_id=customer_gai_id)
+        return JsonResponse({'ok': True, 'lookups': lookups})
+    except CrmApiError as exc:
+        return JsonResponse({'ok': False, 'error': str(exc.detail or exc)}, status=exc.status_code or 502)

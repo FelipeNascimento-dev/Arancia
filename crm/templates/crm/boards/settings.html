@@ -1,0 +1,83 @@
+{% extends 'crm/base_crm.html' %}
+
+{% block crm_content %}
+<div class="user-table-header">
+    <div class="crm-header-text">
+        <h2 class="user-table-title"><i class="fa-solid fa-sliders"></i> Colunas — {% firstof board.name board_id %}</h2>
+        <p class="crm-header-subtitle muted">Configure colunas e ordem do Kanban</p>
+    </div>
+    <div class="user-create crm-toolbar">
+        <a href="{% url 'crm:board_kanban' board_id=board_id %}" class="btn btn-secondary"><i class="fa-solid fa-table-columns"></i> Kanban</a>
+        {% if perms.crm.change_board %}
+        <a href="{% url 'crm:board_edit' board_id=board_id %}" class="btn btn-secondary"><i class="fa-solid fa-pencil"></i> Editar board</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if columns %}
+<div class="table-wrapper">
+    <table class="user-table" id="columns-table">
+        <thead><tr><th>Nome</th><th>Status</th><th>Ordem</th></tr></thead>
+        <tbody id="columns-sortable">
+            {% for col in columns %}
+            <tr data-column-id="{{ col.id }}" draggable="true">
+                <td>{% firstof col.name col.id %}</td>
+                <td>{% firstof col.status_name col.status_id "—" %}</td>
+                <td>{{ col.sort_order|default:forloop.counter }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<p class="muted">Arraste as linhas para reordenar (salva automaticamente).</p>
+{% else %}
+    {% include 'crm/partials/_empty_state.html' with message="Nenhuma coluna configurada." %}
+{% endif %}
+
+<hr class="crm-divider">
+<h3 class="crm-section-title">Nova coluna</h3>
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="add_column">
+    <div class="crm-form-grid">
+        {% for field in column_form %}
+        <div class="crm-field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<span class="error">{{ field.errors|join:", " }}</span>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <div class="crm-form-actions">
+        <button type="submit" class="submit-button-right">Adicionar coluna</button>
+    </div>
+</form>
+
+<script>
+(function() {
+    var tbody = document.getElementById('columns-sortable');
+    if (!tbody) return;
+    var csrf = '{{ csrf_token }}';
+    var reorderUrl = '{% url "crm:ajax_board_reorder_columns" board_id=board_id %}';
+    var dragged = null;
+
+    tbody.querySelectorAll('tr').forEach(function(row) {
+        row.addEventListener('dragstart', function() { dragged = row; row.classList.add('dragging'); });
+        row.addEventListener('dragend', function() { row.classList.remove('dragging'); dragged = null; });
+        row.addEventListener('dragover', function(e) { e.preventDefault(); });
+        row.addEventListener('drop', function(e) {
+            e.preventDefault();
+            if (!dragged || dragged === row) return;
+            tbody.insertBefore(dragged, row);
+            var ids = Array.from(tbody.querySelectorAll('tr')).map(function(r) { return r.getAttribute('data-column-id'); });
+            fetch(reorderUrl, {
+                method: 'POST', credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+                body: JSON.stringify({ column_ids: ids })
+            }).then(function(r) { return r.json(); })
+              .then(function(data) { if (!data.ok) alert(data.error || 'Erro ao reordenar.'); });
+        });
+    });
+})();
+</script>
+{% endblock %}

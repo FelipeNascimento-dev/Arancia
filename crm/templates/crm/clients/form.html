@@ -43,23 +43,35 @@
 <div class="crm-dashboard-grid">
     <div class="crm-dashboard-card">
         <h3>Contatos</h3>
-        {% if client.contacts %}
-        <ul class="crm-list">
-            {% for c in client.contacts %}
-            <li>{{ c.name|default:c.email|default:"—" }}</li>
+        {% include 'crm/clients/partials/contacts_list.html' with contacts=client.contacts %}
+        <form method="post" class="crm-card-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_contact">
+            {% for field in contact_form %}
+            <div class="crm-field{% if field.name == 'name' %} crm-field-wide{% endif %}">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<span class="error">{{ field.errors|join:", " }}</span>{% endif %}
+            </div>
             {% endfor %}
-        </ul>
-        {% else %}<p class="muted">Nenhum contato.</p>{% endif %}
+            <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-user-plus"></i> Adicionar contato</button>
+        </form>
     </div>
     <div class="crm-dashboard-card">
         <h3>Endereços</h3>
-        {% if client.addresses %}
-        <ul class="crm-list">
-            {% for a in client.addresses %}
-            <li>{{ a.street|default:a.city|default:"—" }}</li>
+        {% include 'crm/clients/partials/addresses_list.html' with addresses=client.addresses %}
+        <form method="post" class="crm-card-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_address">
+            {% for field in address_form %}
+            <div class="crm-field{% if field.name == 'street' %} crm-field-wide{% endif %}">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<span class="error">{{ field.errors|join:", " }}</span>{% endif %}
+            </div>
             {% endfor %}
-        </ul>
-        {% else %}<p class="muted">Nenhum endereço.</p>{% endif %}
+            <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-location-dot"></i> Adicionar endereço</button>
+        </form>
     </div>
 </div>
 {% endif %}

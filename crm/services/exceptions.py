@@ -30,6 +30,11 @@ class CrmValidationError(CrmApiError):
         super().__init__(message, **kwargs)
 
 
+class CrmBusinessError(CrmApiError):
+    def __init__(self, message='Operação não permitida no CRM.', **kwargs):
+        super().__init__(message, **kwargs)
+
+
 class CrmServerError(CrmApiError):
     def __init__(self, message='Erro interno no servidor CRM.', **kwargs):
         super().__init__(message, **kwargs)
@@ -67,6 +72,8 @@ def raise_for_status(response):
         raise CrmForbiddenError(str(detail), **kwargs)
     if status == 404:
         raise CrmNotFoundError(str(detail), **kwargs)
+    if status == 400:
+        raise CrmBusinessError(str(detail), **kwargs)
     if status == 422:
         raise CrmValidationError(str(detail), **kwargs)
     if status >= 500:
@@ -84,6 +91,8 @@ def handle_crm_error(request, exc):
         messages.error(request, 'Registro não encontrado no CRM.')
     elif isinstance(exc, CrmValidationError):
         messages.error(request, f'Dados inválidos: {exc.detail}')
+    elif isinstance(exc, CrmBusinessError):
+        messages.error(request, str(exc.detail or exc))
     elif isinstance(exc, CrmConnectionError):
         messages.error(request, 'Não foi possível conectar ao CRM. Tente novamente.')
     elif isinstance(exc, CrmServerError):

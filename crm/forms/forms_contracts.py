@@ -101,7 +101,7 @@ class ContractForm(forms.Form):
                 payload['title'] = data['title'].strip()
 
         if data.get('service_type_id'):
-            payload['service_type_id'] = data['service_type_id']
+            payload['service_type_id'] = int(data['service_type_id'])
         elif for_update and 'service_type_id' in self.fields:
             payload['service_type_id'] = None
 

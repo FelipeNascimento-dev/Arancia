@@ -23,6 +23,8 @@ from crm.services.pagination import (
     get_pagination_params,
     normalize_list_response,
 )
+from crm.services.tasks import list_tasks
+from crm.services.datetime_utils import format_datetime
 
 PROJECTS_MENU = {
     'current_parent_menu': 'projetos',
@@ -66,6 +68,59 @@ def _member_form_choices(request):
             team_gais if isinstance(team_gais, list) else (team_gais or {}).get('items') or team_gais
         ),
     }
+
+
+def _enrich_task(task):
+    if not isinstance(task, dict):
+        return task
+    task = dict(task)
+    if task.get('due_at'):
+        task['due_at_formatted'] = format_datetime(task['due_at'])
+    return task
+
+
+@crm_perm_required('view_tasks')
+def project_tasks(request, project_id):
+    blocked = _require_gai_or_render(
+        request,
+        'crm/projects/tasks.html',
+        {'project_id': project_id, 'current_menu': 'projetos_projects'},
+    )
+    if blocked:
+        return blocked
+
+    api = CrmApiClient(request.user)
+    try:
+        project_data = api.get(f'/projects/{project_id}')
+    except CrmApiError as exc:
+        handle_crm_error(request, exc)
+        return redirect('crm:project_list')
+
+    skip, limit = get_pagination_params(request)
+    params = {'skip': skip, 'limit': limit, 'project_id': str(project_id)}
+    tasks = []
+    api_error = None
+    tasks_scope_fallback = False
+    try:
+        raw, tasks_scope_fallback = list_tasks(request.user, params=params)
+        tasks = [_enrich_task(t) for t in normalize_list_response(raw)]
+    except CrmApiError as exc:
+        api_error = exc
+        handle_crm_error(request, exc)
+
+    default_board_id = project_data.get('default_board_id') or project_data.get('board_id')
+
+    return render(request, 'crm/projects/tasks.html', {
+        'site_title': f'CRM — Tarefas — {project_data.get("name") or project_id}',
+        'project': project_data,
+        'project_id': project_id,
+        'tasks': tasks,
+        'pagination': build_pagination_context(skip, limit, tasks),
+        'api_error': api_error,
+        'tasks_scope_fallback': tasks_scope_fallback,
+        'default_board_id': default_board_id,
+        **PROJECTS_MENU,
+    })
 
 
 @crm_perm_required('view_projects')

@@ -1,0 +1,18 @@
+{% if addresses %}
+<ul class="crm-list">
+    {% for address in addresses %}
+    <li>
+        {% if address.label %}<strong>{{ address.label }}</strong>{% if address.is_primary %} <span class="tag">Principal</span>{% endif %}<br>{% elif address.is_primary %}<span class="tag">Principal</span><br>{% endif %}
+        {{ address.street|default:"" }}{% if address.number %}, {{ address.number }}{% endif %}
+        {% if address.complement %} — {{ address.complement }}{% endif %}
+        {% if address.district %}<br>{{ address.district }}{% endif %}
+        {% if address.city or address.state %}
+        <br>{{ address.city|default:"" }}{% if address.state %}/{{ address.state }}{% endif %}
+        {% endif %}
+        {% if address.zip_code %}<br>CEP {{ address.zip_code }}{% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="muted">Nenhum endereço.</p>
+{% endif %}
