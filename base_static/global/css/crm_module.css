@@ -1,7 +1,5 @@
-/* CRM / Projetos — complemento ao padrão logística (user-list-container, user_ger.css) */
-
 .crm-page-container {
-  width: 1300px;
+  width: 1350px;
   max-width: calc(100vw - 100px);
   margin-left: 65px;
   margin-top: 65px;

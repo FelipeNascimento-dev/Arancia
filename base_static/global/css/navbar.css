@@ -215,8 +215,17 @@
   font-weight: 600;
   cursor: pointer;
   padding: 12px 12px;
+  margin: 0;
   transition: color 0.2s ease;
   border-radius: 6px;
+  display: block;
+}
+
+/* Submenu de 1º nível dentro do dropdown — alinhar com os links <a> vizinhos */
+.dropdown-content > .submenu-toggle {
+  padding: 12px 18px;
+  margin-bottom: 6px;
+  border-radius: 8px;
 }
 
 .column h4:hover,
@@ -410,4 +419,14 @@
 .dropdown-content a.active {
     background-color: var(--hover-bg);
     font-weight: 600;
+}
+
+.dropdown-menu-muted {
+  display: block;
+  padding: 12px 18px;
+  margin-bottom: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--muted-color);
+  cursor: default;
 }
