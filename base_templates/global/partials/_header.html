@@ -416,6 +416,10 @@
                 class="{% if current_menu == 'gestao_gai' %}active{% endif %}">
                     Gestão de GAI
                 </a>
+                <a href="{% url 'crm:permissions_list' %}"
+                class="{% if current_menu == 'gestao_crm_permissions' %}active{% endif %}">
+                    Permissões CRM
+                </a>
             </div>
         </div>
         {% endif %}
@@ -462,6 +466,14 @@
                     Configurações
                 </a>
                 {% endif %}
+                {% if perms.crm.view_boards and crm_me_context and crm_me_context.accessible_boards %}
+                {% for board in crm_me_context.accessible_boards|boards_of_type:'crm' %}
+                <a href="{% url 'crm:board_kanban' board_id=board.id %}?menu=crm"
+                class="{% if current_menu == 'crm_boards' and current_submenu == board.id|stringformat:'s' %}active{% endif %}">
+                    {% firstof board.name board.id %}
+                </a>
+                {% endfor %}
+                {% endif %}
             </div>
         </div>
         {% endif %}
@@ -501,23 +513,10 @@
                 </a>
                 {% endif %}
                 {% if perms.crm.view_boards %}
-                <a href="{% url 'crm:board_list' %}"
-                class="{% if current_menu == 'projetos_boards' and not current_submenu %}active{% endif %}">
-                    Todos os boards
+                <a href="{% url 'crm:board_list' %}?menu=projetos"
+                class="{% if current_menu == 'projetos_boards' %}active{% endif %}">
+                    Boards
                 </a>
-                {% endif %}
-                {% if crm_me_context and crm_me_context.accessible_boards %}
-                <h5 class="submenu-toggle {% if current_menu == 'projetos_boards' %}active{% endif %}" data-target="projetos-boards-sub">Boards</h5>
-                <div class="sub-submenu {% if current_menu == 'projetos_boards' %}show{% endif %}" id="projetos-boards-sub">
-                    {% for board in crm_me_context.accessible_boards %}
-                    <a href="{% url 'crm:board_kanban' board_id=board.id %}"
-                    class="{% if current_submenu == board.id|stringformat:'s' %}active{% endif %}">
-                        {% firstof board.name board.id %}
-                    </a>
-                    {% endfor %}
-                </div>
-                {% elif perms.crm.view_boards %}
-                <span class="dropdown-menu-muted" title="Nenhum board acessível no seu contexto">Boards</span>
                 {% endif %}
             </div>
         </div>

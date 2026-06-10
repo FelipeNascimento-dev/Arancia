@@ -29,6 +29,7 @@ from crm.views.view_contracts import (
     contract_new,
 )
 from crm.views.view_dashboard import ajax_crm_lookups, ajax_health, dashboard, validate_context
+from crm.views.view_permissions import permissions_list, permissions_user
 from crm.views.view_projects import (
     ajax_project_delete,
     ajax_project_member_delete,
@@ -161,4 +162,6 @@ __all__ = [
     'settings_status_task_edit',
     'ajax_status_tasks_reorder',
     'ajax_settings_delete',
+    'permissions_list',
+    'permissions_user',
 ]

@@ -77,6 +77,8 @@ from crm.views import (
     task_my,
     task_new,
     validate_context,
+    permissions_list,
+    permissions_user,
 )
 
 app_name = 'crm'
@@ -221,6 +223,8 @@ urlpatterns = [
         settings_status_task_edit,
         name='settings_status_task_edit',
     ),
+    path('crm/settings/permissions/', permissions_list, name='permissions_list'),
+    path('crm/settings/permissions/<int:user_id>/', permissions_user, name='permissions_user'),
     path(
         'crm/ajax/settings/status-tasks/reorder/',
         ajax_status_tasks_reorder,
