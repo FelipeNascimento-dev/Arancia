@@ -3,7 +3,7 @@
 {% block crm_content %}
 <div class="user-table-header">
     {% if form_mode == 'new' %}
-    {% include 'crm/partials/_page_title.html' with title="Nova tarefa" subtitle="Cadastro de tarefa no projeto" icon="fa-list-check" %}
+    {% include 'crm/partials/_page_title.html' with title="Nova tarefa" subtitle="Tarefa única ou recorrente" icon="fa-list-check" %}
     {% else %}
     {% include 'crm/partials/_page_title.html' with title="Editar tarefa" icon="fa-list-check" %}
     {% endif %}
@@ -19,15 +19,31 @@
 {% if missing_gai %}
     {% include 'crm/partials/_error_alert.html' with message="Usuário sem GAI configurado." error=True %}
 {% else %}
-<form method="post" class="crm-task-form">
+<form method="post" class="crm-task-form" id="crmTaskForm">
     {% csrf_token %}
     <div class="crm-form-grid">
+        {% if show_task_kind %}
+        <div class="crm-field crm-field-wide crm-task-kind-field">
+            <span class="crm-field-label">Tipo de tarefa</span>
+            <div class="crm-task-kind-options">
+                {% for radio in form.task_kind %}
+                <label class="crm-task-kind-option">{{ radio.tag }} {{ radio.choice_label }}</label>
+                {% endfor %}
+            </div>
+            {% if form.task_kind.errors %}<span class="error">{{ form.task_kind.errors|join:", " }}</span>{% endif %}
+        </div>
+        {% endif %}
+
         {% for field in form %}
-        <div class="crm-field{% if field.name == 'description' or field.field.widget.attrs.rows %} crm-field-wide{% endif %}">
+        {% if field.name != 'task_kind' %}
+        <div class="crm-field{% if field.name == 'description' or field.field.widget.attrs.rows %} crm-field-wide{% endif %}{% if field.name == 'due_at' or field.name == 'scheduled_at' %} crm-task-normal-field{% endif %}{% if field.name == 'frequency' or field.name == 'interval' or field.name == 'recurrence_start' or field.name == 'recurrence_end' %} crm-task-recurrence-field{% endif %}"
+            data-field="{{ field.name }}">
             <label for="{{ field.id_for_label }}">{{ field.label }}</label>
             {{ field }}
+            {% if field.help_text %}<p class="muted crm-perm-help">{{ field.help_text }}</p>{% endif %}
             {% if field.errors %}<span class="error">{{ field.errors|join:", " }}</span>{% endif %}
         </div>
+        {% endif %}
         {% endfor %}
     </div>
     <div class="crm-form-actions">
@@ -41,5 +57,39 @@
 </form>
 
 {% include 'crm/partials/_rich_text_assets.html' with editor_id='taskDescription' %}
+
+{% if show_task_kind or recurrence_only %}
+<script>
+(function () {
+    var form = document.getElementById('crmTaskForm');
+    if (!form) return;
+    var recurrenceOnly = {{ recurrence_only|yesno:"true,false" }};
+    var normalFields = form.querySelectorAll('.crm-task-normal-field');
+    var recurrenceFields = form.querySelectorAll('.crm-task-recurrence-field');
+    var kindInputs = form.querySelectorAll('input[name="task_kind"]');
+
+    function isRecurringSelected() {
+        if (recurrenceOnly) return true;
+        var checked = form.querySelector('input[name="task_kind"]:checked');
+        return checked && checked.value === 'recurring';
+    }
+
+    function syncSections() {
+        var recurring = isRecurringSelected();
+        normalFields.forEach(function (el) {
+            el.style.display = recurring ? 'none' : '';
+        });
+        recurrenceFields.forEach(function (el) {
+            el.style.display = recurring ? '' : 'none';
+        });
+    }
+
+    kindInputs.forEach(function (input) {
+        input.addEventListener('change', syncSections);
+    });
+    syncSections();
+})();
+</script>
+{% endif %}
 {% endif %}
 {% endblock %}

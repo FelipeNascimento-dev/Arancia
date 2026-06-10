@@ -24,7 +24,7 @@ from crm.services.lookups import (
     build_user_choices,
     fetch_column_templates,
     fetch_crm_lookups,
-    fetch_member_lookups,
+    resolve_member_lookups,
     fetch_team_gais,
 )
 from crm.services.pagination import (
@@ -80,10 +80,7 @@ def _require_gai_or_render(request, template, extra_context=None, *, menu_contex
 
 
 def _access_form_choices(request):
-    try:
-        members_lookup = fetch_member_lookups(request.user)
-    except CrmApiError:
-        members_lookup = None
+    members_lookup = resolve_member_lookups(request.user)
     try:
         team_gais = fetch_team_gais(request.user)
     except CrmApiError:

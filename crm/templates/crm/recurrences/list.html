@@ -5,7 +5,7 @@
     {% include 'crm/partials/_page_title.html' with title="Recorrências" subtitle="Tarefas agendadas automaticamente" icon="fa-rotate" %}
     <div class="user-create crm-toolbar">
         {% if can_manage %}
-        <a href="{% url 'crm:recurrence_new' %}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nova recorrência</a>
+        <a href="{% url 'crm:task_new' %}?recurring=1" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nova tarefa</a>
         {% endif %}
     </div>
 </div>

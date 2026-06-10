@@ -560,3 +560,29 @@
   gap: 12px;
   margin-top: 16px;
 }
+
+.crm-task-kind-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.crm-task-kind-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.crm-task-kind-option input {
+  width: auto;
+}
+
+.crm-field-label {
+  display: block;
+  font-weight: 600;
+  color: var(--form-label-color, #3f3f3f);
+  margin-bottom: 6px;
+  font-size: 15px;
+}

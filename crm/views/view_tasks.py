@@ -1,11 +1,12 @@
 import json
 
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
-from crm.decorators import crm_perm_required
+from crm.decorators import crm_access_required, crm_perm_required
 from crm.forms.forms_tasks import (
     SubtaskForm,
     TaskAssigneeForm,
@@ -28,7 +29,7 @@ from crm.services.lookups import (
     build_status_choices,
     build_user_choices,
     fetch_crm_lookups,
-    fetch_member_lookups,
+    resolve_member_lookups,
 )
 from crm.services.pagination import (
     build_pagination_context,
@@ -64,11 +65,7 @@ def _load_lookups(request):
 
 
 def _load_member_lookups(request):
-    try:
-        return fetch_member_lookups(request.user), None
-    except CrmApiError as exc:
-        handle_crm_error(request, exc)
-        return None, exc
+    return resolve_member_lookups(request.user), None
 
 
 def _task_form_choices(lookups):
@@ -79,6 +76,21 @@ def _task_form_choices(lookups):
         'project_choices': build_project_choices(lookups),
         'customer_choices': build_customer_choices(lookups),
     }
+
+
+def _redirect_after_task_create(request, result, *, is_recurring=False):
+    if isinstance(result, dict):
+        task_id = (
+            result.get('task_id')
+            or result.get('created_task_id')
+            or result.get('initial_task_id')
+            or (result.get('id') if not is_recurring else None)
+        )
+        if task_id:
+            return redirect('crm:task_detail', task_id=task_id)
+        if is_recurring and result.get('id'):
+            return redirect('crm:recurrence_detail', recurrence_id=result['id'])
+    return redirect('crm:task_list')
 
 
 def _enrich_task(task):
@@ -236,8 +248,14 @@ def task_calendar(request):
     })
 
 
-@crm_perm_required('add_task')
+@crm_access_required
 def task_new(request):
+    user = request.user
+    can_add_task = user.has_perm('crm.add_task')
+    can_add_recurrence = user.has_perm('crm.add_task_recurrence')
+    if not can_add_task and not can_add_recurrence:
+        raise PermissionDenied
+
     blocked = _require_gai_or_render(request, 'crm/tasks/form.html', {'form_mode': 'new'})
     if blocked:
         return blocked
@@ -252,26 +270,53 @@ def task_new(request):
     if initial_project:
         initial['project_id'] = initial_project
 
+    show_task_kind = can_add_task and can_add_recurrence
+    recurrence_only = can_add_recurrence and not can_add_task
+    if recurrence_only or request.GET.get('recurring') in ('1', 'true', 'yes'):
+        initial['task_kind'] = 'recurring'
+
+    form_options = {
+        **choices,
+        'show_task_kind': show_task_kind,
+        'recurrence_only': recurrence_only,
+    }
+
     if request.method == 'POST':
-        form = TaskForm(request.POST, **choices)
+        form = TaskForm(request.POST, **form_options)
         if form.is_valid():
+            api = CrmApiClient(request.user)
             try:
-                result = CrmApiClient(request.user).post('/tasks/', json=form.cleaned_payload())
-                task_id = result.get('id') if isinstance(result, dict) else None
+                if form.is_recurring():
+                    if not can_add_recurrence:
+                        raise PermissionDenied
+                    result = api.post(
+                        '/task-recurrences/',
+                        json=form.cleaned_recurrence_payload(),
+                    )
+                    messages.success(
+                        request,
+                        'Tarefa recorrente criada. A API gerará as instâncias conforme a recorrência.',
+                    )
+                    return _redirect_after_task_create(request, result, is_recurring=True)
+                if not can_add_task:
+                    raise PermissionDenied
+                result = api.post('/tasks/', json=form.cleaned_payload())
                 messages.success(request, 'Tarefa criada com sucesso.')
-                if task_id:
-                    return redirect('crm:task_detail', task_id=task_id)
-                return redirect('crm:task_list')
+                return _redirect_after_task_create(request, result, is_recurring=False)
             except CrmApiError as exc:
                 handle_crm_error(request, exc)
     else:
-        form = TaskForm(initial=initial, **choices)
+        form = TaskForm(initial=initial, **form_options)
 
     return render(request, 'crm/tasks/form.html', {
         'site_title': 'CRM — Nova tarefa',
         'form': form,
         'form_mode': 'new',
         'lookups': lookups,
+        'can_add_task': can_add_task,
+        'can_add_recurrence': can_add_recurrence,
+        'show_task_kind': show_task_kind,
+        'recurrence_only': recurrence_only,
         **PROJECTS_MENU,
     })
 
