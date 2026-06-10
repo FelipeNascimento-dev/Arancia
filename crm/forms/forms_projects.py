@@ -15,6 +15,7 @@ class ProjectForm(forms.Form):
 
     def __init__(self, *args, customer_choices=None, lock_customer=False, **kwargs):
         super().__init__(*args, **kwargs)
+        self.lock_customer = lock_customer
         customers = [('', '— Nenhum —')] + list(customer_choices or [])
         self.fields['customer_gai_id'].choices = customers
         if lock_customer:
@@ -29,10 +30,18 @@ class ProjectForm(forms.Form):
             payload['description'] = data['description']
         elif for_update and data.get('description') == '':
             payload['description'] = None
-        if data.get('customer_gai_id'):
+        if not self.lock_customer:
+            if data.get('customer_gai_id'):
+                payload['customer_gai_id'] = int(data['customer_gai_id'])
+            elif (
+                for_update
+                and 'customer_gai_id' in self.fields
+                and 'customer_gai_id' in self.data
+                and not self.data.get('customer_gai_id')
+            ):
+                payload['customer_gai_id'] = None
+        elif not for_update and data.get('customer_gai_id'):
             payload['customer_gai_id'] = int(data['customer_gai_id'])
-        elif for_update and 'customer_gai_id' in self.fields and not data.get('customer_gai_id'):
-            payload['customer_gai_id'] = None
         if 'is_active' in self.fields:
             payload['is_active'] = bool(data.get('is_active'))
         return payload

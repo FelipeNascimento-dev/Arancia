@@ -1,3 +1,3 @@
 {% extends 'crm/settings/_form_base.html' %}
 {% block settings_title %}{% if form_mode == 'new' %}Novo tipo de serviço{% else %}Editar tipo de serviço{% endif %}{% endblock %}
-{% block settings_cancel_url %}{% url 'crm:settings_service_types' %}{% endblock %}
+{% block settings_cancel_url %}{{ service_types_list_url }}{% endblock %}

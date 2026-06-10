@@ -68,6 +68,51 @@
 {% endif %}
 {% endif %}
 
+{% if ajax_lookups_url %}
+<script>
+(function () {
+    var customerField = document.getElementById('id_customer_gai_id');
+    var serviceTypeField = document.getElementById('id_service_type_id');
+    if (!customerField || !serviceTypeField) return;
+
+    function rebuildServiceTypes(items) {
+        var current = serviceTypeField.value;
+        serviceTypeField.innerHTML = '';
+        var empty = document.createElement('option');
+        empty.value = '';
+        empty.textContent = '— Nenhum —';
+        serviceTypeField.appendChild(empty);
+        (items || []).forEach(function (item) {
+            var opt = document.createElement('option');
+            opt.value = String(item.id);
+            opt.textContent = item.description || item.type || item.id;
+            serviceTypeField.appendChild(opt);
+        });
+        if (current) serviceTypeField.value = current;
+    }
+
+    customerField.addEventListener('change', function () {
+        var gaiId = customerField.value;
+        if (!gaiId) {
+            rebuildServiceTypes([]);
+            return;
+        }
+        var url = '{{ ajax_lookups_url }}?customer_gai_id=' + encodeURIComponent(gaiId);
+        fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (data.ok && data.lookups) {
+                    rebuildServiceTypes(data.lookups.service_types || []);
+                } else {
+                    rebuildServiceTypes([]);
+                }
+            })
+            .catch(function () { rebuildServiceTypes([]); });
+    });
+})();
+</script>
+{% endif %}
+
 {% if form_mode == 'edit' and perms.crm.upload_contract_file %}
 <script>
 (function () {

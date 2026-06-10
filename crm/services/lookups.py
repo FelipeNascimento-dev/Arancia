@@ -1,9 +1,35 @@
 from .client import CrmApiClient
 
 
-def fetch_crm_lookups(user):
+def parse_customer_gai_id(value):
+    if value is None or value == '':
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _lookup_params(customer_gai_id=None):
+    gai_id = parse_customer_gai_id(customer_gai_id)
+    if gai_id is None:
+        return None
+    return {'customer_gai_id': gai_id}
+
+
+def fetch_crm_lookups(user, customer_gai_id=None):
     """GET /lookups/crm — clientes elegíveis, service_types, boards, etc."""
-    return CrmApiClient(user).get('/lookups/crm')
+    params = _lookup_params(customer_gai_id)
+    return CrmApiClient(user).get('/lookups/crm', params=params)
+
+
+def fetch_service_types(user, *, customer_gai_id=None, skip=0, limit=100):
+    """GET /service-types/ — tipos de serviço filtrados por GAI cliente."""
+    params = {'skip': skip, 'limit': limit}
+    gai_params = _lookup_params(customer_gai_id)
+    if gai_params:
+        params.update(gai_params)
+    return CrmApiClient(user).get('/service-types/', params=params)
 
 
 def build_gai_choices(lookups):
@@ -26,15 +52,20 @@ def build_customer_choices(lookups):
     return choices
 
 
-def build_service_type_choices(lookups):
-    """Choices (uuid, label) para tipos de serviço."""
+def build_service_type_choices(lookups, customer_gai_id=None):
+    """Choices (id int, label) para tipos de serviço (schema order_types)."""
     items = (lookups or {}).get('service_types') or []
+    gai_filter = parse_customer_gai_id(customer_gai_id)
     choices = []
     for item in items:
         item_id = item.get('id')
-        if not item_id:
+        if item_id is None:
             continue
-        label = item.get('name') or item.get('code') or str(item_id)
+        if gai_filter is not None:
+            item_gai = item.get('client_id') or item.get('customer_gai_id')
+            if item_gai is not None and str(item_gai) != str(gai_filter):
+                continue
+        label = item.get('description') or item.get('type') or str(item_id)
         choices.append((str(item_id), label))
     return choices
 
@@ -102,6 +133,26 @@ def fetch_team_gais(user):
 def fetch_member_lookups(user):
     """GET /lookups/members — usuários e designações elegíveis."""
     return CrmApiClient(user).get('/lookups/members')
+
+
+def fetch_column_templates(user):
+    """GET /lookups/column-templates — templates para colunas de board."""
+    return CrmApiClient(user).get('/lookups/column-templates')
+
+
+def build_column_template_choices(templates):
+    return _build_uuid_choices(
+        templates if isinstance(templates, list) else normalize_column_templates(templates),
+        label_keys=('name', 'title', 'code'),
+    )
+
+
+def normalize_column_templates(raw):
+    if isinstance(raw, list):
+        return raw
+    if isinstance(raw, dict):
+        return raw.get('items') or raw.get('results') or []
+    return []
 
 
 def build_team_gai_choices(team_gais):

@@ -8,6 +8,7 @@ from .context import (
 from .exceptions import (
     CrmApiError,
     CrmAuthError,
+    CrmBusinessError,
     CrmConnectionError,
     CrmForbiddenError,
     CrmNotFoundError,
@@ -24,6 +25,7 @@ __all__ = [
     'invalidate_crm_session_cache',
     'CrmApiError',
     'CrmAuthError',
+    'CrmBusinessError',
     'CrmConnectionError',
     'CrmForbiddenError',
     'CrmNotFoundError',

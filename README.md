@@ -114,12 +114,13 @@ Integração BFF com API FastAPI CRM — **não** persiste tabelas `crm_*` no Dj
 | Dashboard | `crm/` | qualquer `crm.view_*` |
 | Clientes | `crm/clients/` | `crm.view_clients` |
 | Contratos / faturamento / alertas | `crm/contracts/`, `crm/billing/`, `crm/alerts/` | `crm.view_*` do módulo |
-| Tarefas | `crm/tasks/`, `crm/tasks/my/`, AJAX move/assign/comment | `crm.view_tasks`, `crm.move_task` |
-| Projetos | `crm/projects/`, membros polimórficos | `crm.view_projects`, `crm.manage_project_members` |
-| Boards / Kanban | `crm/boards/<id>/`, acesso granular | `crm.view_boards`, `crm.manage_board_access` |
-| Configurações | `crm/settings/` (service-types, priorities, status-tasks) | `crm.view_settings` |
+| Tarefas | `crm/tasks/`, links/watchers, AJAX assignees | `crm.view_tasks`, `crm.manage_watchers` |
+| Recorrências | `crm/tasks/recurrences/` | `crm.view_task_recurrences` |
+| Projetos | `crm/projects/`, `crm/projects/<id>/tasks/` | `crm.view_projects` |
+| Boards / Kanban | `crm/boards/`, settings/colunas, acesso PATCH | `crm.view_boards`, `crm.manage_board_columns` |
+| Configurações | `crm/settings/` + reorder status-tasks | `crm.view_settings`, `crm.manage_status_tasks` |
 
-Variáveis em `setup/local_settings.py` (não versionar secret): `CRM_API_BASE_URL`, `CRM_API_V1_STR`, `CRM_INTERNAL_API_SECRET`, `CRM_API_TIMEOUT`. Pré-requisitos: `python manage.py crm_prerequisites`.
+Variáveis: ver [`.env.example`](./.env.example) e `setup/local_settings.py` (não versionar secret): `CRM_API_BASE_URL`, `CRM_API_V1_STR`, `CRM_INTERNAL_API_SECRET`, `CRM_API_TIMEOUT`, `CRM_ENABLE_DEBUG_LOGS`. Pré-requisitos: `python manage.py crm_prerequisites`. Testes: `python manage.py test crm.tests`.
 
 ## Documentação para desenvolvimento (Cursor)
 
@@ -132,6 +133,7 @@ Variáveis em `setup/local_settings.py` (não versionar secret): `CRM_API_BASE_U
 
 | Data | Tipo | Módulo/Pasta | Alteração | Impacto |
 | ---- | ---- | ------------ | --------- | ------- |
+| 2026-06-10 | Adicionado | `crm/` | Task links/watchers, boards CRUD/colunas, recorrências, reorder status, testes BFF | Usuários com permissões `crm.*` acessam telas colaborativas completas |
 | 2026-06-09 | Adicionado | `crm/` | App CRM completo (fases 4–7): tarefas, projetos, Kanban, Celery, configurações | Usuários com permissões `crm.*` acessam módulo em `/arancia/crm/` via BFF |
 | 2026-06-02 | Ajustado | `logistica/models` (GAI) | Campos obrigatórios ao criar novo GAI | Cadastro de cliente/PA exige preenchimento adicional |
 | 2026-06-02 | Ajustado | `transportes/` | API de retenção | Integração de retenção atualizada |

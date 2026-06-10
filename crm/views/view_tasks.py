@@ -12,6 +12,8 @@ from crm.forms.forms_tasks import (
     TaskAttachmentForm,
     TaskCommentForm,
     TaskForm,
+    TaskLinkForm,
+    TaskWatcherForm,
 )
 from crm.services.client import CrmApiClient
 from crm.services.context import get_user_gai_id
@@ -90,11 +92,47 @@ def _enrich_task(task):
     return task
 
 
+def _ajax_require_gai(request):
+    """Retorna JsonResponse de erro se usuário sem GAI; None se OK."""
+    if get_user_gai_id(request.user) is None:
+        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    return None
+
+
 def _json_crm_error(exc):
     return JsonResponse({
         'ok': False,
         'error': str(exc.detail or exc),
     }, status=exc.status_code or 502)
+
+
+def _board_access_for_task(user, board_id):
+    if not board_id:
+        return {}
+    try:
+        return CrmApiClient(user).get(f'/boards/{board_id}/access/me') or {}
+    except CrmApiError:
+        return {}
+
+
+def _can_comment_on_task(user, task_data, access_me=None):
+    if not user.has_perm('crm.change_task'):
+        return False
+    board_id = task_data.get('board_id') if isinstance(task_data, dict) else None
+    if board_id:
+        access = access_me if access_me is not None else _board_access_for_task(user, board_id)
+        return bool(access.get('can_comment', user.has_perm('crm.change_task')))
+    return True
+
+
+def _require_can_comment_json(user, task_id):
+    try:
+        task_data = CrmApiClient(user).get(f'/tasks/{task_id}')
+    except CrmApiError as exc:
+        return None, JsonResponse({'ok': False, 'error': str(exc.detail or exc)}, status=exc.status_code or 502)
+    if not _can_comment_on_task(user, task_data):
+        return None, JsonResponse({'ok': False, 'error': 'Sem permissão para comentar nesta tarefa.'}, status=403)
+    return task_data, None
 
 
 @crm_perm_required('view_tasks')
@@ -177,8 +215,9 @@ def task_calendar(request):
 
     tasks = []
     api_error = None
+    tasks_scope_fallback = False
     try:
-        raw, _ = list_tasks(
+        raw, tasks_scope_fallback = list_tasks(
             request.user,
             params={'scheduled_only': 'true', 'limit': 200},
         )
@@ -191,6 +230,7 @@ def task_calendar(request):
         'site_title': 'CRM — Calendário de tarefas',
         'tasks': tasks,
         'api_error': api_error,
+        'tasks_scope_fallback': tasks_scope_fallback,
         **PROJECTS_MENU,
         'current_menu': 'projetos_calendar',
     })
@@ -256,6 +296,18 @@ def task_detail(request, task_id):
     subtasks = task_data.get('subtasks') or []
     subtasks = [_enrich_task(s) for s in subtasks]
 
+    board_id = task_data.get('board_id')
+    access_me = _board_access_for_task(request.user, board_id) if board_id else {}
+    can_comment = _can_comment_on_task(request.user, task_data, access_me)
+
+    linked_tasks = task_data.get('linked_tasks') or []
+    watchers = task_data.get('watchers') or []
+    move_history = []
+    try:
+        move_history = normalize_list_response(api.get(f'/tasks/{task_id}/move-history'))
+    except CrmApiError:
+        move_history = []
+
     comment_form = TaskCommentForm(prefix='comment')
     assignee_form = TaskAssigneeForm(
         prefix='assignee',
@@ -264,19 +316,50 @@ def task_detail(request, task_id):
     )
     attachment_form = TaskAttachmentForm(prefix='attachment')
     subtask_form = SubtaskForm(prefix='subtask')
+    link_form = TaskLinkForm(prefix='link')
+    watcher_form = TaskWatcherForm(
+        prefix='watcher',
+        user_choices=build_user_choices(members_lookup),
+        designation_choices=build_designation_choices(members_lookup),
+    )
 
     if request.method == 'POST':
         action = request.POST.get('action')
 
-        if action == 'add_comment' and request.user.has_perm('crm.change_task'):
+        if action == 'add_comment' and can_comment:
             comment_form = TaskCommentForm(request.POST, prefix='comment')
             if comment_form.is_valid():
                 try:
                     api.post(
                         f'/tasks/{task_id}/comments',
-                        json={'body': comment_form.cleaned_data['body']},
+                        json={'content': comment_form.cleaned_data['content']},
                     )
                     messages.success(request, 'Comentário adicionado.')
+                    return redirect('crm:task_detail', task_id=task_id)
+                except CrmApiError as exc:
+                    handle_crm_error(request, exc)
+
+        elif action == 'add_link' and request.user.has_perm('crm.change_task'):
+            link_form = TaskLinkForm(request.POST, prefix='link')
+            if link_form.is_valid():
+                try:
+                    api.post(f'/tasks/{task_id}/links', json=link_form.cleaned_payload())
+                    messages.success(request, 'Vínculo criado.')
+                    return redirect('crm:task_detail', task_id=task_id)
+                except CrmApiError as exc:
+                    handle_crm_error(request, exc)
+
+        elif action == 'add_watcher' and request.user.has_perm('crm.manage_watchers'):
+            watcher_form = TaskWatcherForm(
+                request.POST,
+                prefix='watcher',
+                user_choices=build_user_choices(members_lookup),
+                designation_choices=build_designation_choices(members_lookup),
+            )
+            if watcher_form.is_valid():
+                try:
+                    api.post(f'/tasks/{task_id}/watchers', json=watcher_form.cleaned_payload())
+                    messages.success(request, 'Observador adicionado.')
                     return redirect('crm:task_detail', task_id=task_id)
                 except CrmApiError as exc:
                     handle_crm_error(request, exc)
@@ -299,16 +382,11 @@ def task_detail(request, task_id):
         elif action == 'add_subtask' and request.user.has_perm('crm.add_task'):
             subtask_form = SubtaskForm(request.POST, prefix='subtask')
             if subtask_form.is_valid():
-                payload = {
-                    'title': subtask_form.cleaned_data['title'],
-                    'parent_task_id': str(task_id),
-                }
-                if task_data.get('board_id'):
-                    payload['board_id'] = task_data['board_id']
-                if task_data.get('project_id'):
-                    payload['project_id'] = task_data['project_id']
                 try:
-                    api.post('/tasks/', json=payload)
+                    api.post(
+                        f'/tasks/{task_id}/subtasks',
+                        json={'title': subtask_form.cleaned_data['title']},
+                    )
                     messages.success(request, 'Subtarefa criada.')
                     return redirect('crm:task_detail', task_id=task_id)
                 except CrmApiError as exc:
@@ -327,10 +405,17 @@ def task_detail(request, task_id):
         'task': task_data,
         'task_id': task_id,
         'subtasks': subtasks,
+        'linked_tasks': linked_tasks,
+        'watchers': watchers,
+        'move_history': move_history,
+        'can_comment': can_comment,
+        'access_me': access_me,
         'comment_form': comment_form,
         'assignee_form': assignee_form,
         'attachment_form': attachment_form,
         'subtask_form': subtask_form,
+        'link_form': link_form,
+        'watcher_form': watcher_form,
         'lookups': lookups,
         **PROJECTS_MENU,
     })
@@ -394,8 +479,9 @@ def task_edit(request, task_id):
 @require_POST
 @crm_perm_required('move_task')
 def ajax_task_move(request, task_id):
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    blocked = _ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     try:
         payload = json.loads(request.body.decode('utf-8') or '{}')
@@ -448,19 +534,24 @@ def ajax_task_comment(request, task_id):
     if get_user_gai_id(request.user) is None:
         return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
 
-    body = request.POST.get('body')
-    if not body:
+    _, blocked = _require_can_comment_json(request.user, task_id)
+    if blocked:
+        return blocked
+
+    content = request.POST.get('content')
+    if not content:
         try:
-            body = json.loads(request.body.decode('utf-8') or '{}').get('body')
+            payload = json.loads(request.body.decode('utf-8') or '{}')
+            content = payload.get('content') or payload.get('body')
         except json.JSONDecodeError:
-            body = None
-    if not body:
+            content = None
+    if not content:
         return JsonResponse({'ok': False, 'error': 'Comentário vazio.'}, status=400)
 
     try:
         result = CrmApiClient(request.user).post(
             f'/tasks/{task_id}/comments',
-            json={'body': body},
+            json={'content': content},
         )
         return JsonResponse({'ok': True, 'comment': result})
     except CrmApiError as exc:
@@ -472,6 +563,10 @@ def ajax_task_comment(request, task_id):
 def ajax_task_attachment(request, task_id):
     if get_user_gai_id(request.user) is None:
         return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+
+    _, blocked = _require_can_comment_json(request.user, task_id)
+    if blocked:
+        return blocked
 
     uploaded = request.FILES.get('file')
     if not uploaded:
@@ -530,5 +625,142 @@ def ajax_task_delete(request, task_id):
     try:
         CrmApiClient(request.user).delete(f'/tasks/{task_id}')
         return JsonResponse({'ok': True})
+    except CrmApiError as exc:
+        return _json_crm_error(exc)
+
+
+@require_POST
+@crm_perm_required('change_task')
+def ajax_task_links(request, task_id):
+    if get_user_gai_id(request.user) is None:
+        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+
+    try:
+        payload = json.loads(request.body.decode('utf-8') or '{}')
+    except json.JSONDecodeError:
+        payload = request.POST.dict()
+
+    try:
+        result = CrmApiClient(request.user).post(f'/tasks/{task_id}/links', json=payload)
+        return JsonResponse({'ok': True, 'link': result})
+    except CrmApiError as exc:
+        return _json_crm_error(exc)
+
+
+@require_POST
+@crm_perm_required('change_task')
+def ajax_task_link_delete(request, task_id, link_id):
+    if get_user_gai_id(request.user) is None:
+        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+
+    try:
+        CrmApiClient(request.user).delete(f'/tasks/{task_id}/links/{link_id}')
+        return JsonResponse({'ok': True})
+    except CrmApiError as exc:
+        return _json_crm_error(exc)
+
+
+@require_POST
+@crm_perm_required('assign_task')
+def ajax_task_assignee_update(request, task_id, assignee_id):
+    if get_user_gai_id(request.user) is None:
+        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+
+    try:
+        payload = json.loads(request.body.decode('utf-8') or '{}')
+    except json.JSONDecodeError:
+        payload = request.POST.dict()
+
+    try:
+        result = CrmApiClient(request.user).patch(
+            f'/tasks/{task_id}/assignees/{assignee_id}',
+            json=payload,
+        )
+        return JsonResponse({'ok': True, 'assignee': result})
+    except CrmApiError as exc:
+        return _json_crm_error(exc)
+
+
+@require_POST
+@crm_perm_required('assign_task')
+def ajax_task_assignee_delete(request, task_id, assignee_id):
+    if get_user_gai_id(request.user) is None:
+        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+
+    try:
+        CrmApiClient(request.user).delete(f'/tasks/{task_id}/assignees/{assignee_id}')
+        return JsonResponse({'ok': True})
+    except CrmApiError as exc:
+        return _json_crm_error(exc)
+
+
+@require_POST
+@crm_perm_required('view_tasks')
+def ajax_task_watcher_add(request, task_id):
+    if get_user_gai_id(request.user) is None:
+        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+
+    if not request.user.has_perm('crm.manage_watchers'):
+        return JsonResponse({'ok': False, 'error': 'Sem permissão para gerenciar observadores.'}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode('utf-8') or '{}')
+    except json.JSONDecodeError:
+        payload = request.POST.dict()
+
+    try:
+        result = CrmApiClient(request.user).post(f'/tasks/{task_id}/watchers', json=payload)
+        return JsonResponse({'ok': True, 'watcher': result})
+    except CrmApiError as exc:
+        return _json_crm_error(exc)
+
+
+@require_POST
+@crm_perm_required('view_tasks')
+def ajax_task_watcher_delete(request, task_id, watcher_id):
+    if get_user_gai_id(request.user) is None:
+        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+
+    if not request.user.has_perm('crm.manage_watchers'):
+        return JsonResponse({'ok': False, 'error': 'Sem permissão para gerenciar observadores.'}, status=403)
+
+    try:
+        CrmApiClient(request.user).delete(f'/tasks/{task_id}/watchers/{watcher_id}')
+        return JsonResponse({'ok': True})
+    except CrmApiError as exc:
+        return _json_crm_error(exc)
+
+
+@crm_perm_required('view_tasks')
+def ajax_task_move_history(request, task_id):
+    if get_user_gai_id(request.user) is None:
+        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+
+    try:
+        history = normalize_list_response(
+            CrmApiClient(request.user).get(f'/tasks/{task_id}/move-history')
+        )
+        return JsonResponse({'ok': True, 'history': history})
+    except CrmApiError as exc:
+        return _json_crm_error(exc)
+
+
+@require_POST
+@crm_perm_required('add_task')
+def ajax_task_subtask(request, task_id):
+    if get_user_gai_id(request.user) is None:
+        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+
+    try:
+        payload = json.loads(request.body.decode('utf-8') or '{}')
+    except json.JSONDecodeError:
+        payload = request.POST.dict()
+
+    try:
+        result = CrmApiClient(request.user).post(
+            f'/tasks/{task_id}/subtasks',
+            json={'title': payload.get('title', '')},
+        )
+        return JsonResponse({'ok': True, 'subtask': result})
     except CrmApiError as exc:
         return _json_crm_error(exc)

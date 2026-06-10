@@ -172,6 +172,7 @@ CRM_API_VERIFY_SSL = globals().get('CRM_API_VERIFY_SSL', False)
 CRM_DEFAULT_LIMIT = globals().get('CRM_DEFAULT_LIMIT', 100)
 CRM_SERVICE_USER_ID = globals().get('CRM_SERVICE_USER_ID', 1)
 CRM_SERVICE_USERNAME = globals().get('CRM_SERVICE_USERNAME', 'celery')
+CRM_ENABLE_DEBUG_LOGS = globals().get('CRM_ENABLE_DEBUG_LOGS', False)
 
 
 def db_host_context(request):

@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from crm.decorators import crm_perm_required
@@ -38,12 +39,22 @@ def _require_gai_or_render(request, template, extra_context=None):
     return render(request, template, context)
 
 
-def _load_lookups(request):
+def _load_lookups(request, customer_gai_id=None):
     try:
-        return fetch_crm_lookups(request.user), None
+        return fetch_crm_lookups(request.user, customer_gai_id=customer_gai_id), None
     except CrmApiError as exc:
         handle_crm_error(request, exc)
         return None, exc
+
+
+def _contract_customer_gai_id(request, *, form=None, contract_data=None):
+    if form is not None and form.is_bound:
+        gai = form.data.get('customer_gai_id')
+        if gai:
+            return gai
+    if contract_data and contract_data.get('customer_gai_id'):
+        return contract_data['customer_gai_id']
+    return request.GET.get('customer_gai_id')
 
 
 @crm_perm_required('view_contracts')
@@ -90,9 +101,15 @@ def contract_new(request):
 
     lookups, _ = _load_lookups(request)
     customer_choices = build_customer_choices(lookups)
-    service_type_choices = build_service_type_choices(lookups)
 
     if request.method == 'POST':
+        form = ContractForm(
+            request.POST,
+            customer_choices=customer_choices,
+        )
+        selected_gai = _contract_customer_gai_id(request, form=form)
+        st_lookups, _ = _load_lookups(request, customer_gai_id=selected_gai)
+        service_type_choices = build_service_type_choices(st_lookups, customer_gai_id=selected_gai)
         form = ContractForm(
             request.POST,
             customer_choices=customer_choices,
@@ -115,6 +132,9 @@ def contract_new(request):
                 except CrmApiError as exc:
                     handle_crm_error(request, exc)
     else:
+        selected_gai = _contract_customer_gai_id(request)
+        st_lookups, _ = _load_lookups(request, customer_gai_id=selected_gai)
+        service_type_choices = build_service_type_choices(st_lookups, customer_gai_id=selected_gai)
         form = ContractForm(
             customer_choices=customer_choices,
             service_type_choices=service_type_choices,
@@ -125,6 +145,7 @@ def contract_new(request):
         'form': form,
         'form_mode': 'new',
         'lookups': lookups,
+        'ajax_lookups_url': reverse('crm:ajax_crm_lookups'),
         **CRM_MENU,
     })
 
@@ -168,8 +189,6 @@ def contract_edit(request, contract_id):
 
     api = CrmApiClient(request.user)
     lookups, _ = _load_lookups(request)
-    customer_choices = build_customer_choices(lookups)
-    service_type_choices = build_service_type_choices(lookups)
 
     try:
         contract_data = api.get(f'/contracts/{contract_id}')
@@ -178,6 +197,9 @@ def contract_edit(request, contract_id):
         return redirect('crm:contract_list')
 
     gai_id = contract_data.get('customer_gai_id')
+    st_lookups, _ = _load_lookups(request, customer_gai_id=gai_id)
+    customer_choices = build_customer_choices(lookups)
+    service_type_choices = build_service_type_choices(st_lookups, customer_gai_id=gai_id)
     gai_label = customer_label(lookups, gai_id)
     if gai_id and not any(str(c[0]) == str(gai_id) for c in customer_choices):
         customer_choices = [(str(gai_id), gai_label)] + customer_choices
@@ -256,6 +278,7 @@ def contract_edit(request, contract_id):
         'contract': contract_data,
         'lookups': lookups,
         'customer_name': gai_label,
+        'ajax_lookups_url': reverse('crm:ajax_crm_lookups'),
         **CRM_MENU,
     })
 

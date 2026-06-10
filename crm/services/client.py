@@ -61,12 +61,15 @@ class CrmApiClient:
         timeout = settings.CRM_API_TIMEOUT
         verify = settings.CRM_API_VERIFY_SSL
 
-        logger.info(
-            'CRM API %s %s | headers=%s',
-            method.upper(),
-            url,
-            _safe_headers_for_log(headers),
-        )
+        if getattr(settings, 'CRM_ENABLE_DEBUG_LOGS', False):
+            logger.debug(
+                'CRM API %s %s | headers=%s',
+                method.upper(),
+                url,
+                _safe_headers_for_log(headers),
+            )
+        else:
+            logger.info('CRM API %s %s', method.upper(), url)
 
         try:
             with httpx.Client(timeout=timeout, verify=verify) as client:
@@ -83,7 +86,10 @@ class CrmApiClient:
             logger.exception('CRM API connection error: %s %s', method.upper(), url)
             raise CrmConnectionError(str(exc)) from exc
 
-        logger.info('CRM API %s %s -> HTTP %s', method.upper(), url, response.status_code)
+        if getattr(settings, 'CRM_ENABLE_DEBUG_LOGS', False):
+            logger.debug('CRM API %s %s -> HTTP %s', method.upper(), url, response.status_code)
+        else:
+            logger.info('CRM API %s %s -> HTTP %s', method.upper(), url, response.status_code)
         raise_for_status(response)
 
         if response.status_code == 204 or not response.content:

@@ -6,10 +6,10 @@ from .exceptions import CrmServerError
 
 def list_tasks(user, *, params=None):
     """
-    Lista tarefas via GET /tasks/ ou fallback.
+    Lista tarefas via GET /tasks/ ou fallbacks compatíveis.
 
-    A API CRM atual retorna HTTP 500 em GET /tasks/ sem ``my_tasks=true``.
-    Tenta o endpoint padrão e, em 500, aplica fallbacks compatíveis.
+    A API CRM retorna HTTP 500 em GET /tasks/ sem ``my_tasks=true`` (com ou
+    sem ``board_id``). Mantém ``board_id`` e demais filtros nos fallbacks.
     """
     params = dict(params or {})
     client = CrmApiClient(user)

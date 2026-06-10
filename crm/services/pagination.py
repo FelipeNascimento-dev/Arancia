@@ -41,15 +41,28 @@ def normalize_list_response(data):
     return []
 
 
-def find_record_by_id(user, path, record_id, *, page_size=500):
+def _record_id_matches(item_id, record_id):
+    if item_id is None:
+        return False
+    if str(item_id) == str(record_id):
+        return True
+    try:
+        return int(item_id) == int(record_id)
+    except (TypeError, ValueError):
+        return False
+
+
+def find_record_by_id(user, path, record_id, *, page_size=500, params=None):
     """Busca um registro em listagem paginada quando a API não expõe GET por id."""
     client = CrmApiClient(user)
     skip = 0
+    base_params = dict(params or {})
     while True:
-        raw = client.get(path, params={'skip': skip, 'limit': page_size})
+        query = {'skip': skip, 'limit': page_size, **base_params}
+        raw = client.get(path, params=query)
         items = normalize_list_response(raw)
         for item in items:
-            if str(item.get('id')) == str(record_id):
+            if _record_id_matches(item.get('id'), record_id):
                 return item
         if len(items) < page_size:
             break

@@ -16,6 +16,7 @@
     {% endif %}
 
     <div class="crm-dashboard-grid">
+        {% if perms.crm.view_billing %}
         <div class="crm-dashboard-card">
             <h3><i class="fa-solid fa-coins"></i> Faturamento</h3>
             {% if billing_summary %}
@@ -31,7 +32,9 @@
                 <p class="muted">Sem dados de faturamento.</p>
             {% endif %}
         </div>
+        {% endif %}
 
+        {% if perms.crm.view_contracts %}
         <div class="crm-dashboard-card">
             <h3><i class="fa-solid fa-bell"></i> Alertas</h3>
             {% if alerts %}
@@ -45,7 +48,9 @@
                 <p class="muted">Nenhum alerta pendente.</p>
             {% endif %}
         </div>
+        {% endif %}
 
+        {% if perms.crm.view_tasks %}
         <div class="crm-dashboard-card">
             <h3><i class="fa-solid fa-clock"></i> Tarefas em atraso</h3>
             {% if overdue_tasks %}
@@ -68,6 +73,7 @@
                 <p class="muted">Nenhuma tarefa em atraso.</p>
             {% endif %}
         </div>
+        {% endif %}
     </div>
 {% endif %}
 {% endblock %}

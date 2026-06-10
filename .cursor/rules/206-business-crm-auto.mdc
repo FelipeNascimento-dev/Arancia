@@ -37,7 +37,25 @@ Headers: `X-CRM-Designation-IDs` = **um** ID (OneToOne legado).
 - Usuário comum: API filtra pelo contexto `X-CRM-*`; Django não amplia escopo.
 - Menu de boards: `GET /me/context` → `accessible_boards` (cache sessão 300s).
 - Kanban: UI habilitada por `GET /boards/{id}/access/me` (`can_move_tasks`, `can_comment`).
+- Detalhe de task com board: comentários/anexos exigem `can_comment` do board **e** `crm.change_task`.
+- Self-watch (`POST /tasks/{id}/watch`) funciona sem `crm.manage_watchers`; observadores de terceiros exigem `manage_watchers`.
 - Jobs Celery: `CrmApiClient(service=True)` + `build_service_crm_headers()`.
+
+## Rotas BFF implementadas (colaboração)
+
+| Área | Rotas Django | API proxy |
+|------|--------------|-----------|
+| Task links | `ajax/tasks/<id>/links/` | `POST/DELETE /tasks/{id}/links` |
+| Assignees | `ajax/tasks/<id>/assignees/<id>/` | `PATCH/DELETE` |
+| Watchers | `ajax/tasks/<id>/watchers/` | `POST/DELETE /tasks/{id}/watchers` |
+| Move history | `ajax/tasks/<id>/move-history/` | `GET /tasks/{id}/move-history` |
+| Boards CRUD | `crm/boards/`, `new/`, `<id>/edit/` | `GET/POST/PATCH/DELETE /boards/` |
+| Colunas | `crm/boards/<id>/settings/` | `GET/POST/PATCH /boards/{id}/columns` |
+| Acesso board | inline + `ajax/.../access/<id>/` | `PATCH /boards/{id}/access/{id}` |
+| Recorrências | `crm/tasks/recurrences/` | `GET/POST/PATCH/DELETE /task-recurrences/` |
+| Projeto tasks | `crm/projects/<id>/tasks/` | `GET /tasks/?project_id=` |
+| Lookups AJAX | `crm/ajax/lookups/crm/` | `GET /lookups/crm` |
+| Reorder status | `ajax/settings/status-tasks/reorder/` | `PATCH /status-tasks/reorder` |
 
 ## Módulos e gaps API (não implementar no BFF)
 
@@ -49,6 +67,12 @@ Headers: `X-CRM-Designation-IDs` = **um** ID (OneToOne legado).
 | CRUD `/teams/*` | Removido — usar `GET /lookups/team-gais` |
 | Paginação com total count | Sem endpoint |
 | Dashboard dedicado na API | Compor com `/billing/summary`, `/alerts/`, `/tasks/my/` |
+
+Fechado no BFF (2026-06): task links, watchers, assignee patch/delete, boards CRUD/colunas, recorrências UI, reorder status-tasks.
+
+## Variáveis de ambiente
+
+Ver `.env.example`: `CRM_API_BASE_URL`, `CRM_API_V1_STR`, `CRM_INTERNAL_API_SECRET`, `CRM_API_TIMEOUT`, `CRM_API_VERIFY_SSL`, `CRM_DEFAULT_LIMIT`, `CRM_ENABLE_DEBUG_LOGS`, `CRM_SERVICE_USER_ID`, `CRM_SERVICE_USERNAME`.
 
 ## Celery
 

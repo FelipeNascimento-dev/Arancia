@@ -12,7 +12,11 @@
     {% include 'crm/partials/_error_alert.html' with message="Usuário sem GAI configurado." error=True %}
 {% elif api_error %}
     {% include 'crm/partials/_error_alert.html' with message="Não foi possível carregar o calendário." error=True %}
-{% elif tasks %}
+{% else %}
+    {% if tasks_scope_fallback %}
+        {% include 'crm/partials/_error_alert.html' with message="Listagem completa temporariamente indisponível na API. Exibindo tarefas do seu escopo." %}
+    {% endif %}
+{% if tasks %}
 <div class="table-wrapper">
     <table class="user-table">
         <thead>
@@ -34,5 +38,6 @@
 </div>
 {% else %}
     {% include 'crm/partials/_empty_state.html' with message="Nenhuma tarefa agendada." %}
+{% endif %}
 {% endif %}
 {% endblock %}

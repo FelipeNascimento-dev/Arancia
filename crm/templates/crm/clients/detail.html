@@ -29,17 +29,12 @@
 
     <div class="crm-dashboard-card">
         <h3>Contatos ({{ client.contacts|length }})</h3>
-        {% if client.contacts %}
-        <ul class="crm-list">
-            {% for contact in client.contacts %}
-            <li>
-                <strong>{{ contact.name|default:"—" }}</strong>
-                {% if contact.is_primary %}<span class="tag">Principal</span>{% endif %}
-                {% if contact.email %}<br>{{ contact.email }}{% endif %}
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}<p class="muted">Nenhum contato.</p>{% endif %}
+        {% include 'crm/clients/partials/contacts_list.html' with contacts=client.contacts %}
+    </div>
+
+    <div class="crm-dashboard-card">
+        <h3>Endereços ({{ client.addresses|length }})</h3>
+        {% include 'crm/clients/partials/addresses_list.html' with addresses=client.addresses %}
     </div>
 
     {% if client.contracts %}

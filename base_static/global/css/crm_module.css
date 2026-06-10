@@ -270,11 +270,115 @@
   margin-top: 4px;
 }
 
+.crm-page-container .user-table th.crm-table-actions-col,
+.crm-page-container .user-table td.crm-table-actions,
+.crm-page-container .user-table td:has(.action-btn) {
+  vertical-align: middle;
+  text-align: center;
+  padding: 10px 14px;
+  width: 132px;
+  min-width: 132px;
+  max-width: 132px;
+}
+
+.crm-page-container .crm-table-actions-inner {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.crm-page-container a.action-btn,
 .crm-page-container button.action-btn {
-  border: none;
-  background: none;
-  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #0077b6;
+  font-size: 15px;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  vertical-align: middle;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.crm-page-container a.action-btn:hover,
+.crm-page-container button.action-btn:hover {
+  background: #e8f4fc;
+  color: #005a8c;
+  text-decoration: none;
+}
+
+.crm-page-container .action-btn.action-btn--danger,
+.crm-page-container button.action-btn.action-btn--danger {
+  color: #d61515;
+}
+
+.crm-page-container .action-btn.action-btn--danger:hover,
+.crm-page-container button.action-btn.action-btn--danger:hover {
+  background: #fdeaea;
+  color: #b01010;
+}
+
+/* Colunas de texto — alinhamento à esquerda para leitura */
+.crm-page-container .user-table th:not(.crm-table-actions-col),
+.crm-page-container .user-table td:not(.crm-table-actions):not(:has(.action-btn)) {
+  text-align: left;
+}
+
+.crm-page-container .user-table td:first-child,
+.crm-page-container .user-table th:first-child {
+  text-align: center;
+  width: 64px;
+  min-width: 64px;
+}
+
+.crm-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.crm-inline-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-sm {
+  padding: 2px 8px;
+  font-size: 0.85rem;
+}
+
+.crm-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  color: var(--texto-muted, #666);
+}
+
+.crm-loading-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ddd;
+  border-top-color: #f58220;
+  border-radius: 50%;
+  animation: crm-spin 0.8s linear infinite;
+}
+
+@keyframes crm-spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 900px) {

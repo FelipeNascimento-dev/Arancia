@@ -15,11 +15,11 @@
 <div class="table-wrapper">
     <table class="user-table">
         <thead><tr><th>Nome</th><th>Ordem</th><th>Ativo</th><th>Ações</th></tr></thead>
-        <tbody>
+        <tbody id="status-sortable">
             {% for item in items %}
-            <tr>
+            <tr data-status-id="{{ item.id }}" draggable="{% if can_manage %}true{% else %}false{% endif %}">
                 <td><strong>{{ item.name|default:"—" }}</strong></td>
-                <td>{{ item.sort_order|default:"—" }}</td>
+                <td>{{ item.sort_order|default:forloop.counter }}</td>
                 <td>{% if item.is_active %}<span class="tag">Sim</span>{% else %}<span class="muted">Não</span>{% endif %}</td>
                 <td>
                     {% if can_manage %}
@@ -34,8 +34,37 @@
         </tbody>
     </table>
 </div>
+{% if can_manage %}<p class="muted">Arraste as linhas para reordenar.</p>{% endif %}
 {% else %}
     {% include 'crm/partials/_empty_state.html' with message="Nenhum status cadastrado." %}
 {% endif %}
 {% if can_manage %}{% include 'crm/settings/_delete_script.html' %}{% endif %}
+
+{% if can_manage %}
+<script>
+(function() {
+    var tbody = document.getElementById('status-sortable');
+    if (!tbody) return;
+    var csrf = '{{ csrf_token }}';
+    var reorderUrl = '{% url "crm:ajax_status_tasks_reorder" %}';
+    var dragged = null;
+    tbody.querySelectorAll('tr').forEach(function(row) {
+        row.addEventListener('dragstart', function() { dragged = row; });
+        row.addEventListener('dragover', function(e) { e.preventDefault(); });
+        row.addEventListener('drop', function(e) {
+            e.preventDefault();
+            if (!dragged || dragged === row) return;
+            tbody.insertBefore(dragged, row);
+            var ids = Array.from(tbody.querySelectorAll('tr')).map(function(r) { return r.getAttribute('data-status-id'); });
+            fetch(reorderUrl, {
+                method: 'POST', credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+                body: JSON.stringify({ status_ids: ids })
+            }).then(function(r) { return r.json(); })
+              .then(function(data) { if (!data.ok) alert(data.error || 'Erro ao reordenar.'); });
+        });
+    });
+})();
+</script>
+{% endif %}
 {% endblock %}

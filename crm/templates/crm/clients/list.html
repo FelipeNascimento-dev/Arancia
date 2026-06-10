@@ -25,7 +25,7 @@
                 <th>Nome</th>
                 <th>CNPJ</th>
                 <th>Perfil</th>
-                <th>Ações</th>
+                <th class="crm-table-actions-col">Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -36,19 +36,20 @@
                 <td>{{ client.nome|default:"—" }}</td>
                 <td>{{ client.cnpj|default:"—" }}</td>
                 <td>{{ client.profile|default:"—" }}</td>
-                <td>
-                    <a href="{% url 'crm:client_detail' gai_id=client.gai_id %}" class="action-btn edit-btn" title="Ver"><i class="fa-solid fa-eye"></i></a>
+                <td class="crm-table-actions">
+                    <div class="crm-table-actions-inner">
+                    <a href="{% url 'crm:client_detail' gai_id=client.gai_id %}" class="action-btn" title="Ver"><i class="fa-solid fa-eye"></i></a>
                     {% if perms.crm.change_client %}
-                    <a href="{% url 'crm:client_edit' gai_id=client.gai_id %}" class="action-btn edit-btn" title="Editar"><i class="fa-solid fa-pencil"></i></a>
+                    <a href="{% url 'crm:client_edit' gai_id=client.gai_id %}" class="action-btn" title="Editar"><i class="fa-solid fa-pencil"></i></a>
                     {% endif %}
                     {% if perms.crm.delete_client %}
-                    <button type="button" class="action-btn edit-btn js-delete-client" title="Excluir"
+                    <button type="button" class="action-btn action-btn--danger js-delete-client" title="Excluir"
                             data-delete-url="{% url 'crm:ajax_client_delete' gai_id=client.gai_id %}"
-                            data-name="{{ client.razao_social|default:client.nome }}"
-                            style="border:none;background:none;cursor:pointer;">
-                        <i class="fa-solid fa-trash" style="color:#d61515;"></i>
+                            data-name="{{ client.razao_social|default:client.nome }}">
+                        <i class="fa-solid fa-trash"></i>
                     </button>
                     {% endif %}
+                    </div>
                 </td>
             </tr>
             {% endfor %}
