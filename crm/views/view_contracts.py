@@ -231,12 +231,13 @@ def contract_edit(request, contract_id):
                 uploaded = file_form.cleaned_data['file']
                 try:
                     uploaded.seek(0)
+                    file_bytes = uploaded.read()
                     api.post_multipart(
                         f'/contracts/{contract_id}/files',
                         files={
                             'file': (
                                 uploaded.name,
-                                uploaded.read(),
+                                file_bytes,
                                 uploaded.content_type or 'application/octet-stream',
                             ),
                         },
@@ -244,7 +245,14 @@ def contract_edit(request, contract_id):
                     messages.success(request, 'Arquivo enviado com sucesso.')
                     return redirect('crm:contract_edit', contract_id=contract_id)
                 except CrmApiError as exc:
-                    handle_crm_error(request, exc)
+                    if exc.status_code and exc.status_code >= 500:
+                        messages.error(
+                            request,
+                            'Falha no armazenamento de arquivos do CRM (servidor). '
+                            'Verifique a configuração de storage/Firebase na API CRM.',
+                        )
+                    else:
+                        handle_crm_error(request, exc)
         else:
             form = ContractForm(
                 request.POST,
@@ -294,21 +302,28 @@ def ajax_contract_file_upload(request, contract_id):
 
     try:
         uploaded.seek(0)
+        file_bytes = uploaded.read()
         result = CrmApiClient(request.user).post_multipart(
             f'/contracts/{contract_id}/files',
             files={
                 'file': (
                     uploaded.name,
-                    uploaded.read(),
+                    file_bytes,
                     uploaded.content_type or 'application/octet-stream',
                 ),
             },
         )
         return JsonResponse({'ok': True, 'file': result})
     except CrmApiError as exc:
+        error = str(exc.detail or exc)
+        if exc.status_code and exc.status_code >= 500:
+            error = (
+                'Falha no armazenamento de arquivos do CRM (servidor). '
+                'Verifique a configuração de storage/Firebase na API CRM.'
+            )
         return JsonResponse({
             'ok': False,
-            'error': str(exc.detail or exc),
+            'error': error,
         }, status=exc.status_code or 502)
 
 

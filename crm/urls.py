@@ -6,6 +6,7 @@ from crm.views import (
     ajax_board_column_update,
     ajax_board_delete,
     ajax_board_reorder_columns,
+    ajax_board_status_choices,
     ajax_crm_lookups,
     ajax_client_delete,
     ajax_contract_file_delete,
@@ -184,6 +185,11 @@ urlpatterns = [
     path('crm/boards/<uuid:board_id>/edit/', board_edit, name='board_edit'),
     path('crm/boards/<uuid:board_id>/settings/', board_settings, name='board_settings'),
     path('crm/boards/<uuid:board_id>/access/', board_access, name='board_access'),
+    path(
+        'crm/ajax/boards/<uuid:board_id>/statuses/',
+        ajax_board_status_choices,
+        name='ajax_board_status_choices',
+    ),
     path('crm/ajax/boards/<uuid:board_id>/delete/', ajax_board_delete, name='ajax_board_delete'),
     path(
         'crm/ajax/boards/<uuid:board_id>/reorder-columns/',

@@ -24,7 +24,7 @@
                 <th>Razão social</th>
                 <th>Nome</th>
                 <th>CNPJ</th>
-                <th>Perfil</th>
+                <th class="crm-table-actions-col">Perfil</th>
                 <th class="crm-table-actions-col">Ações</th>
             </tr>
         </thead>
@@ -35,7 +35,18 @@
                 <td>{{ client.razao_social|default:"—" }}</td>
                 <td>{{ client.nome|default:"—" }}</td>
                 <td>{{ client.cnpj|default:"—" }}</td>
-                <td>{{ client.profile|default:"—" }}</td>
+                <td class="crm-table-actions">
+                    <div class="crm-table-actions-inner">
+                    {% if client.gai_id|stringformat:"s" in client_profiles %}
+                    <button type="button" class="action-btn js-view-profile" title="Ver perfil (JSON)"
+                            data-gai-id="{{ client.gai_id }}">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                    {% else %}
+                    <span class="muted">—</span>
+                    {% endif %}
+                    </div>
+                </td>
                 <td class="crm-table-actions">
                     <div class="crm-table-actions-inner">
                     <a href="{% url 'crm:client_detail' gai_id=client.gai_id %}" class="action-btn" title="Ver"><i class="fa-solid fa-eye"></i></a>
@@ -57,6 +68,21 @@
     </table>
 </div>
 {% include 'crm/partials/_pagination.html' with has_prev=pagination.has_prev has_next=pagination.has_next prev_skip=pagination.prev_skip next_skip=pagination.next_skip limit=pagination.limit %}
+
+{% if client_profiles %}
+{{ client_profiles|json_script:"crm-client-profiles-data" }}
+<div id="crmProfileModal" class="crm-modal" hidden>
+    <div class="crm-modal-backdrop js-close-profile-modal"></div>
+    <div class="crm-modal-panel" role="dialog" aria-labelledby="crmProfileModalTitle">
+        <div class="crm-modal-header">
+            <h3 id="crmProfileModalTitle">Perfil do cliente</h3>
+            <button type="button" class="action-btn js-close-profile-modal" title="Fechar"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <pre id="crmProfileJson" class="crm-json-view"></pre>
+    </div>
+</div>
+{% endif %}
+
 {% else %}
     {% include 'crm/partials/_empty_state.html' with message="Nenhum cliente cadastrado no CRM." %}
     {% if perms.crm.add_client %}
@@ -64,6 +90,42 @@
         <a href="{% url 'crm:client_new' %}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Cadastrar primeiro cliente</a>
     </div>
     {% endif %}
+{% endif %}
+
+{% if client_profiles %}
+<script>
+(function () {
+    var dataEl = document.getElementById('crm-client-profiles-data');
+    var modal = document.getElementById('crmProfileModal');
+    var jsonEl = document.getElementById('crmProfileJson');
+    var titleEl = document.getElementById('crmProfileModalTitle');
+    if (!dataEl || !modal || !jsonEl) return;
+
+    var profiles = {};
+    try { profiles = JSON.parse(dataEl.textContent); } catch (e) { profiles = {}; }
+
+    function openProfile(gaiId) {
+        var profile = profiles[String(gaiId)];
+        if (profile === undefined) return;
+        titleEl.textContent = 'Perfil — GAI ' + gaiId;
+        jsonEl.textContent = JSON.stringify(profile, null, 2);
+        modal.hidden = false;
+    }
+
+    function closeProfile() {
+        modal.hidden = true;
+    }
+
+    document.querySelectorAll('.js-view-profile').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            openProfile(btn.getAttribute('data-gai-id'));
+        });
+    });
+    document.querySelectorAll('.js-close-profile-modal').forEach(function (el) {
+        el.addEventListener('click', closeProfile);
+    });
+})();
+</script>
 {% endif %}
 
 {% if perms.crm.delete_client and clients %}

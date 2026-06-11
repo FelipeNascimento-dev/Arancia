@@ -222,6 +222,7 @@ def project_edit(request, project_id):
 
     initial = {
         'name': project_data.get('name') or '',
+        'code': project_data.get('code') or '',
         'description': project_data.get('description') or '',
         'customer_gai_id': str(gai_id) if gai_id else '',
         'is_active': project_data.get('is_active', True),

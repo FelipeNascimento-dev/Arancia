@@ -160,5 +160,69 @@
 })();
 </script>
 {% endif %}
+
+{% if ajax_board_statuses_url %}
+{{ all_status_choices|json_script:"crm-all-status-choices" }}
+<script>
+(function () {
+    var boardField = document.getElementById('id_board_id');
+    var statusField = document.getElementById('id_status_id');
+    var dataEl = document.getElementById('crm-all-status-choices');
+    if (!boardField || !statusField || !dataEl) return;
+
+    var allStatuses = [];
+    try {
+        var raw = JSON.parse(dataEl.textContent);
+        allStatuses = (raw || []).map(function (pair) {
+            return { id: String(pair[0]), name: pair[1] };
+        });
+    } catch (e) {
+        allStatuses = [];
+    }
+
+    var urlTemplate = '{{ ajax_board_statuses_url }}';
+
+    function rebuildStatusOptions(statuses) {
+        var current = statusField.value;
+        statusField.innerHTML = '';
+        var empty = document.createElement('option');
+        empty.value = '';
+        empty.textContent = '— Automático —';
+        statusField.appendChild(empty);
+        (statuses || []).forEach(function (item) {
+            var opt = document.createElement('option');
+            opt.value = String(item.id);
+            opt.textContent = item.name || item.id;
+            statusField.appendChild(opt);
+        });
+        if (current) statusField.value = current;
+    }
+
+    function filterStatuses() {
+        var boardId = boardField.value;
+        if (!boardId) {
+            rebuildStatusOptions(allStatuses);
+            return;
+        }
+        var url = urlTemplate.replace('00000000-0000-0000-0000-000000000000', boardId);
+        fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (data.ok && data.statuses && data.statuses.length) {
+                    rebuildStatusOptions(data.statuses);
+                } else {
+                    rebuildStatusOptions([]);
+                }
+            })
+            .catch(function () { rebuildStatusOptions([]); });
+    }
+
+    boardField.addEventListener('change', filterStatuses);
+    if (boardField.value) {
+        filterStatuses();
+    }
+})();
+</script>
+{% endif %}
 {% endif %}
 {% endblock %}

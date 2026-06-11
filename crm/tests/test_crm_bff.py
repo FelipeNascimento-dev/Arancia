@@ -337,11 +337,38 @@ class RequesterGaiLookupsTests(TestCase):
         raw = {'items': [{'gai_id': 1, 'nome': 'PA A'}]}
         self.assertEqual(len(normalize_lookup_list(raw)), 1)
 
+    def test_build_priority_choices_reads_prioritys_key(self):
+        from crm.services.lookups import build_priority_choices
+
+        lookups = {'prioritys': [{'id': 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'name': 'Alta'}]}
+        choices = build_priority_choices(lookups)
+        self.assertEqual(choices, [('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Alta')])
+
     def test_build_group_and_gai_choices(self):
-        groups = build_group_choices([{'id': 3, 'name': 'arancia_PA'}])
-        self.assertEqual(groups, [('3', 'arancia_PA')])
+        groups = build_group_choices([{'group_id': 27, 'group_name': 'arancia_client'}])
+        self.assertEqual(groups, [('27', 'arancia_client')])
+        groups_legacy = build_group_choices([{'id': 3, 'name': 'arancia_PA'}])
+        self.assertEqual(groups_legacy, [('3', 'arancia_PA')])
         gais = build_gai_requester_choices([{'gai_id': 10, 'nome': 'Cliente X'}])
         self.assertEqual(gais, [('10', 'Cliente X')])
+
+    def test_build_new_client_gai_choices_uses_arancia_client_group(self):
+        from unittest.mock import patch
+
+        from crm.services.lookups import build_new_client_gai_choices
+
+        user = object()
+        lookups = {'customers': [{'gai_id': 28, 'razao_social': 'CLARO'}]}
+        with patch('crm.services.lookups.resolve_crm_client_group_id', return_value=27), patch(
+            'crm.services.lookups.fetch_gais',
+            return_value=[
+                {'gai_id': 100, 'razao_social': 'Novo Corp', 'cnpj': '123'},
+                {'gai_id': 28, 'nome': 'CLARO'},
+            ],
+        ) as mock_fetch:
+            choices = build_new_client_gai_choices(user, lookups)
+        mock_fetch.assert_called_once_with(user, group_id=27)
+        self.assertEqual(choices, [('100', 'Novo Corp (123)')])
 
     def test_extract_requester_gai_ids_from_nested_response(self):
         task = {
@@ -383,6 +410,22 @@ class TaskFormRequesterPayloadTests(TestCase):
             'requester_gai_ids': ['42'],
         })
         self.assertEqual(payload['requester_gai_ids'], [42])
+
+
+class ProjectFormTests(TestCase):
+    def test_cleaned_payload_generates_code_from_name(self):
+        from crm.forms.forms_projects import ProjectForm
+
+        form = ProjectForm(data={
+            'name': 'Projetinho Felas',
+            'customer_gai_id': '29',
+            'is_active': True,
+        }, customer_choices=[('29', 'Cliente')])
+        self.assertTrue(form.is_valid(), form.errors)
+        payload = form.cleaned_payload()
+        self.assertEqual(payload['code'], 'projetinho-felas')
+        self.assertEqual(payload['name'], 'Projetinho Felas')
+        self.assertEqual(payload['customer_gai_id'], 29)
 
 
 class TaskFieldNormalizationTests(TestCase):

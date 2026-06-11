@@ -32,9 +32,11 @@ from crm.services.lookups import (
     build_status_choices,
     build_user_choices,
     extract_requester_gai_ids,
+    fetch_board_status_choices,
     fetch_crm_lookups,
     fetch_gais,
     fetch_groups,
+    build_status_choices_for_board,
     resolve_member_lookups,
 )
 from crm.services.pagination import (
@@ -93,12 +95,36 @@ def _load_member_lookups(request):
     return resolve_member_lookups(request.user), None
 
 
-def _task_form_choices(lookups):
+def _task_form_choices(lookups, user=None, *, board_id=None):
+    priority_choices = build_priority_choices(lookups)
+    project_choices = build_project_choices(lookups)
+
+    if user is not None and not priority_choices:
+        try:
+            raw = CrmApiClient(user).get('/prioritys/', params={'limit': 200})
+            priority_choices = build_priority_choices({'prioritys': normalize_list_response(raw)})
+        except CrmApiError:
+            pass
+
+    if user is not None and not project_choices:
+        try:
+            raw = CrmApiClient(user).get('/projects/', params={'limit': 200})
+            project_choices = build_project_choices({'projects': normalize_list_response(raw)})
+        except CrmApiError:
+            pass
+
+    status_choices = build_status_choices_for_board(user, lookups, board_id) if user else build_status_choices(lookups, board_id=board_id)
+    if board_id and user is not None and not status_choices:
+        try:
+            status_choices = fetch_board_status_choices(user, board_id)
+        except CrmApiError:
+            pass
+
     return {
         'board_choices': build_board_choices(lookups),
-        'status_choices': build_status_choices(lookups),
-        'priority_choices': build_priority_choices(lookups),
-        'project_choices': build_project_choices(lookups),
+        'status_choices': status_choices,
+        'priority_choices': priority_choices,
+        'project_choices': project_choices,
         'customer_choices': build_customer_choices(lookups),
     }
 
@@ -277,10 +303,13 @@ def task_new(request):
         return blocked
 
     lookups, _ = _load_lookups(request)
-    choices = _task_form_choices(lookups)
-    group_choices, requester_gai_choices = _load_requester_form_choices(request.user)
     initial_board = request.GET.get('board_id')
     initial_project = request.GET.get('project_id')
+    board_for_choices = (
+        request.POST.get('board_id') if request.method == 'POST' else initial_board
+    )
+    choices = _task_form_choices(lookups, request.user, board_id=board_for_choices)
+    group_choices, requester_gai_choices = _load_requester_form_choices(request.user)
     initial = {}
     if initial_board:
         initial['board_id'] = initial_board
@@ -366,6 +395,11 @@ def task_new(request):
         'recurrence_only': recurrence_only,
         'show_requesters': show_requesters,
         'ajax_lookup_gais_url': reverse('crm:ajax_lookup_gais'),
+        'ajax_board_statuses_url': reverse(
+            'crm:ajax_board_status_choices',
+            kwargs={'board_id': '00000000-0000-0000-0000-000000000000'},
+        ),
+        'all_status_choices': build_status_choices(lookups),
         **PROJECTS_MENU,
     })
 
@@ -528,7 +562,6 @@ def task_edit(request, task_id):
 
     api = CrmApiClient(request.user)
     lookups, _ = _load_lookups(request)
-    choices = _task_form_choices(lookups)
 
     try:
         task_data = api.get(f'/tasks/{task_id}')
@@ -537,6 +570,11 @@ def task_edit(request, task_id):
         return redirect('crm:task_list')
 
     task_fields = normalize_task_fields(task_data)
+    board_for_choices = (
+        request.POST.get('board_id') if request.method == 'POST' else task_fields.get('board_id')
+    )
+    choices = _task_form_choices(lookups, request.user, board_id=board_for_choices)
+
     initial = {
         'title': task_fields.get('title') or '',
         'description': task_fields.get('description') or '',
@@ -582,6 +620,11 @@ def task_edit(request, task_id):
         'lookups': lookups,
         'show_requesters': show_requesters,
         'ajax_lookup_gais_url': reverse('crm:ajax_lookup_gais'),
+        'ajax_board_statuses_url': reverse(
+            'crm:ajax_board_status_choices',
+            kwargs={'board_id': '00000000-0000-0000-0000-000000000000'},
+        ),
+        'all_status_choices': build_status_choices(lookups),
         **PROJECTS_MENU,
     })
 

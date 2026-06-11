@@ -71,6 +71,13 @@ Headers: `X-CRM-Designation-IDs` = **um** ID (OneToOne legado).
 
 Fechado no BFF (2026-06): task links (`target_task_id`), watchers, assignee patch/delete, boards CRUD/colunas, recorrências UI + scheduler one-shot, reorder status-tasks, demandantes GAI, gates centralizados.
 
+## Cadastro de cliente CRM (`clients/new/`)
+
+- Vincula GAI existente via **`PATCH /clients/{gai_id}`** (não usar `POST /clients/` — schema sem `gai_id`).
+- Dropdown **GAI / Cliente**: GAIs do grupo Django **`arancia_client`** (`GET /lookups/gais?group_id=…`) **excluindo** os já em `GET /lookups/crm` → `customers`.
+- **Não** reutilizar `/lookups/gais` sem filtro — esse endpoint é para **demandantes de tarefa** (PA, CUSTOMER, TI, etc.).
+- `arancia_CUSTOMER` (transportes/localidades) ≠ `arancia_client` (clientes comerciais CRM).
+
 ## Demandantes GAI (tarefas de projeto)
 
 - Campo **`requester_gai_ids[]`** no create/edit de task quando há `project_id` (formulário unificado em `crm/tasks/new/`).

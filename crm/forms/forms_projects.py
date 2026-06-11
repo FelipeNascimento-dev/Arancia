@@ -1,10 +1,27 @@
+import re
+import unicodedata
+
 from django import forms
 
 from crm.forms.forms_clients import _CHECK, _INPUT, _SELECT
 
 
+def _slugify_project_code(name):
+    normalized = unicodedata.normalize('NFKD', (name or '').strip())
+    ascii_text = normalized.encode('ascii', 'ignore').decode('ascii')
+    code = re.sub(r'[^a-zA-Z0-9]+', '-', ascii_text.lower()).strip('-')
+    return (code[:50] if code else 'projeto')
+
+
 class ProjectForm(forms.Form):
     name = forms.CharField(label='Nome', max_length=200, required=True, widget=_INPUT)
+    code = forms.CharField(
+        label='Código',
+        max_length=50,
+        required=False,
+        widget=_INPUT,
+        help_text='Gerado automaticamente a partir do nome se deixado em branco.',
+    )
     description = forms.CharField(
         label='Descrição',
         required=False,
@@ -26,6 +43,13 @@ class ProjectForm(forms.Form):
         payload = {}
         if data.get('name'):
             payload['name'] = data['name'].strip()
+        code = (data.get('code') or '').strip()
+        if not code and data.get('name'):
+            code = _slugify_project_code(data['name'])
+        if code and not for_update:
+            payload['code'] = code
+        elif for_update and 'code' in self.fields and code:
+            payload['code'] = code
         if data.get('description'):
             payload['description'] = data['description']
         elif for_update and data.get('description') == '':

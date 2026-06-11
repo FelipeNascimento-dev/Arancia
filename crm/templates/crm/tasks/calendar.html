@@ -79,17 +79,34 @@
             });
     }
 
-    function formatDateClick(date) {
-        var pad = function(n) { return String(n).padStart(2, '0'); };
-        var y = date.getFullYear();
-        var m = pad(date.getMonth() + 1);
-        var d = pad(date.getDate());
-        var h = pad(date.getHours());
-        var min = pad(date.getMinutes());
-        if (h === '00' && min === '00') {
-            return y + '-' + m + '-' + d + 'T09:00';
+    function formatDateClick(info) {
+        if (info.dateStr) {
+            var value = info.dateStr;
+            if (value.length >= 16) {
+                return value.substring(0, 16);
+            }
+            if (value.length === 10) {
+                return value + 'T09:00';
+            }
         }
-        return y + '-' + m + '-' + d + 'T' + h + ':' + min;
+        var pad = function(n) { return String(n).padStart(2, '0'); };
+        var parts = new Intl.DateTimeFormat('sv-SE', {
+            timeZone: 'America/Sao_Paulo',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        }).formatToParts(info.date);
+        var map = {};
+        parts.forEach(function(p) { if (p.type !== 'literal') map[p.type] = p.value; });
+        var h = map.hour || '09';
+        var min = map.minute || '00';
+        if (h === '00' && min === '00') {
+            h = '09';
+        }
+        return map.year + '-' + map.month + '-' + map.day + 'T' + h + ':' + min;
     }
 
     var calendar = new FullCalendar.Calendar(el, {
@@ -138,7 +155,7 @@
         },
         dateClick: function(info) {
             if (!canAdd) return;
-            var scheduled = formatDateClick(info.date);
+            var scheduled = formatDateClick(info);
             window.location.href = newTaskUrl + '?scheduled_at=' + encodeURIComponent(scheduled);
         }
     });

@@ -59,8 +59,9 @@
     {% else %}<p class="muted">Nenhum arquivo anexado.</p>{% endif %}
     {% if perms.crm.upload_contract_file and file_form %}
     <h4 class="crm-section-title" style="margin-top:18px;">Enviar arquivo</h4>
-    <form method="post" enctype="multipart/form-data" class="js-upload-form" action="{% url 'crm:ajax_contract_file_upload' contract_id=contract_id %}">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
+        <input type="hidden" name="action" value="upload_file">
         <div class="crm-field crm-field-wide">{{ file_form.file.label_tag }}{{ file_form.file }}</div>
         <button type="submit" class="btn btn-secondary" style="margin-top:10px;"><i class="fa-solid fa-upload"></i> Enviar</button>
     </form>
@@ -130,19 +131,6 @@
                 .catch(function () { alert('Erro de rede.'); });
         });
     });
-    var uploadForm = document.querySelector('.js-upload-form');
-    if (uploadForm) {
-        uploadForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            fetch(uploadForm.action, { method: 'POST', body: new FormData(uploadForm), headers: { 'Accept': 'application/json' } })
-                .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
-                .then(function (result) {
-                    if (result.ok && result.data.ok) { window.location.reload(); return; }
-                    alert(result.data.error || 'Não foi possível enviar o arquivo.');
-                })
-                .catch(function () { alert('Erro de comunicação ao enviar o arquivo.'); });
-        });
-    }
 })();
 </script>
 {% endif %}

@@ -9,7 +9,7 @@ from crm.services.client import CrmApiClient
 from crm.services.context import get_user_gai_id
 from crm.services.exceptions import CrmApiError, handle_crm_error
 from crm.services.gates import require_gai_or_render
-from crm.services.lookups import build_gai_choices, fetch_crm_lookups
+from crm.services.lookups import build_gai_choices, build_new_client_gai_choices, fetch_crm_lookups
 from crm.services.pagination import (
     build_pagination_context,
     get_pagination_params,
@@ -60,11 +60,17 @@ def client_list(request):
         handle_crm_error(request, exc)
 
     pagination = build_pagination_context(skip, limit, clients)
+    client_profiles = {
+        str(c.get('gai_id')): c.get('profile')
+        for c in clients
+        if c.get('gai_id') is not None and c.get('profile') not in (None, '', {})
+    }
     return render(request, 'crm/clients/list.html', {
         'site_title': 'CRM — Clientes',
         'clients': clients,
         'pagination': pagination,
         'api_error': api_error,
+        'client_profiles': client_profiles,
         **CRM_MENU,
     })
 
@@ -79,32 +85,34 @@ def client_new(request):
         return blocked
 
     lookups, _ = _load_lookups(request)
-    gai_choices = build_gai_choices(lookups)
+    gai_choices = build_new_client_gai_choices(request.user, lookups)
 
     if request.method == 'POST':
-        form = ClientForm(request.POST, gai_choices=gai_choices)
+        form = ClientForm(request.POST, gai_choices=gai_choices, hide_profile=True, show_crm_type=True)
         if form.is_valid():
             if not form.cleaned_data.get('gai_id'):
                 form.add_error('gai_id', 'Selecione o GAI para vincular o cliente.')
             else:
                 try:
-                    result = CrmApiClient(request.user).post(
-                        '/clients/',
-                        json=form.cleaned_payload(),
+                    gai_id = int(form.cleaned_data['gai_id'])
+                    # POST /clients/ retorna 500 na API homolog — cadastro via PATCH /clients/{gai_id}.
+                    result = CrmApiClient(request.user).patch(
+                        f'/clients/{gai_id}',
+                        json=form.cleaned_payload(for_create=True),
                     )
-                    gai_id = result.get('gai_id') if isinstance(result, dict) else form.cleaned_data['gai_id']
                     messages.success(request, 'Cliente criado com sucesso.')
                     return redirect('crm:client_detail', gai_id=gai_id)
                 except CrmApiError as exc:
                     handle_crm_error(request, exc)
     else:
-        form = ClientForm(gai_choices=gai_choices)
+        form = ClientForm(gai_choices=gai_choices, hide_profile=True, show_crm_type=True)
 
     return render(request, 'crm/clients/form.html', {
         'site_title': 'CRM — Novo cliente',
         'form': form,
         'form_mode': 'new',
         'lookups': lookups,
+        'no_eligible_gais': not gai_choices,
         **CRM_MENU,
     })
 
