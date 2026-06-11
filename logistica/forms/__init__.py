@@ -38,3 +38,4 @@ from .forms_checkin_checkout.forms_receber_em_estoque import ReceberEmEstoqueFor
 from .forms_checkin_checkout.forms_pre_recebimento import PreRecebimentoCheckinForm
 from .forms_checkin_checkout.forms_checkin_bag_tec import CheckInBagTecForm
 from .forms_checkin_checkout.forms_atrelar_motoboy import AtrelarMotoboyForm
+from .forms_checkin_checkout.forms_solicitacao_coleta import SolicitacaoColetaCheckinForm

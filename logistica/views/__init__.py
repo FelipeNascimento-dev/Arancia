@@ -47,3 +47,4 @@ from .views_checkin_checkout.view_receber_em_estoque import receber_em_estoque, 
 from .views_checkin_checkout.view_pre_recebimento import pre_recebimento_checkin
 from .views_checkin_checkout.view_checkin_bag_tec import checkin_bag_tec
 from .views_checkin_checkout.view_atrelar_motoboy import atrelar_motoboy
+from .views_checkin_checkout.view_solicitacao_coleta import solicitacao_coleta_checkin

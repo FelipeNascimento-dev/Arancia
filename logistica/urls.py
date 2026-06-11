@@ -115,6 +115,8 @@ urls_Checkin = [
          name="bipar_serial_recebimento"),
     path("check-in/pre-recebimento/", pre_recebimento_checkin,
          name="pre_recebimento_checkin"),
+    path("check-in/solicitacao-coleta/", solicitacao_coleta_checkin,
+         name="solicitacao_coleta_checkin"),
     path("check-in/bag-tec/", checkin_bag_tec, name="checkin_bag_tec"),
     path("check-in/atrelar-motoboy/", atrelar_motoboy, name="atrelar_motoboy"),
 
