@@ -250,7 +250,7 @@
                         Recebimento
                     </a>
                     {% endif %}
-                    {% if perms.logistica.gerente_estoque %}
+                    {% if perms.logistica.gerente_estoque or perms.logistica.estoque %}
                         <a href="{% url 'logistica:gerenciamento_estoque' %}"
                         class="{% if current_submenu == 'gerenciamento' %}active{% endif %}">Gestão de Estoque</a>
                     {% endif %}

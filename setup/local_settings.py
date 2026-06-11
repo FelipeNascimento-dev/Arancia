@@ -19,7 +19,7 @@ if LOCAL_DEBUG:
 else:
     API_KEY_INTELIPOST = 'e92231bc-18a9-033b-738d-2039f9452e12etyu'
     DB_HOST = '192.168.0.219'
-    API_URL = 'http://192.168.0.214/fulfillment'
+    API_URL = 'http://192.168.0.216/fulfillment'
     STOCK_API_URL = 'http://192.168.0.214/stock/api'
     TRANSP_API_URL = 'http://192.168.0.216/api-transportes/api'
     MURAL_API_URL = 'http://192.168.0.215/api-mural/api'
