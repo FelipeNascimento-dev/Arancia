@@ -6,6 +6,389 @@
         height: auto;
         margin-top: 70px;
         margin-bottom: 10px;
+        padding: 22px 24px 18px;
+    }
+
+    .estoque-filters-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+    }
+
+    .estoque-filters-head h2 {
+        margin: 0;
+        font-size: 1.35rem;
+        color: #1f2937;
+    }
+
+    .estoque-filters-head p {
+        margin: 4px 0 0;
+        font-size: 0.88rem;
+        color: #6b7280;
+    }
+
+    .estoque-filters-grid {
+        display: grid;
+        grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.4fr);
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .field-wrap label {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 6px;
+    }
+
+    .field-wrap select,
+    .field-wrap input[type="text"] {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        padding: 8px 12px;
+        font-size: 0.92rem;
+        background: #fff;
+        box-sizing: border-box;
+    }
+
+    .field-wrap select:focus,
+    .field-wrap input[type="text"]:focus {
+        outline: none;
+        border-color: #0056c1;
+        box-shadow: 0 0 0 3px rgba(0, 86, 193, 0.12);
+    }
+
+    .pa-locked-box {
+        min-height: 42px;
+        border: 1px dashed #93c5fd;
+        border-radius: 10px;
+        background: #eff6ff;
+        color: #1e40af;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        font-size: 0.92rem;
+        font-weight: 600;
+    }
+
+    .pa-locked-box i {
+        color: #2563eb;
+    }
+
+    .single-search {
+        position: relative;
+        width: 100%;
+    }
+
+    .single-search-input {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        padding: 8px 12px;
+        font-size: 0.92rem;
+        background: #fff;
+        box-sizing: border-box;
+    }
+
+    .single-search-input:focus {
+        outline: none;
+        border-color: #0056c1;
+        box-shadow: 0 0 0 3px rgba(0, 86, 193, 0.12);
+    }
+
+    .single-search-dropdown {
+        display: none;
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        max-height: 240px;
+        overflow-y: auto;
+        z-index: 9999;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .single-search.is-open .single-search-dropdown {
+        display: block;
+    }
+
+    .single-search-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 0.92rem;
+    }
+
+    .single-search-item:last-child {
+        border-bottom: none;
+    }
+
+    .single-search-item:hover,
+    .single-search-item.is-selected {
+        background: #eff6ff;
+        color: #1d4ed8;
+        font-weight: 600;
+    }
+
+    .single-search-empty {
+        padding: 10px 12px;
+        color: #6b7280;
+        font-size: 0.88rem;
+    }
+
+    .native-select-hidden {
+        display: none !important;
+    }
+
+    .multi-search {
+        position: relative;
+        width: 100%;
+    }
+
+    .multi-search-box {
+        min-height: 42px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        background: #fff;
+        padding: 6px 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        cursor: text;
+    }
+
+    .multi-search-box:focus-within {
+        border-color: #0056c1;
+        box-shadow: 0 0 0 3px rgba(0, 86, 193, 0.12);
+    }
+
+    .multi-search-input {
+        border: none;
+        outline: none;
+        min-width: 140px;
+        flex: 1;
+        font-size: 0.92rem;
+        padding: 6px 2px;
+        background: transparent;
+    }
+
+    .multi-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1d4ed8;
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .multi-chip-remove {
+        border: none;
+        background: transparent;
+        color: #1d4ed8;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1;
+        padding: 0;
+    }
+
+    .multi-search-dropdown {
+        display: none;
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        max-height: 260px;
+        overflow-y: auto;
+        z-index: 9999;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .multi-search-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 0.92rem;
+    }
+
+    .multi-search-item:last-child {
+        border-bottom: none;
+    }
+
+    .multi-search-item:hover {
+        background: #f8fafc;
+    }
+
+    .multi-search-empty {
+        padding: 10px 12px;
+        color: #6b7280;
+        font-size: 0.88rem;
+    }
+
+    .estoque-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+        padding: 14px 16px;
+        background: linear-gradient(180deg, #f8fafc 0%, #f3f4f6 100%);
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+    }
+
+    .toolbar-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .toolbar-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .toolbar-select {
+        min-height: 36px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 0.88rem;
+        background: #fff;
+    }
+
+    .seg-group {
+        display: inline-flex;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .seg-btn {
+        border: none;
+        background: transparent;
+        padding: 7px 12px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: #4b5563;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: 0.2s;
+    }
+
+    .seg-btn + .seg-btn {
+        border-left: 1px solid #d1d5db;
+    }
+
+    .seg-btn:hover {
+        background: #f3f4f6;
+    }
+
+    .seg-btn.active {
+        background: #0056c1;
+        color: #fff;
+    }
+
+    .toolbar-action-btn {
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #374151;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .toolbar-action-btn:hover {
+        background: #f3f4f6;
+    }
+
+    .toolbar-primary-btn {
+        border: none;
+        background: #0056c1;
+        color: #fff;
+        border-radius: 8px;
+        padding: 9px 16px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: 0.2s;
+    }
+
+    .toolbar-primary-btn:hover {
+        background: #00439a;
+    }
+
+    .toolbar-export-btn {
+        border: none;
+        background: #0f9d58;
+        color: #fff;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .toolbar-export-btn:hover {
+        background: #0c7c45;
+    }
+
+    @media (max-width: 900px) {
+        .estoque-filters-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .estoque-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .toolbar-group {
+            width: 100%;
+        }
+
+        .toolbar-primary-btn {
+            width: 100%;
+            justify-content: center;
+        }
     }
 
     .submit-button-right {
@@ -634,120 +1017,111 @@
 
 <div class="form-container">
     <div class="form-card-2col">
-        <form method="POST">
-            {% include 'global/partials/_form_2colV2.html' %}
+        <form method="POST" id="estoqueFiltersForm">
             {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            <div class="estoque-filters-head">
+                <div>
+                    <h2>{{ form.nome_formulario }}</h2>
+                    <p>Selecione cliente e localidade para consultar o estoque.</p>
+                </div>
+            </div>
+
+            <div class="estoque-filters-grid">
+                <div class="field-wrap">
+                    <label for="{{ form.client.id_for_label }}">{{ form.client.label }}</label>
+                    {{ form.client }}
+                </div>
+
+                <div class="field-wrap">
+                    <label for="{{ form.cd_estoque.id_for_label }}">{{ form.cd_estoque.label }}</label>
+                    {% if filtro_pa_travado %}
+                        <div class="pa-locked-box" title="PA fixada pela sua designação">
+                            <i class="fa-solid fa-lock"></i>
+                            <span>{{ pa_designacao_label }}</span>
+                        </div>
+                        <input type="hidden" name="cd_estoque" value="{{ pa_designacao_id }}">
+                    {% else %}
+                        {{ form.cd_estoque }}
+                    {% endif %}
+                </div>
+            </div>
+
             <input type="hidden" id="visao" name="visao" value="{{ visao|default:'detalhe' }}">
             <input type="hidden" name="modo_exibicao" id="modo_exibicao" value="{{ modo_exibicao|default:'tabela' }}">
-            <div class="top-bar-balanced">
-                <div class="dropdown">
-                    <button type="button" class="dropdown-btn">
-                        <i class="fa-solid fa-sliders"></i> Configurações
-                    </button>
-                    <div class="dropdown-menu">
-                        <div class="dropdown-item">
-                            <label>Itens por página</label>
-                            <select name="limit" class="limit-balanced" onchange="this.form.submit()">
-                                <option value="25" {% if limit == 25 %}selected{% endif %}>25</option>
-                                <option value="50" {% if limit == 50 %}selected{% endif %}>50</option>
-                                <option value="100" {% if limit == 100 %}selected{% endif %}>100</option>
-                                <option value="200" {% if limit == 200 %}selected{% endif %}>200</option>
-                            </select>
-                        </div>
-                        <div class="dropdown-item">
-                            <label>Tipo de estoque</label>
-                            <select name="stock_type" class="limit-balanced" onchange="this.form.submit()">
-                                <option value="">Todos</option>
-                                {% for st in stock_types %}
-                                <option value="{{ st }}" {% if request.POST.stock_type == st %}selected{% endif %}>
-                                    {{ st }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
+
+            <div class="estoque-toolbar">
+                <div class="toolbar-group">
+                    <span class="toolbar-label">Exibição</span>
+                    <select name="limit" class="toolbar-select" title="Itens por página">
+                        <option value="25" {% if limit == 25 %}selected{% endif %}>25 / pág.</option>
+                        <option value="50" {% if limit == 50 %}selected{% endif %}>50 / pág.</option>
+                        <option value="100" {% if limit == 100 %}selected{% endif %}>100 / pág.</option>
+                        <option value="200" {% if limit == 200 %}selected{% endif %}>200 / pág.</option>
+                    </select>
+
+                    <select name="stock_type" class="toolbar-select" title="Tipo de estoque">
+                        <option value="">Todos os tipos</option>
+                        {% for st in stock_types %}
+                        <option value="{{ st }}" {% if request.POST.stock_type == st %}selected{% endif %}>
+                            {{ st }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    <div class="seg-group" role="group" aria-label="Modo de exibição" id="segModoExibicao">
+                        <button type="button"
+                                data-field="modo_exibicao"
+                                data-value="cards"
+                                class="seg-btn {% if modo_exibicao == 'cards' %}active{% endif %}">
+                            <i class="fa-solid fa-grip"></i> Cards
+                        </button>
+                        <button type="button"
+                                data-field="modo_exibicao"
+                                data-value="tabela"
+                                class="seg-btn {% if modo_exibicao == 'tabela' %}active{% endif %}">
+                            <i class="fa-solid fa-table"></i> Tabela
+                        </button>
+                    </div>
+
+                    <div class="seg-group" role="group" aria-label="Visão dos dados" id="segVisao">
+                        <button type="button"
+                                data-field="visao"
+                                data-value="resumo"
+                                class="seg-btn {% if visao == 'resumo' %}active{% endif %}">
+                            Resumida
+                        </button>
+                        <button type="button"
+                                data-field="visao"
+                                data-value="detalhe"
+                                class="seg-btn {% if visao == 'detalhe' %}active{% endif %}">
+                            Detalhada
+                        </button>
                     </div>
                 </div>
 
-                <div class="dropdown">
-                    <button type="button" class="dropdown-btn">
-                        <i class="fa-solid fa-eye"></i> Visualização
+                <div class="toolbar-group">
+                    {% if not filtro_pa_travado %}
+                    <button type="button" onclick="selectAllPAs()" class="toolbar-action-btn">
+                        <i class="fa-solid fa-check-double"></i> Selecionar todos
                     </button>
-                    <div class="dropdown-menu">
-                        <div class="dropdown-item">
-                            <button type="submit"
-                                    onclick="document.getElementById('modo_exibicao').value='cards'"
-                                    class="view-balanced {% if modo_exibicao == 'cards' %}active{% endif %}">
-                                Cards
-                            </button>
+                    {% endif %}
 
-                            <button type="submit"
-                                    onclick="document.getElementById('modo_exibicao').value='tabela'"
-                                    class="view-balanced {% if modo_exibicao == 'tabela' %}active{% endif %}">
-                                Tabela
-                            </button>
-                        </div>
-
-                        <div class="dropdown-item">
-                            <button type="submit"
-                                    onclick="document.getElementById('visao').value='resumo'"
-                                    class="view-balanced {% if visao == 'resumo' %}active{% endif %}">
-                                Resumida
-                            </button>
-
-                            <button type="submit"
-                                    onclick="document.getElementById('visao').value='detalhe'"
-                                    class="view-balanced {% if visao == 'detalhe' %}active{% endif %}">
-                                Detalhada
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="dropdown">
-                    <button type="button" class="dropdown-btn">
-                        <i class="fa-solid fa-bolt"></i> Ações
+                    {% if perms.gestao_total %}
+                    <button type="submit" name="exportar" value="1" class="toolbar-export-btn">
+                        <i class="fa-solid fa-download"></i> Exportar
                     </button>
-                    <div class="dropdown-menu">
-                        <div class="dropdown-item">
-                            {% if perms.gestao_total %}
-                            <button type="submit" name="exportar" value="1" class="extract-balanced">
-                                <i class="fa-solid fa-download"></i> Exportar estoque
-                            </button>
-                            {% endif %}
-                        </div>
-                        <div class="dropdown-item">
-                            <button type="button" onclick="selectAllPAs()" class="view-balanced">
-                                Selecionar todos os CDs
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="top-action">
+                    {% endif %}
+
                     <button type="submit"
                             name="aplicar_filtros"
                             value="1"
-                            class="extract-balanced">
+                            class="toolbar-primary-btn">
                         <i class="fa-solid fa-filter"></i> Aplicar filtros
                     </button>
                 </div>
             </div>
-
-            {% if form.data.cd_estoque %}
-            <div class="chips-wrap" style="margin:10px 0; display:flex; gap:6px; flex-wrap:wrap;">
-                {% for pa in pa_selecionadas %}
-                {% for id,label in form.fields.cd_estoque.choices %}
-                {% if id|stringformat:"s" == pa %}
-                <span class="chip" style="padding:4px 10px;background:#0056c1;color:white;
-                    border-radius:20px;font-size:12px;display:flex;align-items:center;gap:6px;">
-                    {{ label }}
-                    <button name="remove_pa" value="{{ pa }}" style="background:none;border:none;color:white;
-                        font-size:14px;cursor:pointer;padding:0;">x</button>
-                </span>
-                {% endif %}
-                {% endfor %}
-                {% endfor %}
-            </div>
-            {% endif %}
         </form>
     </div>
 </div>
@@ -924,32 +1298,350 @@
 </script>
 
 <script>
-    function selectAllPAs() {
-        let select = document.getElementById("id_cd_estoque");
+    function normalizeText(value) {
+        return String(value || "")
+            .trim()
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+    }
 
-        if (!select) {
-            alert("Campo de CDs não encontrado.");
+    function initSingleSearch(selectId, placeholder) {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+
+        select.classList.add("native-select-hidden");
+
+        const parent = select.parentNode;
+        const wrapper = document.createElement("div");
+        wrapper.className = "single-search";
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "single-search-input";
+        input.placeholder = placeholder || "Digite para buscar...";
+        input.autocomplete = "off";
+
+        const dropdown = document.createElement("div");
+        dropdown.className = "single-search-dropdown";
+
+        parent.insertBefore(wrapper, select);
+        wrapper.appendChild(input);
+        wrapper.appendChild(dropdown);
+        wrapper.appendChild(select);
+
+        function buildItems() {
+            dropdown.innerHTML = "";
+            Array.from(select.options).forEach(opt => {
+                if (!opt.value) return;
+
+                const item = document.createElement("div");
+                item.className = "single-search-item";
+                item.dataset.value = opt.value;
+                item.dataset.label = opt.textContent.trim();
+                item.textContent = opt.textContent.trim();
+
+                if (String(select.value) === String(opt.value)) {
+                    item.classList.add("is-selected");
+                    input.value = opt.textContent.trim();
+                }
+
+                item.addEventListener("click", function () {
+                    select.value = this.dataset.value;
+                    input.value = this.dataset.label;
+                    dropdown.querySelectorAll(".single-search-item").forEach(el => {
+                        el.classList.remove("is-selected");
+                    });
+                    this.classList.add("is-selected");
+                    wrapper.classList.remove("is-open");
+                    select.dispatchEvent(new Event("change", { bubbles: true }));
+                });
+
+                dropdown.appendChild(item);
+            });
+        }
+
+        function filterItems(term) {
+            const value = normalizeText(term);
+            let visible = 0;
+
+            dropdown.querySelectorAll(".single-search-item").forEach(item => {
+                const haystack = normalizeText(item.dataset.label);
+                const match = !value || haystack.includes(value);
+                item.style.display = match ? "" : "none";
+                if (match) visible++;
+            });
+
+            let emptyEl = dropdown.querySelector(".single-search-empty-dynamic");
+            if (!visible) {
+                if (!emptyEl) {
+                    emptyEl = document.createElement("div");
+                    emptyEl.className = "single-search-empty single-search-empty-dynamic";
+                    emptyEl.textContent = "Nenhum resultado encontrado";
+                    dropdown.appendChild(emptyEl);
+                }
+            } else if (emptyEl) {
+                emptyEl.remove();
+            }
+        }
+
+        buildItems();
+
+        input.addEventListener("focus", function () {
+            wrapper.classList.add("is-open");
+            filterItems(this.value);
+        });
+
+        input.addEventListener("input", function () {
+            wrapper.classList.add("is-open");
+            filterItems(this.value);
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!wrapper.contains(e.target)) {
+                wrapper.classList.remove("is-open");
+            }
+        });
+    }
+
+    function initMultiSearch(selectId, placeholder) {
+        const select = document.getElementById(selectId);
+        if (!select) return null;
+
+        select.classList.add("native-select-hidden");
+
+        const parent = select.parentNode;
+        const wrapper = document.createElement("div");
+        wrapper.className = "multi-search";
+
+        const box = document.createElement("div");
+        box.className = "multi-search-box";
+
+        const chips = document.createElement("div");
+        chips.className = "multi-chips-wrap";
+        chips.style.display = "contents";
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "multi-search-input";
+        input.placeholder = placeholder || "Digite para buscar localidades...";
+        input.autocomplete = "off";
+
+        const dropdown = document.createElement("div");
+        dropdown.className = "multi-search-dropdown";
+
+        parent.insertBefore(wrapper, select);
+        wrapper.appendChild(box);
+        box.appendChild(chips);
+        box.appendChild(input);
+        wrapper.appendChild(dropdown);
+        wrapper.appendChild(select);
+
+        function getOptions() {
+            return Array.from(select.options).map(opt => ({
+                value: String(opt.value),
+                label: String(opt.textContent || "").trim(),
+                selected: opt.selected,
+            })).filter(item => item.value);
+        }
+
+        function getSelected() {
+            return getOptions().filter(item => item.selected);
+        }
+
+        function renderChips() {
+            chips.innerHTML = "";
+            getSelected().forEach(item => {
+                const chip = document.createElement("span");
+                chip.className = "multi-chip";
+                chip.innerHTML = `
+                    <span>${item.label}</span>
+                    <button type="button" class="multi-chip-remove" data-value="${item.value}">&times;</button>
+                `;
+                chips.appendChild(chip);
+            });
+        }
+
+        function renderDropdown(search = "") {
+            const term = normalizeText(search);
+            const options = getOptions().filter(item => {
+                if (item.selected) return false;
+                if (!term) return true;
+                return normalizeText(item.label).includes(term);
+            });
+
+            dropdown.innerHTML = "";
+
+            if (!options.length) {
+                const empty = document.createElement("div");
+                empty.className = "multi-search-empty";
+                empty.textContent = term
+                    ? "Nenhuma localidade encontrada"
+                    : "Todas as localidades visíveis já foram selecionadas";
+                dropdown.appendChild(empty);
+                dropdown.style.display = "block";
+                return;
+            }
+
+            options.forEach(item => {
+                const row = document.createElement("div");
+                row.className = "multi-search-item";
+                row.textContent = item.label;
+                row.addEventListener("click", function () {
+                    const option = Array.from(select.options).find(
+                        opt => String(opt.value) === item.value
+                    );
+                    if (!option) return;
+                    option.selected = true;
+                    input.value = "";
+                    renderChips();
+                    renderDropdown("");
+                    select.dispatchEvent(new Event("change", { bubbles: true }));
+                });
+                dropdown.appendChild(row);
+            });
+
+            dropdown.style.display = "block";
+        }
+
+        function closeDropdown() {
+            dropdown.style.display = "none";
+        }
+
+        function refresh() {
+            renderChips();
+            closeDropdown();
+        }
+
+        box.addEventListener("click", function () {
+            input.focus();
+            renderDropdown(input.value);
+        });
+
+        input.addEventListener("focus", function () {
+            renderDropdown(this.value);
+        });
+
+        input.addEventListener("input", function () {
+            renderDropdown(this.value);
+        });
+
+        input.addEventListener("keydown", function (e) {
+            if (e.key === "Backspace" && !input.value.trim()) {
+                const selected = getSelected();
+                const last = selected[selected.length - 1];
+                if (!last) return;
+
+                const option = Array.from(select.options).find(
+                    opt => String(opt.value) === last.value
+                );
+                if (!option) return;
+
+                option.selected = false;
+                renderChips();
+                renderDropdown(input.value);
+                select.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+        });
+
+        chips.addEventListener("click", function (e) {
+            const btn = e.target.closest(".multi-chip-remove");
+            if (!btn) return;
+
+            const value = btn.getAttribute("data-value");
+            const option = Array.from(select.options).find(
+                opt => String(opt.value) === value
+            );
+            if (!option) return;
+
+            option.selected = false;
+            renderChips();
+            renderDropdown(input.value);
+            select.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!wrapper.contains(e.target)) {
+                closeDropdown();
+            }
+        });
+
+        refresh();
+        return { refresh, selectAll: function () {
+            Array.from(select.options).forEach(opt => {
+                if (opt.value) opt.selected = true;
+            });
+            refresh();
+        }};
+    }
+
+    let estoquePaMultiSearch = null;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        initSingleSearch("id_client", "Buscar cliente...");
+        initSegToggleButtons();
+        {% if not filtro_pa_travado %}
+        estoquePaMultiSearch = initMultiSearch(
+            "id_cd_estoque",
+            "Buscar PA/CD por código ou nome..."
+        );
+
+        {% for pa in pa_selecionadas %}
+        (function () {
+            const select = document.getElementById("id_cd_estoque");
+            if (!select) return;
+            const option = Array.from(select.options).find(
+                opt => String(opt.value) === "{{ pa|escapejs }}"
+            );
+            if (option) option.selected = true;
+        })();
+        {% endfor %}
+
+        if (estoquePaMultiSearch) {
+            estoquePaMultiSearch.refresh();
+        }
+        {% endif %}
+    });
+
+    function initSegToggleButtons() {
+        document.querySelectorAll(".seg-group .seg-btn[data-field]").forEach(btn => {
+            btn.addEventListener("click", function () {
+                const fieldId = this.dataset.field;
+                const value = this.dataset.value;
+                const hiddenInput = document.getElementById(fieldId);
+
+                if (!hiddenInput) return;
+
+                hiddenInput.value = value;
+
+                const group = this.closest(".seg-group");
+                if (group) {
+                    group.querySelectorAll(".seg-btn").forEach(el => {
+                        el.classList.remove("active");
+                    });
+                }
+
+                this.classList.add("active");
+            });
+        });
+    }
+
+    function selectAllPAs() {
+        if (estoquePaMultiSearch) {
+            estoquePaMultiSearch.selectAll();
             return;
         }
 
-        for (let i = 0; i < select.options.length; i++) {
-            select.options[i].selected = true;
+        const select = document.getElementById("id_cd_estoque");
+        if (!select) {
+            alert("Campo de localidades não encontrado.");
+            return;
         }
-    }
-</script>
 
-<!-- TOP BAR -->
-<script>
-document.addEventListener("click", function (e) {
-    document.querySelectorAll(".dropdown").forEach(d => {
-        if (!d.contains(e.target)) d.classList.remove("open");
-    });
-
-    const btn = e.target.closest(".dropdown-btn");
-    if (btn) {
-        btn.parentElement.classList.toggle("open");
+        Array.from(select.options).forEach(opt => {
+            if (opt.value) opt.selected = true;
+        });
     }
-});
 </script>
 
 

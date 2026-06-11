@@ -1,9 +1,8 @@
-from datetime import datetime
-from collections import Counter
 import json
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
+from django.core.exceptions import PermissionDenied
 from utils.request import RequestClient
 from setup.local_settings import STOCK_API_URL
 from ...forms import GerenciamentoEstoqueForm
@@ -16,7 +15,53 @@ from urllib.parse import urlencode
 JSON_CT = "application/json"
 
 
-def carregar_formulario(request):
+def _obter_gai_designacao(user):
+    designacao = getattr(user, "designacao", None)
+    if not designacao:
+        return None
+    return getattr(designacao, "informacao_adicional", None)
+
+
+def _filtro_pa_travado(user):
+    return (
+        user.groups.filter(name="arancia_PA").exists()
+        and not user.has_perm("logistica.gerente_estoque")
+    )
+
+
+def _forcar_cd_estoque_designacao(request, user_gai):
+    if not user_gai:
+        return False
+
+    user_gai_id = str(user_gai.id)
+
+    if request.method != "POST":
+        return True
+
+    new_post = request.POST.copy()
+    posted = [p for p in new_post.getlist("cd_estoque") if p]
+
+    if posted and user_gai_id not in posted:
+        messages.error(
+            request,
+            "Você só pode consultar estoque da sua própria PA."
+        )
+        return False
+
+    new_post.setlist("cd_estoque", [user_gai_id])
+    request.POST = new_post
+    return True
+
+
+def _filtros_respeitam_pa(filtros, user_gai):
+    if not filtros or not user_gai:
+        return True
+    permitido = {str(user_gai.id)}
+    selecionados = {str(p) for p in filtros.get("cd_estoque", []) if p}
+    return selecionados <= permitido
+
+
+def carregar_formulario(request, filtro_pa_travado=False):
     try:
         url = f"{STOCK_API_URL}/v1/clients/?skip=0&limit=1000"
         res = RequestClient(url=url, method="GET", headers={"Accept": JSON_CT})
@@ -61,15 +106,37 @@ def carregar_formulario(request):
         data=request.POST or None
     )
 
+    if filtro_pa_travado and user_cd:
+        gai_id = str(user_cd.id)
+        label = f"{user_cd.cod_iata} - {user_cd.nome}"
+        form.fields["cd_estoque"].choices = [(gai_id, label)]
+        form.fields["cd_estoque"].initial = [gai_id]
+
     return form, client_choices, cd_choices, sales_channels_map
 
 
 @login_required(login_url='logistica:login')
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def gerenciamento_estoque(request):
-    titulo = "Gerenciamento de Estoque"
+    # if not (
+    #     request.user.has_perm("logistica.estoque")
+    #     or request.user.has_perm("logistica.gerente_estoque")
+    # ):
+    #     raise PermissionDenied
 
-    if request.method == "POST" and "remove_pa" in request.POST:
+    titulo = "Gerenciamento de Estoque"
+    user_gai = _obter_gai_designacao(request.user)
+    filtro_pa_travado = _filtro_pa_travado(request.user)
+
+    if filtro_pa_travado:
+        if not user_gai:
+            messages.error(request, "Designação operacional não configurada.")
+            return redirect("logistica:client_select")
+
+        if not _forcar_cd_estoque_designacao(request, user_gai):
+            return redirect(request.path)
+
+    if request.method == "POST" and "remove_pa" in request.POST and not filtro_pa_travado:
         remove_pa = request.POST.get("remove_pa")
 
         new_post = request.POST.copy()
@@ -98,6 +165,13 @@ def gerenciamento_estoque(request):
 
         if not filtros:
             messages.error(request, "Nenhum filtro aplicado para exportação.")
+            return redirect(request.path)
+
+        if filtro_pa_travado and not _filtros_respeitam_pa(filtros, user_gai):
+            messages.error(
+                request,
+                "Você só pode exportar estoque da sua própria PA."
+            )
             return redirect(request.path)
 
         client = filtros["client"]
@@ -133,7 +207,9 @@ def gerenciamento_estoque(request):
 
     if request.method == "POST" and "exportar" in request.POST:
 
-        form, _, _, sales_channels_map = carregar_formulario(request)
+        form, _, _, sales_channels_map = carregar_formulario(
+            request, filtro_pa_travado=filtro_pa_travado
+        )
 
         if not form.is_valid():
             messages.error(request, "Filtros inválidos para exportação.")
@@ -204,6 +280,13 @@ def gerenciamento_estoque(request):
         filtros = request.session.get("estoque_filtros")
 
         if filtros:
+            if filtro_pa_travado and not _filtros_respeitam_pa(filtros, user_gai):
+                messages.error(
+                    request,
+                    "Você só pode consultar estoque da sua própria PA."
+                )
+                return redirect(request.path)
+
             new_post = request.POST.copy()
             new_post["client"] = filtros["client"]
             new_post["visao"] = filtros["visao"]
@@ -216,7 +299,8 @@ def gerenciamento_estoque(request):
             return redirect(request.path)
 
     form, client_choices, cd_choices, sales_channels_map = carregar_formulario(
-        request)
+        request, filtro_pa_travado=filtro_pa_travado
+    )
 
     produtos_api = []
     resultado_itens = []
@@ -260,6 +344,9 @@ def gerenciamento_estoque(request):
 
     pa_selecionadas = request.POST.getlist(
         "cd_estoque") if request.method == "POST" else []
+
+    if filtro_pa_travado and user_gai and not pa_selecionadas:
+        pa_selecionadas = [str(user_gai.id)]
 
     stock_types = []
 
@@ -313,6 +400,11 @@ def gerenciamento_estoque(request):
             "prev_offset": max(offset - limit, 0),
             "produtos_api": produtos_api,
             "stock_types": stock_types,
+            "filtro_pa_travado": filtro_pa_travado,
+            "pa_designacao_id": str(user_gai.id) if user_gai else "",
+            "pa_designacao_label": (
+                f"{user_gai.cod_iata} - {user_gai.nome}" if user_gai else ""
+            ),
             "current_parent_menu": "logistica",
             "current_menu": "estoque",
             "current_submenu": "gerenciamento",

@@ -1,0 +1,18 @@
+from django import forms
+
+
+class SolicitacaoColetaCheckinForm(forms.Form):
+    client = forms.ChoiceField(
+        label="Cliente",
+        required=True,
+    )
+
+    numero_romaneio = forms.CharField(
+        label="Número do romaneio",
+        required=True,
+    )
+
+    def __init__(self, *args, nome_form=None, client_choices=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.nome_formulario = nome_form or "Definir nome do formulário"
+        self.fields["client"].choices = [("", "Selecione o cliente")] + list(client_choices or [])
