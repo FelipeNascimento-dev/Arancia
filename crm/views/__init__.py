@@ -28,7 +28,7 @@ from crm.views.view_contracts import (
     contract_list,
     contract_new,
 )
-from crm.views.view_dashboard import ajax_crm_lookups, ajax_health, dashboard, validate_context
+from crm.views.view_dashboard import ajax_crm_lookups, ajax_health, ajax_lookup_gais, ajax_lookup_groups, dashboard, validate_context
 from crm.views.view_permissions import permissions_list, permissions_user
 from crm.views.view_projects import (
     ajax_project_delete,
@@ -67,6 +67,7 @@ from crm.views.view_tasks import (
     ajax_task_assignee_delete,
     ajax_task_assignee_update,
     ajax_task_attachment,
+    ajax_task_calendar_events,
     ajax_task_comment,
     ajax_task_delete,
     ajax_task_link_delete,
@@ -89,6 +90,8 @@ __all__ = [
     'dashboard',
     'ajax_health',
     'ajax_crm_lookups',
+    'ajax_lookup_groups',
+    'ajax_lookup_gais',
     'validate_context',
     'client_list',
     'client_new',
@@ -108,6 +111,7 @@ __all__ = [
     'task_list',
     'task_my',
     'task_calendar',
+    'ajax_task_calendar_events',
     'task_new',
     'task_detail',
     'task_edit',

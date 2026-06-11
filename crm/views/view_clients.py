@@ -8,6 +8,7 @@ from crm.forms.forms_clients import ClientAddressForm, ClientContactForm, Client
 from crm.services.client import CrmApiClient
 from crm.services.context import get_user_gai_id
 from crm.services.exceptions import CrmApiError, handle_crm_error
+from crm.services.gates import require_gai_or_render
 from crm.services.lookups import build_gai_choices, fetch_crm_lookups
 from crm.services.pagination import (
     build_pagination_context,
@@ -22,15 +23,13 @@ CRM_MENU = {
 
 
 def _require_gai_or_render(request, template, extra_context=None):
-    if get_user_gai_id(request.user) is not None:
-        return None
-    context = {
-        'site_title': 'CRM — Clientes',
-        'missing_gai': True,
-        **CRM_MENU,
-        **(extra_context or {}),
-    }
-    return render(request, template, context)
+    return require_gai_or_render(
+        request,
+        template,
+        site_title='CRM — Clientes',
+        menu_context=CRM_MENU,
+        extra_context=extra_context,
+    )
 
 
 def _load_lookups(request):

@@ -2,9 +2,9 @@ from django.shortcuts import render
 
 from crm.decorators import crm_module_required
 from crm.services.client import CrmApiClient
-from crm.services.context import get_user_gai_id
 from crm.services.exceptions import CrmApiError, handle_crm_error
-from crm.services.lookups import customer_label, fetch_crm_lookups
+from crm.services.gates import require_gai_or_render
+from crm.services.lookups import fetch_crm_lookups
 from crm.services.pagination import (
     build_pagination_context,
     get_pagination_params,
@@ -17,15 +17,22 @@ CRM_MENU = {
 }
 
 
+def _require_gai_or_render(request, template, extra_context=None):
+    return require_gai_or_render(
+        request,
+        template,
+        site_title='CRM — Alertas',
+        menu_context=CRM_MENU,
+        extra_context=extra_context,
+    )
+
+
 @crm_module_required
 def alert_list(request):
     """GET /alerts/ — listagem de alertas de contrato."""
-    if get_user_gai_id(request.user) is None:
-        return render(request, 'crm/alerts/list.html', {
-            'site_title': 'CRM — Alertas',
-            'missing_gai': True,
-            **CRM_MENU,
-        })
+    blocked = _require_gai_or_render(request, 'crm/alerts/list.html')
+    if blocked:
+        return blocked
 
     skip, limit = get_pagination_params(request)
     client = CrmApiClient(request.user)
@@ -41,8 +48,6 @@ def alert_list(request):
     try:
         raw = client.get('/alerts/', params={'skip': skip, 'limit': limit})
         alerts = normalize_list_response(raw)
-        for item in alerts:
-            item['customer_label'] = customer_label(lookups, item.get('customer_gai_id'))
     except CrmApiError as exc:
         api_error = exc
         handle_crm_error(request, exc)

@@ -12,9 +12,8 @@ from crm.forms.forms_boards import (
     BoardForm,
 )
 from crm.services.client import CrmApiClient
-from crm.services.context import get_user_gai_id
-from crm.services.datetime_utils import format_datetime
 from crm.services.exceptions import CrmApiError, handle_crm_error
+from crm.services.gates import require_gai_or_render
 from crm.services.lookups import (
     build_column_template_choices,
     build_designation_choices,
@@ -32,7 +31,7 @@ from crm.services.pagination import (
     get_pagination_params,
     normalize_list_response,
 )
-from crm.services.tasks import list_tasks
+from crm.services.tasks import enrich_task, list_tasks
 
 CRM_BOARDS_MENU = {
     'current_parent_menu': 'crm',
@@ -68,15 +67,13 @@ def _board_menu_context(request, board_data=None, *, board_id=None):
 
 
 def _require_gai_or_render(request, template, extra_context=None, *, menu_context=None):
-    if get_user_gai_id(request.user) is not None:
-        return None
-    context = {
-        'site_title': 'CRM — Boards',
-        'missing_gai': True,
-        **(menu_context or PROJECTS_MENU),
-        **(extra_context or {}),
-    }
-    return render(request, template, context)
+    return require_gai_or_render(
+        request,
+        template,
+        site_title='CRM — Boards',
+        menu_context=menu_context or PROJECTS_MENU,
+        extra_context=extra_context,
+    )
 
 
 def _access_form_choices(request):
@@ -94,10 +91,7 @@ def _access_form_choices(request):
 
 
 def _enrich_task_card(task):
-    task = dict(task)
-    if task.get('due_at'):
-        task['due_at_formatted'] = format_datetime(task['due_at'])
-    return task
+    return enrich_task(task)
 
 
 def _load_lookups(request):

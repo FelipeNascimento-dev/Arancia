@@ -1,4 +1,5 @@
 ﻿{% extends 'crm/base_crm.html' %}
+{% load crm_tags %}
 
 {% block crm_content %}
 <div class="user-table-header">
@@ -39,7 +40,7 @@
                 <td><strong>{{ item.type|default:"—" }}</strong></td>
                 <td>{{ item.description|default:"—" }}</td>
                 <td>{{ item.direction|default:"—" }}</td>
-                <td>{{ item.client_id|default:"—" }}</td>
+                <td>{{ item|crm_client_label:lookups }}</td>
                 <td class="crm-table-actions">
                     {% if can_manage %}
                     <div class="crm-table-actions-inner">

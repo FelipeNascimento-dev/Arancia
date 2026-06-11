@@ -11,6 +11,7 @@ from crm.forms.forms_settings import PriorityForm, ServiceTypeForm, StatusTaskFo
 from crm.services.client import CrmApiClient
 from crm.services.context import get_user_gai_id
 from crm.services.exceptions import CrmApiError, CrmBusinessError, handle_crm_error
+from crm.services.gates import require_gai_or_render
 from crm.services.lookups import (
     build_customer_choices,
     build_status_choices,
@@ -33,15 +34,13 @@ CRM_MENU = {
 
 
 def _require_gai_or_render(request, template, extra_context=None):
-    if get_user_gai_id(request.user) is not None:
-        return None
-    context = {
-        'site_title': 'CRM — Configurações',
-        'missing_gai': True,
-        **CRM_MENU,
-        **(extra_context or {}),
-    }
-    return render(request, template, context)
+    return require_gai_or_render(
+        request,
+        template,
+        site_title='CRM — Configurações',
+        menu_context=CRM_MENU,
+        extra_context=extra_context,
+    )
 
 
 def _selected_customer_gai_id(request):

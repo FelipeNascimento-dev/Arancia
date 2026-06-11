@@ -1,10 +1,11 @@
 ﻿{% extends 'crm/base_crm.html' %}
+{% load crm_tags %}
 
 {% block crm_content %}
 <div class="user-table-header">
     <div class="crm-header-text">
         <h2 class="user-table-title"><i class="fa-solid fa-file-contract"></i> {{ contract.title|default:"Contrato" }}</h2>
-        <p class="crm-header-subtitle muted">{% firstof customer_name contract.customer_gai_id "—" %}{% if contract.status %} · {{ contract.status }}{% endif %}</p>
+        <p class="crm-header-subtitle muted">{{ contract|crm_customer_label:lookups }}{% if contract.status %} · {{ contract.status }}{% endif %}</p>
     </div>
     <div class="user-create crm-toolbar">
         <a href="{% url 'crm:contract_list' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
@@ -18,8 +19,9 @@
     <div class="crm-dashboard-card">
         <h3>Dados do contrato</h3>
         <dl class="crm-detail-grid">
-            <dt>Cliente</dt><dd>{% firstof customer_name contract.customer_gai_id "—" %}</dd>
+            <dt>Cliente</dt><dd>{{ contract|crm_customer_label:lookups }}</dd>
             <dt>Título</dt><dd>{{ contract.title|default:"—" }}</dd>
+            <dt>Tipo de serviço</dt><dd>{{ contract|crm_service_type_label }}</dd>
             <dt>Descrição</dt><dd>{{ contract.description|default:"—" }}</dd>
             <dt>Status</dt><dd>{{ contract.status|default:"—" }}</dd>
             <dt>Ativo</dt><dd>{% if contract.is_active %}Sim{% else %}Não{% endif %}</dd>

@@ -1,10 +1,11 @@
 ﻿{% extends 'crm/base_crm.html' %}
+{% load crm_tags %}
 
 {% block crm_content %}
 <div class="user-table-header">
     <div class="crm-header-text">
         <h2 class="user-table-title"><i class="fa-solid fa-list-check"></i> {{ task.title|default:"Tarefa" }}</h2>
-        <p class="crm-header-subtitle muted">{% if task.due_at_formatted %}Vence em {{ task.due_at_formatted }}{% endif %}</p>
+        <p class="crm-header-subtitle muted">{% firstof task.due_at_formatted task.due_at task.due_date "" as due_label %}{% if due_label %}Vence em {{ due_label }}{% endif %}</p>
     </div>
     <div class="user-create crm-toolbar">
         <a href="{% url 'crm:task_list' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
@@ -24,9 +25,23 @@
         <dl class="crm-detail-grid">
             <dt>Descrição</dt>
             <dd>{% include 'crm/partials/_rich_content_display.html' with html=task.description script_id='task-description-json' element_id='taskDescriptionView' %}</dd>
-            <dt>Status</dt><dd>{{ task.status_name|default:task.status_id|default:"—" }}</dd>
-            <dt>Prioridade</dt><dd>{{ task.priority_name|default:task.priority_id|default:"—" }}</dd>
-            <dt>Agendamento</dt><dd>{{ task.scheduled_at_formatted|default:task.scheduled_at|default:"—" }}</dd>
+            <dt>Status</dt><dd>{{ task|crm_status_label }}</dd>
+            <dt>Prioridade</dt><dd>{{ task|crm_priority_label }}</dd>
+            <dt>Board</dt><dd>{{ task|crm_board_label }}</dd>
+            <dt>Projeto</dt><dd>{{ task|crm_project_label }}</dd>
+            <dt>Cliente</dt><dd>{{ task|crm_customer_label:lookups }}</dd>
+            <dt>Contrato</dt>
+            <dd>
+                {% if task.contract_id %}
+                <a href="{% url 'crm:contract_detail' contract_id=task.contract_id %}">{{ task|crm_contract_label }}</a>
+                {% else %}—{% endif %}
+            </dd>
+            <dt>Autor</dt><dd>{{ task|crm_user_label }}</dd>
+            <dt>Agendamento</dt><dd>{% firstof task.scheduled_at_formatted task.scheduled_at task.scheduled_start_at "—" %}</dd>
+            {% if task.is_recurring_instance and task.recurrence_template_id %}
+            <dt>Recorrência</dt>
+            <dd><a href="{% url 'crm:recurrence_detail' recurrence_id=task.recurrence_template_id %}">Ver template</a></dd>
+            {% endif %}
         </dl>
         <form method="post" class="crm-card-form">
             {% csrf_token %}
@@ -36,13 +51,26 @@
     </div>
 
     <div class="crm-dashboard-card">
+        <h3>Demandantes ({{ task.requesters|length }})</h3>
+        {% if task.requesters %}
+        <ul class="crm-list">
+            {% for r in task.requesters %}
+            <li>{{ r|crm_requester_label }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+            {% include 'crm/partials/_empty_state.html' with message="Nenhum demandante GAI." %}
+        {% endif %}
+    </div>
+
+    <div class="crm-dashboard-card">
         <h3>Responsáveis ({{ task.assignees|length }})</h3>
         {% if task.assignees %}
         <ul class="crm-list">
             {% for a in task.assignees %}
             <li class="crm-list-row">
                 <span>
-                    {{ a.username|default:a.user_id|default:a.designation_id }}
+                    {% firstof a.username a.user.username a.user_id a.designation_id "—" %}
                     {% if a.is_primary %}<span class="tag">Principal</span>{% endif %}
                 </span>
                 {% if perms.crm.assign_task %}
@@ -80,7 +108,7 @@
         <ul class="crm-list">
             {% for w in watchers %}
             <li class="crm-list-row">
-                <span>{{ w.username|default:w.user_id|default:w.designation_id|default:"—" }}</span>
+                <span>{% firstof w.username w.user.username w.user_id w.designation_id "—" %}</span>
                 {% if perms.crm.manage_watchers %}
                 <button type="button" class="btn btn-secondary btn-sm js-remove-watcher" data-watcher-id="{{ w.id }}">×</button>
                 {% endif %}
@@ -115,8 +143,9 @@
                     {% if link.restricted %}
                     <span class="muted">Tarefa restrita</span>
                     {% else %}
-                    <a href="{% url 'crm:task_detail' task_id=link.linked_task_id|default:link.id %}">
-                        {{ link.title|default:link.linked_task_id|default:link.id }}
+                    {% firstof link.target_task_id link.linked_task_id link.id as link_task_id %}
+                    <a href="{% url 'crm:task_detail' task_id=link_task_id %}">
+                        {% firstof link.title link_task_id %}
                     </a>
                     {% endif %}
                     {% if link.link_type %}<span class="tag">{{ link.link_type }}</span>{% endif %}
@@ -151,9 +180,9 @@
         <ul class="crm-list">
             {% for c in task.comments %}
             <li>
-                <strong>{{ c.author_username|default:c.user_id|default:"—" }}</strong>
+                <strong>{% firstof c.author_username c.author.username c.user_id "—" %}</strong>
                 {% if c.created_at %} — {{ c.created_at }}{% endif %}
-                <br>{{ c.content|default:c.body|default:c.text }}
+                <br>{% firstof c.content c.body c.text %}
             </li>
             {% endfor %}
         </ul>
@@ -227,10 +256,10 @@
     <ul class="crm-list">
         {% for h in move_history %}
         <li>
-            {{ h.from_status_name|default:h.from_status_id|default:"—" }}
-            → {{ h.to_status_name|default:h.to_status_id|default:"—" }}
+            {{ h|crm_move_status_label:"from" }}
+            → {{ h|crm_move_status_label:"to" }}
             {% if h.moved_at %} — {{ h.moved_at }}{% endif %}
-            {% if h.moved_by_username %} ({{ h.moved_by_username }}){% endif %}
+            {% if h.moved_by_id or h.moved_by %} ({{ h|crm_moved_by_label }}){% endif %}
         </li>
         {% endfor %}
     </ul>

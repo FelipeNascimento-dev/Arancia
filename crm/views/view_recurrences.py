@@ -7,8 +7,8 @@ from django.views.decorators.http import require_POST
 from crm.decorators import crm_perm_required
 from crm.forms.forms_recurrences import TaskRecurrenceForm
 from crm.services.client import CrmApiClient
-from crm.services.context import get_user_gai_id
 from crm.services.exceptions import CrmApiError, handle_crm_error
+from crm.services.gates import ajax_require_gai, require_gai_or_render
 from crm.services.lookups import (
     build_board_choices,
     build_priority_choices,
@@ -30,15 +30,13 @@ PROJECTS_MENU = {
 
 
 def _require_gai_or_render(request, template, extra_context=None):
-    if get_user_gai_id(request.user) is not None:
-        return None
-    context = {
-        'site_title': 'CRM — Recorrências',
-        'missing_gai': True,
-        **PROJECTS_MENU,
-        **(extra_context or {}),
-    }
-    return render(request, template, context)
+    return require_gai_or_render(
+        request,
+        template,
+        site_title='CRM — Recorrências',
+        menu_context=PROJECTS_MENU,
+        extra_context=extra_context,
+    )
 
 
 def _load_lookups(request):
@@ -181,8 +179,9 @@ def recurrence_edit(request, recurrence_id):
 @require_POST
 @crm_perm_required('delete_task_recurrence')
 def ajax_recurrence_delete(request, recurrence_id):
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     try:
         CrmApiClient(request.user).delete(f'/task-recurrences/{recurrence_id}')

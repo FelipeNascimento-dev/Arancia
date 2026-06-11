@@ -1,11 +1,12 @@
 ﻿{% extends 'crm/base_crm.html' %}
+{% load crm_tags %}
 
 {% block crm_content %}
 <div class="user-table-header">
     <div class="crm-header-text">
         <h2 class="user-table-title"><i class="fa-solid fa-coins"></i> {% if form_mode == 'new' %}Novo faturamento{% else %}Editar faturamento{% endif %}</h2>
         <p class="crm-header-subtitle muted">
-            {% if form_mode == 'edit' %}{% firstof customer_name record.customer_gai_id "—" %}{% else %}Registre valores previstos e realizados por cliente{% endif %}
+            {% if form_mode == 'edit' %}{{ record|crm_customer_label:lookups }}{% if record.contract_id %} · {{ record|crm_contract_label }}{% endif %}{% else %}Registre valores previstos e realizados por cliente{% endif %}
         </p>
     </div>
     <div class="user-create">

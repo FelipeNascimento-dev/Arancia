@@ -1,4 +1,5 @@
 {% extends 'crm/base_crm.html' %}
+{% load crm_tags %}
 
 {% block crm_content %}
 <div class="user-table-header">
@@ -23,7 +24,7 @@
             {% for board in boards %}
             <tr>
                 <td><strong>{% firstof board.name board.title board.id %}</strong></td>
-                <td>{% firstof board.project_name board.project_id "—" %}</td>
+                <td>{{ board|crm_project_label }}</td>
                 <td>
                     <a href="{% url 'crm:board_kanban' board_id=board.id %}?menu=projetos" class="action-btn edit-btn" title="Kanban"><i class="fa-solid fa-table-columns"></i></a>
                     {% if perms.crm.change_board %}

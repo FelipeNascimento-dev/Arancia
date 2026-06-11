@@ -586,3 +586,109 @@
   margin-bottom: 6px;
   font-size: 15px;
 }
+
+.crm-task-calendar {
+  margin-top: 16px;
+  --fc-border-color: var(--borda-formularios, #e0e0e0);
+  --fc-button-bg-color: #153e70;
+  --fc-button-border-color: #153e70;
+  --fc-button-hover-bg-color: #1f5494;
+  --fc-button-hover-border-color: #1f5494;
+  --fc-button-active-bg-color: #0f2f55;
+  --fc-button-active-border-color: #0f2f55;
+  --fc-today-bg-color: rgba(52, 152, 219, 0.12);
+  --fc-event-border-color: transparent;
+  --fc-page-bg-color: #fff;
+  min-height: 620px;
+}
+
+.crm-task-calendar .fc-toolbar-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--form-titulo, #3f3f3f);
+}
+
+.crm-task-calendar .fc-col-header-cell-cushion,
+.crm-task-calendar .fc-daygrid-day-number,
+.crm-task-calendar .fc-timegrid-slot-label-cushion {
+  color: var(--form-titulo, #3f3f3f);
+  text-decoration: none;
+}
+
+.crm-task-calendar .fc-event {
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: 1px 4px;
+}
+
+.crm-task-calendar.crm-cal-loading {
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.crm-cal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 12px;
+  font-size: 0.88rem;
+  color: #5f6b7a;
+}
+
+.crm-cal-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crm-cal-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.crm-cal-dot-scheduled {
+  background: #153e70;
+}
+
+.crm-cal-dot-due {
+  background: #7f8c8d;
+}
+
+.crm-cal-dot-overdue {
+  background: #c0392b;
+}
+
+.crm-cal-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--form-titulo, #3f3f3f);
+  margin-right: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.crm-cal-toggle input {
+  width: auto;
+  margin: 0;
+}
+
+.crm-cal-event-due {
+  opacity: 0.92;
+}
+
+@media (max-width: 900px) {
+  .crm-task-calendar .fc-header-toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .crm-task-calendar .fc-toolbar-chunk {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}

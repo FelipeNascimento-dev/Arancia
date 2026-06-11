@@ -278,3 +278,86 @@ def build_designation_choices(members_lookup):
         label = item.get('label') or item.get('username') or str(des_id)
         choices.append((str(des_id), label))
     return choices
+
+
+def normalize_lookup_list(raw):
+    """Normaliza resposta de lookup (lista ou envelope items/results)."""
+    if isinstance(raw, list):
+        return raw
+    if isinstance(raw, dict):
+        for key in ('items', 'results', 'gais', 'groups'):
+            if isinstance(raw.get(key), list):
+                return raw[key]
+    return []
+
+
+def fetch_groups(user):
+    """GET /lookups/groups — grupos Django elegíveis para filtro de demandantes."""
+    return CrmApiClient(user).get('/lookups/groups')
+
+
+def fetch_gais(user, *, group_id=None, search=None):
+    """GET /lookups/gais — GAIs elegíveis como demandantes (filtro opcional)."""
+    params = {}
+    if group_id not in (None, ''):
+        params['group_id'] = group_id
+    if search:
+        params['search'] = search.strip()
+    return CrmApiClient(user).get('/lookups/gais', params=params or None)
+
+
+def build_group_choices(groups):
+    """Choices (group_id, label) a partir de GET /lookups/groups."""
+    choices = []
+    for item in normalize_lookup_list(groups):
+        group_id = item.get('id') or item.get('group_id')
+        if group_id is None:
+            continue
+        label = item.get('name') or item.get('label') or str(group_id)
+        choices.append((str(group_id), label))
+    return choices
+
+
+def gai_requester_label(item):
+    """Label legível para um GAI demandante."""
+    if not isinstance(item, dict):
+        return str(item)
+    nested = item.get('gai') if isinstance(item.get('gai'), dict) else item
+    name = (
+        nested.get('nome')
+        or nested.get('razao_social')
+        or nested.get('name')
+        or item.get('label')
+    )
+    gai_id = item.get('gai_id') or nested.get('gai_id') or nested.get('id') or item.get('id')
+    if name:
+        return name
+    return f'GAI {gai_id}' if gai_id is not None else '—'
+
+
+def build_gai_requester_choices(gais):
+    """Choices (gai_id, label) para demandantes de tarefa de projeto."""
+    choices = []
+    for item in normalize_lookup_list(gais):
+        gai_id = item.get('gai_id') or item.get('id')
+        if gai_id is None:
+            continue
+        choices.append((str(gai_id), gai_requester_label(item)))
+    return choices
+
+
+def extract_requester_gai_ids(task_data):
+    """Extrai IDs de demandantes de task.requesters[] para initial do formulário."""
+    ids = []
+    for item in (task_data or {}).get('requesters') or []:
+        if not isinstance(item, dict):
+            continue
+        gai_id = (
+            item.get('gai_id')
+            or item.get('requester_gai_id')
+            or (item.get('gai') or {}).get('id')
+            or (item.get('gai') or {}).get('gai_id')
+        )
+        if gai_id is not None:
+            ids.append(str(gai_id))
+    return ids

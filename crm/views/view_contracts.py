@@ -7,14 +7,14 @@ from django.views.decorators.http import require_POST
 from crm.decorators import crm_perm_required
 from crm.forms.forms_contracts import ContractFileForm, ContractForm
 from crm.services.client import CrmApiClient
-from crm.services.context import get_user_gai_id
 from crm.services.exceptions import CrmApiError, handle_crm_error
+from crm.services.gates import ajax_require_gai, require_gai_or_render
 from crm.services.lookups import (
     build_customer_choices,
     build_service_type_choices,
-    customer_label,
     fetch_crm_lookups,
 )
+from crm.services.refs import customer_ref_label
 from crm.services.pagination import (
     build_pagination_context,
     get_pagination_params,
@@ -28,15 +28,13 @@ CRM_MENU = {
 
 
 def _require_gai_or_render(request, template, extra_context=None):
-    if get_user_gai_id(request.user) is not None:
-        return None
-    context = {
-        'site_title': 'CRM — Contratos',
-        'missing_gai': True,
-        **CRM_MENU,
-        **(extra_context or {}),
-    }
-    return render(request, template, context)
+    return require_gai_or_render(
+        request,
+        template,
+        site_title='CRM — Contratos',
+        menu_context=CRM_MENU,
+        extra_context=extra_context,
+    )
 
 
 def _load_lookups(request, customer_gai_id=None):
@@ -73,8 +71,6 @@ def contract_list(request):
     try:
         raw = client.get('/contracts/', params={'skip': skip, 'limit': limit})
         contracts = normalize_list_response(raw)
-        for item in contracts:
-            item['customer_label'] = customer_label(lookups, item.get('customer_gai_id'))
     except CrmApiError as exc:
         api_error = exc
         handle_crm_error(request, exc)
@@ -172,7 +168,6 @@ def contract_detail(request, contract_id):
         'contract_id': contract_id,
         'file_form': file_form,
         'lookups': lookups,
-        'customer_name': customer_label(lookups, contract_data.get('customer_gai_id')),
         **CRM_MENU,
     })
 
@@ -200,7 +195,7 @@ def contract_edit(request, contract_id):
     st_lookups, _ = _load_lookups(request, customer_gai_id=gai_id)
     customer_choices = build_customer_choices(lookups)
     service_type_choices = build_service_type_choices(st_lookups, customer_gai_id=gai_id)
-    gai_label = customer_label(lookups, gai_id)
+    gai_label = customer_ref_label(contract_data, lookups=lookups)
     if gai_id and not any(str(c[0]) == str(gai_id) for c in customer_choices):
         customer_choices = [(str(gai_id), gai_label)] + customer_choices
 
@@ -277,7 +272,6 @@ def contract_edit(request, contract_id):
         'contract_id': contract_id,
         'contract': contract_data,
         'lookups': lookups,
-        'customer_name': gai_label,
         'ajax_lookups_url': reverse('crm:ajax_crm_lookups'),
         **CRM_MENU,
     })
@@ -287,11 +281,9 @@ def contract_edit(request, contract_id):
 @crm_perm_required('upload_contract_file')
 def ajax_contract_file_upload(request, contract_id):
     """POST multipart /contracts/{id}/files — upload via AJAX."""
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({
-            'ok': False,
-            'error': 'Usuário sem GAI configurado.',
-        }, status=400)
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     uploaded = request.FILES.get('file')
     if not uploaded:
@@ -324,11 +316,9 @@ def ajax_contract_file_upload(request, contract_id):
 @crm_perm_required('upload_contract_file')
 def ajax_contract_file_delete(request, contract_id, file_id):
     """DELETE /contracts/{id}/files/{file_id} — exclusão via AJAX."""
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({
-            'ok': False,
-            'error': 'Usuário sem GAI configurado.',
-        }, status=400)
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     try:
         CrmApiClient(request.user).delete(

@@ -35,7 +35,7 @@
         {% endif %}
 
         {% for field in form %}
-        {% if field.name != 'task_kind' %}
+        {% if field.name != 'task_kind' and field.name != 'requester_group_id' and field.name != 'requester_gai_ids' %}
         <div class="crm-field{% if field.name == 'description' or field.field.widget.attrs.rows %} crm-field-wide{% endif %}{% if field.name == 'due_at' or field.name == 'scheduled_at' %} crm-task-normal-field{% endif %}{% if field.name == 'frequency' or field.name == 'interval' or field.name == 'recurrence_start' or field.name == 'recurrence_end' %} crm-task-recurrence-field{% endif %}"
             data-field="{{ field.name }}">
             <label for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -45,6 +45,24 @@
         </div>
         {% endif %}
         {% endfor %}
+
+        {% if show_requesters and form.requester_gai_ids %}
+        <div class="crm-field crm-field-wide crm-requester-section" id="crmRequesterSection" style="display:none;">
+            <span class="crm-field-label">Demandantes (GAI)</span>
+            <p class="muted crm-perm-help">Selecione os GAIs demandantes quando a tarefa pertence a um projeto.</p>
+            <div class="crm-requester-picker">
+                <div class="crm-field">
+                    <label for="{{ form.requester_group_id.id_for_label }}">{{ form.requester_group_id.label }}</label>
+                    {{ form.requester_group_id }}
+                </div>
+                <div class="crm-field crm-field-wide">
+                    <label for="{{ form.requester_gai_ids.id_for_label }}">{{ form.requester_gai_ids.label }}</label>
+                    {{ form.requester_gai_ids }}
+                    {% if form.requester_gai_ids.errors %}<span class="error">{{ form.requester_gai_ids.errors|join:", " }}</span>{% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
     <div class="crm-form-actions">
         <button type="submit" class="submit-button-right">Salvar</button>
@@ -88,6 +106,57 @@
         input.addEventListener('change', syncSections);
     });
     syncSections();
+})();
+</script>
+{% endif %}
+
+{% if show_requesters and ajax_lookup_gais_url %}
+<script>
+(function () {
+    var projectField = document.getElementById('id_project_id');
+    var groupField = document.getElementById('id_requester_group_id');
+    var gaisField = document.getElementById('id_requester_gai_ids');
+    var section = document.getElementById('crmRequesterSection');
+    if (!projectField || !gaisField || !section) return;
+
+    function syncRequesterVisibility() {
+        var hasProject = Boolean(projectField.value);
+        section.style.display = hasProject ? '' : 'none';
+    }
+
+    function rebuildGaisOptions(gais) {
+        var selected = Array.from(gaisField.selectedOptions).map(function (o) { return o.value; });
+        gaisField.innerHTML = '';
+        (gais || []).forEach(function (item) {
+            var gaiId = item.gai_id || item.id;
+            if (gaiId == null) return;
+            var opt = document.createElement('option');
+            opt.value = String(gaiId);
+            var name = item.nome || item.razao_social || item.name || item.label || ('GAI ' + gaiId);
+            opt.textContent = name;
+            if (selected.indexOf(String(gaiId)) >= 0) opt.selected = true;
+            gaisField.appendChild(opt);
+        });
+    }
+
+    function loadGais() {
+        var params = [];
+        if (groupField && groupField.value) {
+            params.push('group_id=' + encodeURIComponent(groupField.value));
+        }
+        var url = '{{ ajax_lookup_gais_url }}' + (params.length ? '?' + params.join('&') : '');
+        fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (data.ok) rebuildGaisOptions(data.gais || []);
+            })
+            .catch(function () {});
+    }
+
+    projectField.addEventListener('change', syncRequesterVisibility);
+    if (groupField) groupField.addEventListener('change', loadGais);
+    syncRequesterVisibility();
+    if (projectField.value) loadGais();
 })();
 </script>
 {% endif %}
