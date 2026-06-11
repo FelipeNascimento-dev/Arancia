@@ -71,49 +71,76 @@
     {% endfor %}
 {% endif %}
 
+</div>
 
 {% if tipo == "resumo" %}
-    {% for pa in itens %}
-        {% for st in pa.stock_types %}
-        <div class="card">
-            <div class="card-header">
-                <span class="badge-num">
-                    {{ st.total }}
-                </span>
-                <h3 class="card-title">
-                    PA {{ pa.pa }}
-                </h3>
-            </div>
-
-            <div class="card-body">
-                <p>
-                    <strong>Tipo de estoque:</strong><br>
-                    {{ st.type }}
-                </p>
-
-                <p><strong>Produtos:</strong></p>
-                <ul style="padding-left:18px;margin-bottom:12px;">
-                    {% for produto, qtd in st.qtd_por_produto.items %}
-                        <li>
-                            {{ produto }}
-                            <strong style="float:right;">{{ qtd }}</strong>
-                        </li>
-                    {% endfor %}
-                </ul>
-
-                <p><strong>ZTIPO:</strong></p>
-                <ul style="padding-left:18px;">
-                    {% for ztipo, qtd in st.qtd_por_ztipo.items %}
-                        <li>
-                            {{ ztipo }}
-                            <strong style="float:right;">{{ qtd }}</strong>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
+<div class="resumo-cards-layout{% if exibe_ztipo %} has-ztipo{% endif %}">
+    <div class="resumo-col resumo-col-produtos">
+        <h3 class="resumo-col-title">
+            <i class="fa-solid fa-box"></i> Por Produto
+        </h3>
+        <div class="resumo-cards-grid">
+            {% for pa in itens %}
+                {% for st in pa.stock_types %}
+                <div class="card card-resumo">
+                    <div class="card-header card-header-resumo">
+                        <span class="badge-num badge-num-resumo">{{ st.total }}</span>
+                        <div class="card-title-wrap">
+                            <h3 class="card-title card-title-resumo">PA {{ pa.pa }}</h3>
+                            <span class="card-subtitle">{{ st.type }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body card-body-resumo">
+                        <ul class="resumo-list">
+                            {% for produto, qtd in st.qtd_por_produto.items %}
+                            <li>
+                                <span class="resumo-list-label">{{ produto }}</span>
+                                <strong class="resumo-list-value">{{ qtd }}</strong>
+                            </li>
+                            {% empty %}
+                            <li class="resumo-list-empty">Sem produtos</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endfor %}
         </div>
-        {% endfor %}
-    {% endfor %}
-{% endif %}
+    </div>
 
+    {% if exibe_ztipo %}
+    <div class="resumo-col resumo-col-ztipo">
+        <h3 class="resumo-col-title">
+            <i class="fa-solid fa-layer-group"></i> Por ZTIPO
+        </h3>
+        <div class="resumo-cards-grid">
+            {% for pa in itens %}
+                {% for st in pa.stock_types %}
+                <div class="card card-resumo">
+                    <div class="card-header card-header-resumo">
+                        <span class="badge-num badge-num-resumo">{{ st.total }}</span>
+                        <div class="card-title-wrap">
+                            <h3 class="card-title card-title-resumo">PA {{ pa.pa }}</h3>
+                            <span class="card-subtitle">{{ st.type }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body card-body-resumo">
+                        <ul class="resumo-list">
+                            {% for ztipo, qtd in st.qtd_por_ztipo.items %}
+                            <li>
+                                <span class="resumo-list-label">{{ ztipo }}</span>
+                                <strong class="resumo-list-value">{{ qtd }}</strong>
+                            </li>
+                            {% empty %}
+                            <li class="resumo-list-empty">Sem ZTIPO</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 </div>
+{% endif %}
