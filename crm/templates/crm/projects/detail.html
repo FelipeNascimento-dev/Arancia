@@ -1,10 +1,11 @@
 ﻿{% extends 'crm/base_crm.html' %}
+{% load crm_tags %}
 
 {% block crm_content %}
 <div class="user-table-header">
     <div class="crm-header-text">
         <h2 class="user-table-title"><i class="fa-solid fa-diagram-project"></i> {{ project.name|default:"Projeto" }}</h2>
-        <p class="crm-header-subtitle muted">{% firstof customer_name "—" %}</p>
+        <p class="crm-header-subtitle muted">{{ project|crm_customer_label:lookups }}</p>
     </div>
     <div class="user-create crm-toolbar">
         <a href="{% url 'crm:project_list' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Voltar</a>

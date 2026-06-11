@@ -1,10 +1,19 @@
 ﻿{% extends 'crm/base_crm.html' %}
 
 {% block crm_content %}
+<link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.17/main.min.css" rel="stylesheet">
+
 <div class="user-table-header">
-    {% include 'crm/partials/_page_title.html' with title="Calendário de tarefas" subtitle="Tarefas com agendamento" icon="fa-calendar" %}
-    <div class="user-create">
+    {% include 'crm/partials/_page_title.html' with title="Calendário de tarefas" subtitle="Agendamentos, vencimentos e visualização por dia, semana ou mês" icon="fa-calendar" %}
+    <div class="user-create crm-toolbar">
+        <label class="crm-cal-toggle">
+            <input type="checkbox" id="crm-cal-include-due" checked>
+            <span>Mostrar vencimentos</span>
+        </label>
         <a href="{% url 'crm:task_list' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+        {% if perms.crm.add_task %}
+        <a href="{% url 'crm:task_new' %}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nova tarefa</a>
+        {% endif %}
     </div>
 </div>
 
@@ -16,28 +25,148 @@
     {% if tasks_scope_fallback %}
         {% include 'crm/partials/_error_alert.html' with message="Listagem completa temporariamente indisponível na API. Exibindo tarefas do seu escopo." %}
     {% endif %}
-{% if tasks %}
-<div class="table-wrapper">
-    <table class="user-table">
-        <thead>
-            <tr><th>Título</th><th>Agendamento</th><th>Vencimento</th><th>Ações</th></tr>
-        </thead>
-        <tbody>
-            {% for task in tasks %}
-            <tr>
-                <td>{{ task.title|default:"—" }}</td>
-                <td>{{ task.scheduled_at_formatted|default:task.scheduled_at|default:"—" }}</td>
-                <td>{{ task.due_at_formatted|default:task.due_at|default:"—" }}</td>
-                <td>
-                    <a href="{% url 'crm:task_detail' task_id=task.id %}" class="action-btn edit-btn" title="Ver"><i class="fa-solid fa-eye"></i></a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% else %}
-    {% include 'crm/partials/_empty_state.html' with message="Nenhuma tarefa agendada." %}
+
+    <div class="crm-cal-legend">
+        <span><i class="crm-cal-dot crm-cal-dot-scheduled"></i> Agendadas</span>
+        <span><i class="crm-cal-dot crm-cal-dot-due"></i> Vencimentos</span>
+        <span><i class="crm-cal-dot crm-cal-dot-overdue"></i> Atrasadas</span>
+    </div>
+
+    <div id="crm-task-calendar"
+         class="crm-task-calendar"
+         data-events-url="{% url 'crm:ajax_task_calendar_events' %}"
+         data-can-add="{% if perms.crm.add_task %}1{% else %}0{% endif %}"
+         data-task-new-url="{% url 'crm:task_new' %}"></div>
 {% endif %}
-{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.17/locales/pt-br.global.min.js"></script>
+<script>
+(function() {
+    var el = document.getElementById('crm-task-calendar');
+    if (!el || typeof FullCalendar === 'undefined') return;
+
+    var eventsUrl = el.getAttribute('data-events-url');
+    var canAdd = el.getAttribute('data-can-add') === '1';
+    var newTaskUrl = el.getAttribute('data-task-new-url');
+    var includeDueInput = document.getElementById('crm-cal-include-due');
+
+    function buildEventsUrl(info) {
+        var url = eventsUrl
+            + '?start=' + encodeURIComponent(info.startStr)
+            + '&end=' + encodeURIComponent(info.endStr);
+        if (includeDueInput && includeDueInput.checked) {
+            url += '&include_due=1';
+        }
+        return url;
+    }
+
+    function fetchEvents(info, successCallback, failureCallback) {
+        fetch(buildEventsUrl(info), { credentials: 'same-origin' })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data && data.ok === false) {
+                    throw new Error(data.error || 'Erro ao carregar eventos.');
+                }
+                successCallback(Array.isArray(data) ? data : (data.events || []));
+            })
+            .catch(function(error) {
+                if (failureCallback) {
+                    failureCallback(error);
+                } else {
+                    console.error(error);
+                }
+            });
+    }
+
+    function formatDateClick(info) {
+        if (info.dateStr) {
+            var value = info.dateStr;
+            if (value.length >= 16) {
+                return value.substring(0, 16);
+            }
+            if (value.length === 10) {
+                return value + 'T09:00';
+            }
+        }
+        var pad = function(n) { return String(n).padStart(2, '0'); };
+        var parts = new Intl.DateTimeFormat('sv-SE', {
+            timeZone: 'America/Sao_Paulo',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        }).formatToParts(info.date);
+        var map = {};
+        parts.forEach(function(p) { if (p.type !== 'literal') map[p.type] = p.value; });
+        var h = map.hour || '09';
+        var min = map.minute || '00';
+        if (h === '00' && min === '00') {
+            h = '09';
+        }
+        return map.year + '-' + map.month + '-' + map.day + 'T' + h + ':' + min;
+    }
+
+    var calendar = new FullCalendar.Calendar(el, {
+        locale: 'pt-br',
+        timeZone: 'America/Sao_Paulo',
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        buttonText: {
+            today: 'Hoje',
+            month: 'Mês',
+            week: 'Semana',
+            day: 'Dia'
+        },
+        height: 'auto',
+        navLinks: true,
+        nowIndicator: true,
+        slotMinTime: '06:00:00',
+        slotMaxTime: '22:00:00',
+        allDayText: 'Dia inteiro',
+        weekText: 'Sem',
+        moreLinkText: function(n) { return '+' + n + ' mais'; },
+        noEventsText: 'Nenhuma tarefa neste período',
+        loading: function(isLoading) {
+            el.classList.toggle('crm-cal-loading', isLoading);
+        },
+        events: fetchEvents,
+        eventClick: function(info) {
+            if (info.event.url) {
+                info.jsEvent.preventDefault();
+                window.location.href = info.event.url;
+            }
+        },
+        eventDidMount: function(info) {
+            var props = info.event.extendedProps || {};
+            var parts = [];
+            if (props.status) parts.push('Status: ' + props.status);
+            if (props.priority) parts.push('Prioridade: ' + props.priority);
+            if (props.kind === 'due' && props.overdue) parts.push('Vencida');
+            if (parts.length) {
+                info.el.setAttribute('title', parts.join(' · '));
+            }
+        },
+        dateClick: function(info) {
+            if (!canAdd) return;
+            var scheduled = formatDateClick(info);
+            window.location.href = newTaskUrl + '?scheduled_at=' + encodeURIComponent(scheduled);
+        }
+    });
+
+    calendar.render();
+
+    if (includeDueInput) {
+        includeDueInput.addEventListener('change', function() {
+            calendar.refetchEvents();
+        });
+    }
+})();
+</script>
 {% endblock %}

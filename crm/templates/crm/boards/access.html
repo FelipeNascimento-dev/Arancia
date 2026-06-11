@@ -1,4 +1,5 @@
 ﻿{% extends 'crm/base_crm.html' %}
+{% load crm_tags %}
 
 {% block crm_content %}
 <div class="user-table-header">
@@ -28,13 +29,7 @@
         <tbody>
             {% for a in access_list %}
             <tr data-access-id="{{ a.id }}">
-                <td>
-                    {% if a.username %}{{ a.username }}
-                    {% elif a.user_id %}Usuário {{ a.user_id }}
-                    {% elif a.designation_id %}Designação {{ a.designation_id }}
-                    {% elif a.team_gai_id %}Equipe {{ a.team_gai_id }}
-                    {% else %}—{% endif %}
-                </td>
+                <td>{{ a|crm_subject_label }}</td>
                 <td><input type="checkbox" class="js-access-flag" data-field="can_view" {% if a.can_view %}checked{% endif %}></td>
                 <td><input type="checkbox" class="js-access-flag" data-field="can_move_tasks" {% if a.can_move_tasks %}checked{% endif %}></td>
                 <td><input type="checkbox" class="js-access-flag" data-field="can_comment" {% if a.can_comment %}checked{% endif %}></td>

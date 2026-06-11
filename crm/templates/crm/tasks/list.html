@@ -36,8 +36,8 @@
                 {% for task in tasks %}
                 <tr>
                     <td><strong>{{ task.title|default:"—" }}</strong></td>
-                    <td>{% firstof task.status_name "—" %}</td>
-                    <td>{% firstof task.priority_name "—" %}</td>
+                    <td>{% firstof task.status.name task.status_name "—" %}</td>
+                    <td>{% firstof task.priority.name task.priority_name "—" %}</td>
                     <td>{% firstof task.due_at_formatted task.due_at "—" %}</td>
                     <td>
                         <a href="{% url 'crm:task_detail' task_id=task.id %}" class="action-btn edit-btn" title="Ver"><i class="fa-solid fa-eye"></i></a>

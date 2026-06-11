@@ -1,4 +1,5 @@
 ﻿{% extends 'crm/base_crm.html' %}
+{% load crm_tags %}
 
 {% block crm_content %}
 <div class="user-table-header">
@@ -13,13 +14,18 @@
 <div class="table-wrapper">
     <table class="user-table">
         <thead>
-            <tr><th>Tipo</th><th>Cliente</th><th>Vencimento</th><th>Status</th></tr>
+            <tr><th>Tipo</th><th>Cliente</th><th>Contrato</th><th>Vencimento</th><th>Status</th></tr>
         </thead>
         <tbody>
             {% for alert in alerts %}
             <tr>
                 <td>{% firstof alert.alert_type alert.message alert.id %}</td>
-                <td>{% firstof alert.customer_label alert.customer_gai_id "—" %}</td>
+                <td>{{ alert|crm_customer_label:lookups }}</td>
+                <td>
+                    {% if alert.contract_id %}
+                    <a href="{% url 'crm:contract_detail' contract_id=alert.contract_id %}">{{ alert|crm_contract_label }}</a>
+                    {% else %}—{% endif %}
+                </td>
                 <td>{{ alert.due_date|default:"—" }}</td>
                 <td>{{ alert.status|default:"—" }}</td>
             </tr>

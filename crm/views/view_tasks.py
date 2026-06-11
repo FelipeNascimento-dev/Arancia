@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from crm.decorators import crm_access_required, crm_perm_required
@@ -17,18 +18,25 @@ from crm.forms.forms_tasks import (
     TaskWatcherForm,
 )
 from crm.services.client import CrmApiClient
-from crm.services.context import get_user_gai_id
 from crm.services.datetime_utils import format_datetime, format_datetime_to_input
 from crm.services.exceptions import CrmApiError, handle_crm_error
+from crm.services.gates import ajax_require_gai, require_gai_or_render
 from crm.services.lookups import (
     build_board_choices,
     build_customer_choices,
     build_designation_choices,
+    build_gai_requester_choices,
+    build_group_choices,
     build_priority_choices,
     build_project_choices,
     build_status_choices,
     build_user_choices,
+    extract_requester_gai_ids,
+    fetch_board_status_choices,
     fetch_crm_lookups,
+    fetch_gais,
+    fetch_groups,
+    build_status_choices_for_board,
     resolve_member_lookups,
 )
 from crm.services.pagination import (
@@ -36,7 +44,18 @@ from crm.services.pagination import (
     get_pagination_params,
     normalize_list_response,
 )
-from crm.services.tasks import list_tasks
+from crm.services.calendar import (
+    build_calendar_fetch_params,
+    parse_fc_range,
+    tasks_to_calendar_events,
+)
+from crm.services.recurrences import (
+    recurrence_start_at_from_form,
+    recurrence_start_is_due,
+    run_scheduler_for_template,
+    validate_board_can_create,
+)
+from crm.services.tasks import enrich_move_history, enrich_task, list_tasks, normalize_task_fields
 
 PROJECTS_MENU = {
     'current_parent_menu': 'projetos',
@@ -45,15 +64,23 @@ PROJECTS_MENU = {
 
 
 def _require_gai_or_render(request, template, extra_context=None):
-    if get_user_gai_id(request.user) is not None:
-        return None
-    context = {
-        'site_title': 'CRM — Tarefas',
-        'missing_gai': True,
-        **PROJECTS_MENU,
-        **(extra_context or {}),
-    }
-    return render(request, template, context)
+    return require_gai_or_render(
+        request,
+        template,
+        site_title='CRM — Tarefas',
+        menu_context=PROJECTS_MENU,
+        extra_context=extra_context,
+    )
+
+
+def _load_requester_form_choices(user):
+    """Grupos e GAIs iniciais para demandantes de tarefa de projeto."""
+    try:
+        groups_raw = fetch_groups(user)
+        gais_raw = fetch_gais(user)
+    except CrmApiError:
+        return [], []
+    return build_group_choices(groups_raw), build_gai_requester_choices(gais_raw)
 
 
 def _load_lookups(request):
@@ -68,12 +95,36 @@ def _load_member_lookups(request):
     return resolve_member_lookups(request.user), None
 
 
-def _task_form_choices(lookups):
+def _task_form_choices(lookups, user=None, *, board_id=None):
+    priority_choices = build_priority_choices(lookups)
+    project_choices = build_project_choices(lookups)
+
+    if user is not None and not priority_choices:
+        try:
+            raw = CrmApiClient(user).get('/prioritys/', params={'limit': 200})
+            priority_choices = build_priority_choices({'prioritys': normalize_list_response(raw)})
+        except CrmApiError:
+            pass
+
+    if user is not None and not project_choices:
+        try:
+            raw = CrmApiClient(user).get('/projects/', params={'limit': 200})
+            project_choices = build_project_choices({'projects': normalize_list_response(raw)})
+        except CrmApiError:
+            pass
+
+    status_choices = build_status_choices_for_board(user, lookups, board_id) if user else build_status_choices(lookups, board_id=board_id)
+    if board_id and user is not None and not status_choices:
+        try:
+            status_choices = fetch_board_status_choices(user, board_id)
+        except CrmApiError:
+            pass
+
     return {
         'board_choices': build_board_choices(lookups),
-        'status_choices': build_status_choices(lookups),
-        'priority_choices': build_priority_choices(lookups),
-        'project_choices': build_project_choices(lookups),
+        'status_choices': status_choices,
+        'priority_choices': priority_choices,
+        'project_choices': project_choices,
         'customer_choices': build_customer_choices(lookups),
     }
 
@@ -91,24 +142,6 @@ def _redirect_after_task_create(request, result, *, is_recurring=False):
         if is_recurring and result.get('id'):
             return redirect('crm:recurrence_detail', recurrence_id=result['id'])
     return redirect('crm:task_list')
-
-
-def _enrich_task(task):
-    if not isinstance(task, dict):
-        return task
-    task = dict(task)
-    if task.get('due_at'):
-        task['due_at_formatted'] = format_datetime(task['due_at'])
-    if task.get('scheduled_at'):
-        task['scheduled_at_formatted'] = format_datetime(task['scheduled_at'])
-    return task
-
-
-def _ajax_require_gai(request):
-    """Retorna JsonResponse de erro se usuário sem GAI; None se OK."""
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
-    return None
 
 
 def _json_crm_error(exc):
@@ -167,7 +200,7 @@ def task_list(request):
     tasks_scope_fallback = False
     try:
         raw, tasks_scope_fallback = list_tasks(request.user, params=params)
-        tasks = [_enrich_task(t) for t in normalize_list_response(raw)]
+        tasks = [enrich_task(t) for t in normalize_list_response(raw)]
     except CrmApiError as exc:
         api_error = exc
         handle_crm_error(request, exc)
@@ -202,7 +235,7 @@ def task_my(request):
     api_error = None
     try:
         raw = CrmApiClient(request.user).get('/tasks/my/', params=params)
-        tasks = [_enrich_task(t) for t in normalize_list_response(raw)]
+        tasks = [enrich_task(t) for t in normalize_list_response(raw)]
     except CrmApiError as exc:
         api_error = exc
         handle_crm_error(request, exc)
@@ -225,27 +258,36 @@ def task_calendar(request):
     if blocked:
         return blocked
 
-    tasks = []
-    api_error = None
-    tasks_scope_fallback = False
-    try:
-        raw, tasks_scope_fallback = list_tasks(
-            request.user,
-            params={'scheduled_only': 'true', 'limit': 200},
-        )
-        tasks = [_enrich_task(t) for t in normalize_list_response(raw)]
-    except CrmApiError as exc:
-        api_error = exc
-        handle_crm_error(request, exc)
-
     return render(request, 'crm/tasks/calendar.html', {
         'site_title': 'CRM — Calendário de tarefas',
-        'tasks': tasks,
-        'api_error': api_error,
-        'tasks_scope_fallback': tasks_scope_fallback,
         **PROJECTS_MENU,
         'current_menu': 'projetos_calendar',
     })
+
+
+@crm_perm_required('view_tasks')
+def ajax_task_calendar_events(request):
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
+
+    start, end = parse_fc_range(request.GET.get('start'), request.GET.get('end'))
+    include_due = request.GET.get('include_due') == '1'
+    params = build_calendar_fetch_params(start, end, include_due=include_due)
+
+    try:
+        raw, _tasks_scope_fallback = list_tasks(request.user, params=params)
+        tasks = normalize_list_response(raw)
+    except CrmApiError as exc:
+        return _json_crm_error(exc)
+
+    events = tasks_to_calendar_events(
+        tasks,
+        start=start,
+        end=end,
+        include_due=include_due,
+    )
+    return JsonResponse(events, safe=False)
 
 
 @crm_access_required
@@ -261,50 +303,84 @@ def task_new(request):
         return blocked
 
     lookups, _ = _load_lookups(request)
-    choices = _task_form_choices(lookups)
     initial_board = request.GET.get('board_id')
     initial_project = request.GET.get('project_id')
+    board_for_choices = (
+        request.POST.get('board_id') if request.method == 'POST' else initial_board
+    )
+    choices = _task_form_choices(lookups, request.user, board_id=board_for_choices)
+    group_choices, requester_gai_choices = _load_requester_form_choices(request.user)
     initial = {}
     if initial_board:
         initial['board_id'] = initial_board
     if initial_project:
         initial['project_id'] = initial_project
+    scheduled_at = (request.GET.get('scheduled_at') or '').strip()
+    if scheduled_at:
+        initial['scheduled_at'] = scheduled_at
 
     show_task_kind = can_add_task and can_add_recurrence
     recurrence_only = can_add_recurrence and not can_add_task
     if recurrence_only or request.GET.get('recurring') in ('1', 'true', 'yes'):
         initial['task_kind'] = 'recurring'
 
+    show_requesters = True
+    group_choices, requester_gai_choices = _load_requester_form_choices(request.user)
     form_options = {
         **choices,
         'show_task_kind': show_task_kind,
         'recurrence_only': recurrence_only,
+        'show_requesters': show_requesters,
+        'group_choices': group_choices,
+        'requester_gai_choices': requester_gai_choices,
     }
 
     if request.method == 'POST':
         form = TaskForm(request.POST, **form_options)
         if form.is_valid():
-            api = CrmApiClient(request.user)
-            try:
-                if form.is_recurring():
-                    if not can_add_recurrence:
+            board_id = form.cleaned_data.get('board_id')
+            board_error = validate_board_can_create(request.user, board_id)
+            if board_error:
+                form.add_error('board_id', board_error)
+            else:
+                api = CrmApiClient(request.user)
+                try:
+                    if form.is_recurring():
+                        if not can_add_recurrence:
+                            raise PermissionDenied
+                        result = api.post(
+                            '/task-recurrences/',
+                            json=form.cleaned_recurrence_payload(),
+                        )
+                        template_id = result.get('id') if isinstance(result, dict) else None
+                        start_at = recurrence_start_at_from_form(form.cleaned_data)
+                        task_id = None
+                        if template_id and recurrence_start_is_due(start_at):
+                            task_id = run_scheduler_for_template(template_id)
+                        if task_id:
+                            messages.success(
+                                request,
+                                'Template criado. Primeira ocorrência já disponível no Kanban.',
+                            )
+                            return redirect('crm:task_detail', task_id=task_id)
+                        if template_id:
+                            msg = 'Tarefa recorrente criada.'
+                            next_run = (result or {}).get('next_run_at')
+                            if next_run and not recurrence_start_is_due(start_at):
+                                msg += (
+                                    f' A primeira ocorrência será gerada em '
+                                    f'{format_datetime(next_run)}.'
+                                )
+                            messages.success(request, msg)
+                            return redirect('crm:recurrence_detail', recurrence_id=template_id)
+                        return _redirect_after_task_create(request, result, is_recurring=True)
+                    if not can_add_task:
                         raise PermissionDenied
-                    result = api.post(
-                        '/task-recurrences/',
-                        json=form.cleaned_recurrence_payload(),
-                    )
-                    messages.success(
-                        request,
-                        'Tarefa recorrente criada. A API gerará as instâncias conforme a recorrência.',
-                    )
-                    return _redirect_after_task_create(request, result, is_recurring=True)
-                if not can_add_task:
-                    raise PermissionDenied
-                result = api.post('/tasks/', json=form.cleaned_payload())
-                messages.success(request, 'Tarefa criada com sucesso.')
-                return _redirect_after_task_create(request, result, is_recurring=False)
-            except CrmApiError as exc:
-                handle_crm_error(request, exc)
+                    result = api.post('/tasks/', json=form.cleaned_payload())
+                    messages.success(request, 'Tarefa criada com sucesso.')
+                    return _redirect_after_task_create(request, result, is_recurring=False)
+                except CrmApiError as exc:
+                    handle_crm_error(request, exc)
     else:
         form = TaskForm(initial=initial, **form_options)
 
@@ -317,6 +393,13 @@ def task_new(request):
         'can_add_recurrence': can_add_recurrence,
         'show_task_kind': show_task_kind,
         'recurrence_only': recurrence_only,
+        'show_requesters': show_requesters,
+        'ajax_lookup_gais_url': reverse('crm:ajax_lookup_gais'),
+        'ajax_board_statuses_url': reverse(
+            'crm:ajax_board_status_choices',
+            kwargs={'board_id': '00000000-0000-0000-0000-000000000000'},
+        ),
+        'all_status_choices': build_status_choices(lookups),
         **PROJECTS_MENU,
     })
 
@@ -337,9 +420,9 @@ def task_detail(request, task_id):
         handle_crm_error(request, exc)
         return redirect('crm:task_list')
 
-    task_data = _enrich_task(task_data)
+    task_data = enrich_task(task_data)
     subtasks = task_data.get('subtasks') or []
-    subtasks = [_enrich_task(s) for s in subtasks]
+    subtasks = [enrich_task(s) for s in subtasks]
 
     board_id = task_data.get('board_id')
     access_me = _board_access_for_task(request.user, board_id) if board_id else {}
@@ -349,7 +432,9 @@ def task_detail(request, task_id):
     watchers = task_data.get('watchers') or []
     move_history = []
     try:
-        move_history = normalize_list_response(api.get(f'/tasks/{task_id}/move-history'))
+        move_history = enrich_move_history(
+            normalize_list_response(api.get(f'/tasks/{task_id}/move-history'))
+        )
     except CrmApiError:
         move_history = []
 
@@ -477,7 +562,6 @@ def task_edit(request, task_id):
 
     api = CrmApiClient(request.user)
     lookups, _ = _load_lookups(request)
-    choices = _task_form_choices(lookups)
 
     try:
         task_data = api.get(f'/tasks/{task_id}')
@@ -485,23 +569,40 @@ def task_edit(request, task_id):
         handle_crm_error(request, exc)
         return redirect('crm:task_list')
 
+    task_fields = normalize_task_fields(task_data)
+    board_for_choices = (
+        request.POST.get('board_id') if request.method == 'POST' else task_fields.get('board_id')
+    )
+    choices = _task_form_choices(lookups, request.user, board_id=board_for_choices)
+
     initial = {
-        'title': task_data.get('title') or '',
-        'description': task_data.get('description') or '',
-        'board_id': str(task_data['board_id']) if task_data.get('board_id') else '',
-        'status_id': str(task_data['status_id']) if task_data.get('status_id') else '',
-        'priority_id': str(task_data['priority_id']) if task_data.get('priority_id') else '',
-        'project_id': str(task_data['project_id']) if task_data.get('project_id') else '',
-        'customer_gai_id': str(task_data['customer_gai_id']) if task_data.get('customer_gai_id') else '',
-        'due_at': format_datetime_to_input(task_data.get('due_at')),
-        'scheduled_at': format_datetime_to_input(task_data.get('scheduled_at')),
-        'is_active': task_data.get('is_active', True),
+        'title': task_fields.get('title') or '',
+        'description': task_fields.get('description') or '',
+        'board_id': str(task_fields['board_id']) if task_fields.get('board_id') else '',
+        'status_id': str(task_fields['status_id']) if task_fields.get('status_id') else '',
+        'priority_id': str(task_fields['priority_id']) if task_fields.get('priority_id') else '',
+        'project_id': str(task_fields['project_id']) if task_fields.get('project_id') else '',
+        'customer_gai_id': str(task_fields['customer_gai_id']) if task_fields.get('customer_gai_id') else '',
+        'requester_gai_ids': extract_requester_gai_ids(task_fields),
+        'due_at': format_datetime_to_input(task_fields.get('due_at')),
+        'scheduled_at': format_datetime_to_input(task_fields.get('scheduled_at')),
+        'is_active': task_fields.get('is_active', True),
     }
 
-    form = TaskForm(initial=initial, lock_board=bool(task_data.get('board_id')), **choices)
+    show_requesters = bool(task_data.get('project_id'))
+    group_choices, requester_gai_choices = _load_requester_form_choices(request.user)
+    form_kwargs = {
+        **choices,
+        'lock_board': bool(task_data.get('board_id')),
+        'show_requesters': show_requesters,
+        'group_choices': group_choices if show_requesters else [],
+        'requester_gai_choices': requester_gai_choices if show_requesters else [],
+    }
+
+    form = TaskForm(initial=initial, **form_kwargs)
 
     if request.method == 'POST':
-        form = TaskForm(request.POST, lock_board=bool(task_data.get('board_id')), **choices)
+        form = TaskForm(request.POST, **form_kwargs)
         if form.is_valid():
             try:
                 api.patch(f'/tasks/{task_id}', json=form.cleaned_payload(for_update=True))
@@ -517,6 +618,13 @@ def task_edit(request, task_id):
         'task_id': task_id,
         'task': task_data,
         'lookups': lookups,
+        'show_requesters': show_requesters,
+        'ajax_lookup_gais_url': reverse('crm:ajax_lookup_gais'),
+        'ajax_board_statuses_url': reverse(
+            'crm:ajax_board_status_choices',
+            kwargs={'board_id': '00000000-0000-0000-0000-000000000000'},
+        ),
+        'all_status_choices': build_status_choices(lookups),
         **PROJECTS_MENU,
     })
 
@@ -524,7 +632,7 @@ def task_edit(request, task_id):
 @require_POST
 @crm_perm_required('move_task')
 def ajax_task_move(request, task_id):
-    blocked = _ajax_require_gai(request)
+    blocked = ajax_require_gai(request)
     if blocked:
         return blocked
 
@@ -555,8 +663,9 @@ def ajax_task_move(request, task_id):
 @require_POST
 @crm_perm_required('assign_task')
 def ajax_task_assign(request, task_id):
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     try:
         payload = json.loads(request.body.decode('utf-8') or '{}')
@@ -576,8 +685,9 @@ def ajax_task_assign(request, task_id):
 @require_POST
 @crm_perm_required('change_task')
 def ajax_task_comment(request, task_id):
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     _, blocked = _require_can_comment_json(request.user, task_id)
     if blocked:
@@ -606,8 +716,9 @@ def ajax_task_comment(request, task_id):
 @require_POST
 @crm_perm_required('change_task')
 def ajax_task_attachment(request, task_id):
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     _, blocked = _require_can_comment_json(request.user, task_id)
     if blocked:
@@ -637,8 +748,9 @@ def ajax_task_attachment(request, task_id):
 @require_POST
 @crm_perm_required('view_tasks')
 def ajax_task_watch(request, task_id):
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     if not request.user.has_perm('crm.manage_watchers'):
         try:
@@ -664,8 +776,9 @@ def ajax_task_watch(request, task_id):
 @require_POST
 @crm_perm_required('delete_task')
 def ajax_task_delete(request, task_id):
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     try:
         CrmApiClient(request.user).delete(f'/tasks/{task_id}')
@@ -677,8 +790,9 @@ def ajax_task_delete(request, task_id):
 @require_POST
 @crm_perm_required('change_task')
 def ajax_task_links(request, task_id):
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     try:
         payload = json.loads(request.body.decode('utf-8') or '{}')
@@ -695,8 +809,9 @@ def ajax_task_links(request, task_id):
 @require_POST
 @crm_perm_required('change_task')
 def ajax_task_link_delete(request, task_id, link_id):
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     try:
         CrmApiClient(request.user).delete(f'/tasks/{task_id}/links/{link_id}')
@@ -708,8 +823,9 @@ def ajax_task_link_delete(request, task_id, link_id):
 @require_POST
 @crm_perm_required('assign_task')
 def ajax_task_assignee_update(request, task_id, assignee_id):
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     try:
         payload = json.loads(request.body.decode('utf-8') or '{}')
@@ -729,8 +845,9 @@ def ajax_task_assignee_update(request, task_id, assignee_id):
 @require_POST
 @crm_perm_required('assign_task')
 def ajax_task_assignee_delete(request, task_id, assignee_id):
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     try:
         CrmApiClient(request.user).delete(f'/tasks/{task_id}/assignees/{assignee_id}')
@@ -742,8 +859,9 @@ def ajax_task_assignee_delete(request, task_id, assignee_id):
 @require_POST
 @crm_perm_required('view_tasks')
 def ajax_task_watcher_add(request, task_id):
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     if not request.user.has_perm('crm.manage_watchers'):
         return JsonResponse({'ok': False, 'error': 'Sem permissão para gerenciar observadores.'}, status=403)
@@ -763,8 +881,9 @@ def ajax_task_watcher_add(request, task_id):
 @require_POST
 @crm_perm_required('view_tasks')
 def ajax_task_watcher_delete(request, task_id, watcher_id):
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     if not request.user.has_perm('crm.manage_watchers'):
         return JsonResponse({'ok': False, 'error': 'Sem permissão para gerenciar observadores.'}, status=403)
@@ -778,8 +897,9 @@ def ajax_task_watcher_delete(request, task_id, watcher_id):
 
 @crm_perm_required('view_tasks')
 def ajax_task_move_history(request, task_id):
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     try:
         history = normalize_list_response(
@@ -793,8 +913,9 @@ def ajax_task_move_history(request, task_id):
 @require_POST
 @crm_perm_required('add_task')
 def ajax_task_subtask(request, task_id):
-    if get_user_gai_id(request.user) is None:
-        return JsonResponse({'ok': False, 'error': 'Usuário sem GAI configurado.'}, status=400)
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
 
     try:
         payload = json.loads(request.body.decode('utf-8') or '{}')

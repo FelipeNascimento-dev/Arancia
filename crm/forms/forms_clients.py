@@ -8,6 +8,13 @@ PROFILE_CHOICES = [
     ('partner', 'Parceiro'),
 ]
 
+CRM_TYPE_CHOICES = [
+    ('prospect', 'Prospect'),
+    ('active_client', 'Cliente ativo'),
+    ('partner', 'Parceiro'),
+    ('internal', 'Interno'),
+]
+
 
 _INPUT = forms.TextInput(attrs={'class': 'crm-input'})
 _SELECT = forms.Select(attrs={'class': 'crm-input'})
@@ -19,7 +26,10 @@ class ClientForm(forms.Form):
         label='GAI / Cliente',
         required=False,
         widget=_SELECT,
-        help_text='Obrigatório na criação. Vincula o registro CRM ao GAI do Arancia.',
+        help_text=(
+            'Obrigatório na criação. Lista GAIs do grupo arancia_client '
+            'ainda não cadastrados no CRM.'
+        ),
     )
     razao_social = forms.CharField(
         label='Razão social',
@@ -56,8 +66,16 @@ class ClientForm(forms.Form):
         required=False,
         widget=_SELECT,
     )
+    crm_type = forms.ChoiceField(
+        label='Tipo CRM',
+        choices=CRM_TYPE_CHOICES,
+        initial='prospect',
+        required=False,
+        widget=_SELECT,
+        help_text='Classificação do cliente no CRM (API: crm_type).',
+    )
 
-    def __init__(self, *args, gai_choices=None, lock_gai=False, **kwargs):
+    def __init__(self, *args, gai_choices=None, lock_gai=False, hide_profile=False, show_crm_type=False, **kwargs):
         super().__init__(*args, **kwargs)
         choices = list(gai_choices or [])
         if not lock_gai:
@@ -66,20 +84,36 @@ class ClientForm(forms.Form):
         if lock_gai:
             self.fields['gai_id'].widget.attrs['readonly'] = True
             self.fields['gai_id'].disabled = True
+        if hide_profile and 'profile' in self.fields:
+            del self.fields['profile']
+        if not show_crm_type and 'crm_type' in self.fields:
+            del self.fields['crm_type']
 
-    def cleaned_payload(self):
-        """Retorna dict pronto para POST/PATCH na API (omite vazios)."""
+    def cleaned_payload(self, *, for_create=False):
+        """Retorna dict para PATCH /clients/{gai_id} (omite gai_id no body)."""
         data = self.cleaned_data
         payload = {
             'razao_social': data['razao_social'].strip(),
         }
-        gai_id = data.get('gai_id')
-        if gai_id:
-            payload['gai_id'] = int(gai_id)
-        for field in ('nome', 'cnpj', 'email', 'telefone1', 'profile'):
+        for field in ('nome', 'cnpj', 'email', 'telefone1'):
             value = data.get(field)
             if value not in (None, ''):
                 payload[field] = value
+            elif not for_create and field in self.data:
+                payload[field] = None
+
+        crm_type = data.get('crm_type')
+        if crm_type:
+            payload['crm_type'] = crm_type
+        elif for_create:
+            payload['crm_type'] = 'prospect'
+
+        if for_create:
+            payload.setdefault('crm_status', 'active')
+
+        profile = data.get('profile')
+        if profile not in (None, '') and isinstance(profile, dict):
+            payload['profile'] = profile
         return payload
 
 

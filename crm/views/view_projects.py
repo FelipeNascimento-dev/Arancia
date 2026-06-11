@@ -6,25 +6,24 @@ from django.views.decorators.http import require_POST
 from crm.decorators import crm_perm_required
 from crm.forms.forms_projects import ProjectForm, ProjectMemberForm
 from crm.services.client import CrmApiClient
-from crm.services.context import get_user_gai_id
 from crm.services.exceptions import CrmApiError, handle_crm_error
+from crm.services.gates import require_gai_or_render
 from crm.services.lookups import (
     build_customer_choices,
     build_designation_choices,
     build_team_gai_choices,
     build_user_choices,
-    customer_label,
     fetch_crm_lookups,
     resolve_member_lookups,
     fetch_team_gais,
 )
+from crm.services.refs import customer_ref_label
 from crm.services.pagination import (
     build_pagination_context,
     get_pagination_params,
     normalize_list_response,
 )
-from crm.services.tasks import list_tasks
-from crm.services.datetime_utils import format_datetime
+from crm.services.tasks import enrich_task, list_tasks
 
 PROJECTS_MENU = {
     'current_parent_menu': 'projetos',
@@ -33,15 +32,13 @@ PROJECTS_MENU = {
 
 
 def _require_gai_or_render(request, template, extra_context=None):
-    if get_user_gai_id(request.user) is not None:
-        return None
-    context = {
-        'site_title': 'CRM — Projetos',
-        'missing_gai': True,
-        **PROJECTS_MENU,
-        **(extra_context or {}),
-    }
-    return render(request, template, context)
+    return require_gai_or_render(
+        request,
+        template,
+        site_title='CRM — Projetos',
+        menu_context=PROJECTS_MENU,
+        extra_context=extra_context,
+    )
 
 
 def _load_lookups(request):
@@ -66,14 +63,6 @@ def _member_form_choices(request):
         ),
     }
 
-
-def _enrich_task(task):
-    if not isinstance(task, dict):
-        return task
-    task = dict(task)
-    if task.get('due_at'):
-        task['due_at_formatted'] = format_datetime(task['due_at'])
-    return task
 
 
 @crm_perm_required('view_tasks')
@@ -100,7 +89,7 @@ def project_tasks(request, project_id):
     tasks_scope_fallback = False
     try:
         raw, tasks_scope_fallback = list_tasks(request.user, params=params)
-        tasks = [_enrich_task(t) for t in normalize_list_response(raw)]
+        tasks = [enrich_task(t) for t in normalize_list_response(raw)]
     except CrmApiError as exc:
         api_error = exc
         handle_crm_error(request, exc)
@@ -134,8 +123,6 @@ def project_list(request):
     try:
         raw = CrmApiClient(request.user).get('/projects/', params={'skip': skip, 'limit': limit})
         projects = normalize_list_response(raw)
-        for item in projects:
-            item['customer_label'] = customer_label(lookups, item.get('customer_gai_id'))
     except CrmApiError as exc:
         api_error = exc
         handle_crm_error(request, exc)
@@ -204,7 +191,6 @@ def project_detail(request, project_id):
         'site_title': f'CRM — {project_data.get("name") or project_id}',
         'project': project_data,
         'project_id': project_id,
-        'customer_name': customer_label(lookups, project_data.get('customer_gai_id')),
         'lookups': lookups,
         **PROJECTS_MENU,
     })
@@ -230,11 +216,13 @@ def project_edit(request, project_id):
         return redirect('crm:project_list')
 
     gai_id = project_data.get('customer_gai_id')
+    gai_label = customer_ref_label(project_data, lookups=lookups)
     if gai_id and not any(str(c[0]) == str(gai_id) for c in customer_choices):
-        customer_choices = [(str(gai_id), customer_label(lookups, gai_id))] + customer_choices
+        customer_choices = [(str(gai_id), gai_label)] + customer_choices
 
     initial = {
         'name': project_data.get('name') or '',
+        'code': project_data.get('code') or '',
         'description': project_data.get('description') or '',
         'customer_gai_id': str(gai_id) if gai_id else '',
         'is_active': project_data.get('is_active', True),

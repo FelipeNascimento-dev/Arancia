@@ -55,6 +55,7 @@ Headers: `X-CRM-Designation-IDs` = **um** ID (OneToOne legado).
 | Recorrências | `crm/tasks/recurrences/` | `GET/POST/PATCH/DELETE /task-recurrences/` |
 | Projeto tasks | `crm/projects/<id>/tasks/` | `GET /tasks/?project_id=` |
 | Lookups AJAX | `crm/ajax/lookups/crm/` | `GET /lookups/crm` |
+| Lookups grupos/GAIs | `crm/ajax/lookups/groups/`, `crm/ajax/lookups/gais/` | `GET /lookups/groups`, `GET /lookups/gais` |
 | Reorder status | `ajax/settings/status-tasks/reorder/` | `PATCH /status-tasks/reorder` |
 
 ## Módulos e gaps API (não implementar no BFF)
@@ -68,7 +69,47 @@ Headers: `X-CRM-Designation-IDs` = **um** ID (OneToOne legado).
 | Paginação com total count | Sem endpoint |
 | Dashboard dedicado na API | Compor com `/billing/summary`, `/alerts/`, `/tasks/my/` |
 
-Fechado no BFF (2026-06): task links, watchers, assignee patch/delete, boards CRUD/colunas, recorrências UI, reorder status-tasks.
+Fechado no BFF (2026-06): task links (`target_task_id`), watchers, assignee patch/delete, boards CRUD/colunas, recorrências UI + scheduler one-shot, reorder status-tasks, demandantes GAI, gates centralizados.
+
+## Cadastro de cliente CRM (`clients/new/`)
+
+- Vincula GAI existente via **`PATCH /clients/{gai_id}`** (não usar `POST /clients/` — schema sem `gai_id`).
+- Dropdown **GAI / Cliente**: GAIs do grupo Django **`arancia_client`** (`GET /lookups/gais?group_id=…`) **excluindo** os já em `GET /lookups/crm` → `customers`.
+- **Não** reutilizar `/lookups/gais` sem filtro — esse endpoint é para **demandantes de tarefa** (PA, CUSTOMER, TI, etc.).
+- `arancia_CUSTOMER` (transportes/localidades) ≠ `arancia_client` (clientes comerciais CRM).
+
+## Demandantes GAI (tarefas de projeto)
+
+- Campo **`requester_gai_ids[]`** no create/edit de task quando há `project_id` (formulário unificado em `crm/tasks/new/`).
+- Lookups: `GET /lookups/groups` (filtro) e `GET /lookups/gais` (`group_id`, `search` opcionais).
+- AJAX BFF: `crm/ajax/lookups/groups/`, `crm/ajax/lookups/gais/` — browser nunca chama API diretamente.
+- Detalhe exibe `task.requesters[]` (EntityRef: `r.gai.nome`, `r.gai_id`, etc.).
+- Recorrência: incluir `requester_gai_ids` no payload de `POST /task-recurrences/` quando aplicável.
+
+## Gates GAI
+
+- Helpers em `crm/services/gates.py`: `require_gai_or_render`, `ajax_require_gai`.
+- Views CRM importam wrapper local com `site_title` e menu; **não** duplicar lógica de checagem GAI inline.
+
+## EntityRef em templates
+
+Helpers em `crm/services/refs.py` (`customer_ref_label`, `contract_ref_label`, `subject_ref_label`, etc.) e filtros em `crm/templatetags/crm_tags.py` (`crm_customer_label`, `crm_contract_label`, …).
+
+- **Exibição:** preferir objeto aninhado da API → fallback flat legado (`status_name`, `board_name`) → fallback `*_id` → lookup Django só quando ref ausente.
+- **Formulários POST/PATCH:** enviar apenas `*_id` no payload — nunca montar labels no POST.
+- **Lookups AJAX:** usar para choices de forms, não para labels de listagem quando o ref já veio na response.
+- Task links: POST à API com **`target_task_id`** (não `linked_task_id`).
+
+## Checklist homologação (§12)
+
+- Permissões `crm.view_*` / `crm.add_*` por módulo via decorators.
+- 403 de escopo → mensagem PT-BR (`handle_crm_error`), não 500.
+- Token/secret nunca em HTML, JS ou logs.
+- 100% chamadas HTTP CRM via `CrmApiClient`.
+- Upload contrato/anexo via `post_multipart`.
+- Kanban move persiste `status_id` + `kanban_position`; UI por `GET /boards/{id}/access/me`.
+- Celery alertas + scheduler idempotentes (skip se CRM não configurado).
+- Form unificado: avulsa → card imediato; recorrente vencida → scheduler one-shot → primeira instância.
 
 ## Variáveis de ambiente
 
@@ -87,6 +128,7 @@ Ver `.env.example`: `CRM_API_BASE_URL`, `CRM_API_V1_STR`, `CRM_INTERNAL_API_SECR
 - Datetimes de tarefas: `crm/services/datetime_utils.py` (BR ↔ UTC).
 - Upload multipart: `post_multipart` no BFF (contratos, anexos de task).
 - Membros de projeto e acesso a board: **exatamente um** de `user_id`, `designation_id`, `team_gai_id`.
+- Demandantes de task de projeto: lista `requester_gai_ids[]` (zero ou mais GAIs elegíveis no escopo do usuário).
 
 ## Proibido
 

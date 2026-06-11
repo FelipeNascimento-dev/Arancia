@@ -1,4 +1,5 @@
 ﻿{% extends 'crm/base_crm.html' %}
+{% load crm_tags %}
 
 {% block crm_content %}
 <div class="user-table-header">
@@ -31,7 +32,7 @@
             {% for contract in contracts %}
             <tr>
                 <td><strong>{{ contract.title|default:"—" }}</strong></td>
-                <td>{% firstof contract.customer_label contract.customer_gai_id "—" %}</td>
+                <td>{{ contract|crm_customer_label:lookups }}</td>
                 <td>{{ contract.status|default:"—" }}</td>
                 <td>{{ contract.start_date|default:"—" }}</td>
                 <td>{{ contract.end_date|default:"—" }}</td>

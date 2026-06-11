@@ -2,6 +2,7 @@ from django import forms
 
 from crm.forms.forms_clients import _CHECK, _INPUT, _SELECT
 from crm.services.datetime_utils import format_datetime_to_api
+from crm.services.recurrences import build_recurrence_create_payload
 
 TASK_KIND_CHOICES = (
     ('normal', 'Tarefa única'),
@@ -33,6 +34,17 @@ class TaskForm(forms.Form):
     priority_id = forms.ChoiceField(label='Prioridade', required=False, widget=_SELECT)
     project_id = forms.ChoiceField(label='Projeto', required=False, widget=_SELECT)
     customer_gai_id = forms.ChoiceField(label='Cliente (GAI)', required=False, widget=_SELECT)
+    requester_group_id = forms.ChoiceField(
+        label='Grupo (filtro demandantes)',
+        required=False,
+        widget=_SELECT,
+    )
+    requester_gai_ids = forms.MultipleChoiceField(
+        label='Demandantes (GAI)',
+        required=False,
+        widget=forms.SelectMultiple(attrs={'class': 'crm-input crm-requester-gais', 'size': 6}),
+        help_text='Disponível para tarefas vinculadas a um projeto.',
+    )
     due_at = forms.CharField(
         label='Vencimento',
         required=False,
@@ -77,6 +89,9 @@ class TaskForm(forms.Form):
         priority_choices=None,
         project_choices=None,
         customer_choices=None,
+        group_choices=None,
+        requester_gai_choices=None,
+        show_requesters=False,
         lock_board=False,
         show_status=True,
         show_task_kind=False,
@@ -105,6 +120,15 @@ class TaskForm(forms.Form):
         self.fields['priority_id'].choices = [('', '— Nenhuma —')] + list(priority_choices or [])
         self.fields['project_id'].choices = [('', '— Nenhum —')] + list(project_choices or [])
         self.fields['customer_gai_id'].choices = [('', '— Nenhum —')] + list(customer_choices or [])
+
+        self.show_requesters = show_requesters
+        if show_requesters:
+            self.fields['requester_group_id'].choices = [('', '— Todos os grupos —')] + list(group_choices or [])
+            self.fields['requester_gai_ids'].choices = list(requester_gai_choices or [])
+        else:
+            for name in ('requester_group_id', 'requester_gai_ids'):
+                if name in self.fields:
+                    del self.fields[name]
 
         if not show_status:
             del self.fields['status_id']
@@ -162,6 +186,11 @@ class TaskForm(forms.Form):
         ):
             payload['customer_gai_id'] = None
 
+        if 'requester_gai_ids' in self.fields:
+            selected = data.get('requester_gai_ids') or []
+            if selected or (for_update and 'requester_gai_ids' in self.data):
+                payload['requester_gai_ids'] = [int(gai_id) for gai_id in selected]
+
         due_at = format_datetime_to_api(data.get('due_at'))
         if due_at:
             payload['due_at'] = due_at
@@ -180,43 +209,11 @@ class TaskForm(forms.Form):
         return payload
 
     def cleaned_recurrence_payload(self):
-        """Payload para POST /task-recurrences/ — gera template + primeira instância na API."""
-        data = self.cleaned_data
-        payload = {
-            'title': data['title'].strip(),
-            'frequency': data['frequency'],
-            'is_active': True,
-        }
-        if data.get('description'):
-            payload['description'] = data['description']
-
-        for field, key in (
-            ('board_id', 'board_id'),
-            ('status_id', 'status_id'),
-            ('priority_id', 'priority_id'),
-            ('project_id', 'project_id'),
-        ):
-            if field in self.fields and data.get(field):
-                payload[key] = data[field]
-
-        if data.get('customer_gai_id'):
-            payload['customer_gai_id'] = int(data['customer_gai_id'])
-
-        if data.get('interval'):
-            payload['interval'] = data['interval']
-
-        for field, key in (('recurrence_start', 'start_date'), ('recurrence_end', 'end_date')):
-            raw = data.get(field)
-            if raw:
-                api_val = format_datetime_to_api(f'{raw}T00:00')
-                if api_val:
-                    payload[key] = api_val[:10]
-
-        scheduled_at = format_datetime_to_api(data.get('scheduled_at'))
-        if scheduled_at and 'start_date' not in payload:
-            payload['start_date'] = scheduled_at[:10]
-
-        return payload
+        """Payload para POST /task-recurrences/ (rrule + start_at conforme API)."""
+        return build_recurrence_create_payload(
+            self.cleaned_data,
+            fields_present=set(self.fields.keys()),
+        )
 
 
 class SubtaskForm(forms.Form):
@@ -268,13 +265,18 @@ LINK_TYPE_CHOICES = [
 
 
 class TaskLinkForm(forms.Form):
-    linked_task_id = forms.CharField(label='ID da tarefa vinculada', max_length=36, required=True, widget=_INPUT)
+    target_task_id = forms.CharField(
+        label='ID da tarefa vinculada',
+        max_length=36,
+        required=True,
+        widget=_INPUT,
+    )
     link_type = forms.ChoiceField(label='Tipo de vínculo', choices=LINK_TYPE_CHOICES, required=True, widget=_SELECT)
 
     def cleaned_payload(self):
         data = self.cleaned_data
         return {
-            'linked_task_id': data['linked_task_id'].strip(),
+            'target_task_id': data['target_task_id'].strip(),
             'link_type': data['link_type'],
         }
 

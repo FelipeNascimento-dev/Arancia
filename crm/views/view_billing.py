@@ -4,12 +4,11 @@ from django.shortcuts import redirect, render
 from crm.decorators import crm_perm_required
 from crm.forms.forms_billing import BillingForm
 from crm.services.client import CrmApiClient
-from crm.services.context import get_user_gai_id
 from crm.services.exceptions import CrmApiError, handle_crm_error
+from crm.services.gates import require_gai_or_render
 from crm.services.lookups import (
     build_contract_choices,
     build_customer_choices,
-    customer_label,
     fetch_crm_lookups,
 )
 from crm.services.pagination import (
@@ -26,15 +25,13 @@ CRM_MENU = {
 
 
 def _require_gai_or_render(request, template, extra_context=None):
-    if get_user_gai_id(request.user) is not None:
-        return None
-    context = {
-        'site_title': 'CRM — Faturamento',
-        'missing_gai': True,
-        **CRM_MENU,
-        **(extra_context or {}),
-    }
-    return render(request, template, context)
+    return require_gai_or_render(
+        request,
+        template,
+        site_title='CRM — Faturamento',
+        menu_context=CRM_MENU,
+        extra_context=extra_context,
+    )
 
 
 def _load_lookups(request):
@@ -70,8 +67,6 @@ def billing_list(request):
     try:
         raw = client.get('/billing/', params={'skip': skip, 'limit': limit})
         records = normalize_list_response(raw)
-        for item in records:
-            item['customer_label'] = customer_label(lookups, item.get('customer_gai_id'))
     except CrmApiError as exc:
         api_error = exc
         handle_crm_error(request, exc)
@@ -195,6 +190,5 @@ def billing_edit(request, record_id):
         'record_id': record_id,
         'record': record_data,
         'lookups': lookups,
-        'customer_name': customer_label(lookups, record_data.get('customer_gai_id')),
         **CRM_MENU,
     })

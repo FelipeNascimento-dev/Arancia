@@ -1,4 +1,5 @@
 {% extends 'crm/base_crm.html' %}
+{% load crm_tags %}
 
 {% block crm_content %}
 <div class="user-table-header">
@@ -18,25 +19,27 @@
 {% elif boards %}
 <div class="table-wrapper">
     <table class="user-table">
-        <thead><tr><th>Nome</th><th>Projeto</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Nome</th><th>Projeto</th><th class="crm-table-actions-col crm-table-actions-col--wide">Ações</th></tr></thead>
         <tbody>
             {% for board in boards %}
             <tr>
                 <td><strong>{% firstof board.name board.title board.id %}</strong></td>
-                <td>{% firstof board.project_name board.project_id "—" %}</td>
-                <td>
-                    <a href="{% url 'crm:board_kanban' board_id=board.id %}?menu=projetos" class="action-btn edit-btn" title="Kanban"><i class="fa-solid fa-table-columns"></i></a>
+                <td>{{ board|crm_project_label }}</td>
+                <td class="crm-table-actions crm-table-actions--wide">
+                    <div class="crm-table-actions-inner">
+                    <a href="{% url 'crm:board_kanban' board_id=board.id %}?menu=projetos" class="action-btn" title="Kanban"><i class="fa-solid fa-table-columns"></i></a>
                     {% if perms.crm.change_board %}
-                    <a href="{% url 'crm:board_edit' board_id=board.id %}" class="action-btn edit-btn" title="Editar"><i class="fa-solid fa-pencil"></i></a>
+                    <a href="{% url 'crm:board_edit' board_id=board.id %}" class="action-btn" title="Editar"><i class="fa-solid fa-pencil"></i></a>
                     {% endif %}
                     {% if perms.crm.manage_board_columns %}
-                    <a href="{% url 'crm:board_settings' board_id=board.id %}" class="action-btn edit-btn" title="Colunas"><i class="fa-solid fa-sliders"></i></a>
+                    <a href="{% url 'crm:board_settings' board_id=board.id %}" class="action-btn" title="Colunas"><i class="fa-solid fa-sliders"></i></a>
                     {% endif %}
                     {% if perms.crm.delete_board %}
-                    <button type="button" class="action-btn edit-btn js-delete-board" data-board-id="{{ board.id }}" title="Excluir" style="border:none;background:none;cursor:pointer;">
-                        <i class="fa-solid fa-trash" style="color:#d61515;"></i>
+                    <button type="button" class="action-btn action-btn--danger js-delete-board" data-board-id="{{ board.id }}" title="Excluir">
+                        <i class="fa-solid fa-trash"></i>
                     </button>
                     {% endif %}
+                    </div>
                 </td>
             </tr>
             {% endfor %}

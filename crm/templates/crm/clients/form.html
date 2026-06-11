@@ -15,6 +15,9 @@
 {% if missing_gai %}
     {% include 'crm/partials/_error_alert.html' with message="Usuário sem GAI configurado." error=True %}
 {% else %}
+{% if form_mode == 'new' and no_eligible_gais %}
+    {% include 'crm/partials/_error_alert.html' with message="Não há GAIs do grupo arancia_client disponíveis para cadastro. Todos já estão no CRM ou é necessário criar o GAI no cadastro operacional antes." error=False %}
+{% endif %}
 <form method="post">
     {% csrf_token %}
     <input type="hidden" name="action" value="save_client">

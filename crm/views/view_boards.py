@@ -3,7 +3,7 @@ import json
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from crm.decorators import crm_perm_required
 from crm.forms.forms_boards import (
@@ -12,9 +12,9 @@ from crm.forms.forms_boards import (
     BoardForm,
 )
 from crm.services.client import CrmApiClient
-from crm.services.context import get_user_gai_id
-from crm.services.datetime_utils import format_datetime
 from crm.services.exceptions import CrmApiError, handle_crm_error
+from crm.services.gates import ajax_require_gai, require_gai_or_render
+from crm.services.context import get_user_gai_id
 from crm.services.lookups import (
     build_column_template_choices,
     build_designation_choices,
@@ -22,6 +22,7 @@ from crm.services.lookups import (
     build_status_choices,
     build_team_gai_choices,
     build_user_choices,
+    fetch_board_status_choices,
     fetch_column_templates,
     fetch_crm_lookups,
     resolve_member_lookups,
@@ -32,7 +33,7 @@ from crm.services.pagination import (
     get_pagination_params,
     normalize_list_response,
 )
-from crm.services.tasks import list_tasks
+from crm.services.tasks import enrich_task, list_tasks
 
 CRM_BOARDS_MENU = {
     'current_parent_menu': 'crm',
@@ -68,15 +69,13 @@ def _board_menu_context(request, board_data=None, *, board_id=None):
 
 
 def _require_gai_or_render(request, template, extra_context=None, *, menu_context=None):
-    if get_user_gai_id(request.user) is not None:
-        return None
-    context = {
-        'site_title': 'CRM — Boards',
-        'missing_gai': True,
-        **(menu_context or PROJECTS_MENU),
-        **(extra_context or {}),
-    }
-    return render(request, template, context)
+    return require_gai_or_render(
+        request,
+        template,
+        site_title='CRM — Boards',
+        menu_context=menu_context or PROJECTS_MENU,
+        extra_context=extra_context,
+    )
 
 
 def _access_form_choices(request):
@@ -94,10 +93,7 @@ def _access_form_choices(request):
 
 
 def _enrich_task_card(task):
-    task = dict(task)
-    if task.get('due_at'):
-        task['due_at_formatted'] = format_datetime(task['due_at'])
-    return task
+    return enrich_task(task)
 
 
 def _load_lookups(request):
@@ -293,6 +289,26 @@ def board_settings(request, board_id):
         'column_form': column_form,
         **menu_ctx,
     })
+
+
+@require_GET
+@crm_perm_required('view_tasks')
+def ajax_board_status_choices(request, board_id):
+    """Status das colunas do board — filtra opções do formulário de tarefa."""
+    blocked = ajax_require_gai(request)
+    if blocked:
+        return blocked
+    try:
+        choices = fetch_board_status_choices(request.user, board_id)
+        return JsonResponse({
+            'ok': True,
+            'statuses': [{'id': value, 'name': label} for value, label in choices],
+        })
+    except CrmApiError as exc:
+        return JsonResponse({
+            'ok': False,
+            'error': str(exc.detail or exc),
+        }, status=exc.status_code or 502)
 
 
 @require_POST

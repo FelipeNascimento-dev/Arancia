@@ -1,4 +1,5 @@
 {% extends 'crm/base_crm.html' %}
+{% load crm_tags %}
 
 {% block crm_content %}
 <div class="user-table-header">
@@ -18,9 +19,21 @@
     <h3>Configuração</h3>
     <dl class="crm-detail-grid">
         <dt>Descrição</dt><dd>{{ record.description|default:"—" }}</dd>
+        <dt>Board</dt><dd>{{ record|crm_board_label }}</dd>
+        <dt>Projeto</dt><dd>{{ record|crm_project_label }}</dd>
+        <dt>Cliente</dt><dd>{{ record|crm_customer_label }}</dd>
+        <dt>Contrato</dt>
+        <dd>
+            {% if record.contract_id %}
+            <a href="{% url 'crm:contract_detail' contract_id=record.contract_id %}">{{ record|crm_contract_label }}</a>
+            {% else %}—{% endif %}
+        </dd>
+        <dt>Status inicial</dt><dd>{{ record|crm_status_label }}</dd>
+        <dt>Prioridade</dt><dd>{{ record|crm_priority_label }}</dd>
+        <dt>Autor</dt><dd>{{ record|crm_user_label }}</dd>
         <dt>Ativa</dt><dd>{% if record.is_active %}Sim{% else %}Não{% endif %}</dd>
-        <dt>Início</dt><dd>{{ record.start_date|default:"—" }}</dd>
-        <dt>Fim</dt><dd>{{ record.end_date|default:"—" }}</dd>
+        <dt>Início</dt><dd>{{ record.start_date|default:record.start_at|default:"—" }}</dd>
+        <dt>Fim</dt><dd>{{ record.end_date|default:record.end_at|default:"—" }}</dd>
     </dl>
 </div>
 
@@ -29,15 +42,20 @@
     {% if runs %}
     <div class="table-wrapper">
         <table class="user-table">
-            <thead><tr><th>Data</th><th>Status</th><th>Tarefa gerada</th></tr></thead>
+            <thead><tr><th>Data</th><th>Template</th><th>Status</th><th>Tarefa gerada</th></tr></thead>
             <tbody>
                 {% for run in runs %}
                 <tr>
                     <td>{{ run.scheduled_at|default:run.run_at|default:run.created_at|default:"—" }}</td>
+                    <td>
+                        {% if run.template_id or run.template %}
+                        <a href="{% url 'crm:recurrence_detail' recurrence_id=run.template_id|default:run.template.id %}">{{ run|crm_template_label }}</a>
+                        {% else %}—{% endif %}
+                    </td>
                     <td>{{ run.status|default:"—" }}</td>
                     <td>
-                        {% if run.task_id %}
-                        <a href="{% url 'crm:task_detail' task_id=run.task_id %}">{{ run.task_id }}</a>
+                        {% if run.task_id or run.task %}
+                        <a href="{% url 'crm:task_detail' task_id=run.task_id|default:run.task.id %}">{{ run|crm_task_label }}</a>
                         {% else %}—{% endif %}
                     </td>
                 </tr>
