@@ -291,6 +291,10 @@
     gap: 8px;
 }
 
+.estoque-page .toolbar-group--limit {
+    gap: 8px;
+}
+
 .estoque-page .toolbar-divider {
     width: 1px;
     height: 32px;
@@ -345,7 +349,7 @@
     border-left: 1px solid #d1d5db;
 }
 
-.estoque-page .seg-btn:hover:not(.active) {
+.estoque-page .seg-btn:hover:not(.active):not(.is-disabled) {
     background: #f3f4f6;
 }
 
@@ -354,10 +358,29 @@
     color: #fff;
 }
 
+.estoque-page .seg-btn.is-disabled,
+.estoque-page .seg-btn.is-disabled.active {
+    opacity: 0.42;
+    cursor: not-allowed;
+    color: #9ca3af;
+    background: #eef0f3;
+    pointer-events: none;
+    box-shadow: none;
+}
+
+.estoque-page .seg-btn.is-disabled i {
+    opacity: 0.65;
+}
+
 .estoque-page .seg-btn--graficos {
     border: 1px solid #d1d5db;
     border-radius: 8px;
     background: #fff;
+    flex-shrink: 0;
+}
+
+.estoque-page .seg-btn--graficos:hover:not(.active):not(.is-disabled) {
+    background: #f3f4f6;
 }
 
 .estoque-page .seg-btn--graficos.active {
@@ -366,8 +389,23 @@
     color: #fff;
 }
 
-.estoque-page .seg-btn--graficos:hover:not(.active) {
-    background: #f3f4f6;
+.estoque-page .toolbar-group.is-disabled {
+    opacity: 0.55;
+}
+
+.estoque-page .toolbar-group.is-disabled .toolbar-label {
+    color: #b0b7c3;
+}
+
+.estoque-page .toolbar-group.is-disabled .toolbar-select {
+    cursor: not-allowed;
+    background: #eef0f3;
+    color: #9ca3af;
+    border-color: #e5e7eb;
+}
+
+.estoque-page .toolbar-group--modo.is-disabled .toolbar-label {
+    color: #b0b7c3;
 }
 
 .estoque-page .toolbar-action-btn,

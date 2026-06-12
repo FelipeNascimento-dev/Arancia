@@ -2,6 +2,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, permission_required
 
+from setup.local_settings import BASE_PATH
+
 PROJECTS_BY_BASE = {
 
     "CTBSEQ": ["CTBPO", "CIELO", "CLARO", "CTB Transportes"],
@@ -36,7 +38,7 @@ def config_context_view(request):
 
         # redireciona para quem chamou
         if not next_url:
-            return redirect("/arancia/")  # fallback fixo
+            return redirect(f"/{BASE_PATH}")  # fallback fixo
         return redirect(next_url)
 
     # --- GET ---
