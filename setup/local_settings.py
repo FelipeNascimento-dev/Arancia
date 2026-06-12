@@ -1,7 +1,7 @@
 import os
 
 SECRET_KEY = ']s5n/RoBy<&r;f91C2C|1F"{SDJ!dr!("[)DvU#jzC6Gu.y">LozaG"{>A.te'
-LOCAL_DEBUG = False
+LOCAL_DEBUG = True
 if LOCAL_DEBUG:
     API_KEY_INTELIPOST = '2c7b1f95-9dfc-2e5e-d844-ece50622eb54eacv'
     API_URL = 'http://192.168.0.216/homo-fulfillment'
@@ -42,11 +42,14 @@ CRM_SERVICE_USERNAME = 'celery'
 
 URL_LABEL_INTELIPOST = 'https://api.intelipost.com.br/api/v1/shipment_order/get_label/'
 
-
-PROJECT_BASE_PATH = '/arancia/'
-
-STATIC_URL = '/arancia/static/'
-LOGIN_REDIRECT_URL = '/arancia/'
+if LOCAL_DEBUG:
+    BASE_PATH = 'hg-arancia/'
+else:
+    BASE_PATH = 'arancia/'
+    
+PROJECT_BASE_PATH = f'/{BASE_PATH}'
+STATIC_URL = f'/{BASE_PATH}static/'
+LOGIN_REDIRECT_URL = f'/{BASE_PATH}'
 
 ALLOWED_HOSTS: list[str] = [
     'localhost',

@@ -54,55 +54,6 @@
 
             <div class="estoque-toolbar">
                 <div class="toolbar-group">
-                    <span class="toolbar-label">Exibição</span>
-                    <select name="limit"
-                            id="toolbarLimit"
-                            class="toolbar-select"
-                            title="Itens por página"
-                            {% if visao == 'resumo' %}hidden{% endif %}>
-                        <option value="25" {% if limit == 25 %}selected{% endif %}>25 / pág.</option>
-                        <option value="50" {% if limit == 50 %}selected{% endif %}>50 / pág.</option>
-                        <option value="100" {% if limit == 100 %}selected{% endif %}>100 / pág.</option>
-                        <option value="200" {% if limit == 200 %}selected{% endif %}>200 / pág.</option>
-                    </select>
-
-                    <select name="stock_type" class="toolbar-select" title="Tipo de estoque">
-                        <option value="">Todos os tipos</option>
-                        {% for st in stock_types %}
-                        <option value="{{ st }}" {% if request.POST.stock_type == st %}selected{% endif %}>
-                            {{ st }}
-                        </option>
-                        {% endfor %}
-                    </select>
-
-                    <div class="toolbar-group toolbar-group--modo"
-                         id="segModoExibicaoWrap"
-                         {% if visao != 'resumo' %}hidden{% endif %}>
-                        <span class="toolbar-label">Formato</span>
-                        <div class="seg-group" role="group" aria-label="Formato do resumo" id="segModoExibicao">
-                            <button type="button"
-                                    data-field="modo_exibicao"
-                                    data-value="tabela"
-                                    class="seg-btn {% if modo_exibicao == 'tabela' %}active{% endif %}">
-                                <i class="fa-solid fa-table"></i> Tabela
-                            </button>
-                            <button type="button"
-                                    data-field="modo_exibicao"
-                                    data-value="cards"
-                                    class="seg-btn {% if modo_exibicao == 'cards' %}active{% endif %}">
-                                <i class="fa-solid fa-grip"></i> Colunas
-                            </button>
-                        </div>
-                    </div>
-
-                    <button type="button"
-                            id="segBtnGraficos"
-                            class="seg-btn seg-btn--graficos {% if modo_exibicao == 'graficos' %}active{% endif %}">
-                        <i class="fa-solid fa-chart-column"></i> Gráficos
-                    </button>
-
-                    <div class="toolbar-divider" aria-hidden="true"></div>
-
                     <div class="seg-group" role="group" aria-label="Visão dos dados" id="segVisao">
                         <button type="button"
                                 data-field="visao"
@@ -117,6 +68,67 @@
                             Detalhada
                         </button>
                     </div>
+
+                    <div class="toolbar-divider"
+                         id="toolbarDividerVisaoFormato"
+                         aria-hidden="true"></div>
+
+                    <div class="toolbar-group toolbar-group--modo" id="toolbarFormatoWrap">
+                        <span class="toolbar-label">Formato</span>
+                        <div class="seg-group" role="group" aria-label="Formato do resumo" id="segModoExibicao">
+                            <button type="button"
+                                    id="segBtnTabela"
+                                    data-field="modo_exibicao"
+                                    data-value="tabela"
+                                    class="seg-btn {% if modo_exibicao == 'tabela' %}active{% endif %} {% if visao != 'resumo' %}is-disabled{% endif %}"
+                                    {% if visao != 'resumo' %}aria-disabled="true" tabindex="-1"{% endif %}>
+                                <i class="fa-solid fa-table"></i> Tabela
+                            </button>
+                            <button type="button"
+                                    id="segBtnColunas"
+                                    data-field="modo_exibicao"
+                                    data-value="cards"
+                                    class="seg-btn {% if modo_exibicao == 'cards' %}active{% endif %} {% if visao != 'resumo' %}is-disabled{% endif %}"
+                                    {% if visao != 'resumo' %}aria-disabled="true" tabindex="-1"{% endif %}>
+                                <i class="fa-solid fa-grip"></i> Colunas
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="button"
+                            id="segBtnGraficos"
+                            class="seg-btn seg-btn--graficos {% if modo_exibicao == 'graficos' %}active{% endif %}">
+                        <i class="fa-solid fa-chart-column"></i> Gráficos
+                    </button>
+
+                    <div class="toolbar-divider"
+                         id="toolbarDividerFormatoOpcoes"
+                         aria-hidden="true"></div>
+
+                    <div class="toolbar-group toolbar-group--limit {% if visao == 'resumo' %}is-disabled{% endif %}"
+                         id="toolbarLimitWrap"
+                         {% if visao == 'resumo' %}aria-disabled="true"{% endif %}>
+                        <span class="toolbar-label">Exibição</span>
+                        <select name="limit"
+                                id="toolbarLimit"
+                                class="toolbar-select"
+                                title="Itens por página"
+                                {% if visao == 'resumo' %}disabled{% endif %}>
+                            <option value="25" {% if limit == 25 %}selected{% endif %}>25 / pág.</option>
+                            <option value="50" {% if limit == 50 %}selected{% endif %}>50 / pág.</option>
+                            <option value="100" {% if limit == 100 %}selected{% endif %}>100 / pág.</option>
+                            <option value="200" {% if limit == 200 %}selected{% endif %}>200 / pág.</option>
+                        </select>
+                    </div>
+
+                    <select name="stock_type" class="toolbar-select" title="Tipo de estoque">
+                        <option value="">Todos os tipos</option>
+                        {% for st in stock_types %}
+                        <option value="{{ st }}" {% if request.POST.stock_type == st %}selected{% endif %}>
+                            {{ st }}
+                        </option>
+                        {% endfor %}
+                    </select>
                 </div>
 
                 <div class="toolbar-group toolbar-group--actions">
@@ -571,15 +583,21 @@
         {% endif %}
     });
 
+    function setSegBtnDisabled(btn, disabled) {
+        if (!btn) return;
+        btn.classList.toggle("is-disabled", disabled);
+        btn.setAttribute("aria-disabled", disabled ? "true" : "false");
+        btn.tabIndex = disabled ? -1 : 0;
+    }
+
     function initSegToggleButtons() {
         document.querySelectorAll(".seg-group .seg-btn[data-field]").forEach(btn => {
             btn.addEventListener("click", function () {
+                if (this.classList.contains("is-disabled")) return;
+
                 const fieldId = this.dataset.field;
                 const value = this.dataset.value;
                 const hiddenInput = document.getElementById(fieldId);
-                const visaoInput = document.getElementById("visao");
-                const modoInput = document.getElementById("modo_exibicao");
-                const graficosBtn = document.getElementById("segBtnGraficos");
 
                 if (!hiddenInput) return;
 
@@ -587,21 +605,19 @@
 
                 const group = this.closest(".seg-group");
                 if (group) {
-                    group.querySelectorAll(".seg-btn").forEach(el => {
+                    group.querySelectorAll(".seg-btn[data-field]").forEach(el => {
                         el.classList.remove("active");
                     });
                     this.classList.add("active");
                 }
 
+                const graficosBtn = document.getElementById("segBtnGraficos");
                 if (fieldId === "modo_exibicao") {
                     graficosBtn?.classList.remove("active");
                 }
 
-                if (fieldId === "visao" && value === "detalhe" && modoInput) {
-                    modoInput.value = "tabela";
-                    document.querySelectorAll("#segModoExibicao .seg-btn").forEach(el => {
-                        el.classList.toggle("active", el.dataset.value === "tabela");
-                    });
+                if (fieldId === "visao" && value === "detalhe") {
+                    document.getElementById("modo_exibicao").value = "tabela";
                     graficosBtn?.classList.remove("active");
                 }
 
@@ -637,28 +653,50 @@
     function syncVisaoToolbar() {
         const visaoInput = document.getElementById("visao");
         const modoInput = document.getElementById("modo_exibicao");
-        const modoWrap = document.getElementById("segModoExibicaoWrap");
+        const formatoWrap = document.getElementById("toolbarFormatoWrap");
+        const limitWrap = document.getElementById("toolbarLimitWrap");
         const limitSelect = document.getElementById("toolbarLimit");
         const graficosBtn = document.getElementById("segBtnGraficos");
+        const btnTabela = document.getElementById("segBtnTabela");
+        const btnColunas = document.getElementById("segBtnColunas");
+
         if (!visaoInput || !modoInput) return;
 
         const isResumo = visaoInput.value === "resumo";
+        const isDetalhe = visaoInput.value === "detalhe";
         const isGraficos = modoInput.value === "graficos";
 
-        if (modoWrap) {
-            modoWrap.hidden = !isResumo;
+        if (formatoWrap) {
+            formatoWrap.classList.toggle("is-disabled", isDetalhe);
+        }
+
+        setSegBtnDisabled(btnTabela, isDetalhe);
+        setSegBtnDisabled(btnColunas, isDetalhe);
+
+        if (limitWrap) {
+            limitWrap.classList.toggle("is-disabled", isResumo);
+            limitWrap.setAttribute("aria-disabled", isResumo ? "true" : "false");
         }
 
         if (limitSelect) {
-            limitSelect.hidden = isResumo;
+            limitSelect.disabled = isResumo;
         }
 
         if (graficosBtn) {
             graficosBtn.classList.toggle("active", isGraficos);
         }
 
-        if (!isResumo && !isGraficos) {
+        if (isResumo && !isGraficos) {
+            btnTabela?.classList.toggle("active", modoInput.value === "tabela");
+            btnColunas?.classList.toggle("active", modoInput.value === "cards");
+            graficosBtn?.classList.remove("active");
+        }
+
+        if (isDetalhe && !isGraficos) {
             modoInput.value = "tabela";
+            btnTabela?.classList.remove("active");
+            btnColunas?.classList.remove("active");
+            graficosBtn?.classList.remove("active");
         }
     }
 
