@@ -62,8 +62,38 @@
     font-size: 0.8rem;
     font-weight: 700;
     color: #374151;
-    margin-bottom: 8px;
+    margin-bottom: 0;
     letter-spacing: 0.02em;
+}
+
+.estoque-page .field-wrap-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.estoque-page .field-wrap-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.estoque-page .field-link-btn {
+    border: none;
+    background: transparent;
+    color: var(--estoque-primary);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: none;
+}
+
+.estoque-page .field-link-btn:hover {
+    color: var(--estoque-primary-dark);
 }
 
 .estoque-page .field-wrap select,
@@ -322,6 +352,22 @@
 .estoque-page .seg-btn.active {
     background: var(--estoque-primary);
     color: #fff;
+}
+
+.estoque-page .seg-btn--graficos {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.estoque-page .seg-btn--graficos.active {
+    background: var(--estoque-primary);
+    border-color: var(--estoque-primary);
+    color: #fff;
+}
+
+.estoque-page .seg-btn--graficos:hover:not(.active) {
+    background: #f3f4f6;
 }
 
 .estoque-page .toolbar-action-btn,
