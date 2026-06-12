@@ -1,5 +1,7 @@
 {% if modo_exibicao == "cards" %}
-    {% include 'global/partials/_visao_cards.html' with itens=resultado_itens tipo="resumo" %}
+    {% include 'global/partials/_visao_cards.html' with itens=resultado_itens tipo="resumo" exibe_ztipo=exibe_ztipo %}
 {% elif modo_exibicao == "tabela" %}
-    {% include 'global/partials/_visao_tabela.html' with tipo="resumo" itens=resultado_itens%}
+    {% include 'global/partials/_visao_tabela.html' with tipo="resumo" itens=resultado_itens exibe_ztipo=exibe_ztipo %}
+{% elif modo_exibicao == "graficos" %}
+    {% include 'global/partials/_visao_graficos.html' %}
 {% endif %}

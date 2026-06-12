@@ -1,1022 +1,11 @@
 {% extends 'global/base.html' %}
+{% load static %}
 {% block content %}
 
-<style>
-    .form-card-2col {
-        height: auto;
-        margin-top: 70px;
-        margin-bottom: 10px;
-        padding: 22px 24px 18px;
-    }
+<link rel="stylesheet" href="{% static 'global/css/gerenciamento_estoque.css' %}">
 
-    .estoque-filters-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 18px;
-        flex-wrap: wrap;
-    }
-
-    .estoque-filters-head h2 {
-        margin: 0;
-        font-size: 1.35rem;
-        color: #1f2937;
-    }
-
-    .estoque-filters-head p {
-        margin: 4px 0 0;
-        font-size: 0.88rem;
-        color: #6b7280;
-    }
-
-    .estoque-filters-grid {
-        display: grid;
-        grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.4fr);
-        gap: 16px;
-        margin-bottom: 16px;
-    }
-
-    .field-wrap label {
-        display: block;
-        font-size: 0.82rem;
-        font-weight: 700;
-        color: #374151;
-        margin-bottom: 6px;
-    }
-
-    .field-wrap select,
-    .field-wrap input[type="text"] {
-        width: 100%;
-        min-height: 42px;
-        border: 1px solid #d1d5db;
-        border-radius: 10px;
-        padding: 8px 12px;
-        font-size: 0.92rem;
-        background: #fff;
-        box-sizing: border-box;
-    }
-
-    .field-wrap select:focus,
-    .field-wrap input[type="text"]:focus {
-        outline: none;
-        border-color: #0056c1;
-        box-shadow: 0 0 0 3px rgba(0, 86, 193, 0.12);
-    }
-
-    .pa-locked-box {
-        min-height: 42px;
-        border: 1px dashed #93c5fd;
-        border-radius: 10px;
-        background: #eff6ff;
-        color: #1e40af;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 14px;
-        font-size: 0.92rem;
-        font-weight: 600;
-    }
-
-    .pa-locked-box i {
-        color: #2563eb;
-    }
-
-    .single-search {
-        position: relative;
-        width: 100%;
-    }
-
-    .single-search-input {
-        width: 100%;
-        min-height: 42px;
-        border: 1px solid #d1d5db;
-        border-radius: 10px;
-        padding: 8px 12px;
-        font-size: 0.92rem;
-        background: #fff;
-        box-sizing: border-box;
-    }
-
-    .single-search-input:focus {
-        outline: none;
-        border-color: #0056c1;
-        box-shadow: 0 0 0 3px rgba(0, 86, 193, 0.12);
-    }
-
-    .single-search-dropdown {
-        display: none;
-        position: absolute;
-        top: calc(100% + 6px);
-        left: 0;
-        right: 0;
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        max-height: 240px;
-        overflow-y: auto;
-        z-index: 9999;
-        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-    }
-
-    .single-search.is-open .single-search-dropdown {
-        display: block;
-    }
-
-    .single-search-item {
-        padding: 10px 12px;
-        cursor: pointer;
-        border-bottom: 1px solid #f3f4f6;
-        font-size: 0.92rem;
-    }
-
-    .single-search-item:last-child {
-        border-bottom: none;
-    }
-
-    .single-search-item:hover,
-    .single-search-item.is-selected {
-        background: #eff6ff;
-        color: #1d4ed8;
-        font-weight: 600;
-    }
-
-    .single-search-empty {
-        padding: 10px 12px;
-        color: #6b7280;
-        font-size: 0.88rem;
-    }
-
-    .native-select-hidden {
-        display: none !important;
-    }
-
-    .multi-search {
-        position: relative;
-        width: 100%;
-    }
-
-    .multi-search-box {
-        min-height: 42px;
-        border: 1px solid #d1d5db;
-        border-radius: 10px;
-        background: #fff;
-        padding: 6px 10px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        align-items: center;
-        cursor: text;
-    }
-
-    .multi-search-box:focus-within {
-        border-color: #0056c1;
-        box-shadow: 0 0 0 3px rgba(0, 86, 193, 0.12);
-    }
-
-    .multi-search-input {
-        border: none;
-        outline: none;
-        min-width: 140px;
-        flex: 1;
-        font-size: 0.92rem;
-        padding: 6px 2px;
-        background: transparent;
-    }
-
-    .multi-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        color: #1d4ed8;
-        border-radius: 999px;
-        padding: 5px 10px;
-        font-size: 0.82rem;
-        font-weight: 700;
-        line-height: 1;
-    }
-
-    .multi-chip-remove {
-        border: none;
-        background: transparent;
-        color: #1d4ed8;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 700;
-        line-height: 1;
-        padding: 0;
-    }
-
-    .multi-search-dropdown {
-        display: none;
-        position: absolute;
-        top: calc(100% + 6px);
-        left: 0;
-        right: 0;
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        max-height: 260px;
-        overflow-y: auto;
-        z-index: 9999;
-        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-    }
-
-    .multi-search-item {
-        padding: 10px 12px;
-        cursor: pointer;
-        border-bottom: 1px solid #f3f4f6;
-        font-size: 0.92rem;
-    }
-
-    .multi-search-item:last-child {
-        border-bottom: none;
-    }
-
-    .multi-search-item:hover {
-        background: #f8fafc;
-    }
-
-    .multi-search-empty {
-        padding: 10px 12px;
-        color: #6b7280;
-        font-size: 0.88rem;
-    }
-
-    .estoque-toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        flex-wrap: wrap;
-        padding: 14px 16px;
-        background: linear-gradient(180deg, #f8fafc 0%, #f3f4f6 100%);
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-    }
-
-    .toolbar-group {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    .toolbar-label {
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: #6b7280;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
-
-    .toolbar-select {
-        min-height: 36px;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        padding: 6px 10px;
-        font-size: 0.88rem;
-        background: #fff;
-    }
-
-    .seg-group {
-        display: inline-flex;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        overflow: hidden;
-        background: #fff;
-    }
-
-    .seg-btn {
-        border: none;
-        background: transparent;
-        padding: 7px 12px;
-        font-size: 0.84rem;
-        font-weight: 600;
-        color: #4b5563;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: 0.2s;
-    }
-
-    .seg-btn + .seg-btn {
-        border-left: 1px solid #d1d5db;
-    }
-
-    .seg-btn:hover {
-        background: #f3f4f6;
-    }
-
-    .seg-btn.active {
-        background: #0056c1;
-        color: #fff;
-    }
-
-    .toolbar-action-btn {
-        border: 1px solid #d1d5db;
-        background: #fff;
-        color: #374151;
-        border-radius: 8px;
-        padding: 8px 12px;
-        font-size: 0.84rem;
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .toolbar-action-btn:hover {
-        background: #f3f4f6;
-    }
-
-    .toolbar-primary-btn {
-        border: none;
-        background: #0056c1;
-        color: #fff;
-        border-radius: 8px;
-        padding: 9px 16px;
-        font-size: 0.88rem;
-        font-weight: 700;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: 0.2s;
-    }
-
-    .toolbar-primary-btn:hover {
-        background: #00439a;
-    }
-
-    .toolbar-export-btn {
-        border: none;
-        background: #0f9d58;
-        color: #fff;
-        border-radius: 8px;
-        padding: 8px 12px;
-        font-size: 0.84rem;
-        font-weight: 700;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .toolbar-export-btn:hover {
-        background: #0c7c45;
-    }
-
-    @media (max-width: 900px) {
-        .estoque-filters-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .estoque-toolbar {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .toolbar-group {
-            width: 100%;
-        }
-
-        .toolbar-primary-btn {
-            width: 100%;
-            justify-content: center;
-        }
-    }
-
-    .submit-button-right {
-        display: none;
-    }
-
-    .summary-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 18px;
-        margin: 25px 10px 35px;
-        margin-left: 65px;
-    }
-
-    .summary-card {
-        background: #ffffff;
-        border-radius: 10px;
-        padding: 18px 20px;
-        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
-        border: 1px solid #ececec;
-        transition: 0.2s ease-in-out;
-    }
-
-    .summary-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-    }
-
-    .summary-title {
-        font-size: 1rem;
-        font-weight: 700;
-        margin-bottom: 10px;
-        color: #333;
-    }
-
-    .summary-card p {
-        margin: 4px 0;
-        font-size: 0.9rem;
-        color: #333;
-    }
-
-    .cards-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 18px;
-        /* padding: 10px; */
-        margin-bottom: 40px;
-    }
-
-    .card {
-        background: #fff;
-        border-radius: 12px;
-        overflow: hidden;
-        border: 1px solid #e4e4e4;
-        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-        transition: 0.25s ease-in-out;
-        height: 430px;
-    }
-
-    .card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.12);
-    }
-
-    .card-header {
-        display: grid;
-        grid-template-columns: 30px 1fr 30px;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .edit-btn {
-        background: #0056c1;
-        color: white;
-        border: none;
-        padding: 6px 6px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 12px;
-    }
-
-    .edit-btn:hover {
-        background: #003d91;
-    }
-
-    .badge-num {
-        background: linear-gradient(135deg, #007bff, #0056c1);
-        color: #fff;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-weight: 700;
-        font-size: 0.85rem;
-        padding: 4px;
-        white-space: nowrap;
-        width: auto;
-    }
-
-    .card-title {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #333;
-        margin: 0;
-        max-width: 200px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-    }
-
-    .card-body {
-        padding: 15px;
-        font-size: 0.9rem;
-    }
-
-    .card-body p {
-        margin: 6px 0;
-        color: #444;
-        font-size: 0.92rem;
-    }
-
-    .card-body strong {
-        font-weight: 700;
-        color: #222;
-    }
-
-    .status-red {
-        color: #d93025 !important;
-        font-weight: bold;
-    }
-
-    .btn-container {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-    }
-
-    .toggle-btn {
-        background: #d9d9d9;
-        color: #333;
-        border: 1px solid #bfbfbf;
-        padding: 5px;
-        border-radius: 6px;
-        font-weight: 600;
-        transition: 0.25s ease-in-out;
-        cursor: pointer;
-        width: auto;
-        height: auto;
-        font-size: 12px;
-    }
-
-    .toggle-btn.active {
-        background: #0056c1;
-        color: #fff;
-        border-color: #00439a;
-    }
-
-    .top-bar {
-        margin-top: 15px;
-        padding: 12px 20px;
-        background: #f7f9fc;
-        border: 1px solid #e1e5eb;
-        border-radius: 10px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-
-    .limit-select {
-        padding: 6px 10px;
-        border-radius: 8px;
-        border: 1px solid #d1d5db;
-        font-size: 13px;
-        background: white;
-    }
-
-    .toggle-btn {
-        padding: 6px 14px;
-        border-radius: 8px;
-        background: #e5e7eb;
-        border: none;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 600;
-        transition: 0.25s;
-    }
-
-    .toggle-btn:hover {
-        background: #d1d5db;
-    }
-
-    .toggle-btn.active {
-        background: #0056c1;
-        color: #fff;
-    }
-
-    .pagination {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
-
-    .page-btn {
-        padding: 6px 12px;
-        background: #fff;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: 0.2s;
-    }
-
-    .page-btn:hover {
-        background: #f3f4f6;
-    }
-
-    .page-btn.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .page-info {
-        font-size: 13px;
-        color: #555;
-        font-weight: 600;
-    }
-
-    .card-alerta {
-        border: 2px solid red !important;
-    }
-
-    .date-alerta {
-        color: red !important;
-        font-weight: bold;
-    }
-
-    .badge-alerta {
-        background: #d93025 !important;
-        color: #fff !important;
-    }
-
-    .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.4);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .modal-content {
-        background: white;
-        padding: 20px;
-        width: 350px;
-        border-radius: 10px;
-    }
-
-    .input {
-        width: 100%;
-        padding: 6px 8px;
-        margin-bottom: 10px;
-    }
-
-    .btn-save {
-        background: #0056c1;
-        color: white;
-        padding: 6px 14px;
-        border-radius: 6px;
-    }
-
-    .btn-close {
-        background: #aaa;
-        color: white;
-        margin-left: 10px;
-        padding: 6px 14px;
-        border-radius: 6px;
-    }
-
-    .extract-button {
-        background: linear-gradient(135deg, #00a86b, #008f5a);
-        color: white;
-        border: none;
-        padding: 8px 18px;
-        border-radius: 10px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.25s ease-in-out;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
-        letter-spacing: 0.3px;
-        margin-left: 10px;
-    }
-
-    .extract-button:hover {
-        background: linear-gradient(135deg, #00bf78, #009b63);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
-    }
-
-    .extract-button:active {
-        transform: translateY(0px);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-    }
-
-    .top-bar-balanced {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 18px;
-        padding: 12px 16px;
-        margin-top: 12px;
-        background: #f9fafb;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-    }
-
-    .top-group {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .top-label {
-        font-size: 13px;
-        font-weight: 700;
-        color: #374151;
-    }
-
-    .top-hint {
-        font-size: 12px;
-        color: #6b7280;
-    }
-
-    .limit-balanced {
-        padding: 6px 10px;
-        border-radius: 6px;
-        border: 1px solid #d1d5db;
-        background: #ffffff;
-        font-size: 13px;
-    }
-
-    .view-balanced {
-        padding: 6px 14px;
-        border-radius: 6px;
-        border: 1px solid #d1d5db;
-        background: #ffffff;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: 0.2s;
-    }
-
-    .view-balanced:hover {
-        background: #f3f4f6;
-    }
-
-    .view-balanced.active {
-        background: #0056c1;
-        border-color: #0056c1;
-        color: #ffffff;
-    }
-
-    .extract-balanced {
-        background: #0f9d58;
-        color: #ffffff;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 700;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: 0.2s;
-    }
-
-    .extract-balanced:hover {
-        background: #0c7c45;
-    }
-
-    @media (max-width: 900px) {
-        .top-bar-balanced {
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .top-action {
-            width: 100%;
-            display: flex;
-            justify-content: flex-end;
-        }
-    }
-
-        .modal-json {
-        display: none;
-        position: fixed;
-        z-index: 9999;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.6);
-    }
-
-    .json-modal-content {
-        background: #fff;
-        margin: 4% auto;
-        padding: 20px;
-        border-radius: 10px;
-        width: 85%;
-        max-width: 900px;
-        max-height: 85%;
-        display: flex;
-        flex-direction: column;
-        box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
-    }
-
-    .json-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-
-    .json-modal-header h3 {
-        margin: 0;
-        font-size: 1.2rem;
-        color: #333;
-    }
-
-    .json-modal-content pre {
-        background: #1e1e1e;
-        color: #d4d4d4;
-        padding: 15px;
-        border-radius: 6px;
-        overflow-x: auto;
-        white-space: pre;
-        text-align: left;
-        font-family: "Courier New", monospace;
-        font-size: 0.9rem;
-        flex-grow: 1;
-    }
-
-    .json-modal-footer {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 10px;
-        gap: 10px;
-    }
-
-    .close {
-        font-size: 26px;
-        cursor: pointer;
-        color: #666;
-    }
-
-    .close:hover {
-        color: #000;
-    }
-
-    .btn-json {
-        padding: 6px 10px;
-        font-size: 18px;
-        border: none;
-        border-radius: 5px;
-        background: transparent;
-        color: #095ab1;
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-
-    .btn-json:hover {
-        background: #dbdbdb;
-    }
-
-    .btn-copy,
-    .btn-close,
-    .btn-download {
-        padding: 6px 14px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 0.9rem;
-    }
-
-    .btn-copy {
-        background: #28a745;
-        color: white;
-    }
-
-    .btn-copy:hover {
-        background: #1e7e34;
-    }
-
-    .btn-download {
-        background: #17a2b8;
-        color: white;
-    }
-
-    .btn-download:hover {
-        background: #117a8b;
-    }
-
-    .btn-close {
-        background: #6c757d;
-        color: white;
-    }
-
-    .btn-close:hover {
-        background: #5a6268;
-    }
-
-    .data-table {
-        width: 1300px;
-        border-collapse: collapse;
-        font-size: 13px;
-        background: white;
-        margin-left: 65px
-    }
-
-    .data-table th {
-        background: #f3f4f6;
-        text-align: left;
-        padding: 10px;
-        border-bottom: 2px solid #e5e7eb;
-    }
-
-    .data-table td {
-        padding: 9px 10px;
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .data-table tr:hover {
-        background: #f9fafb;
-    }
-
-    .dropdown {
-        position: relative;
-    }
-
-    .dropdown-btn {
-        padding: 6px 14px;
-        border-radius: 6px;
-        border: 1px solid #d1d5db;
-        background: #ffffff;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .dropdown-btn:hover {
-        background: #f3f4f6;
-    }
-
-    .dropdown-menu {
-        display: none;
-        position: absolute;
-        top: 110%;
-        left: 0;
-        min-width: 220px;
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        box-shadow: 0 10px 25px rgba(0,0,0,.12);
-        padding: 8px;
-        z-index: 999;
-    }
-
-    .dropdown.open .dropdown-menu {
-        display: block;
-    }
-
-    .dropdown-item {
-        padding: 6px 8px;
-        font-size: 13px;
-    }
-
-    .dropdown-item + .dropdown-item {
-        margin-top: 6px;
-    }
-
-    .dropdown-item label {
-        font-size: 12px;
-        font-weight: 700;
-        color: #374151;
-        display: block;
-        margin-bottom: 4px;
-    }
-
-    .extract-product{
-        background: #0f9d58;
-        color: #ffffff;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 700;
-        cursor: pointer;
-        margin-left: 1038px;
-        gap: 8px;
-        transition: 0.2s;
-    }
-
-    .extract-ztipo{
-        background: #0f9d58;
-        color: #ffffff;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 700;
-        cursor: pointer;
-        margin-left: 1050px;
-        gap: 8px;
-        transition: 0.2s;
-    }
-</style>
-
-<div class="form-container">
-    <div class="form-card-2col">
+<div class="estoque-page">
+    <section class="estoque-panel">
         <form method="POST" id="estoqueFiltersForm">
             {% csrf_token %}
             {{ form.non_field_errors }}
@@ -1083,6 +72,14 @@
                                 class="seg-btn {% if modo_exibicao == 'tabela' %}active{% endif %}">
                             <i class="fa-solid fa-table"></i> Tabela
                         </button>
+                        <button type="button"
+                                id="segBtnGraficos"
+                                data-field="modo_exibicao"
+                                data-value="graficos"
+                                class="seg-btn {% if modo_exibicao == 'graficos' %}active{% endif %}"
+                                {% if visao != 'resumo' %}style="display:none;"{% endif %}>
+                            <i class="fa-solid fa-chart-column"></i> Gráficos
+                        </button>
                     </div>
 
                     <div class="seg-group" role="group" aria-label="Visão dos dados" id="segVisao">
@@ -1101,7 +98,7 @@
                     </div>
                 </div>
 
-                <div class="toolbar-group">
+                <div class="toolbar-group toolbar-group--actions">
                     {% if not filtro_pa_travado %}
                     <button type="button" onclick="selectAllPAs()" class="toolbar-action-btn">
                         <i class="fa-solid fa-check-double"></i> Selecionar todos
@@ -1123,92 +120,84 @@
                 </div>
             </div>
         </form>
-    </div>
-</div>
+    </section>
 
-{% if resultado_itens %}
-    {% if visao == "detalhe" %}
-        {% include 'global/partials/_visao_detalhada.html' %}
-    {% elif visao == "resumo" %}
-        {% include 'global/partials/_visao_resumida.html' %}
+    {% if resultado_itens %}
+    <section class="estoque-results">
+        {% if visao == "detalhe" %}
+            {% include 'global/partials/_visao_detalhada.html' %}
+        {% elif visao == "resumo" %}
+            {% include 'global/partials/_visao_resumida.html' %}
+        {% endif %}
+    </section>
     {% endif %}
-{% endif %}
 
-{% if resultado_itens and visao == "detalhe" %}
-<div style="width:100%;display:flex;justify-content:center;margin-top:25px;margin-bottom:30px;">
-    <form method="POST" style="display:flex;gap:10px;align-items:center;">
-        {% csrf_token %}
-        <input type="hidden" name="visao" value="{{ visao }}">
-        <input type="hidden" name="modo_exibicao" value="{{ modo_exibicao }}">
-        <input type="hidden" name="limit" value="{{ limit }}">
-        <input type="hidden" name="client" value="{{ form.data.client }}">
-
-        {% if form.data.stock_type %}
-            <input type="hidden" name="stock_type" value="{{ form.data.stock_type }}">
-        {% endif %}
-
-        {% for pa in pa_selecionadas %}
-            <input type="hidden" name="cd_estoque" value="{{ pa }}">
-        {% endfor %}
-
-        {% if offset > 0 %}
-            <button class="page-btn" name="offset" value="{{ prev_offset }}">
-                ← Anterior
-            </button>
-        {% else %}
-            <button class="page-btn disabled" disabled>
-                ← Anterior
-            </button>
-        {% endif %}
-
-        <span class="page-info">
-            Página {{ page_number }} / {{ total_pages }}
-        </span>
-
-        {% if has_more %}
-            <button class="page-btn" name="offset" value="{{ next_offset }}">
-                Próxima →
-            </button>
-        {% else %}
-            <button class="page-btn disabled" disabled>
-                Próxima →
-            </button>
-        {% endif %}
-    </form>
-</div>
-{% endif %}
-
-<!-- EDIÇÃO DE MODAL -->
-<div id="editModal" class="modal" style="display:none;">
-    <div class="modal-content">
-        <h3>Editar Produto</h3>
+    {% if resultado_itens and visao == "detalhe" %}
+    <nav class="estoque-pagination" aria-label="Paginação">
         <form method="POST">
             {% csrf_token %}
-            <input type="hidden" name="item_id" id="modal_item_id">
-            <label>Produto:</label>
-            <select name="novo_produto" id="modal_produto" class="input">
-                {% for p in produtos_api %}
-                <option value="{{ p.id }}">{{ p.sku }} — {{ p.description }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit" class="btn-save">Salvar</button>
-            <button type="button" class="btn-close" onclick="closeEditModal()">Cancelar</button>
-        </form>
-    </div>
-</div>
+            <input type="hidden" name="visao" value="{{ visao }}">
+            <input type="hidden" name="modo_exibicao" value="{{ modo_exibicao }}">
+            <input type="hidden" name="limit" value="{{ limit }}">
+            <input type="hidden" name="client" value="{{ form.data.client }}">
 
-<!-- MODAL PARA PAYLOAD -->
-<div id="jsonModal" class="modal-json">
-    <div class="json-modal-content">
-        <div class="json-modal-header">
-            <h3 id="jsonModalTitle">JSON</h3>
-            <span class="close" onclick="closeJsonModal()">&times;</span>
+            {% if form.data.stock_type %}
+                <input type="hidden" name="stock_type" value="{{ form.data.stock_type }}">
+            {% endif %}
+
+            {% for pa in pa_selecionadas %}
+                <input type="hidden" name="cd_estoque" value="{{ pa }}">
+            {% endfor %}
+
+            {% if offset > 0 %}
+                <button class="page-btn" name="offset" value="{{ prev_offset }}">← Anterior</button>
+            {% else %}
+                <button class="page-btn disabled" disabled>← Anterior</button>
+            {% endif %}
+
+            <span class="page-info">Página {{ page_number }} / {{ total_pages }}</span>
+
+            {% if has_more %}
+                <button class="page-btn" name="offset" value="{{ next_offset }}">Próxima →</button>
+            {% else %}
+                <button class="page-btn disabled" disabled>Próxima →</button>
+            {% endif %}
+        </form>
+    </nav>
+    {% endif %}
+
+    <div id="editModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h3>Editar Produto</h3>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="item_id" id="modal_item_id">
+                <label for="modal_produto">Produto</label>
+                <select name="novo_produto" id="modal_produto" class="input">
+                    {% for p in produtos_api %}
+                    <option value="{{ p.id }}">{{ p.sku }} — {{ p.description }}</option>
+                    {% endfor %}
+                </select>
+                <div style="display:flex;gap:10px;margin-top:8px;">
+                    <button type="submit" class="btn-save">Salvar</button>
+                    <button type="button" class="btn-close" onclick="closeEditModal()">Cancelar</button>
+                </div>
+            </form>
         </div>
-        <pre id="jsonContent"></pre>
-        <div class="json-modal-footer">
-            <button class="btn-copy" onclick="copyJson()">Copiar</button>
-            <button class="btn-download" onclick="downloadJson()">Download</button>
-            <button class="btn-close" onclick="closeJsonModal()">Fechar</button>
+    </div>
+
+    <div id="jsonModal" class="modal-json">
+        <div class="json-modal-content">
+            <div class="json-modal-header">
+                <h3 id="jsonModalTitle">JSON</h3>
+                <span class="close" onclick="closeJsonModal()">&times;</span>
+            </div>
+            <pre id="jsonContent"></pre>
+            <div class="json-modal-footer">
+                <button class="btn-copy" onclick="copyJson()">Copiar</button>
+                <button class="btn-download" onclick="downloadJson()">Download</button>
+                <button class="btn-close" onclick="closeJsonModal()">Fechar</button>
+            </div>
         </div>
     </div>
 </div>
@@ -1219,30 +208,21 @@
 
     function normalizePythonDictString(raw) {
         if (!raw || typeof raw !== "string") return raw;
-
-        // Converte \u0027 → '
         let fixed = raw.replace(/\\u0027/g, "'");
-
-        // Converte aspas simples para aspas duplas (JSON)
-        // Apenas quando parecem chaves/valores
         fixed = fixed
-            .replace(/'([^']*)'\s*:/g, '"$1":')   // keys
-            .replace(/:\s*'([^']*)'/g, ':"$1"');  // values
-
+            .replace(/'([^']*)'\s*:/g, '"$1":')
+            .replace(/:\s*'([^']*)'/g, ':"$1"');
         return fixed;
     }
 
     function showJsonModal(btn) {
         let raw = btn.getAttribute("data-json");
-
         raw = normalizePythonDictString(raw);
 
         let pretty;
         try {
-            const parsed = JSON.parse(raw);
-            pretty = JSON.stringify(parsed, null, 2);
+            pretty = JSON.stringify(JSON.parse(raw), null, 2);
         } catch (e) {
-            // Fallback: exibe mesmo assim
             pretty = raw;
         }
 
@@ -1251,7 +231,7 @@
 
         document.getElementById("jsonModalTitle").innerText = lastJsonTitle;
         document.getElementById("jsonContent").textContent = pretty;
-        document.getElementById("jsonModal").style.display = "block";
+        document.getElementById("jsonModal").style.display = "flex";
     }
 
     function closeJsonModal() {
@@ -1275,11 +255,8 @@
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
-</script>
 
-<script>
     function openEditModal(itemId, skuAtual) {
-
         document.getElementById("editModal").style.display = "flex";
 
         let select = document.getElementById("modal_produto");
@@ -1295,9 +272,7 @@
     function closeEditModal() {
         document.getElementById("editModal").style.display = "none";
     }
-</script>
 
-<script>
     function normalizeText(value) {
         return String(value || "")
             .trim()
@@ -1567,12 +542,15 @@
         });
 
         refresh();
-        return { refresh, selectAll: function () {
-            Array.from(select.options).forEach(opt => {
-                if (opt.value) opt.selected = true;
-            });
-            refresh();
-        }};
+        return {
+            refresh,
+            selectAll: function () {
+                Array.from(select.options).forEach(opt => {
+                    if (opt.value) opt.selected = true;
+                });
+                refresh();
+            },
+        };
     }
 
     let estoquePaMultiSearch = null;
@@ -1622,8 +600,31 @@
                 }
 
                 this.classList.add("active");
+
+                if (fieldId === "visao") {
+                    syncGraficosVisibility();
+                }
             });
         });
+
+        syncGraficosVisibility();
+    }
+
+    function syncGraficosVisibility() {
+        const visaoInput = document.getElementById("visao");
+        const modoInput = document.getElementById("modo_exibicao");
+        const graficosBtn = document.getElementById("segBtnGraficos");
+        if (!visaoInput || !graficosBtn) return;
+
+        const isResumo = visaoInput.value === "resumo";
+        graficosBtn.style.display = isResumo ? "" : "none";
+
+        if (!isResumo && modoInput && modoInput.value === "graficos") {
+            modoInput.value = "tabela";
+            document.querySelectorAll("#segModoExibicao .seg-btn").forEach(btn => {
+                btn.classList.toggle("active", btn.dataset.value === "tabela");
+            });
+        }
     }
 
     function selectAllPAs() {
@@ -1643,6 +644,5 @@
         });
     }
 </script>
-
 
 {% endblock %}

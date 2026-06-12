@@ -306,8 +306,11 @@ def gerenciamento_estoque(request):
     resultado_itens = []
     totais = {}
     produtos_unicos = []
+    resumo_chart_data = {}
     visao = request.POST.get("visao", "detalhe")
     modo_exibicao = request.POST.get("modo_exibicao", "tabela")
+    if visao != "resumo" and modo_exibicao == "graficos":
+        modo_exibicao = "tabela"
     limit = int(request.POST.get("limit", 25))
     offset = int(request.POST.get("offset", 0))
     has_more = False
@@ -317,9 +320,12 @@ def gerenciamento_estoque(request):
     if request.method == "POST" and form.is_valid():
 
         if visao == "resumo":
-            resultado_itens, totais, produtos_unicos = func_visao_resumida(
-                request, form, sales_channels_map
-            )
+            (
+                resultado_itens,
+                totais,
+                produtos_unicos,
+                resumo_chart_data,
+            ) = func_visao_resumida(request, form, sales_channels_map)
         else:
             (
                 resultado_itens,
@@ -400,6 +406,7 @@ def gerenciamento_estoque(request):
             "prev_offset": max(offset - limit, 0),
             "produtos_api": produtos_api,
             "stock_types": stock_types,
+            "resumo_chart_data": resumo_chart_data,
             "filtro_pa_travado": filtro_pa_travado,
             "pa_designacao_id": str(user_gai.id) if user_gai else "",
             "pa_designacao_label": (
