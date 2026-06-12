@@ -290,6 +290,7 @@ def gerenciamento_estoque(request):
             new_post = request.POST.copy()
             new_post["client"] = filtros["client"]
             new_post["visao"] = filtros["visao"]
+            new_post["modo_exibicao"] = filtros.get("modo_exibicao", "tabela")
             new_post["limit"] = filtros["limit"]
             new_post["offset"] = filtros["offset"]
             new_post["status"] = filtros["status"]
@@ -309,9 +310,11 @@ def gerenciamento_estoque(request):
     resumo_chart_data = {}
     visao = request.POST.get("visao", "detalhe")
     modo_exibicao = request.POST.get("modo_exibicao", "tabela")
-    if visao == "detalhe":
+    if modo_exibicao == "graficos":
+        visao = "resumo"
+    elif visao == "detalhe":
         modo_exibicao = "tabela"
-    elif visao != "resumo" and modo_exibicao in ("graficos", "cards"):
+    elif visao == "resumo" and modo_exibicao not in ("tabela", "cards", "graficos"):
         modo_exibicao = "tabela"
     limit = int(request.POST.get("limit", 25))
     offset = int(request.POST.get("offset", 0))
@@ -347,6 +350,7 @@ def gerenciamento_estoque(request):
             "limit": limit,
             "offset": offset,
             "visao": visao,
+            "modo_exibicao": modo_exibicao,
             "status": request.POST.get("status", "IN_DEPOT"),
         }
 

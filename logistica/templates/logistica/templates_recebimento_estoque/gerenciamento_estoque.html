@@ -24,7 +24,19 @@
                 </div>
 
                 <div class="field-wrap">
-                    <label for="{{ form.cd_estoque.id_for_label }}">{{ form.cd_estoque.label }}</label>
+                    <div class="field-wrap-label-row">
+                        <label for="{{ form.cd_estoque.id_for_label }}">{{ form.cd_estoque.label }}</label>
+                        {% if not filtro_pa_travado %}
+                        <div class="field-wrap-actions">
+                            <button type="button" class="field-link-btn" onclick="selectAllPAs()">
+                                Selecionar todas
+                            </button>
+                            <button type="button" class="field-link-btn" onclick="clearAllPAs()">
+                                Limpar
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
                     {% if filtro_pa_travado %}
                         <div class="pa-locked-box" title="PA fixada pela sua designação">
                             <i class="fa-solid fa-lock"></i>
@@ -80,15 +92,14 @@
                                     class="seg-btn {% if modo_exibicao == 'cards' %}active{% endif %}">
                                 <i class="fa-solid fa-grip"></i> Colunas
                             </button>
-                            <button type="button"
-                                    id="segBtnGraficos"
-                                    data-field="modo_exibicao"
-                                    data-value="graficos"
-                                    class="seg-btn {% if modo_exibicao == 'graficos' %}active{% endif %}">
-                                <i class="fa-solid fa-chart-column"></i> Gráficos
-                            </button>
                         </div>
                     </div>
+
+                    <button type="button"
+                            id="segBtnGraficos"
+                            class="seg-btn seg-btn--graficos {% if modo_exibicao == 'graficos' %}active{% endif %}">
+                        <i class="fa-solid fa-chart-column"></i> Gráficos
+                    </button>
 
                     <div class="toolbar-divider" aria-hidden="true"></div>
 
@@ -110,7 +121,7 @@
 
                 <div class="toolbar-group toolbar-group--actions">
                     {% if not filtro_pa_travado %}
-                    <button type="button" onclick="selectAllPAs()" class="toolbar-action-btn">
+                    <button type="button" onclick="selectAllPAs()" class="toolbar-action-btn" title="Selecionar todas as localidades">
                         <i class="fa-solid fa-check-double"></i> Selecionar todos
                     </button>
                     {% endif %}
@@ -523,6 +534,12 @@
                 });
                 refresh();
             },
+            clearAll: function () {
+                Array.from(select.options).forEach(opt => {
+                    opt.selected = false;
+                });
+                refresh();
+            },
         };
     }
 
@@ -560,6 +577,9 @@
                 const fieldId = this.dataset.field;
                 const value = this.dataset.value;
                 const hiddenInput = document.getElementById(fieldId);
+                const visaoInput = document.getElementById("visao");
+                const modoInput = document.getElementById("modo_exibicao");
+                const graficosBtn = document.getElementById("segBtnGraficos");
 
                 if (!hiddenInput) return;
 
@@ -570,15 +590,46 @@
                     group.querySelectorAll(".seg-btn").forEach(el => {
                         el.classList.remove("active");
                     });
+                    this.classList.add("active");
                 }
 
-                this.classList.add("active");
-
-                if (fieldId === "visao") {
-                    syncVisaoToolbar();
+                if (fieldId === "modo_exibicao") {
+                    graficosBtn?.classList.remove("active");
                 }
+
+                if (fieldId === "visao" && value === "detalhe" && modoInput) {
+                    modoInput.value = "tabela";
+                    document.querySelectorAll("#segModoExibicao .seg-btn").forEach(el => {
+                        el.classList.toggle("active", el.dataset.value === "tabela");
+                    });
+                    graficosBtn?.classList.remove("active");
+                }
+
+                syncVisaoToolbar();
             });
         });
+
+        const graficosBtn = document.getElementById("segBtnGraficos");
+        if (graficosBtn) {
+            graficosBtn.addEventListener("click", function () {
+                const visaoInput = document.getElementById("visao");
+                const modoInput = document.getElementById("modo_exibicao");
+                if (!visaoInput || !modoInput) return;
+
+                visaoInput.value = "resumo";
+                modoInput.value = "graficos";
+
+                document.querySelectorAll("#segVisao .seg-btn").forEach(el => {
+                    el.classList.toggle("active", el.dataset.value === "resumo");
+                });
+                document.querySelectorAll("#segModoExibicao .seg-btn").forEach(el => {
+                    el.classList.remove("active");
+                });
+                graficosBtn.classList.add("active");
+
+                syncVisaoToolbar();
+            });
+        }
 
         syncVisaoToolbar();
     }
@@ -588,9 +639,11 @@
         const modoInput = document.getElementById("modo_exibicao");
         const modoWrap = document.getElementById("segModoExibicaoWrap");
         const limitSelect = document.getElementById("toolbarLimit");
+        const graficosBtn = document.getElementById("segBtnGraficos");
         if (!visaoInput || !modoInput) return;
 
         const isResumo = visaoInput.value === "resumo";
+        const isGraficos = modoInput.value === "graficos";
 
         if (modoWrap) {
             modoWrap.hidden = !isResumo;
@@ -600,7 +653,11 @@
             limitSelect.hidden = isResumo;
         }
 
-        if (!isResumo) {
+        if (graficosBtn) {
+            graficosBtn.classList.toggle("active", isGraficos);
+        }
+
+        if (!isResumo && !isGraficos) {
             modoInput.value = "tabela";
         }
     }
@@ -619,6 +676,20 @@
 
         Array.from(select.options).forEach(opt => {
             if (opt.value) opt.selected = true;
+        });
+    }
+
+    function clearAllPAs() {
+        if (estoquePaMultiSearch) {
+            estoquePaMultiSearch.clearAll();
+            return;
+        }
+
+        const select = document.getElementById("id_cd_estoque");
+        if (!select) return;
+
+        Array.from(select.options).forEach(opt => {
+            opt.selected = false;
         });
     }
 </script>
