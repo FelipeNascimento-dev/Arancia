@@ -309,7 +309,9 @@ def gerenciamento_estoque(request):
     resumo_chart_data = {}
     visao = request.POST.get("visao", "detalhe")
     modo_exibicao = request.POST.get("modo_exibicao", "tabela")
-    if visao != "resumo" and modo_exibicao == "graficos":
+    if visao == "detalhe":
+        modo_exibicao = "tabela"
+    elif visao != "resumo" and modo_exibicao in ("graficos", "cards"):
         modo_exibicao = "tabela"
     limit = int(request.POST.get("limit", 25))
     offset = int(request.POST.get("offset", 0))

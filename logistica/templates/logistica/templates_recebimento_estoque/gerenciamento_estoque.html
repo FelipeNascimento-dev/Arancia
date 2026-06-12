@@ -43,7 +43,11 @@
             <div class="estoque-toolbar">
                 <div class="toolbar-group">
                     <span class="toolbar-label">Exibição</span>
-                    <select name="limit" class="toolbar-select" title="Itens por página">
+                    <select name="limit"
+                            id="toolbarLimit"
+                            class="toolbar-select"
+                            title="Itens por página"
+                            {% if visao == 'resumo' %}hidden{% endif %}>
                         <option value="25" {% if limit == 25 %}selected{% endif %}>25 / pág.</option>
                         <option value="50" {% if limit == 50 %}selected{% endif %}>50 / pág.</option>
                         <option value="100" {% if limit == 100 %}selected{% endif %}>100 / pág.</option>
@@ -59,28 +63,34 @@
                         {% endfor %}
                     </select>
 
-                    <div class="seg-group" role="group" aria-label="Modo de exibição" id="segModoExibicao">
-                        <button type="button"
-                                data-field="modo_exibicao"
-                                data-value="cards"
-                                class="seg-btn {% if modo_exibicao == 'cards' %}active{% endif %}">
-                            <i class="fa-solid fa-grip"></i> Cards
-                        </button>
-                        <button type="button"
-                                data-field="modo_exibicao"
-                                data-value="tabela"
-                                class="seg-btn {% if modo_exibicao == 'tabela' %}active{% endif %}">
-                            <i class="fa-solid fa-table"></i> Tabela
-                        </button>
-                        <button type="button"
-                                id="segBtnGraficos"
-                                data-field="modo_exibicao"
-                                data-value="graficos"
-                                class="seg-btn {% if modo_exibicao == 'graficos' %}active{% endif %}"
-                                {% if visao != 'resumo' %}style="display:none;"{% endif %}>
-                            <i class="fa-solid fa-chart-column"></i> Gráficos
-                        </button>
+                    <div class="toolbar-group toolbar-group--modo"
+                         id="segModoExibicaoWrap"
+                         {% if visao != 'resumo' %}hidden{% endif %}>
+                        <span class="toolbar-label">Formato</span>
+                        <div class="seg-group" role="group" aria-label="Formato do resumo" id="segModoExibicao">
+                            <button type="button"
+                                    data-field="modo_exibicao"
+                                    data-value="tabela"
+                                    class="seg-btn {% if modo_exibicao == 'tabela' %}active{% endif %}">
+                                <i class="fa-solid fa-table"></i> Tabela
+                            </button>
+                            <button type="button"
+                                    data-field="modo_exibicao"
+                                    data-value="cards"
+                                    class="seg-btn {% if modo_exibicao == 'cards' %}active{% endif %}">
+                                <i class="fa-solid fa-grip"></i> Colunas
+                            </button>
+                            <button type="button"
+                                    id="segBtnGraficos"
+                                    data-field="modo_exibicao"
+                                    data-value="graficos"
+                                    class="seg-btn {% if modo_exibicao == 'graficos' %}active{% endif %}">
+                                <i class="fa-solid fa-chart-column"></i> Gráficos
+                            </button>
+                        </div>
                     </div>
+
+                    <div class="toolbar-divider" aria-hidden="true"></div>
 
                     <div class="seg-group" role="group" aria-label="Visão dos dados" id="segVisao">
                         <button type="button"
@@ -166,26 +176,6 @@
     </nav>
     {% endif %}
 
-    <div id="editModal" class="modal" style="display:none;">
-        <div class="modal-content">
-            <h3>Editar Produto</h3>
-            <form method="POST">
-                {% csrf_token %}
-                <input type="hidden" name="item_id" id="modal_item_id">
-                <label for="modal_produto">Produto</label>
-                <select name="novo_produto" id="modal_produto" class="input">
-                    {% for p in produtos_api %}
-                    <option value="{{ p.id }}">{{ p.sku }} — {{ p.description }}</option>
-                    {% endfor %}
-                </select>
-                <div style="display:flex;gap:10px;margin-top:8px;">
-                    <button type="submit" class="btn-save">Salvar</button>
-                    <button type="button" class="btn-close" onclick="closeEditModal()">Cancelar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <div id="jsonModal" class="modal-json">
         <div class="json-modal-content">
             <div class="json-modal-header">
@@ -254,23 +244,6 @@
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-    }
-
-    function openEditModal(itemId, skuAtual) {
-        document.getElementById("editModal").style.display = "flex";
-
-        let select = document.getElementById("modal_produto");
-        for (let opt of select.options) {
-            if (opt.text.includes(skuAtual)) {
-                opt.selected = true;
-            }
-        }
-
-        document.getElementById("modal_item_id").value = itemId;
-    }
-
-    function closeEditModal() {
-        document.getElementById("editModal").style.display = "none";
     }
 
     function normalizeText(value) {
@@ -602,28 +575,33 @@
                 this.classList.add("active");
 
                 if (fieldId === "visao") {
-                    syncGraficosVisibility();
+                    syncVisaoToolbar();
                 }
             });
         });
 
-        syncGraficosVisibility();
+        syncVisaoToolbar();
     }
 
-    function syncGraficosVisibility() {
+    function syncVisaoToolbar() {
         const visaoInput = document.getElementById("visao");
         const modoInput = document.getElementById("modo_exibicao");
-        const graficosBtn = document.getElementById("segBtnGraficos");
-        if (!visaoInput || !graficosBtn) return;
+        const modoWrap = document.getElementById("segModoExibicaoWrap");
+        const limitSelect = document.getElementById("toolbarLimit");
+        if (!visaoInput || !modoInput) return;
 
         const isResumo = visaoInput.value === "resumo";
-        graficosBtn.style.display = isResumo ? "" : "none";
 
-        if (!isResumo && modoInput && modoInput.value === "graficos") {
+        if (modoWrap) {
+            modoWrap.hidden = !isResumo;
+        }
+
+        if (limitSelect) {
+            limitSelect.hidden = isResumo;
+        }
+
+        if (!isResumo) {
             modoInput.value = "tabela";
-            document.querySelectorAll("#segModoExibicao .seg-btn").forEach(btn => {
-                btn.classList.toggle("active", btn.dataset.value === "tabela");
-            });
         }
     }
 

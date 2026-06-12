@@ -234,10 +234,11 @@
 
 /* Toolbar */
 .estoque-page .estoque-toolbar {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 16px;
+    display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
     padding: 16px 18px;
     background: #f8fafc;
     border: 1px solid var(--estoque-border);
@@ -253,6 +254,18 @@
 
 .estoque-page .toolbar-group--actions {
     justify-content: flex-end;
+    margin-left: auto;
+}
+
+.estoque-page .toolbar-group--modo {
+    gap: 8px;
+}
+
+.estoque-page .toolbar-divider {
+    width: 1px;
+    height: 32px;
+    background: #d1d5db;
+    flex-shrink: 0;
 }
 
 .estoque-page .toolbar-label {
@@ -360,57 +373,38 @@
 /* Área de resultados */
 .estoque-page .estoque-results {
     margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
-.estoque-page .cards-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-}
-
+/* Cards resumo */
 .estoque-page .card {
     background: #fff;
     border-radius: var(--estoque-radius);
-    overflow: hidden;
+    overflow: visible;
     border: 1px solid #e4e4e4;
     box-shadow: var(--estoque-shadow);
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    max-width: none;
+    align-self: stretch;
     height: auto;
-    min-height: 380px;
-    display: flex;
-    flex-direction: column;
-}
-
-.estoque-page .card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.1);
-}
-
-.estoque-page .card-header {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 16px 10px;
-    border-bottom: 1px solid #f3f4f6;
 }
 
 .estoque-page .badge-num {
     background: linear-gradient(135deg, #007bff, var(--estoque-primary));
     color: #fff;
     border-radius: 10px;
-    min-width: 36px;
-    min-height: 36px;
     display: flex;
     justify-content: center;
     align-items: center;
     font-weight: 700;
     font-size: 0.85rem;
-    padding: 4px 8px;
 }
 
 .estoque-page .card-title {
-    font-size: 0.98rem;
+    font-size: 0.92rem;
     font-weight: 700;
     color: var(--estoque-text);
     margin: 0;
@@ -419,59 +413,13 @@
     white-space: nowrap;
 }
 
-.estoque-page .card-body {
-    padding: 14px 16px 16px;
-    font-size: 0.88rem;
-    flex: 1;
-}
-
-.estoque-page .card-body p {
-    margin: 0 0 10px;
-    color: #444;
-    line-height: 1.45;
-}
-
-.estoque-page .card-body strong {
-    color: #222;
-}
-
-.estoque-page .edit-btn {
-    background: var(--estoque-primary);
-    color: #fff;
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.estoque-page .edit-btn:hover {
-    background: var(--estoque-primary-dark);
-}
-
-.estoque-page .card-alerta {
-    border: 2px solid #d93025 !important;
-}
-
-.estoque-page .date-alerta {
-    color: #d93025 !important;
-    font-weight: 700;
-}
-
-.estoque-page .badge-alerta {
-    background: #d93025 !important;
-}
-
 /* Resumo — duas colunas */
 .estoque-page .resumo-cards-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 20px;
-    align-items: start;
+    align-items: stretch;
+    width: 100%;
 }
 
 .estoque-page .resumo-cards-layout.has-ztipo {
@@ -480,6 +428,9 @@
 
 .estoque-page .resumo-col {
     min-width: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
     background: #fff;
     border: 1px solid var(--estoque-border);
     border-radius: var(--estoque-radius);
@@ -507,12 +458,20 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+    width: 100%;
+    align-items: stretch;
 }
 
 .estoque-page .card-resumo {
+    width: 100%;
+    max-width: none;
     min-height: 0;
+    height: auto;
     box-shadow: none;
     border: 1px solid #eef2f7;
+    align-self: stretch;
+    box-sizing: border-box;
+    overflow: visible;
 }
 
 .estoque-page .card-resumo:hover {
@@ -527,6 +486,7 @@
     gap: 12px;
     padding: 12px 14px;
     border-bottom: 1px solid #f3f4f6;
+    width: 100%;
 }
 
 .estoque-page .badge-num-resumo {
@@ -556,14 +516,15 @@
 
 .estoque-page .card-body-resumo {
     padding: 8px 14px 12px;
-    max-height: 220px;
-    overflow-y: auto;
+    overflow: visible;
+    width: 100%;
 }
 
 .estoque-page .resumo-list {
     list-style: none;
     margin: 0;
     padding: 0;
+    width: 100%;
 }
 
 .estoque-page .resumo-list li {
@@ -973,11 +934,12 @@
 
 /* Responsivo */
 @media (max-width: 1100px) {
-    .estoque-page .estoque-toolbar {
-        grid-template-columns: 1fr;
+    .estoque-page .toolbar-divider {
+        display: none;
     }
 
     .estoque-page .toolbar-group--actions {
+        width: 100%;
         justify-content: stretch;
     }
 
@@ -1015,10 +977,6 @@
 
     .estoque-page .seg-group {
         flex-wrap: wrap;
-    }
-
-    .estoque-page .cards-container {
-        grid-template-columns: 1fr;
     }
 
     .estoque-page .estoque-table-section-head {
