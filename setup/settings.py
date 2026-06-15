@@ -61,7 +61,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'setup.settings.db_host_context',
+                'setup.settings.environment_context',
                 'logistica.context_processors.avatar_url',
                 'logistica.context_processors.acompanhamentos_navbar',
                 'crm.context_processors.crm_context',
@@ -175,8 +175,21 @@ CRM_SERVICE_USERNAME = globals().get('CRM_SERVICE_USERNAME', 'celery')
 CRM_ENABLE_DEBUG_LOGS = globals().get('CRM_ENABLE_DEBUG_LOGS', False)
 
 
-def db_host_context(request):
-    return {'DB_HOST': getattr(local_settings, 'DB_HOST', None)}
+def environment_context(request):
+    """Expõe ambiente atual (homolog/prod) para templates."""
+    environment = getattr(local_settings, 'ENVIRONMENT', None)
+    if environment is None:
+        environment = 'homolog' if getattr(local_settings, 'LOCAL_DEBUG', False) else 'prod'
+    return {
+        'DB_HOST': getattr(local_settings, 'DB_HOST', None),
+        'ENVIRONMENT': environment,
+        'IS_HOMOLOG': environment == 'homolog',
+        'BASE_PATH': getattr(local_settings, 'BASE_PATH', ''),
+    }
+
+
+# Alias legado — manter até remover referências antigas
+db_host_context = environment_context
 
 
 # RESET DE SENHAS / ENVIO POR EMAIL

@@ -59,7 +59,7 @@
 }
 </style>
 
-<div class="user-navbar" style="{% if DB_HOST == '192.168.0.219' %}background-color:#62ee9c;{% endif %}">
+<div class="user-navbar" style="{% if IS_HOMOLOG %}background-color:#62ee9c;{% endif %}">
     <div class="macro-guia" id="macroGuia"></div>
     {% if show_config_link %}
   <a
@@ -86,15 +86,15 @@
     {% if perms.logistica.ti_interno %}
     <div class="db-switch-container">
         <span id="db-label"
-              style="color: {% if DB_HOST == '192.168.0.220' %}#e74c3c{% else %}#27ae60{% endif %};">
-            {% if DB_HOST == '192.168.0.220' %}
-                Produção (DB 220)
+              style="color: {% if ENVIRONMENT == 'prod' %}#e74c3c{% else %}#27ae60{% endif %};">
+            {% if ENVIRONMENT == 'prod' %}
+                Produção (220)
             {% else %}
-                Homologação (DB 219)
+                Homologação (219)
             {% endif %}
         </span>
         <label class="switch">
-            <input type="checkbox" id="dbSwitch" {% if DB_HOST == '192.168.0.220' %}checked{% endif %}>
+            <input type="checkbox" id="dbSwitch" {% if ENVIRONMENT == 'prod' %}checked{% endif %}>
             <span class="slider round"></span>
         </label>
     </div>
@@ -173,12 +173,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const label = document.getElementById('db-label');
     if (!dbSwitch || !label) return;
 
-    function atualizarTexto(ativo) {
-        if (ativo) {
-            label.textContent = "Produção (DB 220)";
+    function atualizarTexto(producao) {
+        if (producao) {
+            label.textContent = "Produção (220)";
             label.style.color = "#e74c3c";
         } else {
-            label.textContent = "Homologação (DB 219)";
+            label.textContent = "Homologação (219)";
             label.style.color = "#27ae60";
         }
     }
@@ -186,8 +186,9 @@ document.addEventListener('DOMContentLoaded', function() {
     atualizarTexto(dbSwitch.checked);
 
     dbSwitch.addEventListener('change', function() {
-        const ativo = this.checked;
-        atualizarTexto(ativo);
+        const producao = this.checked;
+        const estadoAnterior = !producao;
+        atualizarTexto(producao);
 
         fetch("{% url 'logistica:toggle_db' %}", {
             method: "POST",
@@ -196,13 +197,23 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(r => r.json())
         .then(data => {
             if (data.status === 'ok') {
-                alert(`✅ Ambiente alterado para ${data.ambiente} (${data.db_host})`);
-                location.reload();
+                let msg = `Ambiente alterado para ${data.ambiente} (${data.db_host}).`;
+                if (data.requires_restart) {
+                    msg += '\n\nReinicie o servidor WSGI/gunicorn (e o worker Celery, se aplicável) para aplicar as mudanças.';
+                }
+                alert(msg);
+                window.location.href = data.redirect_url || '/';
             } else {
-                alert("❌ Erro: " + data.msg);
+                dbSwitch.checked = estadoAnterior;
+                atualizarTexto(dbSwitch.checked);
+                alert("Erro: " + (data.msg || 'Falha ao trocar o ambiente'));
             }
         })
-        .catch(() => alert("❌ Falha ao trocar o banco"));
+        .catch(() => {
+            dbSwitch.checked = estadoAnterior;
+            atualizarTexto(dbSwitch.checked);
+            alert("Falha ao trocar o ambiente");
+        });
     });
 });
 </script>
