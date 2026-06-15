@@ -17,8 +17,7 @@ ENVIRONMENT_PROFILES = {
         'stock_api_url': 'http://192.168.0.214/hg-stock/api',
         'transp_api_url': 'http://192.168.0.215/hg-api-transportes/api',
         'mural_api_url': 'http://192.168.0.214/hg-api-mural/api',
-        # TODO: validar URL homolog RetencaoAPI com TI antes de deploy
-        'api_base': 'http://192.168.0.214/hg-RetencaoAPI/api',
+        'api_base': 'http://192.168.0.216/RetencaoAPI/api',
         'api_base_bko': 'http://192.168.0.214/hg-api-equipamentos/api/',
         'crm_api_base_url_default': 'http://192.168.0.214/hg-api-crm',
         'crm_internal_api_secret_default': 'homolog-internal-secret',

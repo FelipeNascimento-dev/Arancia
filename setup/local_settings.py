@@ -3,7 +3,7 @@ import os
 from setup.environments import apply_environment
 
 SECRET_KEY = ']s5n/RoBy<&r;f91C2C|1F"{SDJ!dr!("[)DvU#jzC6Gu.y">LozaG"{>A.te'
-ENVIRONMENT = 'prod'
+ENVIRONMENT = 'homolog'
 # Secrets por ambiente (permanecem neste arquivo, não em environments.py)
 _ENVIRONMENT_SECRETS = {
     'homolog': {

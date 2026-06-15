@@ -13,7 +13,7 @@ urlpatterns = [
     path(BASE_PATH, include('mural.urls')),
     path(BASE_PATH, include('crm.urls')),
 
-    path(f'{BASE_PATH}/admin/', admin.site.urls),
+    path(f'{BASE_PATH}admin/', admin.site.urls),
 ]
 
 # if settings.LOCAL_DEBUG:
