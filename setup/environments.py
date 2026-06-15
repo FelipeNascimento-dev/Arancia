@@ -8,6 +8,30 @@ import os
 
 VALID_ENVIRONMENTS = ('homolog', 'prod')
 
+# IDs de GET {stock_api_url}/v1/origins
+_ORDER_ORIGIN_IDS_HOMOLOG = {
+    'SAP_CACA_POS_AGUARDANDO_REVERSA': 1,
+    'LAST_MILE_SUPRIMENTO': 3,
+    'REVERSA_AGUARDANDO': 8,
+    'LAST_MILE_AGUARDANDO_REVERSA': 9,
+    'SAP_CACA_POS_AGUARDANDO_REVERSA_PROVISORIO': 10,
+    'REVERSA_AGUARDANDO_PROVISORIO': 11,
+    'LAST_MILE_AGUARDANDO_REVERSA_PROVISORIO': 12,
+    'SAP_BAU_SUPRIMENTO': 13,
+}
+
+_ORDER_ORIGIN_IDS_PROD = {
+    'SAP_CACA_POS_AGUARDANDO_REVERSA': 1,
+    'LAST_MILE_SUPRIMENTO': 3,
+    'LAST_MILE_AGUARDANDO_REVERSA': 9,
+    'REVERSA_AGUARDANDO': 10,
+    'SAP_CACA_POS_AGUARDANDO_REVERSA_PROVISORIO': 11,
+    'REVERSA_AGUARDANDO_PROVISORIO': 12,
+    'LAST_MILE_AGUARDANDO_REVERSA_PROVISORIO': 13,
+    'SAP_BAU_SUPRIMENTO': 14,
+    'LAST_MILE_SUPRIMENTO_ERRO_INTEGRACAO': 15,
+}
+
 ENVIRONMENT_PROFILES = {
     'homolog': {
         'label': 'Homologação',
@@ -21,6 +45,7 @@ ENVIRONMENT_PROFILES = {
         'api_base_bko': 'http://192.168.0.214/hg-api-equipamentos/api/',
         'crm_api_base_url_default': 'http://192.168.0.214/hg-api-crm',
         'crm_internal_api_secret_default': 'homolog-internal-secret',
+        'order_origin_ids': _ORDER_ORIGIN_IDS_HOMOLOG,
     },
     'prod': {
         'label': 'Produção',
@@ -34,6 +59,7 @@ ENVIRONMENT_PROFILES = {
         'api_base_bko': 'http://192.168.0.214/api-equipamentos/api/',
         'crm_api_base_url_default': 'http://192.168.0.215/api-crm',
         'crm_internal_api_secret_default': 'd5u7sA8x0bB3Q0fAw@$',
+        'order_origin_ids': _ORDER_ORIGIN_IDS_PROD,
     },
 }
 
@@ -84,6 +110,9 @@ def apply_environment(environment, namespace):
     namespace['CRM_INTERNAL_API_SECRET'] = os.environ.get(
         'CRM_INTERNAL_API_SECRET', profile['crm_internal_api_secret_default']
     )
+
+    for key, origin_id in profile.get('order_origin_ids', {}).items():
+        namespace[f'ORDER_ORIGIN_{key}'] = origin_id
 
     if 'DATABASES' in namespace and isinstance(namespace['DATABASES'], dict):
         default_db = namespace['DATABASES'].get('default')

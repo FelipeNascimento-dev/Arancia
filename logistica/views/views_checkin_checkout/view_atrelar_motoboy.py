@@ -19,6 +19,8 @@ from .view_checkin_bag_tec import (
     usuario_pode_ver_todas_bases,
 )
 
+from utils.order_origin import ORDER_ORIGIN_REVERSA_AGUARDANDO
+
 JSON_CT = "application/json"
 SESSION_SERIALS_KEY = "atrelar_motoboy_serials"
 
@@ -90,7 +92,7 @@ def _montar_payload_movimento_lote(serials, gai, motoboy_uid, order_number=None)
         "client_name": "",
         "movement_type": "TO_BE_DELIVERED",
         "to_location_id": gai.id,
-        "order_origin_id": 3,
+        "order_origin_id": ORDER_ORIGIN_REVERSA_AGUARDANDO,
         "extra_info": {
             "motoboy_uid": motoboy_uid,
             "motoboy_operation": True,

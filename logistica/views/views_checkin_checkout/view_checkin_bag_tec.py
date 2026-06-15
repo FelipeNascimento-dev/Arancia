@@ -20,6 +20,8 @@ JSON_CT = "application/json"
 SESSION_BAG_TEC = "bag_tec_consulta"
 
 
+from utils.order_origin import ORDER_ORIGIN_REVERSA_AGUARDANDO
+
 def usuario_pode_ver_todas_bases(user):
     if user.has_perm("transportes.CC_admin"):
         return True
@@ -698,7 +700,7 @@ def _montar_payload_in_lote(itens, gai, tecnico_uid, username, client_code, orde
         "client_name": (client_code or "cielo").upper(),
         "movement_type": "IN",
         "to_location_id": gai.id,
-        "order_origin_id": 3,
+        "order_origin_id": ORDER_ORIGIN_REVERSA_AGUARDANDO,
         "extra_info": {
             "technician_uid": tecnico_uid,
             "bag_operation": True,

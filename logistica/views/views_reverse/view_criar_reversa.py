@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from datetime import datetime
 from ...forms import ReverseCreateForm
+from utils.order_origin import ORDER_ORIGIN_REVERSA_AGUARDANDO
 from utils.request import RequestClient
 from setup.local_settings import STOCK_API_URL
 from .view_enviar_cotacao import send_quotes
@@ -186,7 +187,7 @@ def reverse_create(request):
             "movement_type": "RETURN",
             "from_location_id": from_location_id,
             "to_location_id": to_location_id,
-            "order_origin_id": 8,
+            "order_origin_id": ORDER_ORIGIN_REVERSA_AGUARDANDO,
             "order_number": request.session.get("romaneio_num"),
             "volume_number": last_volume,
             "kit_number": last_kit,
