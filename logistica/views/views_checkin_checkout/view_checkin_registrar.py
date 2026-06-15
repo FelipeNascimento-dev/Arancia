@@ -6,6 +6,7 @@ from django.contrib import messages
 from ...models import GroupAditionalInformation, UserDesignation
 from utils.request import RequestClient
 from setup.local_settings import STOCK_API_URL
+from utils.order_origin import ORDER_ORIGIN_REVERSA_AGUARDANDO
 import json
 
 
@@ -302,7 +303,7 @@ def client_checkin(request):
                     "movement_type": "IN",
                     "from_location_id": from_location_id,
                     "to_location_id": to_location_id,
-                    "order_origin_id": 3,
+                    "order_origin_id": ORDER_ORIGIN_REVERSA_AGUARDANDO,
                     "order_number": order_number,
                     "volume_number": form.cleaned_data.get("volume") or 1,
                     "kit_number": f"KIT-{form.cleaned_data.get('kit') or 1}",
