@@ -176,7 +176,7 @@ def detalhe_os_transp(request, order_number):
     quotes_data = resp.get("quotes", []) or []
     quotes_filtradas = _filtrar_quotes_por_status(quotes_data)
 
-    # print(resp)
+    print(resp)
 
     def convert_utc_to_local(date_str):
         if not date_str:
