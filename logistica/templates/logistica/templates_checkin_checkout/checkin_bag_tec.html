@@ -90,6 +90,23 @@
       color: #2e7d32;
   }
 
+  .status-pill.baixa-toa {
+      background: #fff3e0;
+      color: #e65100;
+  }
+
+  .status-pill.baixa-toa.ativo {
+      background: #ffe0b2;
+      color: #bf360c;
+  }
+
+  .bag-item-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+  }
+
   .bag-actions {
       display: flex;
       align-items: center;
@@ -291,7 +308,7 @@
                 <input type="hidden" name="tecnico" value="{{ tecnico_uid_consulta }}">
                 <input type="hidden" name="tipo_filtro" value="{{ tipo_filtro_consulta }}">
                 <button type="submit" name="finalizar_in" value="1" class="btn-finalizar-in"{% if not pendentes_count %} disabled{% endif %}>
-                    Registrar todos ({{ pendentes_count }})
+                    Atrelar todos ({{ pendentes_count }})
                 </button>
             </form>
         </div>
@@ -308,9 +325,16 @@
                     · {{ item.product_name }}
                 </small>
             </div>
-            <span class="status-pill{% if item.inserido %} inserido{% endif %}">
-                {% if item.inserido %}INSERIDO{% else %}{{ item.tipo }}{% endif %}
-            </span>
+            <div class="bag-item-tags">
+                {% if 'baixa_toa' in item %}
+                <span class="status-pill baixa-toa{% if item.baixa_toa %} ativo{% endif %}" title="Baixa TOA">
+                    Baixa TOA: {% if item.baixa_toa %}Sim{% else %}Não{% endif %}
+                </span>
+                {% endif %}
+                <span class="status-pill{% if item.inserido %} inserido{% endif %}">
+                    {% if item.inserido %}INSERIDO{% else %}{{ item.tipo }}{% endif %}
+                </span>
+            </div>
         </div>
         {% endfor %}
     </div>

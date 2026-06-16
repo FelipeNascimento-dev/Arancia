@@ -242,6 +242,35 @@ def _extrair_client_code_item(item):
     return str(client_code).strip().lower()
 
 
+def _normalizar_bool_extra_info(valor):
+    if isinstance(valor, bool):
+        return valor
+    if isinstance(valor, str):
+        return valor.strip().lower() in ("true", "1", "sim", "yes")
+    if valor in (0, None):
+        return False
+    return bool(valor)
+
+
+def _extrair_baixa_toa(item):
+    """Retorna True/False se extra_info tiver baixa_toa; None se ausente."""
+    if not isinstance(item, dict):
+        return None
+
+    last_mov = item.get("last_movement") or item.get("last_mov") or {}
+    fontes = (
+        item.get("extra_info"),
+        last_mov.get("extra_info"),
+    )
+
+    for extra_info in fontes:
+        if not isinstance(extra_info, dict) or "baixa_toa" not in extra_info:
+            continue
+        return _normalizar_bool_extra_info(extra_info.get("baixa_toa"))
+
+    return None
+
+
 def _formatar_itens_bag(itens):
     formatados = []
 
@@ -252,7 +281,8 @@ def _formatar_itens_bag(itens):
         product = item.get("product") or {}
         last_mov = item.get("last_movement") or item.get("last_mov") or {}
         order_number = _extrair_order_number_consulta(item)
-        formatados.append({
+        baixa_toa = _extrair_baixa_toa(item)
+        item_formatado = {
             "serial": item.get("serial") or item.get("serial_number") or "-",
             "order_number": order_number,
             "product_id": _extrair_product_id(item) or "",
@@ -265,7 +295,10 @@ def _formatar_itens_bag(itens):
                 or item.get("type")
                 or "-"
             ),
-        })
+        }
+        if baixa_toa is not None:
+            item_formatado["baixa_toa"] = baixa_toa
+        formatados.append(item_formatado)
 
     return formatados
 
