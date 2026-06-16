@@ -1,6 +1,5 @@
 import base64
 import io
-import json
 from typing import Any, Dict, List, Optional
 
 import qrcode
@@ -247,12 +246,37 @@ def extrair_seriais_volume(volume: Dict[str, Any]) -> List[str]:
     return seriais
 
 
+def montar_conteudo_qr(
+    numero_romaneio: str,
+    volume_atual: int,
+    volume_total: int,
+    seriais: List[str],
+) -> str:
+    linhas = [
+        "ROMANEIO REVERSA",
+        "================",
+        "",
+        f"Romaneio: {numero_romaneio}",
+        f"Volume:   {volume_atual} de {volume_total}",
+        f"Kits:     {len(seriais)}",
+        "",
+        "SERIAIS",
+        "-------",
+    ]
+
+    largura_num = len(str(len(seriais))) if seriais else 1
+    for indice, serial in enumerate(seriais, start=1):
+        linhas.append(f"{indice:0{largura_num}d}. {serial}")
+
+    return "\n".join(linhas)
+
+
 def gerar_qr_base64(conteudo: str) -> str:
     qr = qrcode.QRCode(
         version=None,
         error_correction=ERROR_CORRECT_M,
-        box_size=8,
-        border=1,
+        box_size=10,
+        border=2,
     )
     qr.add_data(conteudo)
     qr.make(fit=True)
@@ -298,13 +322,12 @@ def montar_etiqueta_reversa(
     seriais = extrair_seriais_volume(volume)
     numero = _numero_romaneio(romaneio_data, romaneio_fallback)
 
-    qr_payload = {
-        "romaneio": numero,
-        "volume": int(volume_number),
-        "total_volumes": total_volumes,
-        "seriais": seriais,
-    }
-    qr_texto = json.dumps(qr_payload, ensure_ascii=False, separators=(",", ":"))
+    qr_texto = montar_conteudo_qr(
+        numero,
+        int(volume_number),
+        total_volumes,
+        seriais,
+    )
 
     return {
         "romaneio_numero": numero,
