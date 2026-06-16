@@ -26,6 +26,23 @@ def _normalizar_texto(valor):
     return str(valor or "").strip().upper()
 
 
+def _normalize_travel_event_img_url(img_url):
+    if not img_url or not isinstance(img_url, str):
+        return None
+
+    img_url = img_url.strip().strip('"').strip("'")
+    if not img_url or img_url.lower() in ("string", "null", "none"):
+        return None
+
+    if img_url.startswith("//"):
+        return f"https:{img_url}"
+
+    if img_url.startswith(("http://", "https://")):
+        return img_url
+
+    return None
+
+
 def _filtrar_quotes_por_status(quotes):
     quotes_rejeitadas = []
     quotes_aprovadas_unicas = []
@@ -200,6 +217,7 @@ def detalhe_os_transp(request, order_number):
                 ev["created_at"] = convert_utc_to_local(
                     ev["created_at"]
                 )
+            ev["img_url"] = _normalize_travel_event_img_url(ev.get("img_url"))
 
     for event in resp.get("service_order", {}).get("service_order_events", []):
         if event.get("created_at"):
@@ -584,7 +602,7 @@ def detalhe_os_transp(request, order_number):
             except Exception as e:
                 messages.error(request, f"Erro ao consultar eventos: {e}")
 
-        UPLOAD_API_URL = f"http://192.168.0.216/RetencaoAPI/api/v3/upload/upload/Firebase/"
+        UPLOAD_API_URL = f"{TRANSP_API_URL}/v2/firebase/upload/Firebase/"
 
         if "criar_evento_travel" in request.POST:
             travel_id_raw = request.POST.get("travel_id")
@@ -656,9 +674,6 @@ def detalhe_os_transp(request, order_number):
                 try:
                     upload_resp = requests.post(
                         UPLOAD_API_URL,
-                        headers={
-                            "access_token": "123",
-                        },
                         files={
                             "file": (
                                 file_obj.name,
@@ -677,12 +692,20 @@ def detalhe_os_transp(request, order_number):
                         upload_data = upload_resp.text
 
                     if isinstance(upload_data, str):
-                        img_url = upload_data.strip().strip('"')
+                        img_url = upload_data.strip().strip('"').strip("'")
                     elif isinstance(upload_data, dict):
-                        img_url = upload_data.get(
-                            "url") or upload_data.get("data")
+                        data_field = upload_data.get("data")
+                        img_url = (
+                            upload_data.get("url")
+                            or upload_data.get("file_url")
+                            or upload_data.get("download_url")
+                            or upload_data.get("public_url")
+                            or (data_field.get("url") if isinstance(data_field, dict) else data_field)
+                        )
                     else:
                         img_url = None
+
+                    img_url = _normalize_travel_event_img_url(img_url)
 
                     if img_url:
                         payload_event["img_url"] = img_url
