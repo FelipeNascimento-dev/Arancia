@@ -2050,10 +2050,14 @@
                     </div>
 
                     <div class="travel-body">
-                        <div class="travel-info-grid">
+                        <div class="travel-info-grid" style="grid-template-columns: repeat(4, 1fr) auto; align-items: end; margin-bottom: 20px;">
                             <div>
                                 <div class="info-label">Motorista</div>
                                 <div class="info-value">{{ travel.driver.name }}</div>
+                            </div>
+                            <div>
+                                <div class="info-label">Contato do Motorista</div>
+                                <div class="info-value">{{ travel.driver.phone }}</div>
                             </div>
                             <div>
                                 <div class="info-label">Transportadora</div>
@@ -2067,14 +2071,13 @@
                             </div>
 
                             {% if perms.transportes.transportes %}
-                            <form method="post">
+                            <form method="post" style="margin:0;">
                             {% csrf_token %}
                                 <input type="hidden" name="travel_id" value="{{ travel.id }}">
                                 <button type="submit"
                                         class="btn-subitens"
                                         name="travel_events"
-                                        value="1"
-                                        style="margin-left: 150px;">
+                                        value="1">
                                     <i class="fa-solid fa-plus"></i> Adicionar Evento
                                 </button>
                             </form>
