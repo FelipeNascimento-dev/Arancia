@@ -44,12 +44,12 @@
                 <div class="romaneio-number">
                     <a href="{% url 'crm:detalhe_task' item.id %}">#{{ item.id }} — {{ item.title|default:"-" }}</a>
                 </div>
-                <span class="romaneio-status">{{ item.status.name|default:item.status_name|default:"-" }}</span>
+                <span class="romaneio-status">{{ item.display_status|default:"-" }}</span>
             </div>
             <div class="romaneio-info">
-                <div><strong>Prioridade:</strong> {{ item.priority.name|default:item.priority_name|default:"-" }}</div>
-                <div><strong>Prazo:</strong> {{ item.due_at|default:"-" }}</div>
-                <div><strong>Board:</strong> {{ item.board.name|default:item.board_name|default:"-" }}</div>
+                <div><strong>Prioridade:</strong> {{ item.display_priority|default:"-" }}</div>
+                <div><strong>Prazo:</strong> {{ item.display_due|default:"-" }}</div>
+                <div><strong>Board:</strong> {{ item.display_board|default:"-" }}</div>
                 {% if item.requester_gai_ids or item.requesters %}
                 <div><strong>Demandantes:</strong>
                     {% for r in item.requesters %}

@@ -7,7 +7,7 @@ from crm_api.client import CrmApiClient
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
 from crm_api.pagination import build_api_pagination
 from crm_api.services import projects as projects_service
-from projetos.views._helpers import load_task_lookups, menu_context, task_display_value
+from crm.views.views_tasks._helpers import enrich_task_for_display, load_task_lookups, menu_context, task_display_value
 
 
 @crm_permission_required("view_project")
@@ -37,6 +37,7 @@ def tasks_projeto(request, project_id):
             status_id=status_id,
             requester_gai_id=requester_gai_id,
         )
+        items = [enrich_task_for_display(item) for item in items]
         pagination = build_api_pagination(
             request, items, total_items=total, limit=pagination["limit"],
         )

@@ -2,9 +2,19 @@ from crm.helpers.api_display import enrich_task_lookups, nested_label
 from crm_api.client import CrmApiClient
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
 from crm_api.pagination import build_api_pagination
+from crm_api.services import clients as clients_service
 from crm_api.services import projects as projects_service
 from crm_api.services import tasks as tasks_service
-from crm_api.services.lookups import get_column_templates, get_crm_lookups, get_groups, get_team_gais
+from crm_api.services.lookups import (
+    get_column_templates,
+    get_crm_lookups,
+    get_designations,
+    get_gais,
+    get_groups,
+    get_team_gais,
+    get_users,
+    unwrap_lookup_items,
+)
 
 
 def menu_context(current_menu, current_submenu=None, *, parent_menu="projetos"):
@@ -17,11 +27,131 @@ def menu_context(current_menu, current_submenu=None, *, parent_menu="projetos"):
     return ctx
 
 
-def load_task_lookups(client: CrmApiClient):
-    try:
-        return enrich_task_lookups(get_crm_lookups(client) or {})
-    except CrmApiError:
+def _normalize_crm_lookups(data):
+    if not isinstance(data, dict):
         return {}
+    merged = dict(data)
+    nested = data.get("lookups")
+    if isinstance(nested, dict):
+        merged.update(nested)
+    for key, value in list(merged.items()):
+        if key == "lookups":
+            continue
+        if isinstance(value, dict) and any(k in value for k in ("items", "results", "data")):
+            merged[key] = unwrap_lookup_items(value)
+    return merged
+
+
+def _filter_active_gais(items):
+    filtered = []
+    for item in items or []:
+        if not isinstance(item, dict):
+            continue
+        if item.get("is_active") is False:
+            continue
+        status = str(item.get("status") or "").lower()
+        if status in ("inactive", "inativo", "disabled", "desativado"):
+            continue
+        filtered.append(item)
+    return filtered if filtered else list(items or [])
+
+
+def _normalize_gai_item(item):
+    if not isinstance(item, dict):
+        return item
+    gai_id = item.get("id") or item.get("gai_id")
+    nome = item.get("nome") or item.get("name")
+    return {
+        **item,
+        "id": gai_id,
+        "gai_id": gai_id,
+        "nome": nome,
+        "name": nome,
+    }
+
+
+def _load_active_gais(client: CrmApiClient):
+    items = []
+    try:
+        items = unwrap_lookup_items(get_gais(client))
+    except CrmApiError:
+        pass
+    items = [_normalize_gai_item(item) for item in _filter_active_gais(items)]
+    if items:
+        return items
+    try:
+        clients, _ = clients_service.list_clients(client, limit=500)
+        return [_normalize_gai_item(item) for item in _filter_active_gais(clients)]
+    except CrmApiError:
+        return []
+
+
+def _load_system_users(client: CrmApiClient):
+    try:
+        users = unwrap_lookup_items(get_users(client))
+        if users:
+            return users
+    except CrmApiError:
+        pass
+    try:
+        crm = _normalize_crm_lookups(get_crm_lookups(client) or {})
+        users = crm.get("users")
+        if isinstance(users, list):
+            return users
+        if isinstance(users, dict):
+            return unwrap_lookup_items(users)
+    except CrmApiError:
+        pass
+    return _django_system_users()
+
+
+def _django_system_users():
+    from django.contrib.auth.models import User
+
+    return [
+        {
+            "id": user.id,
+            "username": user.username,
+            "name": user.get_full_name() or user.username,
+        }
+        for user in User.objects.filter(is_active=True).order_by("username")
+    ]
+
+
+def _load_designations(client: CrmApiClient):
+    try:
+        designations = unwrap_lookup_items(get_designations(client))
+        if designations:
+            return designations
+    except CrmApiError:
+        pass
+    try:
+        crm = _normalize_crm_lookups(get_crm_lookups(client) or {})
+        designations = crm.get("designations")
+        if isinstance(designations, list):
+            return designations
+        if isinstance(designations, dict):
+            return unwrap_lookup_items(designations)
+    except CrmApiError:
+        pass
+    return []
+
+
+def load_task_lookups(client: CrmApiClient):
+    lookups = {}
+    try:
+        lookups = enrich_task_lookups(_normalize_crm_lookups(get_crm_lookups(client) or {}))
+    except CrmApiError:
+        lookups = {}
+
+    if not lookups.get("gais"):
+        lookups["gais"] = _load_active_gais(client)
+    if not lookups.get("users"):
+        lookups["users"] = _load_system_users(client)
+    if not lookups.get("designations"):
+        lookups["designations"] = _load_designations(client)
+
+    return enrich_task_lookups(lookups)
 
 
 def load_project_lookups(client: CrmApiClient):
@@ -213,7 +343,10 @@ def fetch_task_list(request, *, my_tasks=False, role=None, extra_filters=None):
         filters["role"] = role
     items = []
     error_message = None
-    lookups = {}
+    try:
+        lookups = load_board_lookups(client)
+    except Exception:
+        lookups = {}
 
     list_fn = tasks_service.list_my_tasks if my_tasks else tasks_service.list_tasks
     try:
@@ -227,7 +360,6 @@ def fetch_task_list(request, *, my_tasks=False, role=None, extra_filters=None):
         pagination = build_api_pagination(
             request, items, total_items=total, limit=pagination["limit"],
         )
-        lookups = load_board_lookups(client)
     except CrmApiError as exc:
         error_message = crm_error_message_pt(exc)
 
@@ -274,3 +406,30 @@ def can_comment_on_board(request, board_access):
     if not request.user.has_perm("crm.view_task"):
         return False
     return board_access.get("can_comment", True)
+
+
+_TASK_ASSIGNEE_FIELDS = frozenset({"assignee_user_id", "assignee_customer_gai_id"})
+
+
+def task_create_data_from_form(cleaned_data):
+    """Remove campos de atribuição antes de montar payload de criação."""
+    return {
+        k: v
+        for k, v in cleaned_data.items()
+        if k not in _TASK_ASSIGNEE_FIELDS
+    }
+
+
+def apply_task_assignees(client, task_id, cleaned_data):
+    """Atribui usuário e/ou GAI após criar a task."""
+    from crm_api.payloads import assignee_payload
+
+    payloads = []
+    user_id = cleaned_data.get("assignee_user_id")
+    gai_id = cleaned_data.get("assignee_customer_gai_id")
+    if user_id not in (None, ""):
+        payloads.append({"user_id": user_id})
+    if gai_id not in (None, ""):
+        payloads.append({"customer_gai_id": gai_id})
+    for payload in payloads:
+        tasks_service.add_assignee(client, task_id, assignee_payload(payload))

@@ -154,6 +154,130 @@ class UnifiedTaskForm(forms.Form):
         return cleaned
 
 
+_SELECT_CLASS = "form-control"
+_SEARCH_SELECT_CLASS = "form-control js-crm-search-select"
+
+
+class TaskListModalForm(forms.Form):
+    """Formulário modal na listagem de tasks (/crm/tasks/)."""
+
+    title = forms.CharField(
+        label="Título",
+        max_length=255,
+        widget=forms.TextInput(attrs={"class": "form-control", "autocomplete": "off"}),
+    )
+    description = forms.CharField(
+        label="Descrição",
+        required=False,
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+    )
+    board_id = forms.ChoiceField(
+        label="Board",
+        choices=[("", "---------")],
+        widget=forms.Select(attrs={"class": _SELECT_CLASS}),
+    )
+    status_id = forms.ChoiceField(
+        label="Status",
+        choices=[("", "---------")],
+        widget=forms.Select(attrs={"class": _SELECT_CLASS}),
+    )
+    priority_id = forms.ChoiceField(
+        label="Prioridade",
+        required=False,
+        choices=[("", "---------")],
+        widget=forms.Select(attrs={"class": _SELECT_CLASS}),
+    )
+    service_type_id = forms.ChoiceField(
+        label="Tipo de serviço",
+        required=False,
+        choices=[("", "---------")],
+        widget=forms.Select(attrs={"class": _SELECT_CLASS}),
+    )
+    project_id = forms.ChoiceField(
+        label="Projeto",
+        required=False,
+        choices=[("", "---------")],
+        widget=forms.Select(attrs={"class": _SELECT_CLASS}),
+    )
+    customer_gai_id = forms.ChoiceField(
+        label="Cliente (GAI)",
+        required=False,
+        choices=[("", "---------")],
+        widget=forms.Select(attrs={"class": _SEARCH_SELECT_CLASS}),
+    )
+    assignee_user_id = forms.ChoiceField(
+        label="Responsável (usuário)",
+        required=False,
+        choices=[("", "---------")],
+        widget=forms.Select(attrs={"class": _SEARCH_SELECT_CLASS}),
+    )
+    assignee_customer_gai_id = forms.ChoiceField(
+        label="Responsável (GAI)",
+        required=False,
+        choices=[("", "---------")],
+        widget=forms.Select(attrs={"class": _SEARCH_SELECT_CLASS}),
+    )
+    due_at = forms.DateTimeField(
+        label="Prazo",
+        required=False,
+        widget=forms.DateTimeInput(
+            attrs={"class": "form-control", "type": "datetime-local"},
+            format="%Y-%m-%dT%H:%M",
+        ),
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"],
+    )
+
+    def __init__(self, *args, lookups=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        lookups = lookups or {}
+        self._set_choices("board_id", lookups.get("boards", []), "id", ("name", "nome", "title"))
+        self._set_choices("status_id", lookups.get("status_tasks", []), "id", ("name", "nome", "label"))
+        self._set_choices("priority_id", lookups.get("priorities", []), "id", ("name", "nome", "label"))
+        self._set_choices(
+            "service_type_id",
+            lookups.get("service_types", []),
+            "id",
+            ("description", "type", "name", "nome", "label"),
+        )
+        self._set_choices("project_id", lookups.get("projects", []), "id", ("name", "nome", "title"))
+        self._set_choices("customer_gai_id", lookups.get("gais", []), "id", ("nome", "name"))
+        self._set_user_choices("assignee_user_id", lookups.get("users", []))
+        self._set_choices(
+            "assignee_customer_gai_id",
+            lookups.get("gais", []),
+            "id",
+            ("nome", "name"),
+        )
+        self.fields["board_id"].required = True
+        self.fields["status_id"].required = True
+
+    def _set_user_choices(self, field_name, items):
+        choices = [("", "---------")]
+        for item in items or []:
+            if not isinstance(item, dict):
+                continue
+            item_id = item.get("id")
+            username = item.get("username") or item.get("name")
+            name = item.get("name") or item.get("full_name")
+            if item_id is None:
+                continue
+            if username and name and name != username:
+                label = f"{username} — {name}"
+            else:
+                label = username or name or str(item_id)
+            choices.append((str(item_id), label))
+        self.fields[field_name].choices = choices
+
+    def _set_choices(self, field_name, items, id_key, label_keys):
+        choices = [("", "---------")]
+        for item in items:
+            item_id = item.get(id_key) or item.get("gai_id")
+            label = next((item.get(k) for k in label_keys if item.get(k)), None)
+            if item_id is not None:
+                choices.append((str(item_id), label or str(item_id)))
+        self.fields[field_name].choices = choices
+
+
 class ComercialTaskModalForm(forms.Form):
     """Formulário enxuto para criação de task no Kanban comercial (modal)."""
 
