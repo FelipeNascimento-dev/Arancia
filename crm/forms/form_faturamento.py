@@ -1,12 +1,17 @@
 from django import forms
 
+from crm.views.views_contratos._helpers import (
+    contract_option_label,
+    filter_contracts_for_gai,
+)
+
 
 class BillingForm(forms.Form):
     client_gai_id = forms.IntegerField(
         label="Cliente (GAI)",
         widget=forms.Select(attrs={"class": "form-control"}),
     )
-    contract_id = forms.IntegerField(
+    contract_id = forms.CharField(
         label="Contrato",
         required=False,
         widget=forms.Select(attrs={"class": "form-control"}),
@@ -53,12 +58,18 @@ class BillingForm(forms.Form):
             attrs={"class": "form-control"},
         )
 
+        client_gai_id = None
+        if self.initial.get("client_gai_id") not in (None, ""):
+            client_gai_id = self.initial.get("client_gai_id")
+        elif self.data.get("client_gai_id") not in (None, ""):
+            client_gai_id = self.data.get("client_gai_id")
+
         contract_choices = [("", "---------")]
-        for contract in lookups.get("contracts", []):
+        for contract in filter_contracts_for_gai(lookups.get("contracts", []), client_gai_id):
             contract_id = contract.get("id")
-            label = contract.get("titulo") or contract.get("numero") or str(contract_id)
+            label = contract_option_label(contract)
             if contract_id is not None:
-                contract_choices.append((contract_id, label))
+                contract_choices.append((str(contract_id), label))
         self.fields["contract_id"].widget = forms.Select(
             choices=contract_choices,
             attrs={"class": "form-control"},

@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import redirect, render
 
-from crm.helpers.api_display import enrich_board
+from crm.helpers.api_display import enrich_board, enrich_board_column
 from crm.decorators import crm_permission_required
 from crm.forms import BoardColumnForm
 from crm.views.views_tasks._helpers import load_board_lookups, menu_context
@@ -63,7 +63,11 @@ def colunas_comercial(request):
 
     try:
         columns = boards_service.list_columns(client, board_id)
-        columns = sorted(columns, key=lambda c: c.get("position") or 0)
+        columns = sorted(
+            columns,
+            key=lambda c: c.get("position") or c.get("sort_order") or c.get("kanban_position") or 0,
+        )
+        columns = [enrich_board_column(c, lookups) for c in columns]
     except CrmApiError as exc:
         messages.error(request, crm_error_message_pt(exc))
 
@@ -77,6 +81,7 @@ def colunas_comercial(request):
             "columns": columns,
             "column_form": column_form,
             "lookups": lookups,
+            "comercial_page": "columns",
             **menu_context("crm_comercial", parent_menu="crm"),
         },
     )

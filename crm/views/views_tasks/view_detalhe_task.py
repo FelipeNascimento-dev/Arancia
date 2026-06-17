@@ -10,6 +10,13 @@ from crm_api.services import tasks as tasks_service
 from crm.views.views_tasks._helpers import (
     board_access_for_task,
     can_comment_on_board,
+    enrich_assignee_for_display,
+    enrich_attachment_for_display,
+    enrich_comment_for_display,
+    enrich_move_history_for_display,
+    enrich_subtask_for_display,
+    enrich_task_for_display,
+    enrich_watcher_for_display,
     load_task_lookups,
     menu_context,
     task_display_value,
@@ -38,6 +45,8 @@ def detalhe_task(request, task_id):
 
     try:
         task = tasks_service.get_task(client, task_id)
+        if task:
+            task = enrich_task_for_display(task)
     except CrmApiError as exc:
         messages.error(request, crm_error_message_pt(exc))
         return redirect("crm:lista_tasks")
@@ -163,7 +172,7 @@ def detalhe_task(request, task_id):
             return redirect(f"{request.path}?tab=anexos")
 
     try:
-        subtasks = tasks_service.list_subtasks(client, task_id)
+        subtasks = [enrich_subtask_for_display(s) for s in tasks_service.list_subtasks(client, task_id)]
     except CrmApiError:
         pass
     try:
@@ -171,23 +180,32 @@ def detalhe_task(request, task_id):
     except CrmApiError:
         pass
     try:
-        assignees = tasks_service.list_assignees(client, task_id)
+        assignees = [enrich_assignee_for_display(a) for a in tasks_service.list_assignees(client, task_id)]
     except CrmApiError:
         pass
     try:
-        watchers = tasks_service.list_watchers(client, task_id)
+        watchers = [enrich_watcher_for_display(w) for w in tasks_service.list_watchers(client, task_id)]
     except CrmApiError:
         pass
     try:
-        attachments = tasks_service.list_attachments(client, task_id)
+        attachments = [
+            enrich_attachment_for_display(a)
+            for a in tasks_service.list_attachments(client, task_id)
+        ]
     except CrmApiError:
         pass
     try:
-        move_history = tasks_service.get_move_history(client, task_id)
+        move_history = [
+            enrich_move_history_for_display(h)
+            for h in tasks_service.get_move_history(client, task_id)
+        ]
     except CrmApiError:
         pass
 
-    comments = task.get("comments", []) if task else []
+    comments = [
+        enrich_comment_for_display(c)
+        for c in (task.get("comments", []) if task else [])
+    ]
     linked_tasks = task.get("linked_tasks", []) if task else []
     recurrence_template_id = task.get("recurrence_template_id") if task else None
 
@@ -195,7 +213,7 @@ def detalhe_task(request, task_id):
         request,
         "crm/templates_tasks/detalhe_task.html",
         {
-            "site_title": f"CRM — {task_display_value(task, 'title', 'nome', default=task_id)}",
+            "site_title": f"CRM — {task.get('display_title') or task_id}",
             "task": task,
             "task_id": task_id,
             "subtasks": subtasks,

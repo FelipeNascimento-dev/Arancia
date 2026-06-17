@@ -83,6 +83,7 @@ def acesso_comercial(request):
             "board_id": board_id,
             "grants": grants,
             "access_form": access_form,
+            "comercial_page": "access",
             **menu_context("crm_comercial", parent_menu="crm"),
         },
     )

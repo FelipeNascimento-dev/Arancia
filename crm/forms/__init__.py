@@ -4,6 +4,7 @@ from .form_faturamento import BillingFilterForm, BillingForm
 from .form_board import BoardAccessForm, BoardColumnForm, BoardForm
 from .form_settings import PriorityForm, RecurrenceEditForm, ServiceTypeForm, StatusTaskForm
 from .form_task_unificado import (
+    ComercialTaskModalForm,
     TaskAssigneeForm,
     TaskCommentForm,
     TaskEditForm,
@@ -22,6 +23,7 @@ __all__ = [
     "BillingForm",
     "BillingFilterForm",
     "UnifiedTaskForm",
+    "ComercialTaskModalForm",
     "TaskEditForm",
     "TaskCommentForm",
     "TaskSubtaskForm",

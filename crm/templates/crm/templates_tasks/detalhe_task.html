@@ -38,15 +38,16 @@
             </div>
         </div>
 
-        <h2>{{ task.title|default:task.nome|default:task_id }}</h2>
+        <h2>{{ task.display_title|default:task_id }}</h2>
 
         <div class="info-grid">
-            <div class="info-item"><label>Status</label><span>{{ task.status.name|default:task.status_name|default:"-" }}</span></div>
-            <div class="info-item"><label>Prioridade</label><span>{{ task.priority.name|default:task.priority_name|default:"-" }}</span></div>
-            <div class="info-item"><label>Board</label><span>{{ task.board.name|default:task.board_name|default:"-" }}</span></div>
-            <div class="info-item"><label>Prazo</label><span>{{ task.due_at|default:"-" }}</span></div>
-            <div class="info-item"><label>Início</label><span>{{ task.scheduled_start_at|default:"-" }}</span></div>
-            <div class="info-item"><label>Projeto</label><span>{{ task.project.name|default:task.project_name|default:"-" }}</span></div>
+            <div class="info-item"><label>Status</label><span>{{ task.display_status|default:"-" }}</span></div>
+            <div class="info-item"><label>Prioridade</label><span>{{ task.display_priority|default:"-" }}</span></div>
+            <div class="info-item"><label>Board</label><span>{{ task.display_board|default:"-" }}</span></div>
+            <div class="info-item"><label>Cliente</label><span>{{ task.display_customer|default:"-" }}</span></div>
+            <div class="info-item"><label>Prazo</label><span>{{ task.display_due|default:"-" }}</span></div>
+            <div class="info-item"><label>Início</label><span>{{ task.display_scheduled_start|default:"-" }}</span></div>
+            <div class="info-item"><label>Projeto</label><span>{{ task.display_project|default:"-" }}</span></div>
         </div>
 
         <div class="tabs">
@@ -66,7 +67,7 @@
                     <ul>
                         {% for a in assignees %}
                         <li>
-                            {{ a.username|default:a.user_id|default:"-" }}
+                            {{ a.display_name|default:"-" }}
                             {% if a.is_primary %}<em>(principal)</em>{% endif %}
                             {% if perms.crm.assign_task %}
                             <form method="post" style="display:inline;">
@@ -93,7 +94,7 @@
                     <ul>
                         {% for w in watchers %}
                         <li>
-                            {{ w.username|default:w.user_id|default:"-" }}
+                            {{ w.display_name|default:"-" }}
                             {% if perms.crm.manage_watchers %}
                             <form method="post" style="display:inline;">
                                 {% csrf_token %}
@@ -117,8 +118,8 @@
                         <tbody>
                             {% for s in subtasks %}
                             <tr>
-                                <td>{{ s.title|default:"-" }}</td>
-                                <td>{{ s.status.name|default:s.status_name|default:"-" }}</td>
+                                <td>{{ s.display_title|default:"-" }}</td>
+                                <td>{{ s.display_status|default:"-" }}</td>
                             </tr>
                             {% empty %}
                             <tr><td colspan="2" class="muted">Nenhuma subtarefa.</td></tr>
@@ -186,8 +187,8 @@
                 <div class="tab-card">
                     {% for c in comments %}
                     <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #e5e7eb;">
-                        <strong>{{ c.author_username|default:c.user_id|default:"Usuário" }}</strong>
-                        <p>{{ c.content|default:c.body|default:c.text }}</p>
+                        <strong>{{ c.display_author|default:"Usuário" }}</strong>
+                        <p>{{ c.display_body|default:"" }}</p>
                     </div>
                     {% empty %}
                     <p class="muted">Nenhum comentário.</p>
@@ -208,7 +209,7 @@
                     <ul>
                         {% for a in attachments %}
                         <li>
-                            <a href="{{ a.url|default:'#' }}" target="_blank">{{ a.filename|default:a.name|default:"Anexo" }}</a>
+                            <a href="{{ a.display_url|default:'#' }}" target="_blank">{{ a.display_name|default:"Anexo" }}</a>
                         </li>
                         {% empty %}
                         <li class="muted">Nenhum anexo.</li>
@@ -232,10 +233,10 @@
                         <tbody>
                             {% for h in move_history %}
                             <tr>
-                                <td>{{ h.moved_at|default:h.created_at|default:"-" }}</td>
-                                <td>{{ h.from_status.name|default:h.from_status_name|default:"-" }}</td>
-                                <td>{{ h.to_status.name|default:h.to_status_name|default:"-" }}</td>
-                                <td>{{ h.user_username|default:h.user_id|default:"-" }}</td>
+                                <td>{{ h.display_moved_at|default:"-" }}</td>
+                                <td>{{ h.display_from_status|default:"-" }}</td>
+                                <td>{{ h.display_to_status|default:"-" }}</td>
+                                <td>{{ h.display_user|default:"-" }}</td>
                             </tr>
                             {% empty %}
                             <tr><td colspan="4" class="muted">Sem histórico de movimentação.</td></tr>

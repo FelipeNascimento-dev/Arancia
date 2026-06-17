@@ -1,6 +1,99 @@
 {% extends 'global/base.html' %}
+{% load static %}
 
 {% block content %}
+<style>
+    .crm-contract-actions {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        flex-wrap: nowrap;
+    }
+
+    .crm-contract-actions .action-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid #dbe3ec;
+        background: #f8fafc;
+        color: #334155;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+        font-size: 14px;
+        padding: 0;
+        text-decoration: none;
+    }
+
+    .crm-contract-actions .action-pill:hover {
+        transform: translateY(-1px);
+    }
+
+    .crm-contract-actions .action-pill--view:hover {
+        background: #eff6ff;
+        border-color: #93c5fd;
+        color: #1d4ed8;
+    }
+
+    .crm-contract-actions .action-pill--edit:hover {
+        background: #ecfdf5;
+        border-color: #86efac;
+        color: #15803d;
+    }
+
+    .crm-contract-actions .action-pill--files:hover {
+        background: #faf5ff;
+        border-color: #d8b4fe;
+        color: #7e22ce;
+    }
+
+    .crm-contract-view-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px 20px;
+    }
+
+    .crm-contract-view-item {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px 12px;
+    }
+
+    .crm-contract-view-item .label {
+        display: block;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        color: #64748b;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .crm-contract-view-item .value {
+        color: #0f172a;
+        font-weight: 500;
+        word-break: break-word;
+    }
+
+    .crm-contract-view-item--wide {
+        grid-column: 1 / -1;
+    }
+
+    .crm-modal-alert {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #b91c1c;
+        font-size: 0.9rem;
+    }
+</style>
+
+{% csrf_token %}
 <div class="user-list-container">
     <div class="user-table-header">
         <h2 class="user-table-title"><i class="fa-solid fa-file-contract"></i> Contratos</h2>
@@ -10,9 +103,9 @@
         </form>
         <div class="user-create">
             {% if perms.crm.add_contract %}
-            <a href="{% url 'crm:form_contrato' %}" class="btn btn-primary">
+            <button type="button" class="btn btn-primary" onclick="openCreateContractModal()">
                 <i class="fa-solid fa-plus"></i> Novo Contrato
-            </a>
+            </button>
             {% endif %}
         </div>
     </div>
@@ -25,32 +118,48 @@
                     <th>Número</th>
                     <th>Título</th>
                     <th>Cliente</th>
+                    <th>Tipo de serviço</th>
+                    <th>Início</th>
+                    <th>Fim</th>
+                    <th>Valor</th>
                     <th>Status</th>
                     <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in items %}
-                <tr>
+                <tr data-contract-id="{{ item.id }}">
                     <td><strong>{{ item.id }}</strong></td>
                     <td>{{ item.display_numero|default:"-" }}</td>
                     <td>{{ item.display_titulo|default:"-" }}</td>
                     <td>{{ item.display_customer|default:"-" }}</td>
-                    <td><span class="tag">{{ item.status|default:"-" }}</span></td>
+                    <td>{{ item.display_service_type|default:"-" }}</td>
+                    <td>{{ item.display_data_inicio|default:"-" }}</td>
+                    <td>{{ item.display_data_fim|default:"-" }}</td>
+                    <td>{{ item.display_valor|default:"-" }}</td>
+                    <td><span class="tag">{{ item.display_status|default:"-" }}</span></td>
                     <td>
-                        <a href="{% url 'crm:detalhe_contrato' item.id %}" class="action-btn edit-btn" title="Detalhes">
-                            <i class="fa-solid fa-eye"></i>
-                        </a>
-                        {% if perms.crm.change_contract %}
-                        <a href="{% url 'crm:edit_contrato' item.id %}" class="action-btn edit-btn" title="Editar">
-                            <i class="fa-solid fa-pencil"></i>
-                        </a>
-                        {% endif %}
+                        <div class="crm-contract-actions">
+                            <button type="button" class="action-pill action-pill--view btn-view-contract"
+                                    data-contract-id="{{ item.id }}" title="Visualizar">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                            {% if perms.crm.change_contract %}
+                            <button type="button" class="action-pill action-pill--edit btn-edit-contract"
+                                    data-contract-id="{{ item.id }}" title="Editar">
+                                <i class="fa-solid fa-pencil"></i>
+                            </button>
+                            {% endif %}
+                            <a href="{% url 'crm:detalhe_contrato' item.id %}"
+                               class="action-pill action-pill--files" title="Arquivos e detalhes">
+                                <i class="fa-solid fa-folder-open"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="muted text-center">Nenhum contrato encontrado.</td>
+                    <td colspan="10" class="muted text-center">Nenhum contrato encontrado.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -73,4 +182,179 @@
     </div>
     {% endif %}
 </div>
+
+{{ list_config|json_script:"crm-contract-list-config" }}
+
+{% if perms.crm.add_contract %}
+<div id="modalCreateContract" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5><i class="fa-solid fa-file-contract"></i> Novo Contrato</h5>
+            <button type="button" class="modal-close" data-close-modal="modalCreateContract">&times;</button>
+        </div>
+        <form method="post" id="formCreateContract">
+            {% csrf_token %}
+            <input type="hidden" name="create_contract" value="1">
+            <div class="modal-body fields-grid">
+                {% for field in form %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="text-danger small">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="modal-footer modal-footer-split">
+                <div class="footer-left">
+                    {% include "global/partials/_required_fields.html" %}
+                </div>
+                <div class="footer-right">
+                    <button type="button" class="btn btn-warning" onclick="resetCreateContractForm()">Limpar campos</button>
+                    <button type="button" class="btn btn-secondary" data-close-modal="modalCreateContract">Fechar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div id="modalViewContract" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5><i class="fa-solid fa-eye"></i> Visualizar Contrato</h5>
+            <button type="button" class="modal-close" data-close-modal="modalViewContract">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="crm-contract-view-grid">
+                <div class="crm-contract-view-item">
+                    <span class="label">ID</span>
+                    <span class="value" id="viewContractId">-</span>
+                </div>
+                <div class="crm-contract-view-item">
+                    <span class="label">Número</span>
+                    <span class="value" id="viewContractNumero">-</span>
+                </div>
+                <div class="crm-contract-view-item">
+                    <span class="label">Título</span>
+                    <span class="value" id="viewContractTitulo">-</span>
+                </div>
+                <div class="crm-contract-view-item">
+                    <span class="label">Cliente</span>
+                    <span class="value" id="viewContractCliente">-</span>
+                </div>
+                <div class="crm-contract-view-item">
+                    <span class="label">Tipo de serviço</span>
+                    <span class="value" id="viewContractServiceType">-</span>
+                </div>
+                <div class="crm-contract-view-item">
+                    <span class="label">Status</span>
+                    <span class="value" id="viewContractStatus">-</span>
+                </div>
+                <div class="crm-contract-view-item">
+                    <span class="label">Início</span>
+                    <span class="value" id="viewContractInicio">-</span>
+                </div>
+                <div class="crm-contract-view-item">
+                    <span class="label">Fim</span>
+                    <span class="value" id="viewContractFim">-</span>
+                </div>
+                <div class="crm-contract-view-item">
+                    <span class="label">Valor</span>
+                    <span class="value" id="viewContractValor">-</span>
+                </div>
+                <div class="crm-contract-view-item crm-contract-view-item--wide">
+                    <span class="label">Descrição</span>
+                    <span class="value" id="viewContractDescricao">-</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer modal-footer-split">
+            <div class="footer-left"></div>
+            <div class="footer-right">
+                {% if perms.crm.change_contract %}
+                <button type="button" class="btn btn-primary" id="btnOpenEditContractFromView">
+                    <i class="fa-solid fa-pencil"></i> Editar
+                </button>
+                {% endif %}
+                <a href="#" class="btn btn-secondary" id="btnOpenDetailFromView">
+                    <i class="fa-solid fa-folder-open"></i> Arquivos
+                </a>
+                <button type="button" class="btn btn-secondary" data-close-modal="modalViewContract">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if perms.crm.change_contract %}
+<div id="modalEditContract" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5><i class="fa-solid fa-pencil"></i> Editar Contrato</h5>
+            <button type="button" class="modal-close" data-close-modal="modalEditContract">&times;</button>
+        </div>
+        <form id="formEditContract">
+            <input type="hidden" id="editContractId" value="">
+            <div class="modal-body fields-grid">
+                <div class="form-group">
+                    <label for="edit_client_gai_id">Cliente (GAI) (*)</label>
+                    <select class="form-control" id="edit_client_gai_id" name="client_gai_id" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="edit_titulo">Título (*)</label>
+                    <input type="text" class="form-control" id="edit_titulo" name="titulo" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit_numero">Número</label>
+                    <input type="text" class="form-control" id="edit_numero" name="numero">
+                </div>
+                <div class="form-group">
+                    <label for="edit_status">Status</label>
+                    <input type="text" class="form-control" id="edit_status" name="status">
+                </div>
+                <div class="form-group">
+                    <label for="edit_data_inicio">Data início</label>
+                    <input type="date" class="form-control" id="edit_data_inicio" name="data_inicio">
+                </div>
+                <div class="form-group">
+                    <label for="edit_data_fim">Data fim</label>
+                    <input type="date" class="form-control" id="edit_data_fim" name="data_fim">
+                </div>
+                <div class="form-group">
+                    <label for="edit_valor">Valor</label>
+                    <input type="number" class="form-control" id="edit_valor" name="valor" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="edit_service_type_id">Tipo de serviço</label>
+                    <select class="form-control" id="edit_service_type_id" name="service_type_id">
+                        <option value="">---------</option>
+                    </select>
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="edit_descricao">Descrição</label>
+                    <textarea class="form-control" id="edit_descricao" name="descricao" rows="3"></textarea>
+                </div>
+            </div>
+            <div id="editContractError" class="crm-modal-alert" hidden></div>
+            <div class="modal-footer modal-footer-split">
+                <div class="footer-left">
+                    {% include "global/partials/_required_fields.html" %}
+                </div>
+                <div class="footer-right">
+                    <button type="button" class="btn btn-secondary" data-close-modal="modalEditContract">Fechar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{% if show_create_modal %}
+<script>document.addEventListener("DOMContentLoaded", function () { openCreateContractModal(); });</script>
+{% endif %}
+
+<script src="{% static 'global/javascript/crm_contratos_lista.js' %}"></script>
 {% endblock %}

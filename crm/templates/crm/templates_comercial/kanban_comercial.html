@@ -2,70 +2,87 @@
 {% load static %}
 {% block content %}
 
-<div class="kanban-page-header">
-    <h2 class="title-skill-ger">
-        <i class="fa-solid fa-table-columns"></i>
-        {{ board.display_name|default:board_id }}
-    </h2>
-    <div class="kanban-toolbar">
-        <a href="{% url 'crm:dashboard' %}" class="btn btn-secondary btn-sm">
-            <i class="fa-solid fa-arrow-left"></i> CRM
-        </a>
-        {% if perms.crm.manage_board_columns %}
-        <a href="{% url 'crm:colunas_comercial' %}" class="btn btn-secondary btn-sm">
-            <i class="fa-solid fa-grip-vertical"></i> Colunas
-        </a>
-        {% endif %}
-        {% if perms.crm.manage_board_access %}
-        <a href="{% url 'crm:acesso_comercial' %}" class="btn btn-secondary btn-sm">
-            <i class="fa-solid fa-user-shield"></i> Acesso
-        </a>
-        {% endif %}
-        {% if can_create_tasks or perms.crm.add_task %}
-        <a href="{% url 'crm:form_task' %}?board_id={{ board_id }}" class="btn btn-primary btn-sm">
-            <i class="fa-solid fa-plus"></i> Nova task
-        </a>
-        {% endif %}
+<div class="crm-comercial-page crm-comercial-kanban">
+    {% include 'crm/templates_comercial/partials/_header.html' %}
+
+    <div id="crm-kanban-root" class="kanban-board">
+        {% for block in columns_with_tasks %}
+        <div class="kanban-column"
+             data-column-id="{{ block.col_key }}"
+             data-status-id="{{ block.col_key }}">
+            <div class="kanban-column-header">
+                <span class="kanban-column-title">
+                    {% if block.column.color %}
+                    <span class="crm-comercial-color-dot" style="background: {{ block.column.color }};"></span>
+                    {% endif %}
+                    {{ block.column.display_name|default:"Coluna" }}
+                </span>
+                <span class="kanban-column-count">{{ block.tasks|length }}</span>
+            </div>
+            <div class="kanban-column-body" data-drop-zone="1">
+                {% for task in block.tasks %}
+                <div class="kanban-card"
+                     draggable="{% if can_move_tasks %}true{% else %}false{% endif %}"
+                     data-task-id="{{ task.id }}">
+                    <a href="{% url 'crm:detalhe_task' task.id %}" class="kanban-card-title">
+                        {{ task.title|default:"Task" }}
+                    </a>
+                    {% if task.priority %}
+                    <span class="kanban-tag">{{ task.priority.name|default:"-" }}</span>
+                    {% elif task.priority_name %}
+                    <span class="kanban-tag">{{ task.priority_name }}</span>
+                    {% endif %}
+                    {% if task.due_at %}
+                    <div class="kanban-card-meta"><i class="fa-regular fa-clock"></i> {{ task.due_at|date:"d/m/Y H:i" }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <p class="kanban-empty-msg">Nenhuma coluna configurada.
+            {% if perms.crm.manage_board_columns %}
+            <a href="{% url 'crm:colunas_comercial' %}">Configurar colunas</a>
+            {% endif %}
+        </p>
+        {% endfor %}
     </div>
 </div>
 
-<div id="crm-kanban-root" class="kanban-board">
-    {% for block in columns_with_tasks %}
-    <div class="kanban-column"
-         data-column-id="{{ block.col_key }}"
-         data-status-id="{{ block.col_key }}">
-        <div class="kanban-column-header">
-            <span class="kanban-column-title">{{ block.column.display_name|default:"Coluna" }}</span>
-            <span class="kanban-column-count">{{ block.tasks|length }}</span>
+{% if can_create_tasks or perms.crm.add_task %}
+<div id="modalCreateTask" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5><i class="fa-solid fa-plus"></i> Nova task</h5>
+            <button type="button" class="modal-close" data-close-modal="modalCreateTask">&times;</button>
         </div>
-        <div class="kanban-column-body" data-drop-zone="1">
-            {% for task in block.tasks %}
-            <div class="kanban-card"
-                 draggable="{% if can_move_tasks %}true{% else %}false{% endif %}"
-                 data-task-id="{{ task.id }}">
-                <a href="{% url 'crm:detalhe_task' task.id %}" class="kanban-card-title">
-                    {{ task.title|default:"Task" }}
-                </a>
-                {% if task.priority %}
-                <span class="kanban-tag">{{ task.priority.name|default:"-" }}</span>
-                {% elif task.priority_name %}
-                <span class="kanban-tag">{{ task.priority_name }}</span>
-                {% endif %}
-                {% if task.due_at %}
-                <div class="kanban-card-meta"><i class="fa-regular fa-clock"></i> {{ task.due_at|date:"d/m/Y H:i" }}</div>
-                {% endif %}
+        <form method="post" id="formCreateTask">
+            {% csrf_token %}
+            <input type="hidden" name="create_task" value="1">
+            <div class="modal-body fields-grid">
+                {% for field in task_form %}
+                <div class="form-group{% if field.name == 'description' %} form-group--wide{% endif %}{% if field.is_hidden %} d-none{% endif %}">
+                    {% if not field.is_hidden %}{{ field.label_tag }}{% endif %}
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="text-danger small">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
+            <div class="modal-footer modal-footer-split">
+                <div class="footer-left">
+                    {% include "global/partials/_required_fields.html" %}
+                </div>
+                <div class="footer-right">
+                    <button type="button" class="btn btn-secondary" data-close-modal="modalCreateTask">Fechar</button>
+                    <button type="submit" class="btn btn-primary">Criar task</button>
+                </div>
+            </div>
+        </form>
     </div>
-    {% empty %}
-    <p class="kanban-empty-msg">Nenhuma coluna configurada.
-        {% if perms.crm.manage_board_columns %}
-        <a href="{% url 'crm:colunas_comercial' %}">Configurar colunas</a>
-        {% endif %}
-    </p>
-    {% endfor %}
 </div>
+{% endif %}
 
 <script>
 window.CrmKanbanConfig = {
@@ -78,4 +95,12 @@ window.CrmKanbanConfig = {
 };
 </script>
 <script src="{% static 'global/javascript/kanban_board.js' %}"></script>
+<script src="{% static 'global/javascript/crm_comercial.js' %}"></script>
+{% if task_form.errors %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.CrmComercial) CrmComercial.openModal('modalCreateTask');
+});
+</script>
+{% endif %}
 {% endblock %}

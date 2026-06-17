@@ -1,156 +1,393 @@
 {% extends 'global/base.html' %}
+{% load static %}
 
 {% block content %}
 <style>
-    .form-card-2col {
-        height: auto;
-        margin-top: 65px;
-    }
-    .cards-container {
+    .crm-billing-summary {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 32px;
-        padding: 20px 10px 40px;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
     }
-    .card {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 10px 26px rgba(0,0,0,.08);
-        overflow: hidden;
-        max-width: 410px;
-        min-height: 280px;
-        display: flex;
-        flex-direction: column;
+
+    .crm-billing-summary-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px 14px;
     }
-    .card-header {
-        background-color: #c41e3a;
-        color: #fff;
-        padding: 18px 22px;
-    }
-    .card-section {
-        padding: 18px 22px;
-        border-top: 1px solid #f0f0f0;
-    }
-    .label {
-        font-size: .75rem;
+
+    .crm-billing-summary-card .label {
+        display: block;
+        font-size: 0.72rem;
         text-transform: uppercase;
-        font-weight: 600;
-        color: #777;
+        color: #64748b;
+        font-weight: 700;
+        margin-bottom: 4px;
     }
-    .value {
-        font-size: 1rem;
-        font-weight: 600;
-        margin-top: 4px;
+
+    .crm-billing-summary-card .value {
+        color: #0f172a;
+        font-weight: 700;
+        font-size: 1.05rem;
+        word-break: break-word;
     }
-    .crm-summary-row {
+
+    .crm-billing-filters {
         display: flex;
-        gap: 16px;
+        align-items: center;
+        gap: 10px;
         flex-wrap: wrap;
-        margin: 16px 0 24px;
-        padding: 0 10px;
+        position: relative;
     }
-    .crm-summary-pill {
-        background: #fff;
+
+    .crm-billing-filters input[name="q"] {
+        padding: 8px 12px 8px 36px;
+        border: 1.5px solid var(--borda-formularios);
         border-radius: 8px;
-        padding: 12px 18px;
-        box-shadow: 0 4px 12px rgba(0,0,0,.06);
+        font-size: 0.95rem;
+        background-color: #ffffff;
+        color: var(--form-titulo);
+        width: 280px;
+    }
+
+    .crm-billing-filters input[name="status"] {
+        padding: 8px 12px;
+        border: 1.5px solid var(--borda-formularios);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        background-color: #ffffff;
+        color: var(--form-titulo);
+        width: 160px;
+    }
+
+    .crm-billing-actions {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        flex-wrap: nowrap;
+    }
+
+    .crm-billing-actions .action-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid #dbe3ec;
+        background: #f8fafc;
+        color: #334155;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+        font-size: 14px;
+        padding: 0;
+        text-decoration: none;
+    }
+
+    .crm-billing-actions .action-pill:hover {
+        transform: translateY(-1px);
+    }
+
+    .crm-billing-actions .action-pill--view:hover {
+        background: #eff6ff;
+        border-color: #93c5fd;
+        color: #1d4ed8;
+    }
+
+    .crm-billing-actions .action-pill--edit:hover {
+        background: #ecfdf5;
+        border-color: #86efac;
+        color: #15803d;
+    }
+
+    .crm-billing-view-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px 20px;
+    }
+
+    .crm-billing-view-item {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px 12px;
+    }
+
+    .crm-billing-view-item .label {
+        display: block;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        color: #64748b;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .crm-billing-view-item .value {
+        color: #0f172a;
+        font-weight: 500;
+        word-break: break-word;
+    }
+
+    .crm-billing-view-item--wide {
+        grid-column: 1 / -1;
+    }
+
+    .crm-modal-alert {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #b91c1c;
+        font-size: 0.9rem;
     }
 </style>
 
-<div class="form-container">
-    <div class="form-card-2col">
-        <form method="get">
-            {% csrf_token %}
-            <div class="form-grid-2col">
-                <div class="form-group">
-                    {{ filter_form.q.label_tag }}
-                    {{ filter_form.q }}
+{% csrf_token %}
+<div class="user-list-container">
+    <div class="user-table-header">
+        <h2 class="user-table-title"><i class="fa-solid fa-file-invoice-dollar"></i> Faturamento</h2>
+        <form method="get" action="" class="form-user-search crm-billing-filters">
+            <i class="fa-solid fa-magnifying-glass search-icon-inside"></i>
+            <input type="text" name="q" placeholder="Referência, cliente..." value="{{ q }}">
+            <input type="text" name="status" placeholder="Status" value="{{ status }}">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </form>
+        <div class="user-create">
+            {% if perms.crm.add_billing %}
+            <button type="button" class="btn btn-primary" onclick="openCreateBillingModal()">
+                <i class="fa-solid fa-plus"></i> Novo
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if summary_cards %}
+    <div class="crm-billing-summary">
+        {% for card in summary_cards %}
+        <div class="crm-billing-summary-card" title="{{ card.title|default:card.value }}">
+            <span class="label">{{ card.label }}</span>
+            <span class="value">{{ card.value }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="table-wrapper">
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>Referência</th>
+                    <th>Cliente</th>
+                    <th>Contrato</th>
+                    <th>Período início</th>
+                    <th>Período fim</th>
+                    <th>Valor planejado</th>
+                    <th>Valor realizado</th>
+                    <th>Valor</th>
+                    <th>Vencimento</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr data-billing-id="{{ item.id }}">
+                    <td>{{ item.display_referencia|default:"-" }}</td>
+                    <td>{{ item.display_customer|default:"-" }}</td>
+                    <td>
+                        {% if item.display_contract_id %}
+                        <a href="{% url 'crm:detalhe_contrato' item.display_contract_id %}">
+                            {{ item.display_contract|default:"-" }}
+                        </a>
+                        {% else %}
+                        {{ item.display_contract|default:"-" }}
+                        {% endif %}
+                    </td>
+                    <td>{{ item.display_period_start|default:"-" }}</td>
+                    <td>{{ item.display_period_end|default:"-" }}</td>
+                    <td>{{ item.display_planned_amount|default:"-" }}</td>
+                    <td>{{ item.display_actual_amount|default:"-" }}</td>
+                    <td>{{ item.display_valor|default:"-" }}</td>
+                    <td>{{ item.display_vencimento|default:"-" }}</td>
+                    <td><span class="tag">{{ item.display_status|default:"-" }}</span></td>
+                    <td>
+                        <div class="crm-billing-actions">
+                            <button type="button" class="action-pill action-pill--view btn-view-billing"
+                                    data-billing-id="{{ item.id }}" title="Visualizar">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                            {% if perms.crm.change_billing %}
+                            <button type="button" class="action-pill action-pill--edit btn-edit-billing"
+                                    data-billing-id="{{ item.id }}" title="Editar">
+                                <i class="fa-solid fa-pencil"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="11" class="muted text-center">Nenhum registro de faturamento encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if pagination.has_previous or pagination.has_next %}
+    <div class="pagination-wrapper">
+        {% if pagination.has_previous %}
+        <a href="{{ pagination.previous_url }}" class="page-btn">Anterior</a>
+        {% else %}
+        <span class="page-btn disabled">Anterior</span>
+        {% endif %}
+        <span class="page-btn active">{{ pagination.page }}</span>
+        {% if pagination.has_next %}
+        <a href="{{ pagination.next_url }}" class="page-btn">Próximo</a>
+        {% else %}
+        <span class="page-btn disabled">Próximo</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+{{ list_config|json_script:"crm-billing-list-config" }}
+
+<div id="modalViewBilling" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5><i class="fa-solid fa-eye"></i> Visualizar Faturamento</h5>
+            <button type="button" class="modal-close" data-close-modal="modalViewBilling">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="crm-billing-view-grid">
+                <div class="crm-billing-view-item">
+                    <span class="label">Referência</span>
+                    <span class="value" id="viewBillingReferencia">-</span>
                 </div>
-                <div class="form-group">
-                    {{ filter_form.status.label_tag }}
-                    {{ filter_form.status }}
+                <div class="crm-billing-view-item">
+                    <span class="label">Cliente</span>
+                    <span class="value" id="viewBillingCliente">-</span>
+                </div>
+                <div class="crm-billing-view-item">
+                    <span class="label">Contrato</span>
+                    <span class="value" id="viewBillingContrato">-</span>
+                </div>
+                <div class="crm-billing-view-item">
+                    <span class="label">Período início</span>
+                    <span class="value" id="viewBillingPeriodStart">-</span>
+                </div>
+                <div class="crm-billing-view-item">
+                    <span class="label">Período fim</span>
+                    <span class="value" id="viewBillingPeriodEnd">-</span>
+                </div>
+                <div class="crm-billing-view-item">
+                    <span class="label">Valor planejado</span>
+                    <span class="value" id="viewBillingPlanned">-</span>
+                </div>
+                <div class="crm-billing-view-item">
+                    <span class="label">Valor realizado</span>
+                    <span class="value" id="viewBillingActual">-</span>
+                </div>
+                <div class="crm-billing-view-item">
+                    <span class="label">Valor</span>
+                    <span class="value" id="viewBillingValor">-</span>
+                </div>
+                <div class="crm-billing-view-item">
+                    <span class="label">Vencimento</span>
+                    <span class="value" id="viewBillingVencimento">-</span>
+                </div>
+                <div class="crm-billing-view-item">
+                    <span class="label">Status</span>
+                    <span class="value" id="viewBillingStatus">-</span>
+                </div>
+                <div class="crm-billing-view-item crm-billing-view-item--wide">
+                    <span class="label">Observações</span>
+                    <span class="value" id="viewBillingObservacoes">-</span>
                 </div>
             </div>
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Consultar</button>
-                {% if perms.crm.add_billing %}
-                <a href="{% url 'crm:form_faturamento' %}" class="btn btn-primary" style="margin-left: 8px;">
-                    <i class="fa-solid fa-plus"></i> Novo
-                </a>
+        </div>
+        <div class="modal-footer modal-footer-split">
+            <div class="footer-left"></div>
+            <div class="footer-right">
+                {% if perms.crm.change_billing %}
+                <button type="button" class="btn btn-primary" id="btnOpenEditBillingFromView">
+                    <i class="fa-solid fa-pencil"></i> Editar
+                </button>
                 {% endif %}
+                <a href="#" class="btn btn-secondary" id="btnOpenContractFromView" hidden>
+                    <i class="fa-solid fa-folder-open"></i> Contrato
+                </a>
+                <button type="button" class="btn btn-secondary" data-close-modal="modalViewBilling">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if perms.crm.add_billing or perms.crm.change_billing %}
+<div id="modalFormBilling" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5 id="modalFormBillingTitle"><i class="fa-solid fa-file-invoice-dollar"></i> Faturamento</h5>
+            <button type="button" class="modal-close" data-close-modal="modalFormBilling">&times;</button>
+        </div>
+        <form id="formBilling">
+            <input type="hidden" id="billingFormId" value="">
+            <div class="modal-body fields-grid">
+                <div class="form-group">
+                    <label for="billing_client_gai_id">Cliente (GAI) (*)</label>
+                    <select class="form-control" id="billing_client_gai_id" name="client_gai_id" required>
+                        <option value="">---------</option>
+                        {% for client in list_config.clients %}
+                        <option value="{{ client.id }}">{{ client.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="billing_contract_id">Contrato</label>
+                    <select class="form-control" id="billing_contract_id" name="contract_id">
+                        <option value="">---------</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="billing_referencia">Referência (*)</label>
+                    <input type="text" class="form-control" id="billing_referencia" name="referencia" required>
+                </div>
+                <div class="form-group">
+                    <label for="billing_valor">Valor (*)</label>
+                    <input type="number" class="form-control" id="billing_valor" name="valor" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="billing_data_vencimento">Vencimento (*)</label>
+                    <input type="date" class="form-control" id="billing_data_vencimento" name="data_vencimento" required>
+                </div>
+                <div class="form-group">
+                    <label for="billing_status">Status</label>
+                    <input type="text" class="form-control" id="billing_status" name="status">
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="billing_observacoes">Observações</label>
+                    <textarea class="form-control" id="billing_observacoes" name="observacoes" rows="3"></textarea>
+                </div>
+            </div>
+            <div id="billingFormError" class="crm-modal-alert" hidden></div>
+            <div class="modal-footer modal-footer-split">
+                <div class="footer-left">
+                    {% include "global/partials/_required_fields.html" %}
+                </div>
+                <div class="footer-right">
+                    <button type="button" class="btn btn-warning" onclick="resetBillingForm()">Limpar campos</button>
+                    <button type="button" class="btn btn-secondary" data-close-modal="modalFormBilling">Fechar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
             </div>
         </form>
     </div>
 </div>
-
-{% if summary_cards %}
-<div class="crm-summary-row">
-    {% for card in summary_cards %}
-    <div class="crm-summary-pill">
-        <div class="label">{{ card.label }}</div>
-        <div class="value">{{ card.value }}</div>
-    </div>
-    {% endfor %}
-</div>
 {% endif %}
 
-<div class="cards-container">
-    {% for item in items %}
-    <div class="card">
-        <div class="card-header">
-            <strong>{{ item.display_referencia|default:"-" }}</strong>
-        </div>
-        <div class="card-section">
-            <div class="label">Cliente</div>
-            <div class="value">{{ item.display_customer|default:"-" }}</div>
-        </div>
-        <div class="card-section">
-            <div class="label">Contrato</div>
-            <div class="value">
-                {% if item.display_contract_id %}
-                <a href="{% url 'crm:detalhe_contrato' item.display_contract_id %}">
-                    {{ item.display_contract|default:"-" }}
-                </a>
-                {% else %}
-                {{ item.display_contract|default:"-" }}
-                {% endif %}
-            </div>
-        </div>
-        <div class="card-section">
-            <div class="label">Valor</div>
-            <div class="value">{{ item.display_valor|default:"-" }}</div>
-        </div>
-        <div class="card-section">
-            <div class="label">Vencimento</div>
-            <div class="value">{{ item.display_vencimento|default:"-" }}</div>
-        </div>
-        <div class="card-section">
-            <span class="tag">{{ item.status|default:"-" }}</span>
-            {% if perms.crm.change_billing %}
-            <a href="{% url 'crm:edit_faturamento' item.id %}" class="action-btn edit-btn" style="float:right;">
-                <i class="fa-solid fa-pencil"></i>
-            </a>
-            {% endif %}
-        </div>
-    </div>
-    {% empty %}
-    <p class="muted" style="grid-column: 1 / -1; text-align: center;">Nenhum registro de faturamento encontrado.</p>
-    {% endfor %}
-</div>
-
-{% if pagination.has_previous or pagination.has_next %}
-<div class="pagination-wrapper">
-    {% if pagination.has_previous %}
-    <a href="{{ pagination.previous_url }}" class="page-btn">Anterior</a>
-    {% else %}
-    <span class="page-btn disabled">Anterior</span>
-    {% endif %}
-    <span class="page-btn active">{{ pagination.page }}</span>
-    {% if pagination.has_next %}
-    <a href="{{ pagination.next_url }}" class="page-btn">Próximo</a>
-    {% else %}
-    <span class="page-btn disabled">Próximo</span>
-    {% endif %}
-</div>
-{% endif %}
+<script src="{% static 'global/javascript/crm_faturamento_lista.js' %}"></script>
 {% endblock %}
