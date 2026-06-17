@@ -1,0 +1,45 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+<style>
+    .form-card-2col {
+        height: auto;
+        margin-top: 65px;
+    }
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 40px;
+        margin-left: 90px;
+        margin-right: 25px;
+        margin-bottom: 40px;
+    }
+    .section-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        border-bottom: 2px solid var(--primary-color, #c41e3a);
+        display: inline-block;
+        padding-bottom: 4px;
+    }
+</style>
+
+<div class="section-header">
+    <h2 class="section-title"><i class="fa-solid fa-file-contract"></i> {{ form.nome_formulario }}</h2>
+</div>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST">
+            {% if not is_edit %}<input type="hidden" name="create_contract" value="1">{% endif %}
+            {% include 'global/partials/_form_2colV2.html' %}
+        </form>
+    </div>
+</div>
+
+<div style="margin: 20px 90px;">
+    <a href="{% if is_edit %}{% url 'crm:detalhe_contrato' contract_id %}{% else %}{% url 'crm:lista_contratos' %}{% endif %}" class="btn btn-secondary">
+        <i class="fa-solid fa-arrow-left"></i> Voltar
+    </a>
+</div>
+{% endblock %}

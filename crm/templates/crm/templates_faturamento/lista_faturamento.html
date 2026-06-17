@@ -1,0 +1,156 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+<style>
+    .form-card-2col {
+        height: auto;
+        margin-top: 65px;
+    }
+    .cards-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 32px;
+        padding: 20px 10px 40px;
+    }
+    .card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 10px 26px rgba(0,0,0,.08);
+        overflow: hidden;
+        max-width: 410px;
+        min-height: 280px;
+        display: flex;
+        flex-direction: column;
+    }
+    .card-header {
+        background-color: #c41e3a;
+        color: #fff;
+        padding: 18px 22px;
+    }
+    .card-section {
+        padding: 18px 22px;
+        border-top: 1px solid #f0f0f0;
+    }
+    .label {
+        font-size: .75rem;
+        text-transform: uppercase;
+        font-weight: 600;
+        color: #777;
+    }
+    .value {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-top: 4px;
+    }
+    .crm-summary-row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin: 16px 0 24px;
+        padding: 0 10px;
+    }
+    .crm-summary-pill {
+        background: #fff;
+        border-radius: 8px;
+        padding: 12px 18px;
+        box-shadow: 0 4px 12px rgba(0,0,0,.06);
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="get">
+            {% csrf_token %}
+            <div class="form-grid-2col">
+                <div class="form-group">
+                    {{ filter_form.q.label_tag }}
+                    {{ filter_form.q }}
+                </div>
+                <div class="form-group">
+                    {{ filter_form.status.label_tag }}
+                    {{ filter_form.status }}
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Consultar</button>
+                {% if perms.crm.add_billing %}
+                <a href="{% url 'crm:form_faturamento' %}" class="btn btn-primary" style="margin-left: 8px;">
+                    <i class="fa-solid fa-plus"></i> Novo
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if summary_cards %}
+<div class="crm-summary-row">
+    {% for card in summary_cards %}
+    <div class="crm-summary-pill">
+        <div class="label">{{ card.label }}</div>
+        <div class="value">{{ card.value }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="cards-container">
+    {% for item in items %}
+    <div class="card">
+        <div class="card-header">
+            <strong>{{ item.display_referencia|default:"-" }}</strong>
+        </div>
+        <div class="card-section">
+            <div class="label">Cliente</div>
+            <div class="value">{{ item.display_customer|default:"-" }}</div>
+        </div>
+        <div class="card-section">
+            <div class="label">Contrato</div>
+            <div class="value">
+                {% if item.display_contract_id %}
+                <a href="{% url 'crm:detalhe_contrato' item.display_contract_id %}">
+                    {{ item.display_contract|default:"-" }}
+                </a>
+                {% else %}
+                {{ item.display_contract|default:"-" }}
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-section">
+            <div class="label">Valor</div>
+            <div class="value">{{ item.display_valor|default:"-" }}</div>
+        </div>
+        <div class="card-section">
+            <div class="label">Vencimento</div>
+            <div class="value">{{ item.display_vencimento|default:"-" }}</div>
+        </div>
+        <div class="card-section">
+            <span class="tag">{{ item.status|default:"-" }}</span>
+            {% if perms.crm.change_billing %}
+            <a href="{% url 'crm:edit_faturamento' item.id %}" class="action-btn edit-btn" style="float:right;">
+                <i class="fa-solid fa-pencil"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <p class="muted" style="grid-column: 1 / -1; text-align: center;">Nenhum registro de faturamento encontrado.</p>
+    {% endfor %}
+</div>
+
+{% if pagination.has_previous or pagination.has_next %}
+<div class="pagination-wrapper">
+    {% if pagination.has_previous %}
+    <a href="{{ pagination.previous_url }}" class="page-btn">Anterior</a>
+    {% else %}
+    <span class="page-btn disabled">Anterior</span>
+    {% endif %}
+    <span class="page-btn active">{{ pagination.page }}</span>
+    {% if pagination.has_next %}
+    <a href="{{ pagination.next_url }}" class="page-btn">Próximo</a>
+    {% else %}
+    <span class="page-btn disabled">Próximo</span>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

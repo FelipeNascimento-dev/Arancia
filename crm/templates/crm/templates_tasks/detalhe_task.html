@@ -1,0 +1,261 @@
+{% extends 'global/base.html' %}
+{% block content %}
+<style>
+    .card-2col { height: auto; margin-top: 65px; margin-bottom: 32px; }
+    .tabs { width: 100%; }
+    .tab-list { display: flex; gap: 16px; border-bottom: 1px solid #e5e7eb; margin-bottom: 16px; }
+    .tab { background: transparent; border: 0; padding: 10px 8px; font-weight: 600; color: #6b7280; cursor: pointer; }
+    .tab.active { color: #111827; border-bottom: 2px solid #6366f1; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .tab-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .info-item label { font-size: 12px; color: #6b7280; display: block; }
+    .info-item span { font-weight: 600; }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col card-2col">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
+            <a href="{% url 'crm:lista_tasks' %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+            <div style="display:flex; gap:8px; align-items:center;">
+                {% if recurrence_template_id %}
+                <span style="background:#e0e7ff;color:#3730a3;padding:4px 10px;border-radius:6px;font-size:13px;">
+                    Recorrente —
+                    <a href="{% url 'crm:form_recorrencia' recurrence_template_id %}">Ver template</a>
+                </span>
+                {% endif %}
+                {% if perms.crm.change_task %}
+                <a href="{% url 'crm:edit_task' task_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen"></i> Editar</a>
+                {% endif %}
+                {% if perms.crm.view_task %}
+                <form method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="watch_task" value="1">
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-eye"></i> Observar</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <h2>{{ task.title|default:task.nome|default:task_id }}</h2>
+
+        <div class="info-grid">
+            <div class="info-item"><label>Status</label><span>{{ task.status.name|default:task.status_name|default:"-" }}</span></div>
+            <div class="info-item"><label>Prioridade</label><span>{{ task.priority.name|default:task.priority_name|default:"-" }}</span></div>
+            <div class="info-item"><label>Board</label><span>{{ task.board.name|default:task.board_name|default:"-" }}</span></div>
+            <div class="info-item"><label>Prazo</label><span>{{ task.due_at|default:"-" }}</span></div>
+            <div class="info-item"><label>Início</label><span>{{ task.scheduled_start_at|default:"-" }}</span></div>
+            <div class="info-item"><label>Projeto</label><span>{{ task.project.name|default:task.project_name|default:"-" }}</span></div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab-list">
+                <button class="tab {% if active_tab == 'info' %}active{% endif %}" data-tab="tab-info">Info</button>
+                <button class="tab {% if active_tab == 'subtasks' %}active{% endif %}" data-tab="tab-subtasks">Subtasks</button>
+                <button class="tab {% if active_tab == 'links' %}active{% endif %}" data-tab="tab-links">Links</button>
+                <button class="tab {% if active_tab == 'comentarios' %}active{% endif %}" data-tab="tab-comentarios">Comentários</button>
+                <button class="tab {% if active_tab == 'anexos' %}active{% endif %}" data-tab="tab-anexos">Anexos</button>
+                <button class="tab {% if active_tab == 'historico' %}active{% endif %}" data-tab="tab-historico">Histórico</button>
+            </div>
+
+            <div class="tab-panel {% if active_tab == 'info' %}active{% endif %}" id="tab-info">
+                <div class="tab-card">
+                    <p>{{ task.description|default:"Sem descrição." }}</p>
+                    <h4>Responsáveis</h4>
+                    <ul>
+                        {% for a in assignees %}
+                        <li>
+                            {{ a.username|default:a.user_id|default:"-" }}
+                            {% if a.is_primary %}<em>(principal)</em>{% endif %}
+                            {% if perms.crm.assign_task %}
+                            <form method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="remove_assignee" value="1">
+                                <input type="hidden" name="assignee_id" value="{{ a.id }}">
+                                <button type="submit" class="btn btn-danger btn-sm">×</button>
+                            </form>
+                            {% endif %}
+                        </li>
+                        {% empty %}
+                        <li class="muted">Nenhum responsável.</li>
+                        {% endfor %}
+                    </ul>
+                    {% if perms.crm.assign_task %}
+                    <form method="post" style="margin-top:12px;">
+                        {% csrf_token %}
+                        <input type="hidden" name="add_assignee" value="1">
+                        <div class="form-group">{{ assignee_form.user_id.label_tag }}{{ assignee_form.user_id }}</div>
+                        <button type="submit" class="btn btn-primary btn-sm">Atribuir</button>
+                    </form>
+                    {% endif %}
+                    <h4 style="margin-top:16px;">Observadores</h4>
+                    <ul>
+                        {% for w in watchers %}
+                        <li>
+                            {{ w.username|default:w.user_id|default:"-" }}
+                            {% if perms.crm.manage_watchers %}
+                            <form method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="remove_watcher" value="1">
+                                <input type="hidden" name="watcher_id" value="{{ w.id }}">
+                                <button type="submit" class="btn btn-danger btn-sm">×</button>
+                            </form>
+                            {% endif %}
+                        </li>
+                        {% empty %}
+                        <li class="muted">Nenhum observador.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tab-panel {% if active_tab == 'subtasks' %}active{% endif %}" id="tab-subtasks">
+                <div class="tab-card">
+                    <table class="user-table">
+                        <thead><tr><th>Título</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for s in subtasks %}
+                            <tr>
+                                <td>{{ s.title|default:"-" }}</td>
+                                <td>{{ s.status.name|default:s.status_name|default:"-" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="muted">Nenhuma subtarefa.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% if perms.crm.add_task %}
+                    <form method="post" style="margin-top:12px;">
+                        {% csrf_token %}
+                        <input type="hidden" name="add_subtask" value="1">
+                        {{ subtask_form.title.label_tag }}{{ subtask_form.title }}
+                        <button type="submit" class="btn btn-primary btn-sm">Adicionar</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-panel {% if active_tab == 'links' %}active{% endif %}" id="tab-links">
+                <div class="tab-card">
+                    <ul>
+                        {% for link in links %}
+                        <li>
+                            {% if link.related %}
+                            <a href="{% url 'crm:detalhe_task' link.related.id %}">{{ link.related.title|default:link.related.id }}</a>
+                            <span class="muted">({{ link.link_type|default:"related" }})</span>
+                            {% else %}
+                            Task #{{ link.target_task_id|default:link.id }} ({{ link.link_type|default:"related" }})
+                            {% endif %}
+                            {% if perms.crm.change_task %}
+                            <form method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="delete_link" value="1">
+                                <input type="hidden" name="link_id" value="{{ link.id }}">
+                                <button type="submit" class="btn btn-danger btn-sm">×</button>
+                            </form>
+                            {% endif %}
+                        </li>
+                        {% empty %}
+                            {% for link in linked_tasks %}
+                            <li>
+                                {% if link.can_view_full %}
+                                <a href="{% url 'crm:detalhe_task' link.id %}">{{ link.title|default:link.id }}</a>
+                                {% else %}
+                                Task restrita ({{ link.link_type }})
+                                {% endif %}
+                            </li>
+                            {% empty %}
+                            <li class="muted">Nenhum vínculo.</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                    {% if perms.crm.change_task %}
+                    <form method="post" style="margin-top:12px;">
+                        {% csrf_token %}
+                        <input type="hidden" name="add_link" value="1">
+                        {{ link_form.target_task_id.label_tag }}{{ link_form.target_task_id }}
+                        {{ link_form.link_type.label_tag }}{{ link_form.link_type }}
+                        <button type="submit" class="btn btn-primary btn-sm">Vincular</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-panel {% if active_tab == 'comentarios' %}active{% endif %}" id="tab-comentarios">
+                <div class="tab-card">
+                    {% for c in comments %}
+                    <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #e5e7eb;">
+                        <strong>{{ c.author_username|default:c.user_id|default:"Usuário" }}</strong>
+                        <p>{{ c.content|default:c.body|default:c.text }}</p>
+                    </div>
+                    {% empty %}
+                    <p class="muted">Nenhum comentário.</p>
+                    {% endfor %}
+                    {% if can_comment %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="add_comment" value="1">
+                        {{ comment_form.body.label_tag }}{{ comment_form.body }}
+                        <button type="submit" class="btn btn-primary btn-sm">Comentar</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-panel {% if active_tab == 'anexos' %}active{% endif %}" id="tab-anexos">
+                <div class="tab-card">
+                    <ul>
+                        {% for a in attachments %}
+                        <li>
+                            <a href="{{ a.url|default:'#' }}" target="_blank">{{ a.filename|default:a.name|default:"Anexo" }}</a>
+                        </li>
+                        {% empty %}
+                        <li class="muted">Nenhum anexo.</li>
+                        {% endfor %}
+                    </ul>
+                    {% if can_comment %}
+                    <form method="post" enctype="multipart/form-data" style="margin-top:12px;">
+                        {% csrf_token %}
+                        <input type="hidden" name="upload_attachment" value="1">
+                        <input type="file" name="attachment" class="form-control">
+                        <button type="submit" class="btn btn-primary btn-sm">Enviar</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-panel {% if active_tab == 'historico' %}active{% endif %}" id="tab-historico">
+                <div class="tab-card">
+                    <table class="user-table">
+                        <thead><tr><th>Data</th><th>De</th><th>Para</th><th>Usuário</th></tr></thead>
+                        <tbody>
+                            {% for h in move_history %}
+                            <tr>
+                                <td>{{ h.moved_at|default:h.created_at|default:"-" }}</td>
+                                <td>{{ h.from_status.name|default:h.from_status_name|default:"-" }}</td>
+                                <td>{{ h.to_status.name|default:h.to_status_name|default:"-" }}</td>
+                                <td>{{ h.user_username|default:h.user_id|default:"-" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="muted">Sem histórico de movimentação.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,335 @@
+from django import forms
+
+
+class UnifiedTaskForm(forms.Form):
+    title = forms.CharField(
+        label="Título",
+        max_length=255,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+    description = forms.CharField(
+        label="Descrição",
+        required=False,
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 4}),
+    )
+    board_id = forms.IntegerField(
+        label="Board",
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    status_id = forms.IntegerField(
+        label="Status",
+        required=False,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    priority_id = forms.IntegerField(
+        label="Prioridade",
+        required=False,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    service_type_id = forms.IntegerField(
+        label="Tipo de serviço",
+        required=False,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    project_id = forms.IntegerField(
+        label="Projeto",
+        required=False,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    customer_gai_id = forms.IntegerField(
+        label="Cliente (GAI)",
+        required=False,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    scheduled_start_at = forms.DateTimeField(
+        label="Início agendado",
+        required=False,
+        widget=forms.DateTimeInput(
+            attrs={"class": "form-control", "type": "datetime-local"},
+            format="%Y-%m-%dT%H:%M",
+        ),
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"],
+    )
+    scheduled_end_at = forms.DateTimeField(
+        label="Fim agendado",
+        required=False,
+        widget=forms.DateTimeInput(
+            attrs={"class": "form-control", "type": "datetime-local"},
+            format="%Y-%m-%dT%H:%M",
+        ),
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"],
+    )
+    due_at = forms.DateTimeField(
+        label="Prazo",
+        required=False,
+        widget=forms.DateTimeInput(
+            attrs={"class": "form-control", "type": "datetime-local"},
+            format="%Y-%m-%dT%H:%M",
+        ),
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"],
+    )
+    is_recurring = forms.BooleanField(
+        label="Task recorrente",
+        required=False,
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input", "id": "is_recurring"}),
+    )
+    recurrence_frequency = forms.ChoiceField(
+        label="Frequência",
+        required=False,
+        choices=[
+            ("", "---------"),
+            ("daily", "Diária"),
+            ("weekly", "Semanal"),
+            ("monthly", "Mensal"),
+        ],
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    recurrence_interval = forms.IntegerField(
+        label="Intervalo",
+        required=False,
+        min_value=1,
+        initial=1,
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
+    )
+    recurrence_end_at = forms.DateTimeField(
+        label="Fim da recorrência",
+        required=False,
+        widget=forms.DateTimeInput(
+            attrs={"class": "form-control", "type": "datetime-local"},
+            format="%Y-%m-%dT%H:%M",
+        ),
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"],
+    )
+    requester_gai_ids = forms.MultipleChoiceField(
+        label="Demandantes (GAI)",
+        required=False,
+        widget=forms.SelectMultiple(attrs={"class": "form-control", "size": 4}),
+    )
+
+    def __init__(self, *args, lookups=None, nome_form=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.nome_formulario = nome_form or "Nova Task"
+        lookups = lookups or {}
+        self._set_choices("board_id", lookups.get("boards", []), "id", ("name", "nome", "title"))
+        self._set_choices("status_id", lookups.get("status_tasks", []), "id", ("name", "nome", "label"))
+        self._set_choices("priority_id", lookups.get("priorities", []), "id", ("name", "nome", "label"))
+        self._set_choices("service_type_id", lookups.get("service_types", []), "id", ("description", "type", "name", "nome", "label"))
+        self._set_choices("project_id", lookups.get("projects", []), "id", ("name", "nome", "title"))
+        self._set_choices("customer_gai_id", lookups.get("gais", []), "id", ("nome", "name"))
+        requester_choices = []
+        for item in lookups.get("gais", []):
+            item_id = item.get("id") or item.get("gai_id")
+            label = item.get("nome") or item.get("name") or str(item_id)
+            if item_id is not None:
+                requester_choices.append((str(item_id), label))
+        self.fields["requester_gai_ids"].choices = requester_choices
+
+    def _set_choices(self, field_name, items, id_key, label_keys):
+        choices = [("", "---------")]
+        for item in items:
+            item_id = item.get(id_key) or item.get("gai_id")
+            label = next((item.get(k) for k in label_keys if item.get(k)), None)
+            if item_id is not None:
+                choices.append((item_id, label or str(item_id)))
+        self.fields[field_name].widget = forms.Select(
+            choices=choices,
+            attrs={"class": "form-control"},
+        )
+        self.fields[field_name].required = field_name == "board_id"
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("is_recurring"):
+            if not cleaned.get("recurrence_frequency"):
+                self.add_error("recurrence_frequency", "Informe a frequência da recorrência.")
+            if not cleaned.get("scheduled_start_at"):
+                self.add_error("scheduled_start_at", "Informe o início para tasks recorrentes.")
+            if not cleaned.get("status_id"):
+                self.add_error("status_id", "Status é obrigatório para recorrências.")
+            if not cleaned.get("priority_id"):
+                self.add_error("priority_id", "Prioridade é obrigatória para recorrências.")
+        requester_ids = cleaned.get("requester_gai_ids")
+        if requester_ids:
+            cleaned["requester_gai_ids"] = [int(x) for x in requester_ids]
+        return cleaned
+
+
+class TaskEditForm(forms.Form):
+    title = forms.CharField(
+        label="Título",
+        max_length=255,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+    description = forms.CharField(
+        label="Descrição",
+        required=False,
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 4}),
+    )
+    board_id = forms.IntegerField(
+        label="Board",
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    status_id = forms.IntegerField(
+        label="Status",
+        required=False,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    priority_id = forms.IntegerField(
+        label="Prioridade",
+        required=False,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    project_id = forms.IntegerField(
+        label="Projeto",
+        required=False,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    customer_gai_id = forms.IntegerField(
+        label="Cliente (GAI)",
+        required=False,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    scheduled_start_at = forms.DateTimeField(
+        label="Início agendado",
+        required=False,
+        widget=forms.DateTimeInput(
+            attrs={"class": "form-control", "type": "datetime-local"},
+            format="%Y-%m-%dT%H:%M",
+        ),
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"],
+    )
+    scheduled_end_at = forms.DateTimeField(
+        label="Fim agendado",
+        required=False,
+        widget=forms.DateTimeInput(
+            attrs={"class": "form-control", "type": "datetime-local"},
+            format="%Y-%m-%dT%H:%M",
+        ),
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"],
+    )
+    due_at = forms.DateTimeField(
+        label="Prazo",
+        required=False,
+        widget=forms.DateTimeInput(
+            attrs={"class": "form-control", "type": "datetime-local"},
+            format="%Y-%m-%dT%H:%M",
+        ),
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"],
+    )
+    requester_gai_ids = forms.MultipleChoiceField(
+        label="Demandantes (GAI)",
+        required=False,
+        widget=forms.SelectMultiple(attrs={"class": "form-control", "size": 4}),
+    )
+
+    def __init__(self, *args, lookups=None, nome_form=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.nome_formulario = nome_form or "Editar Task"
+        lookups = lookups or {}
+        self._set_choices("board_id", lookups.get("boards", []), "id", ("name", "nome", "title"))
+        self._set_choices("status_id", lookups.get("status_tasks", []), "id", ("name", "nome", "label"))
+        self._set_choices("priority_id", lookups.get("priorities", []), "id", ("name", "nome", "label"))
+        self._set_choices("project_id", lookups.get("projects", []), "id", ("name", "nome", "title"))
+        self._set_choices("customer_gai_id", lookups.get("gais", []), "id", ("nome", "name"))
+        requester_choices = []
+        for item in lookups.get("gais", []):
+            item_id = item.get("id") or item.get("gai_id")
+            label = item.get("nome") or item.get("name") or str(item_id)
+            if item_id is not None:
+                requester_choices.append((str(item_id), label))
+        self.fields["requester_gai_ids"].choices = requester_choices
+
+    def _set_choices(self, field_name, items, id_key, label_keys):
+        choices = [("", "---------")]
+        for item in items:
+            item_id = item.get(id_key) or item.get("gai_id")
+            label = next((item.get(k) for k in label_keys if item.get(k)), None)
+            if item_id is not None:
+                choices.append((item_id, label or str(item_id)))
+        self.fields[field_name].widget = forms.Select(
+            choices=choices,
+            attrs={"class": "form-control"},
+        )
+        self.fields[field_name].required = field_name == "board_id"
+
+    def clean(self):
+        cleaned = super().clean()
+        requester_ids = cleaned.get("requester_gai_ids")
+        if requester_ids:
+            cleaned["requester_gai_ids"] = [int(x) for x in requester_ids]
+        return cleaned
+
+
+class TaskCommentForm(forms.Form):
+    body = forms.CharField(
+        label="Comentário",
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+    )
+
+
+class TaskSubtaskForm(forms.Form):
+    title = forms.CharField(
+        label="Título",
+        max_length=255,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+
+
+class TaskLinkForm(forms.Form):
+    target_task_id = forms.IntegerField(
+        label="Task vinculada (ID)",
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
+    )
+    link_type = forms.ChoiceField(
+        label="Tipo de vínculo",
+        choices=[
+            ("related", "Relacionada"),
+            ("blocks", "Bloqueia"),
+            ("blocked_by", "Bloqueada por"),
+            ("duplicates", "Duplica"),
+        ],
+        initial="related",
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+
+
+class TaskAssigneeForm(forms.Form):
+    user_id = forms.IntegerField(
+        label="Usuário",
+        required=False,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    designation_id = forms.IntegerField(
+        label="Designação",
+        required=False,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+
+    def __init__(self, *args, lookups=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        lookups = lookups or {}
+        self.fields["user_id"].widget = forms.Select(
+            choices=self._choices_from(lookups.get("users", []), "id", ("username", "name")),
+            attrs={"class": "form-control"},
+        )
+        self.fields["designation_id"].widget = forms.Select(
+            choices=self._choices_from(
+                lookups.get("designations", []), "id", ("label", "username"),
+            ),
+            attrs={"class": "form-control"},
+        )
+
+    def _choices_from(self, items, id_key, label_keys):
+        choices = [("", "---------")]
+        for item in items:
+            item_id = item.get(id_key)
+            label = next((item.get(k) for k in label_keys if item.get(k)), None)
+            if item_id is not None:
+                choices.append((item_id, label or str(item_id)))
+        return choices
+
+    def clean(self):
+        cleaned = super().clean()
+        if not cleaned.get("user_id") and not cleaned.get("designation_id"):
+            raise forms.ValidationError("Informe usuário ou designação.")
+        return cleaned

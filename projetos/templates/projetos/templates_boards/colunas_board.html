@@ -1,0 +1,88 @@
+{% extends "global/base.html" %}
+{% block content %}
+
+<h2 class="title-skill-ger">
+    <i class="fa-solid fa-grip-vertical"></i> Colunas — {{ board.display_name|default:board_id }}
+</h2>
+
+<div style="margin: 0 65px 16px;">
+    <a href="{% url 'projetos:kanban_board' board_id %}" class="btn btn-secondary btn-sm">
+        <i class="fa-solid fa-arrow-left"></i> Voltar ao Kanban
+    </a>
+    {% if perms.crm.manage_board_columns %}
+    <button class="btn btn-primary btn-sm" onclick="openModal('columnModal')">
+        <i class="fa-solid fa-plus"></i> Nova coluna
+    </button>
+    {% endif %}
+</div>
+
+<div class="user-list-container" style="margin-left: 65px;">
+    <div class="table-wrapper">
+        <table class="user-table" id="columns-table">
+            <thead>
+                <tr>
+                    <th>Ordem</th>
+                    <th>Nome</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="columns-sortable">
+                {% for col in columns %}
+                <tr data-column-id="{{ col.id }}">
+                    <td>{{ col.position|default:forloop.counter }}</td>
+                    <td>{{ col.name|default:"-" }}</td>
+                    <td>{{ col.status_name|default:col.status_task_id|default:"-" }}</td>
+                    <td>
+                        {% if perms.crm.manage_board_columns %}
+                        <button type="button" class="action-btn edit-btn drag-handle" title="Arrastar"><i class="fa-solid fa-grip-lines"></i></button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="muted text-center">Nenhuma coluna.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if perms.crm.manage_board_columns %}
+{% include 'global/partials/_modal_2col.html' with modal_id='columnModal' modal_title='Nova coluna' form=column_form %}
+<script>
+function openModal(id) { document.getElementById(id).style.display = 'block'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+document.querySelector('#columnModal form').insertAdjacentHTML('afterbegin', '<input type="hidden" name="add_column" value="1">');
+
+(function () {
+    const tbody = document.getElementById('columns-sortable');
+    if (!tbody || !tbody.querySelector('[data-column-id]')) return;
+    const reorderUrl = "{% url 'projetos:ajax_reorder_columns' board_id %}";
+    const csrf = "{{ csrf_token }}";
+    let dragEl = null;
+
+    tbody.querySelectorAll('tr[data-column-id]').forEach(row => {
+        row.setAttribute('draggable', 'true');
+        row.addEventListener('dragstart', () => { dragEl = row; row.classList.add('dragging'); });
+        row.addEventListener('dragend', () => {
+            row.classList.remove('dragging');
+            const ids = [...tbody.querySelectorAll('tr[data-column-id]')].map(r => r.dataset.columnId);
+            fetch(reorderUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+                body: JSON.stringify({ column_ids: ids }),
+            }).catch(() => {});
+        });
+        row.addEventListener('dragover', e => {
+            e.preventDefault();
+            const target = row;
+            if (!dragEl || dragEl === target) return;
+            const rect = target.getBoundingClientRect();
+            const after = (e.clientY - rect.top) > rect.height / 2;
+            tbody.insertBefore(dragEl, after ? target.nextSibling : target);
+        });
+    });
+})();
+</script>
+{% endif %}
+{% endblock %}

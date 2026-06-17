@@ -175,26 +175,7 @@ Apps analisados: `logistica`, `transportes`, `backoffice`, `mural`.
 
 ---
 
-## CRM BFF (confirmado 2026-06-10)
+## CRM BFF (removido 2026-06-17)
 
-37. **Demandantes GAI** em tarefas de projeto: campo `requester_gai_ids[]` no create/edit (`TaskForm`); lookups `GET /lookups/groups` + `GET /lookups/gais`; picker AJAX `crm/ajax/lookups/gais/` (filtro `group_id`, `search`).
-    - Evidência: `crm/services/lookups.py`, `crm/forms/forms_tasks.py`, `crm/views/view_dashboard.py`, `crm/templates/crm/tasks/form.html`.
-
-38. **Detalhe de task** exibe `task.requesters[]` (EntityRef aninhado ou flat); instâncias recorrentes linkam template via `recurrence_template_id`.
-    - Evidência: `crm/templates/crm/tasks/detail.html`.
-
-39. **Task links** POST usa `target_task_id` (API); resposta pode trazer `target_task_id` ou `linked_task_id` — templates com fallback.
-    - Evidência: `crm/forms/forms_tasks.py` (`TaskLinkForm`), `crm/templates/crm/tasks/detail.html`.
-
-40. **Gates GAI CRM** centralizados em `crm/services/gates.py` (`require_gai_or_render`, `ajax_require_gai`); views importam helper local fino com `site_title` + menu.
-    - Evidência: `crm/views/view_*.py`, `crm/tests/test_crm_bff.py`.
-
-41. **EntityRef nos templates CRM:** helpers em `crm/services/refs.py` + filtros `crm_tags` (`crm_customer_label`, `crm_contract_label`, …). Preferir refs aninhados da API; fallback flat legado; lookup Django só quando ref ausente. Forms POST/PATCH enviam apenas `*_id`.
-    - Evidência: `crm/services/refs.py`, `crm/templatetags/crm_tags.py`, templates `contracts/`, `billing/`, `tasks/detail.html`, `boards/access.html`, `recurrences/`.
-
-42. **Scheduler one-shot pós-create recorrente:** se `start_at <= now()`, BFF chama `POST /internal/scheduler/generate-due-tasks` via `CrmApiClient(service=True)` e redireciona para a task gerada.
-    - Evidência: `crm/services/recurrences.py` (`run_scheduler_for_template`), `crm/views/view_tasks.py` (`task_new`).
-
-43. **Smoke homolog CRM:** `GET crm/ajax/health/` (proxy raiz API), `POST crm/diagnostic/validate-context/` (staff → `/auth/validate-context`), cache sessão `GET /me/context` (300s).
-    - Evidência: `crm/views/view_dashboard.py`, `crm/services/context.py`, `crm/tests/test_crm_bff.py` (`CrmHomologSmokeTests`).
+O app `crm/` foi removido deste repositório. Regras históricas (demandantes GAI, EntityRef, gates, Celery) não se aplicam mais ao Django Arancia.
 

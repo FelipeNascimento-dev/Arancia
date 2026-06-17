@@ -1,0 +1,71 @@
+{% extends 'global/base.html' %}
+{% block content %}
+<style>
+    .form-card-2col { height: auto; margin-top: 65px; }
+    .section-header { margin: 40px 25px 20px 90px; }
+    .section-title {
+        font-size: 1.4rem; font-weight: 600;
+        border-bottom: 2px solid var(--primary-color, #c41e3a);
+        display: inline-block; padding-bottom: 4px;
+    }
+</style>
+
+<div class="section-header">
+    <h2 class="section-title"><i class="fa-solid fa-repeat"></i> {{ form.nome_formulario }}</h2>
+</div>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="edit_recurrence" value="1">
+            {% include 'global/partials/_form_2colV2.html' %}
+        </form>
+    </div>
+</div>
+
+{% if runs %}
+<div class="user-list-container" style="margin-top: 24px;">
+    <div class="user-table-header">
+        <h3 class="user-table-title">Execuções recentes</h3>
+    </div>
+    <div class="table-wrapper">
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Task gerada</th>
+                    <th>Executado em</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for run in runs %}
+                <tr>
+                    <td>{{ run.id }}</td>
+                    <td>
+                        {% if run.task_id %}
+                        <a href="{% url 'crm:detalhe_task' run.task_id %}">#{{ run.task_id }}</a>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td>{{ run.executed_at|default:run.created_at|default:"-" }}</td>
+                    <td>{{ run.status|default:"-" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div style="margin: 20px 90px; display: flex; gap: 8px;">
+    <a href="{% url 'crm:lista_recorrencias' %}" class="btn btn-secondary">Voltar</a>
+    {% if perms.crm.delete_task_recurrence %}
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="delete_recurrence" value="1">
+        <button type="submit" class="btn btn-danger" onclick="return confirm('Excluir recorrência?');">Excluir</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

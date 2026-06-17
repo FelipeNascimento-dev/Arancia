@@ -1,9 +1,0 @@
-{% comment %}
-Gate de permissão CRM — uso:
-{% include 'crm/partials/_permission_gate.html' with perm='view_clients' %}
-{% endcomment %}
-{% load crm_tags %}
-{% crm_perm perm as has_perm %}
-{% if has_perm %}
-    {{ content }}
-{% endif %}

@@ -1,0 +1,76 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+<div class="user-list-container">
+    <div class="user-table-header">
+        <h2 class="user-table-title"><i class="fa-solid fa-file-contract"></i> Contratos</h2>
+        <form method="get" action="" class="form-user-search">
+            <i class="fa-solid fa-magnifying-glass search-icon-inside"></i>
+            <input type="text" name="q" placeholder="Pesquisar..." value="{{ q }}">
+        </form>
+        <div class="user-create">
+            {% if perms.crm.add_contract %}
+            <a href="{% url 'crm:form_contrato' %}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Novo Contrato
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Número</th>
+                    <th>Título</th>
+                    <th>Cliente</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td><strong>{{ item.id }}</strong></td>
+                    <td>{{ item.display_numero|default:"-" }}</td>
+                    <td>{{ item.display_titulo|default:"-" }}</td>
+                    <td>{{ item.display_customer|default:"-" }}</td>
+                    <td><span class="tag">{{ item.status|default:"-" }}</span></td>
+                    <td>
+                        <a href="{% url 'crm:detalhe_contrato' item.id %}" class="action-btn edit-btn" title="Detalhes">
+                            <i class="fa-solid fa-eye"></i>
+                        </a>
+                        {% if perms.crm.change_contract %}
+                        <a href="{% url 'crm:edit_contrato' item.id %}" class="action-btn edit-btn" title="Editar">
+                            <i class="fa-solid fa-pencil"></i>
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="muted text-center">Nenhum contrato encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if pagination.has_previous or pagination.has_next %}
+    <div class="pagination-wrapper">
+        {% if pagination.has_previous %}
+        <a href="{{ pagination.previous_url }}" class="page-btn">Anterior</a>
+        {% else %}
+        <span class="page-btn disabled">Anterior</span>
+        {% endif %}
+        <span class="page-btn active">{{ pagination.page }}</span>
+        {% if pagination.has_next %}
+        <a href="{{ pagination.next_url }}" class="page-btn">Próximo</a>
+        {% else %}
+        <span class="page-btn disabled">Próximo</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

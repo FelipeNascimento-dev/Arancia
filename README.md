@@ -12,7 +12,7 @@ Prefixo de rotas: `/arancia/`.
 | Django | 5.2 |
 | Celery | 5.5 — tarefas agendadas (Redis como broker) |
 | Banco | SQLite em dev (`setup/settings.py`); PostgreSQL via `setup/local_settings.py` em ambientes internos |
-| Integrações externas | APIs de fulfillment, estoque, transportes, mural e Intelipost (URLs em `setup/local_settings.py`) |
+| Integrações externas | APIs de fulfillment, estoque, transportes, mural, CRM e Intelipost (URLs em `setup/local_settings.py` / `setup/environments.py`) |
 
 Dependências completas: [`requirements.txt`](./requirements.txt).
 
@@ -24,7 +24,7 @@ Dependências completas: [`requirements.txt`](./requirements.txt).
 | [`transportes/`](./transportes/) | OS, viagens, motoristas, veículos, painel de campo e ferramentas de roteirização |
 | [`backoffice/`](./backoffice/) | Importação Excel, cadastro e listagem de equipamentos |
 | [`mural/`](./mural/) | Mural operacional (home) e gerenciamento de conteúdo |
-| [`crm/`](./crm/) | CRM operacional (BFF): clientes, contratos, faturamento, tarefas, projetos, boards/Kanban — dados na API externa `api-crm` |
+| [`crm/`](./crm/) | CRM BFF: clientes, contratos, faturamento, tasks, boards, projetos, recorrências, configurações e alertas via API FastAPI (`crm_api/`) |
 
 Configuração central: [`setup/`](./setup/) (`settings`, `urls`, middleware, Celery).
 
@@ -52,7 +52,8 @@ Arancia/
 ├── transportes/
 ├── backoffice/
 ├── mural/
-├── crm/                # BFF CRM (views, services, templates; sem models de negócio)
+├── crm/                # BFF CRM (views, forms, templates)
+├── crm_api/            # Client HTTP e services da API CRM
 ├── setup/              # settings, urls, celery, middleware
 ├── base_templates/     # templates globais
 ├── base_static/        # assets estáticos
@@ -87,7 +88,7 @@ celery -A setup worker -l info
 celery -A setup beat -l info
 ```
 
-Tarefas agendadas: desativação diária de usuários inativos (`logistica.tasks.deactivate_inactive_users`, 03:00); alertas CRM vencidos (`crm.tasks.crm_fire_due_alerts`, 06:00); geração de tarefas recorrentes (`crm.tasks.crm_generate_recurring_tasks`, 06:30).
+Tarefas agendadas: desativação diária de usuários inativos (`logistica.tasks.deactivate_inactive_users`, 03:00); geração de tasks recorrentes CRM (`crm.tasks.generate_recurring_tasks`, a cada 15 min); disparo de alertas de contrato (`crm.tasks.fire_contract_alerts`, 08:00).
 
 **Admin Django:** `/arancia/admin/`.
 
@@ -105,40 +106,13 @@ Tarefas agendadas: desativação diária de usuários inativos (`logistica.tasks
 
 Rotas completas: [`logistica/urls.py`](./logistica/urls.py), [`transportes/urls.py`](./transportes/urls.py), [`backoffice/urls.py`](./backoffice/urls.py), [`mural/urls.py`](./mural/urls.py), [`crm/urls.py`](./crm/urls.py).
 
-### CRM (`/arancia/crm/`)
+### CRM (BFF)
 
-Integração BFF com API FastAPI CRM — **não** persiste tabelas `crm_*` no Django; permissões `crm.*` vêm do seed Alembic no banco compartilhado.
+Browser → Django (`/arancia/crm/...`) → FastAPI (`CRM_API_BASE_URL` + `/api/v1`). Auth de negócio: `CRM_API_KEY` + senha do usuário (Basic, senha na sessão server-side). Scheduler: `CRM_INTERNAL_API_SECRET` (Bearer). Jobs Celery: `CRM_SERVICE_USERNAME` / `CRM_SERVICE_PASSWORD`. Variáveis em [`.env.example`](./.env.example) — não versionar valores reais.
 
-| Área | Rotas principais | Permissão UX típica |
-| ---- | ---------------- | ------------------- |
-| Dashboard | `crm/` | qualquer `crm.view_*` |
-| Clientes | `crm/clients/` | `crm.view_clients` |
-| Contratos / faturamento / alertas | `crm/contracts/`, `crm/billing/`, `crm/alerts/` | `crm.view_*` do módulo |
-| Tarefas | `crm/tasks/`, links/watchers, AJAX assignees, demandantes GAI | `crm.view_tasks`, `crm.manage_watchers` |
-| Recorrências | `crm/tasks/recurrences/` | `crm.view_task_recurrences` |
-| Projetos | `crm/projects/`, `crm/projects/<id>/tasks/` | `crm.view_projects` |
-| Boards / Kanban | `crm/boards/`, settings/colunas, acesso PATCH | `crm.view_boards`, `crm.manage_board_columns` |
-| Configurações | `crm/settings/` + reorder status-tasks | `crm.view_settings`, `crm.manage_status_tasks` |
+Rotas principais: dashboard, clientes, contratos, faturamento, alertas, tasks (lista/minhas/calendário/novo/edit/detalhe), recorrências, projetos (detalhe/edit/membros/tasks), boards (Kanban + acesso/colunas), configurações (tipos de serviço, prioridades, status). AJAX interno em `/crm/ajax/` (move task, assign/watch/comment/link/subtask, reorder colunas, health).
 
-Variáveis: ver [`.env.example`](./.env.example) e `setup/local_settings.py` (não versionar secret): `CRM_API_BASE_URL`, `CRM_API_V1_STR`, `CRM_INTERNAL_API_SECRET`, `CRM_API_TIMEOUT`, `CRM_API_VERIFY_SSL`, `CRM_DEFAULT_LIMIT`, `CRM_ENABLE_DEBUG_LOGS`, `CRM_SERVICE_USER_ID`, `CRM_SERVICE_USERNAME`.
-
-Pré-requisitos: `python manage.py crm_prerequisites`. Testes: `python manage.py test crm.tests`.
-
-### Rotas AJAX internas (browser → Django → API)
-
-| Rota BFF | API proxy | Uso |
-| -------- | --------- | --- |
-| `crm/ajax/lookups/crm/` | `GET /lookups/crm` | Filtro de service types por cliente |
-| `crm/ajax/lookups/groups/` | `GET /lookups/groups` | Grupos para demandantes GAI |
-| `crm/ajax/lookups/gais/` | `GET /lookups/gais` | Picker typeahead de GAIs demandantes |
-| `crm/ajax/tasks/<id>/move/` | `PATCH /tasks/{id}/move` | Kanban drag-and-drop |
-| `crm/ajax/health/` | health check | Diagnóstico |
-
-Gates GAI centralizados em [`crm/services/gates.py`](./crm/services/gates.py) (`require_gai_or_render`, `ajax_require_gai`). Usuário sem `UserDesignation`/GAI recebe mensagem amigável sem chamar a API.
-
-Tarefas de **projeto** aceitam `requester_gai_ids[]` no create/edit (formulário unificado em `crm/tasks/new/`). Vínculos entre tarefas enviam `target_task_id` para a API.
-
-**EntityRef:** respostas da API incluem objetos aninhados (`customer`, `contract`, `status`, etc.). Exibição via `crm/services/refs.py` e filtros `crm_tags` (`crm_customer_label`, …); forms continuam enviando apenas `*_id`. Smoke homolog: `crm/ajax/health/`, `crm/diagnostic/validate-context/` (staff), cache `GET /me/context`.
+Documentação Cursor: [`.cursor/rules/220-business-crm-auto.mdc`](./.cursor/rules/220-business-crm-auto.mdc).
 
 ## Documentação para desenvolvimento (Cursor)
 
@@ -151,9 +125,10 @@ Tarefas de **projeto** aceitam `requester_gai_ids[]` no create/edit (formulário
 
 | Data | Tipo | Módulo/Pasta | Alteração | Impacto |
 | ---- | ---- | ------------ | --------- | ------- |
-| 2026-06-10 | Adicionado | `crm/` | EntityRef (`refs.py`, `crm_tags`), demandantes GAI, gates, smoke homolog | Listagens exibem nomes via refs; forms enviam `*_id`; testes BFF §12 |
-| 2026-06-10 | Adicionado | `crm/` | Task links/watchers, boards CRUD/colunas, recorrências, reorder status, testes BFF | Usuários com permissões `crm.*` acessam telas colaborativas completas |
-| 2026-06-09 | Adicionado | `crm/` | App CRM completo (fases 4–7): tarefas, projetos, Kanban, Celery, configurações | Usuários com permissões `crm.*` acessam módulo em `/arancia/crm/` via BFF |
+| 2026-06-17 | Adicionado | `crm/` | Fases 6–11: form unificado/recorrências, edit task, AJAX com `can_comment`, projetos, Kanban, settings, Celery | Scheduler one-shot Bearer; service types spec; codenames Django documentados no roadmap |
+| 2026-06-17 | Adicionado | `crm/` | Fases 1–2: dashboard enriquecido, clientes com soft delete AJAX | Dashboard acessível com qualquer perm CRM; `DELETE /clients/{id}` via ajax |
+| 2026-06-17 | Adicionado | `crm/`, `crm_api/` | Módulo CRM BFF reintroduzido (fases 1–3: fundação, clientes, contratos/faturamento/alertas) | Rotas `/arancia/crm/`; menu lateral condicionado a `crm.*`; depende da API FastAPI CRM |
+| 2026-06-17 | Removido | `crm/` | App CRM e integrações removidos do Django | Superseded pela reintrodução BFF na mesma data |
 | 2026-06-02 | Ajustado | `logistica/models` (GAI) | Campos obrigatórios ao criar novo GAI | Cadastro de cliente/PA exige preenchimento adicional |
 | 2026-06-02 | Ajustado | `transportes/` | API de retenção | Integração de retenção atualizada |
 | 2026-05-29 | Adicionado | `mural/` | Visualização em carrossel e em lista nos cards | Operadores alternam forma de exibição do mural |

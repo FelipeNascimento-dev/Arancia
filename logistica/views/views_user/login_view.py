@@ -2,7 +2,8 @@ from django.contrib import messages
 from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
 
-from crm.services.context import invalidate_crm_session_cache
+from crm_api.exceptions import CrmApiError, crm_error_message_pt
+from crm_api.session_credentials import store_password_in_session
 
 
 class UserLoginView(LoginView):
@@ -14,9 +15,27 @@ class UserLoginView(LoginView):
         return context
 
     def form_valid(self, form):
+        password = (form.cleaned_data.get("password") or "").strip()
         response = super().form_valid(form)
-        invalidate_crm_session_cache(self.request)
+
+        if password and not getattr(self.request, "_crm_login_via_access_code", False):
+            store_password_in_session(self.request, password)
+            self._validate_crm_api_credentials()
+
         return response
+
+    def _validate_crm_api_credentials(self):
+        """Avisa no login se a API CRM rejeitar username/senha (Basic + API key)."""
+        try:
+            from crm_api.client import CrmApiClient
+            from crm_api.services.auth import get_me_context
+
+            get_me_context(CrmApiClient(self.request))
+        except CrmApiError as exc:
+            messages.warning(
+                self.request,
+                crm_error_message_pt(exc),
+            )
 
     def get_success_url(self):
         user = self.request.user

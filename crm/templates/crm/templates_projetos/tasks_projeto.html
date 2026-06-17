@@ -1,0 +1,77 @@
+{% extends 'global/base.html' %}
+{% block content %}
+<style>
+    .romaneios-wrapper { margin-top: 30px; margin-left: 65px; margin-right: 30px; }
+    .romaneios-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+    .romaneio-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 18px; box-shadow: 0 4px 12px rgba(0,0,0,.06); }
+    .romaneio-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .romaneio-number { font-size: 16px; font-weight: 700; }
+    .romaneio-status { padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #eff6ff; color: #1d4ed8; }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
+    .pagination-wrapper { display: flex; justify-content: center; gap: 8px; margin: 24px 0; }
+</style>
+
+<div class="romaneios-wrapper">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h2><i class="fa-solid fa-list-check"></i> Tasks — {{ projeto.name|default:projeto.nome }}</h2>
+        <a href="{% url 'crm:detalhe_projeto' project_id %}" class="btn btn-secondary btn-sm">Voltar</a>
+    </div>
+
+    <form method="get" class="filter-bar">
+        <input type="text" name="q" placeholder="Pesquisar task..." value="{{ q }}">
+        <select name="status_id">
+            <option value="">Status</option>
+            {% for s in lookups.status_tasks %}
+            <option value="{{ s.id }}" {% if status_id == s.id|stringformat:"s" %}selected{% endif %}>{{ s.name|default:s.nome }}</option>
+            {% endfor %}
+        </select>
+        <select name="requester_gai_id">
+            <option value="">Demandante (GAI)</option>
+            {% for g in lookups.gais %}
+            <option value="{{ g.gai_id }}" {% if requester_gai_id == g.gai_id|stringformat:"s" %}selected{% endif %}>{{ g.nome|default:g.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
+        {% if perms.crm.add_task %}
+        <a href="{% url 'crm:form_task' %}" class="btn btn-primary btn-sm">Nova Task</a>
+        {% endif %}
+    </form>
+
+    <div class="romaneios-grid">
+        {% for item in items %}
+        <div class="romaneio-card">
+            <div class="romaneio-card-header">
+                <div class="romaneio-number">
+                    <a href="{% url 'crm:detalhe_task' item.id %}">#{{ item.id }} — {{ item.title|default:"-" }}</a>
+                </div>
+                <span class="romaneio-status">{{ item.status.name|default:item.status_name|default:"-" }}</span>
+            </div>
+            <div class="romaneio-info">
+                <div><strong>Prioridade:</strong> {{ item.priority.name|default:item.priority_name|default:"-" }}</div>
+                <div><strong>Prazo:</strong> {{ item.due_at|default:"-" }}</div>
+                <div><strong>Board:</strong> {{ item.board.name|default:item.board_name|default:"-" }}</div>
+                {% if item.requester_gai_ids or item.requesters %}
+                <div><strong>Demandantes:</strong>
+                    {% for r in item.requesters %}
+                    {{ r.nome|default:r.name|default:r.gai_id }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                    {{ item.requester_gai_ids|join:", " }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-result">Nenhuma task neste projeto.</div>
+        {% endfor %}
+    </div>
+
+    {% if pagination.has_previous or pagination.has_next %}
+    <div class="pagination-wrapper">
+        <a href="{{ pagination.previous_url }}" class="page-btn">Anterior</a>
+        <span class="page-btn active">{{ pagination.page }}</span>
+        <a href="{{ pagination.next_url }}" class="page-btn">Próximo</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

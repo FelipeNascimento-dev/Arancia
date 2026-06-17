@@ -1,0 +1,52 @@
+---
+description: Regras de negócio confirmadas para o módulo Projetos (boards e projetos API).
+globs: "projetos/**/*.py,projetos/templates/**/*.html"
+alwaysApply: false
+---
+
+# Projetos — regras de negócio (confirmado)
+
+## Escopo do módulo
+
+- App Django `projetos/` — **separado** do CRM comercial.
+- Rotas: `/projetos/` (projetos API), `/projetos/boards/` (boards operacionais).
+- Menu lateral: dropdown **Projetos** (`current_parent_menu='projetos'`).
+
+## Autenticação e permissões
+
+- Mesmo gate do CRM: `@login_required` + `logistica.acesso_arancia` + `crm.*` via `crm.decorators.crm_permission_required`.
+- Permissões: `crm.view_project`, `crm.add_project`, `crm.view_board`, `crm.manage_board_columns`, etc. (seed Alembic, `app_label=crm`).
+- BFF: todas as chamadas via `crm_api.client.CrmApiClient` e `crm_api/services/projects`, `crm_api/services/boards`.
+
+## CRM vs Projetos
+
+| Conceito | Onde vive |
+|----------|-----------|
+| Projeto CRM Comercial (Kanban `crm_comercial`) | `crm` → `/crm/comercial/` |
+| Projetos API (entidade Project) | `projetos` → `/projetos/` |
+| Boards operacionais (Kanban genérico) | `projetos` → `/projetos/boards/` |
+
+## Layout
+
+- `{% extends 'global/base.html' %}` — mesmo padrão visual do Arancia.
+- Forms de board reutilizam `crm.forms` (`BoardForm`, `BoardAccessForm`, `BoardColumnForm`).
+- Forms de projeto: `projetos.forms` (`ProjectForm`, `ProjectMemberForm`).
+
+## Menu lateral
+
+- Dropdown **Projetos**: projetos API, boards, minhas tasks, recorrências e configurações.
+- Dropdown **CRM**: clientes, contratos, faturamento, alertas e projeto CRM comercial.
+
+## AJAX
+
+- Reorder de colunas: `/projetos/ajax/boards/<id>/columns/reorder/` (`projetos:ajax_reorder_columns`).
+- Tasks (mover card, comentários, etc.) permanecem em `/crm/ajax/tasks/...`.
+
+## Redirects legados
+
+- URLs antigas `crm:lista_projetos`, `crm:kanban_board`, etc. redirecionam para `projetos:*` — manter compatibilidade de bookmarks.
+
+## Proibido
+
+- Tratar “Projeto CRM Comercial” como entidade Project da API.
+- Criar layout ou menu paralelo fora de `global/base.html` e `_header.html`.

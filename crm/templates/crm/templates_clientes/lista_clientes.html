@@ -1,0 +1,405 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .crm-client-actions {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        flex-wrap: nowrap;
+    }
+
+    .crm-client-actions .action-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid #dbe3ec;
+        background: #f8fafc;
+        color: #334155;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+        font-size: 14px;
+        padding: 0;
+    }
+
+    .crm-client-actions .action-pill:hover {
+        transform: translateY(-1px);
+    }
+
+    .crm-client-actions .action-pill--view:hover {
+        background: #eff6ff;
+        border-color: #93c5fd;
+        color: #1d4ed8;
+    }
+
+    .crm-client-actions .action-pill--edit:hover {
+        background: #ecfdf5;
+        border-color: #86efac;
+        color: #15803d;
+    }
+
+    .crm-client-actions .action-pill--delete:hover {
+        background: #fef2f2;
+        border-color: #fca5a5;
+        color: #b91c1c;
+    }
+
+    .crm-client-view-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px 20px;
+    }
+
+    .crm-client-view-item {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px 12px;
+    }
+
+    .crm-client-view-item .label {
+        display: block;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        color: #64748b;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .crm-client-view-item .value {
+        color: #0f172a;
+        font-weight: 500;
+        word-break: break-word;
+    }
+
+    .crm-client-view-item--wide {
+        grid-column: 1 / -1;
+    }
+
+    .crm-modal-note {
+        margin: 0;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .crm-modal-alert {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #b91c1c;
+        font-size: 0.9rem;
+    }
+
+    #modalDeleteClient .modal-dialog {
+        max-width: 480px;
+    }
+</style>
+
+{% csrf_token %}
+<div class="user-list-container">
+    <div class="user-table-header">
+        <h2 class="user-table-title"><i class="fa-solid fa-building"></i> Clientes CRM</h2>
+        <form method="get" action="" class="form-user-search">
+            <i class="fa-solid fa-magnifying-glass search-icon-inside"></i>
+            <input type="text" name="q" placeholder="Pesquisar..." value="{{ q }}">
+        </form>
+        <div class="user-create">
+            {% if perms.crm.add_client %}
+            <button type="button" class="btn btn-primary" onclick="openCreateClientModal()">
+                <i class="fa-solid fa-plus"></i> Novo Cliente
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>GAI</th>
+                    <th>Nome</th>
+                    <th>CNPJ</th>
+                    <th>Canal</th>
+                    <th>IATA</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr data-gai-id="{{ item.gai_id }}" data-client-name="{{ item.nome|default:'' }}">
+                    <td><strong>{{ item.gai_id }}</strong></td>
+                    <td>{{ item.nome|default:"-" }}</td>
+                    <td>{{ item.cnpj|default:"-" }}</td>
+                    <td>{{ item.sales_channel|default:"-" }}</td>
+                    <td>{{ item.cod_iata|default:"-" }}</td>
+                    <td>
+                        <div class="crm-client-actions">
+                            <button type="button" class="action-pill action-pill--view btn-view-client"
+                                    data-gai-id="{{ item.gai_id }}" title="Visualizar">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                            {% if perms.crm.change_client %}
+                            <button type="button" class="action-pill action-pill--edit btn-edit-client"
+                                    data-gai-id="{{ item.gai_id }}" title="Editar">
+                                <i class="fa-solid fa-pencil"></i>
+                            </button>
+                            {% endif %}
+                            {% if perms.crm.delete_client %}
+                            <button type="button" class="action-pill action-pill--delete btn-delete-client"
+                                    data-gai-id="{{ item.gai_id }}"
+                                    data-client-name="{{ item.nome|default:item.gai_id }}"
+                                    title="Desativar">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="muted text-center">Nenhum cliente encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if pagination.has_previous or pagination.has_next %}
+    <div class="pagination-wrapper">
+        {% if pagination.has_previous %}
+        <a href="{{ pagination.previous_url }}" class="page-btn">Anterior</a>
+        {% else %}
+        <span class="page-btn disabled">Anterior</span>
+        {% endif %}
+        <span class="page-btn active">{{ pagination.page }}</span>
+        {% if pagination.has_next %}
+        <a href="{{ pagination.next_url }}" class="page-btn">Próximo</a>
+        {% else %}
+        <span class="page-btn disabled">Próximo</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+{{ list_config|json_script:"crm-client-list-config" }}
+
+{% if perms.crm.add_client %}
+<div id="modalCreateClient" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5><i class="fa-solid fa-building"></i> Novo Cliente</h5>
+            <button type="button" class="modal-close" data-close-modal="modalCreateClient">&times;</button>
+        </div>
+        <form method="post" id="formCreateClient">
+            {% csrf_token %}
+            <input type="hidden" name="create_client" value="1">
+            <div class="modal-body fields-grid">
+                {% for field in form %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="text-danger small">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="modal-footer modal-footer-split">
+                <div class="footer-left">
+                    {% include "global/partials/_required_fields.html" %}
+                </div>
+                <div class="footer-right">
+                    <button type="button" class="btn btn-warning" onclick="resetCreateClientForm()">Limpar campos</button>
+                    <button type="button" class="btn btn-secondary" data-close-modal="modalCreateClient">Fechar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div id="modalViewClient" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5><i class="fa-solid fa-eye"></i> Visualizar Cliente</h5>
+            <button type="button" class="modal-close" data-close-modal="modalViewClient">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="tab-header">
+                <button type="button" class="tab-btn active" data-tab="tab-view-principal">Principal</button>
+                <button type="button" class="tab-btn" data-tab="tab-view-contatos">Contatos</button>
+                <button type="button" class="tab-btn" data-tab="tab-view-enderecos">Endereços</button>
+            </div>
+
+            <div class="tab-content active" id="tab-view-principal">
+                <div class="crm-client-view-grid">
+                    <div class="crm-client-view-item">
+                        <span class="label">GAI</span>
+                        <span class="value" id="viewClientGai">-</span>
+                    </div>
+                    <div class="crm-client-view-item">
+                        <span class="label">Nome</span>
+                        <span class="value" id="viewClientNome">-</span>
+                    </div>
+                    <div class="crm-client-view-item">
+                        <span class="label">Razão Social</span>
+                        <span class="value" id="viewClientRazao">-</span>
+                    </div>
+                    <div class="crm-client-view-item">
+                        <span class="label">CNPJ</span>
+                        <span class="value" id="viewClientCnpj">-</span>
+                    </div>
+                    <div class="crm-client-view-item">
+                        <span class="label">Canal</span>
+                        <span class="value" id="viewClientCanal">-</span>
+                    </div>
+                    <div class="crm-client-view-item">
+                        <span class="label">IATA</span>
+                        <span class="value" id="viewClientIata">-</span>
+                    </div>
+                    <div class="crm-client-view-item">
+                        <span class="label">E-mail</span>
+                        <span class="value" id="viewClientEmail">-</span>
+                    </div>
+                    <div class="crm-client-view-item">
+                        <span class="label">Telefone</span>
+                        <span class="value" id="viewClientTelefone">-</span>
+                    </div>
+                    <div class="crm-client-view-item crm-client-view-item--wide">
+                        <span class="label">Observações</span>
+                        <span class="value" id="viewClientNotes">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-view-contatos">
+                <div class="table-wrapper">
+                    <table class="user-table">
+                        <thead>
+                            <tr><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Cargo</th></tr>
+                        </thead>
+                        <tbody id="viewClientContactsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-view-enderecos">
+                <div class="table-wrapper">
+                    <table class="user-table">
+                        <thead>
+                            <tr><th>Logradouro</th><th>Cidade</th><th>UF</th><th>CEP</th></tr>
+                        </thead>
+                        <tbody id="viewClientAddressesBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer modal-footer-split">
+            <div class="footer-left"></div>
+            <div class="footer-right">
+                {% if perms.crm.change_client %}
+                <button type="button" class="btn btn-primary" id="btnOpenEditFromView">
+                    <i class="fa-solid fa-pencil"></i> Editar
+                </button>
+                {% endif %}
+                <button type="button" class="btn btn-secondary" data-close-modal="modalViewClient">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if perms.crm.change_client %}
+<div id="modalEditClient" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5><i class="fa-solid fa-pencil"></i> Editar Cliente</h5>
+            <button type="button" class="modal-close" data-close-modal="modalEditClient">&times;</button>
+        </div>
+        <form id="formEditClient">
+            <input type="hidden" id="editClientGaiId" value="">
+            <div class="modal-body fields-grid">
+                <div class="form-group">
+                    <label for="edit_nome">Nome (*)</label>
+                    <input type="text" class="form-control" id="edit_nome" name="nome" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit_razao_social">Razão Social</label>
+                    <input type="text" class="form-control" id="edit_razao_social" name="razao_social">
+                </div>
+                <div class="form-group">
+                    <label for="edit_cnpj">CNPJ</label>
+                    <input type="text" class="form-control" id="edit_cnpj" name="cnpj">
+                </div>
+                <div class="form-group">
+                    <label for="edit_email">E-mail</label>
+                    <input type="email" class="form-control" id="edit_email" name="email">
+                </div>
+                <div class="form-group">
+                    <label for="edit_telefone">Telefone</label>
+                    <input type="text" class="form-control" id="edit_telefone" name="telefone">
+                </div>
+                <div class="form-group">
+                    <label for="edit_sales_channel">Canal</label>
+                    <input type="text" class="form-control" id="edit_sales_channel" name="sales_channel">
+                </div>
+                <div class="form-group">
+                    <label for="edit_cod_iata">Código IATA</label>
+                    <input type="text" class="form-control" id="edit_cod_iata" name="cod_iata">
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="edit_notes">Observações</label>
+                    <textarea class="form-control" id="edit_notes" name="notes" rows="3"></textarea>
+                </div>
+            </div>
+            <div id="editClientError" class="crm-modal-alert" hidden></div>
+            <div class="modal-footer modal-footer-split">
+                <div class="footer-left">
+                    {% include "global/partials/_required_fields.html" %}
+                </div>
+                <div class="footer-right">
+                    <button type="button" class="btn btn-secondary" data-close-modal="modalEditClient">Fechar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{% if perms.crm.delete_client %}
+<div id="modalDeleteClient" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5><i class="fa-solid fa-triangle-exclamation"></i> Desativar Cliente</h5>
+            <button type="button" class="modal-close" data-close-modal="modalDeleteClient">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p class="crm-modal-note">
+                Deseja desativar o cliente <strong id="deleteClientName">-</strong>
+                (GAI <span id="deleteClientGai">-</span>)?
+            </p>
+            <p class="crm-modal-note">Esta ação não pode ser desfeita nesta tela.</p>
+            <div id="deleteClientError" class="crm-modal-alert" hidden></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-close-modal="modalDeleteClient">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="btnConfirmDeleteClient">Desativar</button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if show_create_modal %}
+<script>document.addEventListener("DOMContentLoaded", function () { openCreateClientModal(); });</script>
+{% endif %}
+
+<script src="{% static 'global/javascript/crm_clientes_lista.js' %}"></script>
+{% endblock %}

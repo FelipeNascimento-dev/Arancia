@@ -1,0 +1,145 @@
+{% extends "global/base.html" %}
+{% block content %}
+
+<h2 class="title-skill-ger"><i class="fa-solid fa-building"></i> {{ cliente.nome|default:gai_id }}</h2>
+
+<div class="grid-container">
+    <div class="box" id="box-group">
+        <div class="box-header">
+            <h3>Informações</h3>
+        </div>
+        <ul>
+            <li><strong>GAI:</strong> {{ gai_id }}</li>
+            <li><strong>CNPJ:</strong> {{ cliente.cnpj|default:"-" }}</li>
+            <li><strong>Canal:</strong> {{ cliente.sales_channel|default:"-" }}</li>
+            <li><strong>IATA:</strong> {{ cliente.cod_iata|default:"-" }}</li>
+            <li><strong>E-mail:</strong> {{ cliente.email|default:"-" }}</li>
+            <li><strong>Telefone:</strong> {{ cliente.telefone|default:"-" }}</li>
+        </ul>
+        {% if perms.crm.change_client %}
+        <a href="{% url 'crm:edit_cliente' gai_id %}" class="btn btn-primary btn-sm" style="margin-top: 12px;">
+            <i class="fa-solid fa-pencil"></i> Editar completo
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="box" id="box-group2">
+        <div class="tab-header">
+            <button class="tab-btn {% if active_tab == 'principal' %}active{% endif %}" data-tab="tab-principal">Principal</button>
+            <button class="tab-btn {% if active_tab == 'contatos' %}active{% endif %}" data-tab="tab-contatos">Contatos</button>
+            <button class="tab-btn {% if active_tab == 'enderecos' %}active{% endif %}" data-tab="tab-enderecos">Endereços</button>
+            <button class="tab-btn {% if active_tab == 'contratos' %}active{% endif %}" data-tab="tab-contratos">Contratos</button>
+        </div>
+
+        <div class="tab-content {% if active_tab == 'principal' %}active{% endif %}" id="tab-principal">
+            {% if perms.crm.change_client %}
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="edit_client" value="1">
+                <div class="form-group"><label>Nome</label>{{ edit_form.nome }}</div>
+                <div class="form-group"><label>Razão Social</label>{{ edit_form.razao_social }}</div>
+                <div class="form-group"><label>CNPJ</label>{{ edit_form.cnpj }}</div>
+                <div class="form-group"><label>E-mail</label>{{ edit_form.email }}</div>
+                <div class="form-group"><label>Telefone</label>{{ edit_form.telefone }}</div>
+                <div class="form-group"><label>Observações</label>{{ edit_form.notes }}</div>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+            </form>
+            {% else %}
+            <p>{{ cliente.notes|default:"Sem observações." }}</p>
+            {% endif %}
+        </div>
+
+        <div class="tab-content {% if active_tab == 'contatos' %}active{% endif %}" id="tab-contatos">
+            <table class="user-table">
+                <thead><tr><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Cargo</th></tr></thead>
+                <tbody>
+                    {% for c in contacts %}
+                    <tr>
+                        <td>{{ c.name|default:"-" }}</td>
+                        <td>{{ c.email|default:"-" }}</td>
+                        <td>{{ c.phone|default:"-" }}</td>
+                        <td>{{ c.role|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="muted">Nenhum contato cadastrado.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if perms.crm.change_client %}
+            <form method="post" style="margin-top: 16px;">
+                {% csrf_token %}
+                <input type="hidden" name="add_contact" value="1">
+                <h4>Adicionar contato</h4>
+                <div class="form-group">{{ contact_form.nome.label_tag }}{{ contact_form.nome }}</div>
+                <div class="form-group">{{ contact_form.email.label_tag }}{{ contact_form.email }}</div>
+                <div class="form-group">{{ contact_form.telefone.label_tag }}{{ contact_form.telefone }}</div>
+                <div class="form-group">{{ contact_form.cargo.label_tag }}{{ contact_form.cargo }}</div>
+                <button type="submit" class="btn btn-primary">Adicionar</button>
+            </form>
+            {% endif %}
+        </div>
+
+        <div class="tab-content {% if active_tab == 'enderecos' %}active{% endif %}" id="tab-enderecos">
+            <table class="user-table">
+                <thead><tr><th>Logradouro</th><th>Cidade</th><th>UF</th><th>CEP</th></tr></thead>
+                <tbody>
+                    {% for a in addresses %}
+                    <tr>
+                        <td>{{ a.street|default:"-" }} {{ a.number|default:"" }}</td>
+                        <td>{{ a.city|default:"-" }}</td>
+                        <td>{{ a.state|default:"-" }}</td>
+                        <td>{{ a.zip_code|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="muted">Nenhum endereço cadastrado.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if perms.crm.change_client %}
+            <form method="post" style="margin-top: 16px;">
+                {% csrf_token %}
+                <input type="hidden" name="add_address" value="1">
+                <h4>Adicionar endereço</h4>
+                <div class="form-group">{{ address_form.logradouro.label_tag }}{{ address_form.logradouro }}</div>
+                <div class="form-group">{{ address_form.numero.label_tag }}{{ address_form.numero }}</div>
+                <div class="form-group">{{ address_form.cidade.label_tag }}{{ address_form.cidade }}</div>
+                <div class="form-group">{{ address_form.uf.label_tag }}{{ address_form.uf }}</div>
+                <div class="form-group">{{ address_form.cep.label_tag }}{{ address_form.cep }}</div>
+                <button type="submit" class="btn btn-primary">Adicionar</button>
+            </form>
+            {% endif %}
+        </div>
+
+        <div class="tab-content {% if active_tab == 'contratos' %}active{% endif %}" id="tab-contratos">
+            <table class="user-table">
+                <thead><tr><th>Número</th><th>Título</th><th>Status</th><th>Ações</th></tr></thead>
+                <tbody>
+                    {% for c in contratos %}
+                    <tr>
+                        <td>{{ c.numero|default:"-" }}</td>
+                        <td>{{ c.titulo|default:"-" }}</td>
+                        <td>{{ c.status|default:"-" }}</td>
+                        <td>
+                            <a href="{% url 'crm:detalhe_contrato' c.id %}" class="action-btn edit-btn"><i class="fa-solid fa-eye"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="muted">Nenhum contrato vinculado.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends 'global/base.html' %}
+{% block content %}
+<style>
+    .form-card-2col { height: auto; margin-top: 65px; }
+    .recurrence-panel { display: none; margin-top: 20px; padding: 18px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
+    .recurrence-panel.visible { display: block; }
+    .badge-recurrence { background: #e0e7ff; color: #3730a3; padding: 4px 10px; border-radius: 6px; font-size: 13px; margin-left: 8px; }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST">
+            {% if is_edit %}
+            <input type="hidden" name="edit_task" value="1">
+            {% else %}
+            <input type="hidden" name="create_task" value="1">
+            {% endif %}
+            <h2>{{ form.nome_formulario }}</h2>
+            {% if recurrence_template_id %}
+            <p>
+                <span class="badge-recurrence">Instância recorrente</span>
+                <a href="{% url 'crm:form_recorrencia' recurrence_template_id %}">Ver template de recorrência</a>
+            </p>
+            {% endif %}
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <div class="form-grid-2col">
+                {% for campo in form %}
+                {% if not is_edit %}
+                    {% if campo.name != "is_recurring" and not campo.name|slice:":11" == "recurrence_" %}
+                    <div class="form-group">
+                        {{ campo.label_tag }}
+                        {{ campo }}
+                        {% if campo.errors %}<div class="error">{{ campo.errors }}</div>{% endif %}
+                    </div>
+                    {% endif %}
+                {% else %}
+                    {% if campo.name != "is_recurring" and not campo.name|slice:":11" == "recurrence_" %}
+                    <div class="form-group">
+                        {{ campo.label_tag }}
+                        {{ campo }}
+                        {% if campo.errors %}<div class="error">{{ campo.errors }}</div>{% endif %}
+                    </div>
+                    {% endif %}
+                {% endif %}
+                {% endfor %}
+            </div>
+
+            {% if not is_edit %}
+            {% if can_add_recurrence %}
+            <div class="form-group" style="margin-top: 16px;">
+                {{ form.is_recurring }}
+                {{ form.is_recurring.label_tag }}
+            </div>
+
+            <div id="recurrencePanel" class="recurrence-panel">
+                <h4>Configuração de recorrência</h4>
+                <div class="form-grid-2col">
+                    <div class="form-group">{{ form.recurrence_frequency.label_tag }}{{ form.recurrence_frequency }}</div>
+                    <div class="form-group">{{ form.recurrence_interval.label_tag }}{{ form.recurrence_interval }}</div>
+                    <div class="form-group">{{ form.recurrence_end_at.label_tag }}{{ form.recurrence_end_at }}</div>
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">{{ botao_texto|default:"Criar" }}</button>
+                {% if is_edit %}
+                <a href="{% url 'crm:detalhe_task' task_id %}" class="btn btn-secondary">Cancelar</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div style="margin: 20px 90px;">
+    {% if is_edit %}
+    <a href="{% url 'crm:detalhe_task' task_id %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+    {% else %}
+    <a href="{% url 'crm:lista_tasks' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+    {% endif %}
+</div>
+
+{% if not is_edit and can_add_recurrence %}
+<script>
+(function () {
+    const toggle = document.getElementById('is_recurring');
+    const panel = document.getElementById('recurrencePanel');
+    if (!toggle || !panel) return;
+    function sync() { panel.classList.toggle('visible', toggle.checked); }
+    toggle.addEventListener('change', sync);
+    sync();
+})();
+</script>
+{% endif %}
+{% endblock %}

@@ -35,14 +35,6 @@ LOCAL_DEBUG = ENVIRONMENT == 'homolog'
 for _key, _value in _ENVIRONMENT_SECRETS[ENVIRONMENT].items():
     globals()[_key] = _value
 
-# Integração CRM (FastAPI) — secret por ambiente via apply_environment; env sobrescreve
-CRM_API_V1_STR = '/api/v1'
-CRM_API_TIMEOUT = 30
-CRM_API_VERIFY_SSL = False
-CRM_DEFAULT_LIMIT = 100
-CRM_SERVICE_USER_ID = 1
-CRM_SERVICE_USERNAME = 'celery'
-
 URL_LABEL_INTELIPOST = 'https://api.intelipost.com.br/api/v1/shipment_order/get_label/'
 
 ALLOWED_HOSTS: list[str] = [
@@ -81,3 +73,6 @@ status_colors = {
     'atrasado': 'bg-red-600',
     'sem_horario_definido': 'bg-gray-500',
 }
+
+# CRM API — Basic Auth (usuário logado) + X-API-Key
+CRM_API_KEY = 'F7UuScgkRNn2rrSFWM0yuqkbI9RlOuuwPYyC1RPVe8KW'

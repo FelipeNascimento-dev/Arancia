@@ -1,0 +1,76 @@
+<table class="user-table">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Tipo</th>
+            <th>Enviado em</th>
+            {% if perms.crm.upload_contract_file %}<th>Ações</th>{% endif %}
+        </tr>
+    </thead>
+    <tbody id="contract-files-table">
+        {% for arquivo in arquivos %}
+        <tr data-file-id="{{ arquivo.id }}">
+            <td>{{ arquivo.filename|default:arquivo.name|default:"-" }}</td>
+            <td>{{ arquivo.content_type|default:arquivo.tipo|default:"-" }}</td>
+            <td>{{ arquivo.created_at|default:arquivo.uploaded_at|default:"-" }}</td>
+            {% if perms.crm.upload_contract_file %}
+            <td>
+                <button type="button"
+                        class="action-btn edit-btn btn-delete-contract-file"
+                        title="Remover"
+                        data-file-id="{{ arquivo.id }}"
+                        data-url="{% url 'crm:ajax_delete_contract_file' contract_id=contract_id file_id=arquivo.id %}">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </td>
+            {% endif %}
+        </tr>
+        {% empty %}
+        <tr id="contract-files-empty"><td colspan="4" class="muted text-center">Nenhum arquivo anexado.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if perms.crm.upload_contract_file %}
+<form method="post" enctype="multipart/form-data" style="margin-top: 16px;">
+    {% csrf_token %}
+    <input type="hidden" name="upload_file" value="1">
+    <div class="form-group">{{ file_form.arquivo.label_tag }}{{ file_form.arquivo }}</div>
+    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-upload"></i> Enviar arquivo</button>
+</form>
+
+<script>
+document.querySelectorAll('.btn-delete-contract-file').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        if (!confirm('Remover arquivo?')) return;
+        const csrf = document.querySelector('[name=csrfmiddlewaretoken]');
+        const token = csrf ? csrf.value : '';
+        try {
+            const resp = await fetch(btn.dataset.url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': token,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+            const data = await resp.json();
+            if (data.ok) {
+                const row = btn.closest('tr');
+                row.remove();
+                const tbody = document.getElementById('contract-files-table');
+                if (tbody && !tbody.querySelector('tr[data-file-id]')) {
+                    const empty = document.createElement('tr');
+                    empty.id = 'contract-files-empty';
+                    empty.innerHTML = '<td colspan="4" class="muted text-center">Nenhum arquivo anexado.</td>';
+                    tbody.appendChild(empty);
+                }
+            } else {
+                alert(data.detail || 'Não foi possível remover o arquivo.');
+            }
+        } catch (e) {
+            alert('Erro ao remover arquivo.');
+        }
+    });
+});
+</script>
+{% endif %}

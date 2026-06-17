@@ -12,6 +12,7 @@ urlpatterns = [
     path(BASE_PATH, include('backoffice.urls')),
     path(BASE_PATH, include('mural.urls')),
     path(BASE_PATH, include('crm.urls')),
+    path(BASE_PATH, include('projetos.urls')),
 
     path(f'{BASE_PATH}admin/', admin.site.urls),
 ]

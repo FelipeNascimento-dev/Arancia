@@ -1,0 +1,86 @@
+{% extends 'global/base.html' %}
+{% block content %}
+<style>
+    .page { max-width: 1550px; margin-top: 50px; margin-left: 65px; padding: 28px; }
+    .mural-shell { background: #fff; border: 1px solid #d9e2ec; border-radius: 18px; box-shadow: 0 6px 18px rgba(15,23,42,.06); overflow: hidden; }
+    .mural-topbar { padding: 28px 30px 22px; border-bottom: 1px solid #d9e2ec; background: linear-gradient(135deg,#fff 0%,#f8fbff 100%); }
+    .mural-title { margin: 0; font-size: 28px; font-weight: 800; color: #0f172a; }
+    .mural-subtitle { margin: 8px 0 0; color: #64748b; }
+    .mural-toolbar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; padding: 18px 30px; border-bottom: 1px solid #e2e8f0; }
+    .mural-body { padding: 20px 30px 30px; }
+    .table-card { border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; }
+    .table-header { padding: 16px 20px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
+    .user-table { width: 100%; border-collapse: collapse; }
+    .user-table th, .user-table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+    .user-table th { background: #f8fafc; font-size: 12px; text-transform: uppercase; color: #64748b; }
+    .tag { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #eff6ff; color: #1d4ed8; }
+    .tag.overdue { background: #fef2f2; color: #b91c1c; }
+</style>
+
+<div class="page">
+    <section class="mural-shell">
+        <header class="mural-topbar">
+            <h1 class="mural-title"><i class="fa-solid fa-list-check"></i> Tasks CRM</h1>
+            <p class="mural-subtitle">Listagem geral de tasks com filtros e paginação.</p>
+        </header>
+
+        <div class="mural-toolbar">
+            {% include 'crm/templates_tasks/_task_filters.html' with show_scheduled_filter=True %}
+            <div>
+                {% if perms.crm.add_task %}
+                <a href="{% url 'crm:form_task' %}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nova Task</a>
+                {% endif %}
+                <a href="{% url 'crm:minhas_tasks' %}" class="btn btn-secondary">Minhas</a>
+                <a href="{% url 'crm:calendario_tasks' %}" class="btn btn-secondary">Calendário</a>
+            </div>
+        </div>
+
+        <section class="mural-body">
+            <div class="table-card">
+                <div class="table-header"><strong>Tasks</strong></div>
+                <div class="table-wrapper">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Status</th>
+                                <th>Prioridade</th>
+                                <th>Board</th>
+                                <th>Projeto</th>
+                                <th>Prazo</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td>{{ item.id }}</td>
+                                <td>{{ item.display_title }}</td>
+                                <td><span class="tag">{{ item.display_status }}</span></td>
+                                <td>{{ item.display_priority }}</td>
+                                <td>{{ item.display_board }}</td>
+                                <td>{{ item.display_project }}</td>
+                                <td>
+                                    {% if item.is_overdue %}<span class="tag overdue">{% endif %}
+                                    {{ item.display_due }}
+                                    {% if item.is_overdue %}</span>{% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'crm:detalhe_task' item.id %}" class="action-btn edit-btn" title="Detalhes">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="8" class="muted text-center">Nenhuma task encontrada.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% include 'crm/templates_tasks/_task_pagination.html' %}
+            </div>
+        </section>
+    </section>
+</div>
+{% endblock %}

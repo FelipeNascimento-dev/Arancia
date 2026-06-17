@@ -1,0 +1,70 @@
+---
+description: Regras de negócio confirmadas para o módulo CRM BFF (Django → FastAPI).
+globs: "crm/**/*.py,crm_api/**/*.py,crm/templates/**/*.html"
+alwaysApply: false
+---
+
+# CRM BFF — regras de negócio (confirmado)
+
+## Arquitetura
+
+- Browser **nunca** chama a FastAPI CRM diretamente.
+- Fluxo obrigatório: templates/JS → views Django (`/arancia/crm/...`) → `crm_api.client.CrmApiClient` → FastAPI `/api/v1`.
+- Secrets (`CRM_API_KEY`, `CRM_INTERNAL_API_SECRET`, `CRM_SERVICE_*`) ficam em env/`local_settings.py` — **não** expor no JS.
+
+## Autenticação e permissões (UI)
+
+- Baseline em toda tela: `@login_required` + `logistica.acesso_arancia` + permissão `crm.*` (`crm.decorators.crm_permission_required`).
+- Dashboard: `crm_any_access_required` (qualquer permissão `crm.*`).
+- Auth API (negócio): `Authorization: Basic` com **username do usuário logado** + senha capturada no login + header `X-API-Key` (`CRM_API_KEY`); montados em `crm_api/context.py`; senha em sessão criptografada (`crm_api/session_credentials.py`).
+- Scheduler interno: somente `Bearer` (`CRM_INTERNAL_API_SECRET`) — `CrmApiClient(scheduler=True)`.
+- Jobs Celery de negócio (ex.: `fire_contract_alerts`): `CrmApiClient(service_user=True)` → Basic + key com `CRM_SERVICE_USERNAME`/`CRM_SERVICE_PASSWORD`.
+- Gates de botão: `{% if perms.crm.<codename> %}` — mesmo padrão do menu lateral.
+- Permissões Django vêm do seed Alembic (`app_label=crm`); modelo dummy `CrmPermissions` só documenta codenames.
+- Menu/contexto: `GET /me/context` via `crm.context_processors.crm_menu_context` (`accessible_boards`, `accessible_projects`, `permission_codenames`).
+
+## Layout e templates
+
+- **Sempre** `{% extends 'global/base.html' %}` — sem `base_crm.html` nem partials CRM exclusivos de layout.
+- Listagens admin: `.user-list-container` + `.user-table` + paginação inline (padrão `gestao_usuarios.html`).
+- Master-detail / CRUD inline: padrão `gestao_skills.html` (grid + box + tabs).
+- Forms create/edit: `_form_2colV2.html` dentro de `.form-card-2col`.
+- Kanban: única tela com JS dedicado (`base_static/global/javascript/kanban_board.js`); AJAX só em `/crm/ajax/`.
+
+## Boards e Kanban
+
+- **Projeto CRM Comercial** (`/crm/comercial/`): board fixo `crm_comercial` (`CRM_COMERCIAL_BOARD_CODE`); Kanban, acesso e colunas no app `crm`.
+- **Boards operacionais** (`/projetos/boards/`): app Django `projetos` — separado do CRM comercial.
+- Rotas legadas `/crm/projects/*` e `/crm/boards/*` redirecionam para `projetos:*`.
+- Mover card: `PATCH /tasks/{id}/move` via `crm/ajax/tasks/<id>/move/` com `status_id` + `kanban_position` + `board_id`.
+- Colunas: reorder via `crm/ajax/boards/<id>/columns/reorder/`.
+
+## Tasks e recorrências
+
+- Criação de task avulsa **ou** template recorrente: formulário unificado `/crm/tasks/new/` (`UnifiedTaskForm`).
+- Edição de template recorrente existente: `/crm/tasks/recurrences/<id>/edit/` apenas.
+- Se `start_at <= now` ao criar recorrência, disparar `POST /internal/scheduler/generate-due-tasks` com `CrmApiClient(scheduler=True)` (one-shot pós-create).
+- Celery: `crm.tasks.generate_recurring_tasks` a cada 15 min com `scheduler=True`; idempotência delegada à API.
+
+## Alertas de contrato
+
+- UI lista via `GET /alerts/`; disparo via `POST /alerts/fire/{id}`.
+- Job Celery `crm.tasks.fire_contract_alerts` diário 08:00 — lista pendentes e dispara fire (workaround sem endpoint de vencidos).
+
+## Configurações (catálogos)
+
+- CRUD em `/crm/settings/`: service types, priorities, status tasks.
+- Endpoints API: `/service-types`, `/prioritys`, `/status-tasks` (+ reorder em status).
+- Permissões granulares: `manage_service_types`, `manage_priorities`, `manage_status_tasks`.
+
+## Gaps da API — não implementar no Django
+
+- DELETE contrato/faturamento; PATCH/DELETE contato/endereço individual.
+- CRUD `/teams/*` (usar lookups read-only).
+- Dashboard endpoint dedicado; notificações e-mail/push; JWT na API.
+
+## Proibido
+
+- Montar URLs da FastAPI manualmente nas views (usar `crm_api/services/*`).
+- Retornar dados de todos os clientes sem elevação explícita na API.
+- Unificar flags de escopo GAI (`sales_channel == 'all'`) com `gestao_total` em refactors não solicitados.
