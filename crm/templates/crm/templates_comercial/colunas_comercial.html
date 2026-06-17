@@ -1,88 +1,132 @@
 {% extends "global/base.html" %}
+{% load static %}
 {% block content %}
 
-<h2 class="title-skill-ger">
-    <i class="fa-solid fa-grip-vertical"></i> Colunas — {{ board.display_name|default:board_id }}
-</h2>
+<div class="crm-comercial-page">
+    {% include 'crm/templates_comercial/partials/_header.html' %}
 
-<div style="margin: 0 65px 16px;">
-    <a href="{% url 'crm:kanban_comercial' %}" class="btn btn-secondary btn-sm">
-        <i class="fa-solid fa-arrow-left"></i> Voltar ao Kanban
-    </a>
-    {% if perms.crm.manage_board_columns %}
-    <button class="btn btn-primary btn-sm" onclick="openModal('columnModal')">
-        <i class="fa-solid fa-plus"></i> Nova coluna
-    </button>
-    {% endif %}
-</div>
-
-<div class="user-list-container" style="margin-left: 65px;">
-    <div class="table-wrapper">
-        <table class="user-table" id="columns-table">
-            <thead>
-                <tr>
-                    <th>Ordem</th>
-                    <th>Nome</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody id="columns-sortable">
-                {% for col in columns %}
-                <tr data-column-id="{{ col.id }}">
-                    <td>{{ col.position|default:forloop.counter }}</td>
-                    <td>{{ col.name|default:"-" }}</td>
-                    <td>{{ col.status_name|default:col.status_task_id|default:"-" }}</td>
-                    <td>
-                        {% if perms.crm.manage_board_columns %}
-                        <button type="button" class="action-btn edit-btn drag-handle" title="Arrastar"><i class="fa-solid fa-grip-lines"></i></button>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="4" class="muted text-center">Nenhuma coluna.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="crm-comercial-panel">
+        <div class="user-list-container">
+            <div class="user-table-header">
+                <h3 class="user-table-title"><i class="fa-solid fa-grip-vertical"></i> Colunas do board</h3>
+                <p class="muted" style="margin: 0;">Arraste para reordenar. Clique em editar para alterar nome ou status.</p>
+            </div>
+            <div class="table-wrapper">
+                <table class="user-table" id="columns-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Ordem</th>
+                            <th>Nome</th>
+                            <th>Status / código</th>
+                            <th style="width: 120px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="columns-sortable"
+                           data-reorder-url="{% url 'crm:ajax_reorder_columns' board_id %}"
+                           data-csrf="{{ csrf_token }}">
+                        {% for col in columns %}
+                        <tr data-column-id="{{ col.id }}"
+                            data-name="{{ col.name|default:col.display_name|default:'' }}"
+                            data-status-id="{{ col.status_task_id|default:'' }}"
+                            data-position="{{ col.display_position|default:forloop.counter }}">
+                            <td>{{ col.display_position|default:forloop.counter }}</td>
+                            <td>
+                                {% if col.color %}
+                                <span class="crm-comercial-color-dot" style="background: {{ col.color }};"></span>
+                                {% endif %}
+                                {{ col.display_name|default:"-" }}
+                            </td>
+                            <td>{{ col.display_status|default:"-" }}</td>
+                            <td>
+                                {% if perms.crm.manage_board_columns %}
+                                <div class="crm-comercial-actions">
+                                    <button type="button" class="action-pill btn-edit-column" title="Editar coluna">
+                                        <i class="fa-solid fa-pencil"></i>
+                                    </button>
+                                    <button type="button" class="action-pill drag-handle" title="Arrastar">
+                                        <i class="fa-solid fa-grip-lines"></i>
+                                    </button>
+                                </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="muted text-center">Nenhuma coluna configurada.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
 {% if perms.crm.manage_board_columns %}
-{% include 'global/partials/_modal_2col.html' with modal_id='columnModal' modal_title='Nova coluna' form=column_form %}
+<div id="modalCreateColumn" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5><i class="fa-solid fa-plus"></i> Nova coluna</h5>
+            <button type="button" class="modal-close" data-close-modal="modalCreateColumn">&times;</button>
+        </div>
+        <form method="post" id="formCreateColumn">
+            {% csrf_token %}
+            <input type="hidden" name="add_column" value="1">
+            <div class="modal-body fields-grid">
+                {% for field in column_form %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="text-danger small">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="modal-footer modal-footer-split">
+                <div class="footer-left">
+                    {% include "global/partials/_required_fields.html" %}
+                </div>
+                <div class="footer-right">
+                    <button type="button" class="btn btn-secondary" data-close-modal="modalCreateColumn">Fechar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modalEditColumn" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5><i class="fa-solid fa-pencil"></i> Editar coluna</h5>
+            <button type="button" class="modal-close" data-close-modal="modalEditColumn">&times;</button>
+        </div>
+        <form method="post" id="formEditColumn">
+            {% csrf_token %}
+            <input type="hidden" name="edit_column" value="1">
+            <input type="hidden" name="column_id" value="">
+            <div class="modal-body fields-grid">
+                {% for field in column_form %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-close-modal="modalEditColumn">Fechar</button>
+                <button type="submit" class="btn btn-primary">Salvar alterações</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<script src="{% static 'global/javascript/crm_comercial.js' %}"></script>
+{% if column_form.errors %}
 <script>
-function openModal(id) { document.getElementById(id).style.display = 'block'; }
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-document.querySelector('#columnModal form').insertAdjacentHTML('afterbegin', '<input type="hidden" name="add_column" value="1">');
-
-(function () {
-    const tbody = document.getElementById('columns-sortable');
-    if (!tbody || !tbody.querySelector('[data-column-id]')) return;
-    const reorderUrl = "{% url 'crm:ajax_reorder_columns' board_id %}";
-    const csrf = "{{ csrf_token }}";
-    let dragEl = null;
-
-    tbody.querySelectorAll('tr[data-column-id]').forEach(row => {
-        row.setAttribute('draggable', 'true');
-        row.addEventListener('dragstart', () => { dragEl = row; row.classList.add('dragging'); });
-        row.addEventListener('dragend', () => {
-            row.classList.remove('dragging');
-            const ids = [...tbody.querySelectorAll('tr[data-column-id]')].map(r => r.dataset.columnId);
-            fetch(reorderUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
-                body: JSON.stringify({ column_ids: ids }),
-            }).catch(() => {});
-        });
-        row.addEventListener('dragover', e => {
-            e.preventDefault();
-            const target = row;
-            if (!dragEl || dragEl === target) return;
-            const rect = target.getBoundingClientRect();
-            const after = (e.clientY - rect.top) > rect.height / 2;
-            tbody.insertBefore(dragEl, after ? target.nextSibling : target);
-        });
-    });
-})();
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.CrmComercial) CrmComercial.openModal('modalCreateColumn');
+});
 </script>
 {% endif %}
 {% endblock %}

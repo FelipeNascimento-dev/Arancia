@@ -138,8 +138,9 @@ class BoardColumnForm(forms.Form):
         max_length=255,
         widget=forms.TextInput(attrs={"class": "form-control"}),
     )
-    status_task_id = forms.IntegerField(
+    status_task_id = forms.ChoiceField(
         label="Status",
+        choices=[("", "---------")],
         widget=forms.Select(attrs={"class": "form-control"}),
     )
     position = forms.IntegerField(
@@ -157,8 +158,5 @@ class BoardColumnForm(forms.Form):
             st_id = st.get("id")
             label = st.get("name") or st.get("nome") or str(st_id)
             if st_id is not None:
-                status_choices.append((st_id, label))
-        self.fields["status_task_id"].widget = forms.Select(
-            choices=status_choices,
-            attrs={"class": "form-control"},
-        )
+                status_choices.append((str(st_id), label))
+        self.fields["status_task_id"].choices = status_choices

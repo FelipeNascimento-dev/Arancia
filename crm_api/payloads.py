@@ -1,5 +1,7 @@
 """Helpers para montar payloads enviados à API CRM."""
 
+from decimal import Decimal
+
 
 def client_payload(cleaned_data):
     return {k: v for k, v in cleaned_data.items() if v not in (None, "")}
@@ -13,11 +15,42 @@ def address_payload(cleaned_data):
     return client_payload(cleaned_data)
 
 
+def _iso_datetime(value):
+    if value is None or value == "":
+        return None
+    if hasattr(value, "isoformat"):
+        return value.isoformat()
+    return value
+
+
+def _json_safe_value(value):
+    if value is None or value == "":
+        return None
+    if hasattr(value, "isoformat"):
+        return value.isoformat()
+    if isinstance(value, Decimal):
+        return str(value)
+    return value
+
+
 def contract_payload(cleaned_data):
     data = client_payload(cleaned_data)
-    if "client_gai_id" in data:
-        data["customer_gai_id"] = data.pop("client_gai_id")
-    return data
+    mapped = {}
+    for key, value in data.items():
+        api_key = _CONTRACT_API_KEYS.get(key, key)
+        mapped[api_key] = _json_safe_value(value)
+    return mapped
+
+
+_CONTRACT_API_KEYS = {
+    "client_gai_id": "customer_gai_id",
+    "titulo": "title",
+    "numero": "number",
+    "data_inicio": "start_date",
+    "data_fim": "end_date",
+    "valor": "value",
+    "descricao": "description",
+}
 
 
 _BILLING_API_KEYS = {
@@ -34,7 +67,7 @@ def billing_payload(cleaned_data):
     mapped = {}
     for key, value in data.items():
         api_key = _BILLING_API_KEYS.get(key, key)
-        mapped[api_key] = value
+        mapped[api_key] = _json_safe_value(value)
     return mapped
 
 

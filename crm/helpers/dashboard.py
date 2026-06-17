@@ -74,12 +74,13 @@ def format_card_value(key, value):
     return str(value)
 
 
-def build_summary_cards(billing_data):
+def build_summary_cards(billing_data, *, skip_keys=None):
     cards = []
     if not isinstance(billing_data, dict):
         return cards
+    excluded = BILLING_CHART_SKIP_KEYS if skip_keys is None else skip_keys
     for key, value in billing_data.items():
-        if key in BILLING_CHART_SKIP_KEYS:
+        if key in excluded:
             continue
         cards.append({
             "label": SUMMARY_LABELS.get(key, key.replace("_", " ").title()),

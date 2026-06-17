@@ -1,9 +1,67 @@
+from crm.helpers.api_display import enrich_contract, service_type_client_gai_id, service_type_option_label
 from crm_api.exceptions import CrmApiError
 from crm_api.services import clients as clients_service
 from crm_api.services.lookups import get_crm_lookups
 
 
-def contract_lookups(client):
+def contract_client_gai_id(contract):
+    if not isinstance(contract, dict):
+        return None
+    customer = contract.get("customer") or {}
+    for key in ("client_gai_id", "customer_gai_id"):
+        value = contract.get(key)
+        if value not in (None, ""):
+            return value
+    for key in ("gai_id", "id"):
+        value = customer.get(key)
+        if value not in (None, ""):
+            return value
+    return None
+
+
+def contract_option_label(contract):
+    """Rótulo legível para selects — nunca exibe UUID bruto."""
+    enriched = enrich_contract(contract or {})
+    numero = enriched.get("display_numero") or ""
+    titulo = enriched.get("display_titulo") or ""
+    customer = enriched.get("display_customer") or ""
+
+    if numero and titulo:
+        return f"{numero} — {titulo}"
+    if titulo:
+        return titulo
+    if numero:
+        return str(numero)
+    if customer:
+        return f"Contrato — {customer}"
+    return "Contrato sem identificação"
+
+
+def filter_contracts_for_gai(contracts, gai_id):
+    if gai_id in (None, ""):
+        return contracts or []
+    gai_key = str(gai_id)
+    filtered = []
+    for contract in contracts or []:
+        client_id = contract_client_gai_id(contract)
+        if client_id in (None, "") or str(client_id) == gai_key:
+            filtered.append(contract)
+    return filtered
+
+
+def filter_service_types_for_gai(service_types, gai_id):
+    if gai_id in (None, ""):
+        return service_types or []
+    gai_key = str(gai_id)
+    filtered = []
+    for item in service_types or []:
+        client_id = service_type_client_gai_id(item)
+        if client_id in (None, "") or str(client_id) == gai_key:
+            filtered.append(item)
+    return filtered
+
+
+def contract_lookups(client, *, client_gai_id=None):
     lookups = {"clients": [], "service_types": []}
     try:
         clients, _ = clients_service.list_clients(client, limit=200)
@@ -13,7 +71,21 @@ def contract_lookups(client):
     try:
         crm = get_crm_lookups(client) or {}
         if isinstance(crm, dict):
-            lookups["service_types"] = crm.get("service_types") or []
+            service_types = crm.get("service_types") or []
+            lookups["service_types"] = filter_service_types_for_gai(
+                service_types,
+                client_gai_id,
+            )
     except CrmApiError:
         pass
     return lookups
+
+
+def service_type_choices(service_types):
+    choices = [("", "---------")]
+    for item in service_types or []:
+        item_id = item.get("id") if isinstance(item, dict) else None
+        label = service_type_option_label(item)
+        if item_id is not None:
+            choices.append((item_id, label or str(item_id)))
+    return choices

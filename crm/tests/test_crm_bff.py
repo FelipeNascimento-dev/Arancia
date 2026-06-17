@@ -13,7 +13,9 @@ from crm_api.context import (
 from crm_api.exceptions import CrmAuthError
 from crm_api.payloads import (
     board_access_payload,
+    billing_payload,
     build_rrule,
+    contract_payload,
     parse_rrule,
     recurrence_payload,
     service_type_payload,
@@ -24,6 +26,8 @@ from crm_api.session_credentials import (
     get_password_from_session,
     store_password_in_session,
 )
+from crm.helpers.api_display import billing_to_json, enrich_billing
+from crm.helpers.dashboard import build_summary_cards
 from crm.views.views_tasks._helpers import can_comment_on_board
 
 
@@ -142,6 +146,255 @@ class PayloadTests(SimpleTestCase):
         self.assertEqual(payload["direction"], "inbound")
         self.assertNotIn("name", payload)
         self.assertNotIn("code", payload)
+
+    def test_contract_payload_serializes_dates_and_decimal(self):
+        from datetime import date
+        from decimal import Decimal
+
+        payload = contract_payload({
+            "client_gai_id": 10,
+            "titulo": "Contrato teste",
+            "numero": "81",
+            "data_inicio": date(2026, 6, 17),
+            "data_fim": date(2026, 12, 31),
+            "valor": Decimal("1500.50"),
+            "descricao": "Observação",
+        })
+        self.assertEqual(payload["customer_gai_id"], 10)
+        self.assertEqual(payload["title"], "Contrato teste")
+        self.assertEqual(payload["number"], "81")
+        self.assertEqual(payload["start_date"], "2026-06-17")
+        self.assertEqual(payload["end_date"], "2026-12-31")
+        self.assertEqual(payload["value"], "1500.50")
+        self.assertEqual(payload["description"], "Observação")
+        self.assertNotIn("titulo", payload)
+        self.assertNotIn("data_inicio", payload)
+
+    def test_billing_payload_serializes_dates_and_decimal(self):
+        from datetime import date
+        from decimal import Decimal
+
+        payload = billing_payload({
+            "client_gai_id": 10,
+            "contract_id": 5,
+            "referencia": "REF-2026-01",
+            "valor": Decimal("2500.00"),
+            "data_vencimento": date(2026, 7, 15),
+            "status": "pending",
+            "observacoes": "Nota teste",
+        })
+        self.assertEqual(payload["customer_gai_id"], 10)
+        self.assertEqual(payload["contract_id"], 5)
+        self.assertEqual(payload["reference"], "REF-2026-01")
+        self.assertEqual(payload["value"], "2500.00")
+        self.assertEqual(payload["due_date"], "2026-07-15")
+        self.assertEqual(payload["status"], "pending")
+        self.assertEqual(payload["notes"], "Nota teste")
+
+
+class EnrichBillingTests(SimpleTestCase):
+    def test_enrich_billing_maps_all_api_fields(self):
+        record = {
+            "id": 42,
+            "reference": "REF-01",
+            "value": "1500.00",
+            "planned_amount": "1600.00",
+            "actual_amount": "1500.00",
+            "due_date": "2026-07-15",
+            "period_start": "2026-07-01",
+            "period_end": "2026-07-31",
+            "status": "pending",
+            "notes": "Observação da API",
+            "contract_id": 7,
+            "customer": {"name": "Cliente Teste"},
+            "contract": {"title": "Contrato Alpha", "number": "C-7"},
+        }
+        enriched = enrich_billing(record)
+
+        self.assertEqual(enriched["display_referencia"], "REF-01")
+        self.assertEqual(enriched["display_customer"], "Cliente Teste")
+        self.assertEqual(enriched["display_contract"], "Contrato Alpha")
+        self.assertEqual(enriched["display_contract_id"], 7)
+        self.assertEqual(enriched["display_period_start"], "2026-07-01")
+        self.assertEqual(enriched["display_period_end"], "2026-07-31")
+        self.assertEqual(enriched["display_period"], "2026-07-01 — 2026-07-31")
+        self.assertEqual(enriched["display_planned_amount"], "R$ 1.600,00")
+        self.assertEqual(enriched["display_actual_amount"], "R$ 1.500,00")
+        self.assertEqual(enriched["display_valor"], "R$ 1.500,00")
+        self.assertEqual(enriched["display_vencimento"], "2026-07-15")
+        self.assertEqual(enriched["display_status"], "pending")
+        self.assertEqual(enriched["display_observacoes"], "Observação da API")
+
+    def test_enrich_billing_hides_uuid_reference(self):
+        enriched = enrich_billing({
+            "id": "584fe3e0-11f3-4db3-9d91-264a60627b69",
+            "reference": "584fe3e0-11f3-4db3-9d91-264a60627b69",
+            "customer": {"name": "CIELO"},
+            "contract": {"title": "Testes"},
+            "period_start": "2026-01-01",
+            "period_end": "2026-12-31",
+        })
+        self.assertNotIn("584fe3e0", enriched["display_referencia"])
+        self.assertEqual(enriched["display_referencia"], "2026-01-01 — 2026-12-31")
+
+    def test_enrich_billing_falls_back_to_contract_name(self):
+        enriched = enrich_billing({
+            "id": "584fe3e0-11f3-4db3-9d91-264a60627b69",
+            "reference": "584fe3e0-11f3-4db3-9d91-264a60627b69",
+            "customer": {"name": "CIELO"},
+            "contract": {"title": "Testes"},
+        })
+        self.assertEqual(enriched["display_referencia"], "Testes")
+
+    def test_billing_to_json_includes_modal_fields(self):
+        payload = billing_to_json({
+            "id": 9,
+            "reference": "REF-9",
+            "value": "100",
+            "status": "paid",
+            "notes": "ok",
+        })
+        self.assertEqual(payload["id"], 9)
+        self.assertEqual(payload["display_referencia"], "REF-9")
+        self.assertEqual(payload["display_status"], "paid")
+        self.assertEqual(payload["display_observacoes"], "ok")
+
+
+class BillingSummaryTests(SimpleTestCase):
+    def test_build_summary_cards_for_list_includes_totals(self):
+        summary = {
+            "total_records": 10,
+            "total_value": "5000.00",
+            "pending_count": 3,
+            "pending_value": "1500.00",
+            "paid_count": 5,
+            "paid_value": "3000.00",
+            "overdue_count": 2,
+            "overdue_value": "500.00",
+            "items": [{"id": 1}],
+        }
+        cards = build_summary_cards(summary, skip_keys=frozenset({"items", "detail"}))
+        labels = [card["label"] for card in cards]
+        self.assertIn("Total de registros", labels)
+        self.assertIn("Valor total", labels)
+        self.assertIn("Pendentes", labels)
+        self.assertEqual(len(cards), 8)
+
+
+class ListaFaturamentoViewTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth.models import Permission
+        from django.contrib.contenttypes.models import ContentType
+
+        from crm.models import CrmPermissions
+        from logistica.models import PermissaoUsuarioDummy
+
+        self.user = User.objects.create_user(username="crm_billing", password="pass")
+        crm_ct = ContentType.objects.get_for_model(CrmPermissions)
+        logistica_ct = ContentType.objects.get_for_model(PermissaoUsuarioDummy)
+        view_billing = Permission.objects.get_or_create(
+            codename="view_billing",
+            content_type=crm_ct,
+            defaults={"name": "Visualizar faturamento"},
+        )[0]
+        add_billing = Permission.objects.get_or_create(
+            codename="add_billing",
+            content_type=crm_ct,
+            defaults={"name": "Adicionar faturamento"},
+        )[0]
+        acesso = Permission.objects.get_or_create(
+            codename="acesso_arancia",
+            content_type=logistica_ct,
+            defaults={"name": "Acesso Arancia"},
+        )[0]
+        self.user.user_permissions.add(view_billing, add_billing, acesso)
+
+    @patch("crm.views.views_faturamento.view_lista_faturamento.clients_service.list_clients")
+    @patch("crm.views.views_faturamento.view_lista_faturamento.contracts_service.list_contracts")
+    @patch("crm.views.views_faturamento.view_lista_faturamento.CrmApiClient")
+    @patch("crm.views.views_faturamento.view_lista_faturamento.billing_service.list_billing")
+    @patch("crm.views.views_faturamento.view_lista_faturamento.billing_service.billing_summary")
+    def test_lista_faturamento_renders_table_and_summary(
+        self,
+        mock_summary,
+        mock_list,
+        mock_client_cls,
+        mock_contracts,
+        mock_clients,
+    ):
+        from django.urls import reverse
+
+        mock_client_cls.return_value = Mock()
+        mock_clients.return_value = ([], 0)
+        mock_contracts.return_value = ([], 0)
+        mock_summary.return_value = {
+            "total_records": 1,
+            "total_value": "1500.00",
+            "pending_count": 1,
+            "pending_value": "1500.00",
+        }
+        mock_list.return_value = ([{
+            "id": 1,
+            "reference": "REF-1",
+            "value": "1500.00",
+            "planned_amount": "1600.00",
+            "actual_amount": "1500.00",
+            "due_date": "2026-07-15",
+            "period_start": "2026-07-01",
+            "period_end": "2026-07-31",
+            "status": "pending",
+            "notes": "Teste",
+            "customer": {"name": "Cliente A"},
+            "contract": {"title": "Contrato 1"},
+            "contract_id": 3,
+        }], 1)
+
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("crm:lista_faturamento"))
+
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn("Faturamento", content)
+        self.assertIn("user-list-container", content)
+        self.assertIn("user-table", content)
+        self.assertIn("Total de registros", content)
+        self.assertIn("REF-1", content)
+        self.assertIn("Cliente A", content)
+        self.assertIn("Contrato 1", content)
+        self.assertIn("Valor planejado", content)
+        self.assertIn("Valor realizado", content)
+        self.assertIn("crm-billing-list-config", content)
+        self.assertIn("modalFormBilling", content)
+        self.assertIn("openCreateBillingModal", content)
+
+
+class ContractOptionLabelTests(SimpleTestCase):
+    def test_contract_option_label_uses_title_not_uuid(self):
+        from crm.views.views_contratos._helpers import contract_option_label
+
+        label = contract_option_label({
+            "id": "e14c0ed4-243d-4965-9cf6-b44652c7c819",
+            "title": "Contrato Mensal",
+            "number": "81",
+        })
+        self.assertEqual(label, "81 — Contrato Mensal")
+        self.assertNotIn("e14c0ed4", label)
+
+    def test_billing_form_contract_choices_use_labels(self):
+        from crm.forms import BillingForm
+
+        form = BillingForm(lookups={
+            "clients": [{"gai_id": 10, "nome": "Cliente X"}],
+            "contracts": [{
+                "id": "e14c0ed4-243d-4965-9cf6-b44652c7c819",
+                "title": "Contrato Alpha",
+                "number": "10",
+                "customer_gai_id": 10,
+            }],
+        })
+        choices = form.fields["contract_id"].widget.choices
+        self.assertEqual(choices[1][0], "e14c0ed4-243d-4965-9cf6-b44652c7c819")
+        self.assertEqual(choices[1][1], "10 — Contrato Alpha")
 
 
 class SchedulerTests(SimpleTestCase):

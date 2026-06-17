@@ -1,5 +1,12 @@
 """Helpers para exibir objetos aninhados retornados pela API CRM."""
 
+import re
+
+_UUID_RE = re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+    re.IGNORECASE,
+)
+
 
 def entity_key(entity, *keys, default=""):
     """Retorna o primeiro identificador disponível no dict da API."""
@@ -134,15 +141,43 @@ def enrich_board(board):
     }
 
 
-def enrich_board_column(column):
+def _status_task_label(status_id, lookups=None):
+    if status_id in (None, ""):
+        return ""
+    if not isinstance(lookups, dict):
+        return ""
+    for item in lookups.get("status_tasks") or []:
+        if not isinstance(item, dict):
+            continue
+        item_id = item.get("id")
+        if item_id is not None and str(item_id) == str(status_id):
+            return nested_label(item, "name", "nome", "label")
+    return ""
+
+
+def enrich_board_column(column, lookups=None):
     if not isinstance(column, dict):
         return column
     column = with_label_aliases(column, ("nome", "name"))
     kanban_status_id = entity_key(column, "status_task_id", "status_id", "id")
+    status_name = nested_label(column, "status_name", "name", "nome")
+    if not status_name:
+        status_name = _status_task_label(kanban_status_id, lookups)
+    code = column.get("code")
+    display_status = status_name or (str(code) if code not in (None, "") else "") or "-"
+    display_position = (
+        column.get("position")
+        or column.get("sort_order")
+        or column.get("kanban_position")
+        or 0
+    )
     return {
         **column,
         "display_name": entity_key(column, "name", "nome", "status_name", default="Coluna"),
+        "display_status": display_status,
+        "display_position": display_position,
         "kanban_status_id": kanban_status_id,
+        "status_task_id": kanban_status_id if kanban_status_id not in (None, "") else None,
     }
 
 
@@ -198,12 +233,74 @@ def enrich_contract(contract):
         "display_customer": nested_label(customer, "nome", "name")
         or contract.get("client_name")
         or "",
-        "display_service_type": nested_label(service_type, "name", "nome", "type")
+        "display_service_type": nested_label(
+            service_type, "description", "name", "nome", "type",
+        )
         or contract.get("service_type_name")
         or "",
         "display_numero": entity_key(contract, "numero", "number", default=""),
         "display_titulo": entity_key(contract, "titulo", "title", default=""),
+        "display_data_inicio": entity_key(contract, "data_inicio", "start_date", default=""),
+        "display_data_fim": entity_key(contract, "data_fim", "end_date", default=""),
+        "display_valor": entity_key(contract, "valor", "value", default=""),
+        "display_status": contract.get("status") or "",
     }
+
+
+def contract_to_json(contract):
+    """Serializa contrato enriquecido para respostas AJAX."""
+    contract = enrich_contract(contract or {})
+    customer = contract.get("customer") or {}
+    service_type = contract.get("service_type") or {}
+    return {
+        "id": entity_key(contract, "id"),
+        "client_gai_id": contract.get("client_gai_id")
+        or contract.get("customer_gai_id")
+        or customer.get("gai_id")
+        or customer.get("id"),
+        "titulo": entity_key(contract, "titulo", "title"),
+        "numero": entity_key(contract, "numero", "number"),
+        "status": contract.get("status") or "",
+        "data_inicio": entity_key(contract, "data_inicio", "start_date"),
+        "data_fim": entity_key(contract, "data_fim", "end_date"),
+        "valor": entity_key(contract, "valor", "value"),
+        "service_type_id": contract.get("service_type_id") or service_type.get("id") or "",
+        "descricao": entity_key(contract, "descricao", "description"),
+        "display_customer": contract.get("display_customer") or "",
+        "display_service_type": contract.get("display_service_type") or "",
+    }
+
+
+def service_type_option_label(service_type):
+    if not isinstance(service_type, dict):
+        return ""
+    return nested_label(service_type, "description", "type", "name", "nome")
+
+
+def service_type_client_gai_id(service_type):
+    if not isinstance(service_type, dict):
+        return None
+    for key in ("client_id", "customer_gai_id", "client_gai_id"):
+        value = service_type.get(key)
+        if value not in (None, ""):
+            return value
+    return None
+
+
+def service_types_for_config(service_types):
+    options = []
+    for item in service_types or []:
+        if not isinstance(item, dict):
+            continue
+        item_id = item.get("id")
+        if item_id is None:
+            continue
+        options.append({
+            "id": item_id,
+            "label": service_type_option_label(item) or str(item_id),
+            "client_id": service_type_client_gai_id(item),
+        })
+    return options
 
 
 def enrich_project(project):
@@ -307,6 +404,48 @@ def enrich_recurrence(recurrence):
     }
 
 
+def _looks_like_uuid(value):
+    if value in (None, ""):
+        return False
+    return bool(_UUID_RE.match(str(value).strip()))
+
+
+def _billing_reference_label(record, *, period_start, period_end, customer, contract):
+    """Rótulo legível para faturamento — nunca exibe UUID bruto."""
+    ref = entity_key(record, "referencia", "reference")
+    if ref and not _looks_like_uuid(ref):
+        return str(ref)
+
+    if period_start and period_end:
+        return f"{period_start} — {period_end}"
+    if period_start:
+        return str(period_start)
+    if period_end:
+        return str(period_end)
+
+    contract_label = nested_label(contract, "titulo", "title", "numero", "number")
+    if contract_label:
+        return contract_label
+
+    customer_label = (
+        nested_label(customer, "nome", "name")
+        or record.get("client_name")
+        or ""
+    )
+    if customer_label:
+        return f"Faturamento — {customer_label}"
+
+    return "Sem referência"
+
+
+def _format_billing_money(value):
+    from crm.helpers.dashboard import format_card_value
+
+    if value in (None, ""):
+        return "-"
+    return format_card_value("total_value", value)
+
+
 def enrich_billing(record):
     if not isinstance(record, dict):
         return record
@@ -320,23 +459,29 @@ def enrich_billing(record):
     customer = record.get("customer") or {}
     contract = record.get("contract") or {}
 
-    display_referencia = entity_key(record, "referencia", "reference")
-    if not display_referencia:
-        period_start = record.get("period_start")
-        period_end = record.get("period_end")
-        if period_start and period_end:
-            display_referencia = f"{period_start} — {period_end}"
-        elif period_start:
-            display_referencia = str(period_start)
-        else:
-            display_referencia = str(record.get("id") or "")
+    period_start = entity_key(record, "period_start", default="")
+    period_end = entity_key(record, "period_end", default="")
 
-    display_valor = entity_key(
-        record, "valor", "value", "actual_amount", "planned_amount", default="",
+    display_referencia = _billing_reference_label(
+        record,
+        period_start=period_start,
+        period_end=period_end,
+        customer=customer,
+        contract=contract,
     )
-    display_vencimento = entity_key(
-        record, "data_vencimento", "due_date", "period_end", default="",
-    )
+
+    if period_start and period_end:
+        display_period = f"{period_start} — {period_end}"
+    elif period_start:
+        display_period = str(period_start)
+    elif period_end:
+        display_period = str(period_end)
+    else:
+        display_period = ""
+
+    planned_raw = entity_key(record, "planned_amount", default="")
+    actual_raw = entity_key(record, "actual_amount", default="")
+    value_raw = entity_key(record, "valor", "value", default="")
 
     return {
         **record,
@@ -348,8 +493,38 @@ def enrich_billing(record):
         or "",
         "display_contract_id": record.get("contract_id") or contract.get("id"),
         "display_referencia": display_referencia,
-        "display_valor": display_valor,
-        "display_vencimento": display_vencimento,
+        "display_period_start": period_start or "-",
+        "display_period_end": period_end or "-",
+        "display_period": display_period or "-",
+        "display_planned_amount": _format_billing_money(planned_raw),
+        "display_actual_amount": _format_billing_money(actual_raw),
+        "display_valor": _format_billing_money(value_raw),
+        "display_vencimento": entity_key(
+            record, "data_vencimento", "due_date", default="",
+        ) or "-",
+        "display_status": record.get("status") or "-",
+        "display_observacoes": entity_key(record, "observacoes", "notes", default="") or "-",
+    }
+
+
+def billing_to_json(record):
+    """Serializa faturamento enriquecido para respostas AJAX / modal."""
+    record = enrich_billing(record or {})
+    return {
+        "id": entity_key(record, "id"),
+        "display_referencia": record.get("display_referencia") or "-",
+        "display_customer": record.get("display_customer") or "-",
+        "display_contract": record.get("display_contract") or "-",
+        "display_contract_id": record.get("display_contract_id") or "",
+        "display_period_start": record.get("display_period_start") or "-",
+        "display_period_end": record.get("display_period_end") or "-",
+        "display_period": record.get("display_period") or "-",
+        "display_planned_amount": record.get("display_planned_amount") or "-",
+        "display_actual_amount": record.get("display_actual_amount") or "-",
+        "display_valor": record.get("display_valor") or "-",
+        "display_vencimento": record.get("display_vencimento") or "-",
+        "display_status": record.get("display_status") or "-",
+        "display_observacoes": record.get("display_observacoes") or "-",
     }
 
 
@@ -370,6 +545,29 @@ def contract_initial(data):
         "data_fim": data.get("data_fim") or data.get("end_date"),
         "valor": data.get("valor") or data.get("value"),
         "descricao": data.get("descricao") or data.get("description"),
+    }
+
+
+def billing_form_json(data):
+    """Campos do formulário de faturamento para modais AJAX."""
+    initial = billing_initial(data or {})
+    due_date = initial.get("data_vencimento")
+    if hasattr(due_date, "isoformat"):
+        due_date = due_date.isoformat()
+    elif isinstance(due_date, str) and "T" in due_date:
+        due_date = due_date.split("T", 1)[0]
+
+    contract_id = initial.get("contract_id")
+    valor = initial.get("valor")
+
+    return {
+        "client_gai_id": initial.get("client_gai_id") or "",
+        "contract_id": str(contract_id) if contract_id not in (None, "") else "",
+        "referencia": initial.get("referencia") or "",
+        "valor": str(valor) if valor not in (None, "") else "",
+        "data_vencimento": due_date or "",
+        "status": initial.get("status") or "",
+        "observacoes": initial.get("observacoes") or "",
     }
 
 

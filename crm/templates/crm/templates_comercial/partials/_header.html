@@ -1,0 +1,54 @@
+<div class="crm-comercial-header">
+    <div class="crm-comercial-header__intro">
+        <h2 class="crm-comercial-title">
+            <i class="fa-solid fa-briefcase"></i>
+            {{ board.display_name|default:board_id }}
+        </h2>
+        <p class="crm-comercial-subtitle">Projeto CRM Comercial — gestão de oportunidades e tasks</p>
+    </div>
+    <nav class="crm-comercial-nav" aria-label="Navegação comercial">
+        <a href="{% url 'crm:dashboard' %}"
+           class="crm-comercial-nav__link"
+           title="Voltar ao CRM">
+            <i class="fa-solid fa-arrow-left"></i> CRM
+        </a>
+        <a href="{% url 'crm:kanban_comercial' %}"
+           class="crm-comercial-nav__link{% if comercial_page == 'kanban' %} is-active{% endif %}">
+            <i class="fa-solid fa-table-columns"></i> Kanban
+        </a>
+        {% if perms.crm.manage_board_columns %}
+        <a href="{% url 'crm:colunas_comercial' %}"
+           class="crm-comercial-nav__link{% if comercial_page == 'columns' %} is-active{% endif %}">
+            <i class="fa-solid fa-grip-vertical"></i> Colunas
+        </a>
+        {% endif %}
+        {% if perms.crm.manage_board_access %}
+        <a href="{% url 'crm:acesso_comercial' %}"
+           class="crm-comercial-nav__link{% if comercial_page == 'access' %} is-active{% endif %}">
+            <i class="fa-solid fa-user-shield"></i> Acesso
+        </a>
+        {% endif %}
+        {% if comercial_page == 'kanban' %}
+            {% if can_create_tasks or perms.crm.add_task %}
+            <button type="button" class="btn btn-primary btn-sm crm-comercial-nav__action"
+                    onclick="CrmComercial.openModal('modalCreateTask')">
+                <i class="fa-solid fa-plus"></i> Nova task
+            </button>
+            {% endif %}
+        {% elif comercial_page == 'columns' %}
+            {% if perms.crm.manage_board_columns %}
+            <button type="button" class="btn btn-primary btn-sm crm-comercial-nav__action"
+                    onclick="CrmComercial.openModal('modalCreateColumn')">
+                <i class="fa-solid fa-plus"></i> Nova coluna
+            </button>
+            {% endif %}
+        {% elif comercial_page == 'access' %}
+            {% if perms.crm.manage_board_access %}
+            <button type="button" class="btn btn-primary btn-sm crm-comercial-nav__action"
+                    onclick="CrmComercial.openModal('modalGrantAccess')">
+                <i class="fa-solid fa-plus"></i> Conceder acesso
+            </button>
+            {% endif %}
+        {% endif %}
+    </nav>
+</div>

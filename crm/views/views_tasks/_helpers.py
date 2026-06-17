@@ -96,6 +96,7 @@ def enrich_task_for_display(task):
     status = task.get("status") or {}
     priority = task.get("priority") or {}
     project = task.get("project") or {}
+    customer = task.get("customer") or {}
     return {
         **task,
         "display_title": task.get("title") or task.get("titulo") or task.get("nome") or "-",
@@ -103,7 +104,94 @@ def enrich_task_for_display(task):
         "display_board": nested_label(board, "name", "nome") or task.get("board_name") or "-",
         "display_priority": nested_label(priority, "name", "nome") or task.get("priority_name") or "-",
         "display_project": nested_label(project, "name", "nome", "title") or task.get("project_name") or "-",
+        "display_customer": nested_label(customer, "nome", "name", "razao_social") or "-",
         "display_due": task.get("due_at") or task.get("due_date") or task.get("data_vencimento") or "-",
+        "display_scheduled_start": task.get("scheduled_start_at") or "-",
+    }
+
+
+def enrich_subtask_for_display(subtask):
+    if not isinstance(subtask, dict):
+        return subtask
+    status = subtask.get("status") or {}
+    return {
+        **subtask,
+        "display_title": subtask.get("title") or subtask.get("nome") or "-",
+        "display_status": nested_label(status, "name", "nome") or subtask.get("status_name") or "-",
+    }
+
+
+def enrich_move_history_for_display(entry):
+    if not isinstance(entry, dict):
+        return entry
+    from_status = entry.get("from_status") or {}
+    to_status = entry.get("to_status") or {}
+    return {
+        **entry,
+        "display_moved_at": entry.get("moved_at") or entry.get("created_at") or "-",
+        "display_from_status": nested_label(from_status, "name", "nome") or entry.get("from_status_name") or "-",
+        "display_to_status": nested_label(to_status, "name", "nome") or entry.get("to_status_name") or "-",
+        "display_user": (
+            entry.get("user_username")
+            or entry.get("username")
+            or entry.get("user_id")
+            or "-"
+        ),
+    }
+
+
+def enrich_assignee_for_display(assignee):
+    if not isinstance(assignee, dict):
+        return assignee
+    return {
+        **assignee,
+        "display_name": (
+            assignee.get("username")
+            or assignee.get("name")
+            or assignee.get("nome")
+            or assignee.get("user_id")
+            or "-"
+        ),
+    }
+
+
+def enrich_watcher_for_display(watcher):
+    if not isinstance(watcher, dict):
+        return watcher
+    return {
+        **watcher,
+        "display_name": (
+            watcher.get("username")
+            or watcher.get("name")
+            or watcher.get("nome")
+            or watcher.get("user_id")
+            or "-"
+        ),
+    }
+
+
+def enrich_comment_for_display(comment):
+    if not isinstance(comment, dict):
+        return comment
+    return {
+        **comment,
+        "display_author": (
+            comment.get("author_username")
+            or comment.get("username")
+            or comment.get("user_id")
+            or "Usuário"
+        ),
+        "display_body": comment.get("content") or comment.get("body") or comment.get("text") or "",
+    }
+
+
+def enrich_attachment_for_display(attachment):
+    if not isinstance(attachment, dict):
+        return attachment
+    return {
+        **attachment,
+        "display_name": attachment.get("filename") or attachment.get("name") or "Anexo",
+        "display_url": attachment.get("url") or "#",
     }
 
 

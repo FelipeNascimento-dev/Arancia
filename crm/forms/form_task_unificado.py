@@ -154,6 +154,67 @@ class UnifiedTaskForm(forms.Form):
         return cleaned
 
 
+class ComercialTaskModalForm(forms.Form):
+    """Formulário enxuto para criação de task no Kanban comercial (modal)."""
+
+    title = forms.CharField(
+        label="Título",
+        max_length=255,
+        widget=forms.TextInput(attrs={"class": "form-control", "autocomplete": "off"}),
+    )
+    description = forms.CharField(
+        label="Descrição",
+        required=False,
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+    )
+    status_id = forms.ChoiceField(
+        label="Status",
+        choices=[("", "---------")],
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    priority_id = forms.ChoiceField(
+        label="Prioridade",
+        required=False,
+        choices=[("", "---------")],
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    customer_gai_id = forms.ChoiceField(
+        label="Cliente (GAI)",
+        required=False,
+        choices=[("", "---------")],
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    due_at = forms.DateTimeField(
+        label="Prazo",
+        required=False,
+        widget=forms.DateTimeInput(
+            attrs={"class": "form-control", "type": "datetime-local"},
+            format="%Y-%m-%dT%H:%M",
+        ),
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"],
+    )
+    board_id = forms.CharField(widget=forms.HiddenInput())
+
+    def __init__(self, *args, lookups=None, board_id=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        lookups = lookups or {}
+        if board_id not in (None, ""):
+            self.fields["board_id"].initial = board_id
+        self._set_choices("status_id", lookups.get("status_tasks", []), "id", ("name", "nome", "label"))
+        self._set_choices("priority_id", lookups.get("priorities", []), "id", ("name", "nome", "label"))
+        self._set_choices("customer_gai_id", lookups.get("gais", []), "id", ("nome", "name"))
+        self.fields["status_id"].required = True
+
+    def _set_choices(self, field_name, items, id_key, label_keys):
+        choices = [("", "---------")]
+        for item in items:
+            item_id = item.get(id_key) or item.get("gai_id")
+            label = next((item.get(k) for k in label_keys if item.get(k)), None)
+            if item_id is not None:
+                choices.append((str(item_id), label or str(item_id)))
+        self.fields[field_name].choices = choices
+
+
 class TaskEditForm(forms.Form):
     title = forms.CharField(
         label="Título",

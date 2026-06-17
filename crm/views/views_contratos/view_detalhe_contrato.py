@@ -14,7 +14,6 @@ from crm_api.services import contracts as contracts_service
 @crm_permission_required("view_contract")
 def detalhe_contrato(request, contract_id):
     client = CrmApiClient(request)
-    lookups = contract_lookups(client)
     file_form = ContractFileForm()
     contrato = None
     arquivos = []
@@ -26,9 +25,10 @@ def detalhe_contrato(request, contract_id):
         messages.error(request, crm_error_message_pt(exc))
         return redirect("crm:lista_contratos")
 
+    initial = contract_initial(contrato)
     edit_form = ContractForm(
-        initial=contract_initial(contrato),
-        lookups=lookups,
+        initial=initial,
+        lookups=contract_lookups(client, client_gai_id=initial.get("client_gai_id")),
         nome_form="Editar Contrato",
     )
 
@@ -36,7 +36,9 @@ def detalhe_contrato(request, contract_id):
         if not request.user.has_perm("crm.change_contract"):
             messages.error(request, "Você não tem permissão para alterar contratos.")
             return redirect("crm:detalhe_contrato", contract_id=contract_id)
-        edit_form = ContractForm(request.POST, lookups=lookups, nome_form="Editar Contrato")
+        gai_id = request.POST.get("client_gai_id") or initial.get("client_gai_id")
+        edit_lookups = contract_lookups(client, client_gai_id=gai_id)
+        edit_form = ContractForm(request.POST, lookups=edit_lookups, nome_form="Editar Contrato")
         if edit_form.is_valid():
             try:
                 contracts_service.update_contract(

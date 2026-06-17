@@ -27,6 +27,7 @@ def form_contrato(request, contract_id=None):
         try:
             data = contracts_service.get_contract(client, contract_id)
             initial = contract_initial(data)
+            lookups = contract_lookups(client, client_gai_id=initial.get("client_gai_id"))
         except CrmApiError as exc:
             messages.error(request, crm_error_message_pt(exc))
             return redirect("crm:lista_contratos")
@@ -35,6 +36,8 @@ def form_contrato(request, contract_id=None):
     form = ContractForm(initial=initial, lookups=lookups, nome_form=nome_form)
 
     if request.method == "POST":
+        gai_id = request.POST.get("client_gai_id") or initial.get("client_gai_id")
+        lookups = contract_lookups(client, client_gai_id=gai_id)
         form = ContractForm(request.POST, lookups=lookups, nome_form=nome_form)
         if form.is_valid():
             try:
