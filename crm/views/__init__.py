@@ -1,173 +1,40 @@
-from crm.views.view_alerts import alert_list
-from crm.views.view_billing import billing_edit, billing_list, billing_new
-from crm.views.view_boards import (
-    ajax_board_access_delete,
-    ajax_board_access_update,
-    ajax_board_column_update,
-    ajax_board_delete,
-    ajax_board_reorder_columns,
-    ajax_board_status_choices,
-    board_access,
-    board_edit,
-    board_kanban,
-    board_list,
-    board_new,
-    board_settings,
+from .view_dashboard import crm_dashboard
+from .views_ajax.view_ajax_boards import ajax_reorder_columns
+from .views_ajax.view_ajax_clients import ajax_delete_client, ajax_get_client, ajax_update_client
+from .views_ajax.view_ajax_contracts import ajax_delete_contract_file
+from .views_ajax.view_ajax_health import ajax_health
+from .views_ajax.view_ajax_tasks import (
+    ajax_assign_task,
+    ajax_attachment_task,
+    ajax_comment_task,
+    ajax_move_task,
+    ajax_remove_assignee,
+    ajax_remove_task_link,
+    ajax_remove_watcher,
+    ajax_subtask,
+    ajax_task_link,
+    ajax_watch_task,
 )
-from crm.views.view_clients import (
-    ajax_client_delete,
-    client_detail,
-    client_edit,
-    client_list,
-    client_new,
-)
-from crm.views.view_contracts import (
-    ajax_contract_file_delete,
-    ajax_contract_file_upload,
-    contract_detail,
-    contract_edit,
-    contract_list,
-    contract_new,
-)
-from crm.views.view_dashboard import ajax_crm_lookups, ajax_health, ajax_lookup_gais, ajax_lookup_groups, dashboard, validate_context
-from crm.views.view_permissions import permissions_list, permissions_user
-from crm.views.view_projects import (
-    ajax_project_delete,
-    ajax_project_member_delete,
-    ajax_project_member_update,
-    project_detail,
-    project_edit,
-    project_list,
-    project_members,
-    project_new,
-    project_tasks,
-)
-from crm.views.view_recurrences import (
-    ajax_recurrence_delete,
-    recurrence_detail,
-    recurrence_edit,
-    recurrence_list,
-    recurrence_new,
-)
-from crm.views.view_settings import (
-    ajax_settings_delete,
-    ajax_status_tasks_reorder,
-    settings_index,
-    settings_priorities,
-    settings_priority_edit,
-    settings_priority_new,
-    settings_service_type_edit,
-    settings_service_type_new,
-    settings_service_types,
-    settings_status_task_edit,
-    settings_status_task_new,
-    settings_status_tasks,
-)
-from crm.views.view_tasks import (
-    ajax_task_assign,
-    ajax_task_assignee_delete,
-    ajax_task_assignee_update,
-    ajax_task_attachment,
-    ajax_task_calendar_events,
-    ajax_task_comment,
-    ajax_task_delete,
-    ajax_task_link_delete,
-    ajax_task_links,
-    ajax_task_move,
-    ajax_task_move_history,
-    ajax_task_subtask,
-    ajax_task_watch,
-    ajax_task_watcher_add,
-    ajax_task_watcher_delete,
-    task_calendar,
-    task_detail,
-    task_edit,
-    task_list,
-    task_my,
-    task_new,
-)
-
-__all__ = [
-    'dashboard',
-    'ajax_health',
-    'ajax_crm_lookups',
-    'ajax_lookup_groups',
-    'ajax_lookup_gais',
-    'validate_context',
-    'client_list',
-    'client_new',
-    'client_detail',
-    'client_edit',
-    'ajax_client_delete',
-    'contract_list',
-    'contract_new',
-    'contract_detail',
-    'contract_edit',
-    'ajax_contract_file_upload',
-    'ajax_contract_file_delete',
-    'billing_list',
-    'billing_new',
-    'billing_edit',
-    'alert_list',
-    'task_list',
-    'task_my',
-    'task_calendar',
-    'ajax_task_calendar_events',
-    'task_new',
-    'task_detail',
-    'task_edit',
-    'ajax_task_move',
-    'ajax_task_assign',
-    'ajax_task_assignee_update',
-    'ajax_task_assignee_delete',
-    'ajax_task_comment',
-    'ajax_task_attachment',
-    'ajax_task_watch',
-    'ajax_task_watcher_add',
-    'ajax_task_watcher_delete',
-    'ajax_task_links',
-    'ajax_task_link_delete',
-    'ajax_task_move_history',
-    'ajax_task_subtask',
-    'ajax_task_delete',
-    'recurrence_list',
-    'recurrence_new',
-    'recurrence_detail',
-    'recurrence_edit',
-    'ajax_recurrence_delete',
-    'project_list',
-    'project_new',
-    'project_detail',
-    'project_edit',
-    'project_tasks',
-    'project_members',
-    'ajax_project_member_update',
-    'ajax_project_member_delete',
-    'ajax_project_delete',
-    'board_list',
-    'board_new',
-    'board_kanban',
-    'board_edit',
-    'board_settings',
-    'board_access',
-    'ajax_board_delete',
-    'ajax_board_reorder_columns',
-    'ajax_board_status_choices',
-    'ajax_board_column_update',
-    'ajax_board_access_update',
-    'ajax_board_access_delete',
-    'settings_index',
-    'settings_service_types',
-    'settings_service_type_new',
-    'settings_service_type_edit',
-    'settings_priorities',
-    'settings_priority_new',
-    'settings_priority_edit',
-    'settings_status_tasks',
-    'settings_status_task_new',
-    'settings_status_task_edit',
-    'ajax_status_tasks_reorder',
-    'ajax_settings_delete',
-    'permissions_list',
-    'permissions_user',
-]
+from .views_alertas.view_lista_alertas import lista_alertas
+from .views_clientes.view_detalhe_cliente import detalhe_cliente
+from .views_clientes.view_form_cliente import form_cliente
+from .views_clientes.view_lista_clientes import lista_clientes
+from .views_comercial.view_acesso_comercial import acesso_comercial
+from .views_comercial.view_colunas_comercial import colunas_comercial
+from .views_comercial.view_kanban_comercial import kanban_comercial
+from .views_configuracoes.view_config_index import config_index
+from .views_configuracoes.view_priorities import priorities
+from .views_configuracoes.view_service_types import service_types
+from .views_configuracoes.view_status_tasks import status_tasks
+from .views_contratos.view_detalhe_contrato import detalhe_contrato
+from .views_contratos.view_form_contrato import form_contrato
+from .views_contratos.view_lista_contratos import lista_contratos
+from .views_faturamento.view_lista_faturamento import form_faturamento, lista_faturamento
+from .views_tasks.view_calendario_tasks import calendario_tasks
+from .views_tasks.view_detalhe_task import detalhe_task
+from .views_tasks.view_edit_task import edit_task
+from .views_tasks.view_form_recorrencia import form_recorrencia
+from .views_tasks.view_form_task import form_task
+from .views_tasks.view_lista_recorrencias import lista_recorrencias
+from .views_tasks.view_lista_tasks import lista_tasks
+from .views_tasks.view_minhas_tasks import minhas_tasks

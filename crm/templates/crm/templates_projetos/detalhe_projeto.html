@@ -1,0 +1,72 @@
+{% extends "global/base.html" %}
+{% block content %}
+
+<h2 class="title-skill-ger"><i class="fa-solid fa-diagram-project"></i> {{ projeto.name|default:projeto.nome|default:project_id }}</h2>
+
+<div class="grid-container">
+    <div class="box" id="box-group">
+        <div class="box-header" style="flex-direction: column; align-items: stretch; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>Projetos</h3>
+                <a href="{% url 'crm:lista_projetos' %}" class="btn btn-secondary btn-sm">Lista</a>
+            </div>
+            <form method="get">
+                <input type="text" name="q" placeholder="Pesquisar projeto..." value="{{ q }}" style="width: 100%; padding: 6px 8px;">
+            </form>
+        </div>
+        <ul>
+            {% for p in projetos %}
+            <li>
+                <a href="{% url 'crm:detalhe_projeto' p.id %}"
+                   class="{% if p.id == project_id %}active{% endif %}">
+                    {{ p.name|default:p.nome }}
+                </a>
+            </li>
+            {% empty %}
+            <li class="muted">Nenhum projeto cadastrado.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="box" id="box-group2">
+        <div class="tab-header">
+            <button class="tab-btn {% if active_tab == 'principal' %}active{% endif %}" data-tab="tab-principal">Principal</button>
+            <a href="{% url 'crm:membros_projeto' project_id %}" class="tab-btn {% if active_tab == 'membros' %}active{% endif %}">Membros</a>
+            <a href="{% url 'crm:tasks_projeto' project_id %}" class="tab-btn {% if active_tab == 'tasks' %}active{% endif %}">Tasks</a>
+            {% if perms.crm.change_project %}
+            <a href="{% url 'crm:edit_projeto' project_id %}" class="tab-btn">Editar</a>
+            {% endif %}
+        </div>
+
+        <div class="tab-content {% if active_tab == 'principal' %}active{% endif %}" id="tab-principal">
+            {% if perms.crm.change_project %}
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="edit_project" value="1">
+                <div class="form-group">{{ edit_form.name.label_tag }}{{ edit_form.name }}</div>
+                <div class="form-group">{{ edit_form.description.label_tag }}{{ edit_form.description }}</div>
+                <div class="form-group">{{ edit_form.customer_gai_id.label_tag }}{{ edit_form.customer_gai_id }}</div>
+                <div class="form-group">
+                    <label>{{ edit_form.is_active.label }}</label>
+                    {{ edit_form.is_active }}
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+            </form>
+            {% else %}
+            <p>{{ projeto.description|default:projeto.descricao|default:"Sem descrição." }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+});
+</script>
+{% endblock %}

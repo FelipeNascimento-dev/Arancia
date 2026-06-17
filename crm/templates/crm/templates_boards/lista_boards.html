@@ -1,0 +1,93 @@
+{% extends 'global/base.html' %}
+{% block content %}
+<div class="user-list-container">
+    <div class="user-table-header">
+        <h2 class="user-table-title"><i class="fa-solid fa-columns"></i> Boards CRM</h2>
+        <form method="get" action="" class="form-user-search">
+            <i class="fa-solid fa-magnifying-glass search-icon-inside"></i>
+            <input type="text" name="q" placeholder="Pesquisar..." value="{{ q }}">
+        </form>
+        <div class="user-create">
+            {% if perms.crm.add_board %}
+            <a href="{% url 'crm:form_board' %}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Novo Board
+            </a>
+            <button class="btn btn-primary" onclick="openModal('registerModal')" style="margin-left: 8px;">
+                <i class="fa-solid fa-plus"></i> Criar rápido
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Descrição</th>
+                    <th>Ativo</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td><strong>{{ item.id }}</strong></td>
+                    <td>{{ item.name|default:item.nome|default:"-" }}</td>
+                    <td>{{ item.description|default:item.descricao|default:"-"|truncatechars:60 }}</td>
+                    <td>{% if item.is_active %}Sim{% else %}Não{% endif %}</td>
+                    <td>
+                        <a href="{% url 'crm:kanban_board' item.id %}" class="action-btn edit-btn" title="Kanban">
+                            <i class="fa-solid fa-table-columns"></i>
+                        </a>
+                        {% if perms.crm.change_board %}
+                        <a href="{% url 'crm:edit_board' item.id %}" class="action-btn edit-btn" title="Editar">
+                            <i class="fa-solid fa-pencil"></i>
+                        </a>
+                        {% endif %}
+                        {% if perms.crm.manage_board_access %}
+                        <a href="{% url 'crm:acesso_board' item.id %}" class="action-btn edit-btn" title="Acesso">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </a>
+                        {% endif %}
+                        {% if perms.crm.manage_board_columns %}
+                        <a href="{% url 'crm:colunas_board' item.id %}" class="action-btn edit-btn" title="Colunas">
+                            <i class="fa-solid fa-grip-vertical"></i>
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="muted text-center">Nenhum board encontrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if pagination.has_previous or pagination.has_next %}
+    <div class="pagination-wrapper">
+        {% if pagination.has_previous %}
+        <a href="{{ pagination.previous_url }}" class="page-btn">Anterior</a>
+        {% else %}
+        <span class="page-btn disabled">Anterior</span>
+        {% endif %}
+        <span class="page-btn active">{{ pagination.page }}</span>
+        {% if pagination.has_next %}
+        <a href="{{ pagination.next_url }}" class="page-btn">Próximo</a>
+        {% else %}
+        <span class="page-btn disabled">Próximo</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+{% if perms.crm.add_board %}
+{% include 'global/partials/_modal_2col.html' with modal_id='registerModal' modal_title='Novo Board' form=form %}
+<script>
+function openModal(id) { document.getElementById(id).style.display = 'block'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+document.querySelector('#registerModal form').insertAdjacentHTML('afterbegin', '<input type="hidden" name="create_board" value="1">');
+</script>
+{% endif %}
+{% endblock %}

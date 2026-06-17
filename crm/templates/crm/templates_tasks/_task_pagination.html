@@ -1,0 +1,16 @@
+<style>
+    .pagination-bar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 16px 20px; border-top: 1px solid #e2e8f0; }
+    .pagination-actions { display: flex; gap: 8px; align-items: center; }
+    .pagination-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid #d9e2ec; text-decoration: none; color: #0f172a; font-weight: 600; }
+    .pagination-btn.disabled { opacity: .4; pointer-events: none; }
+</style>
+{% if pagination.has_previous or pagination.has_next %}
+<div class="pagination-bar">
+    <div>Página {{ pagination.page }} • {{ pagination.limit }} por página</div>
+    <div class="pagination-actions">
+        <a href="{{ pagination.previous_url }}" class="pagination-btn {% if not pagination.has_previous %}disabled{% endif %}">Anterior</a>
+        <span>{{ pagination.page }}</span>
+        <a href="{{ pagination.next_url }}" class="pagination-btn {% if not pagination.has_next %}disabled{% endif %}">Próxima</a>
+    </div>
+</div>
+{% endif %}

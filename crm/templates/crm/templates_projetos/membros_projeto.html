@@ -1,0 +1,84 @@
+{% extends "global/base.html" %}
+{% block content %}
+
+<h2 class="title-skill-ger">
+    <i class="fa-solid fa-users"></i> Membros — {{ projeto.name|default:projeto.nome|default:project_id }}
+</h2>
+
+<div style="margin: 0 65px 16px;">
+    <a href="{% url 'crm:detalhe_projeto' project_id %}" class="btn btn-secondary btn-sm">
+        <i class="fa-solid fa-arrow-left"></i> Voltar ao projeto
+    </a>
+    {% if perms.crm.manage_project_members %}
+    <button class="btn btn-primary btn-sm" onclick="openModal('memberModal')">
+        <i class="fa-solid fa-user-plus"></i> Adicionar membro
+    </button>
+    {% endif %}
+</div>
+
+<div class="user-list-container" style="margin-left: 65px;">
+    <div class="table-wrapper">
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tipo</th>
+                    <th>Identificador</th>
+                    <th>Papel</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in membros %}
+                <tr>
+                    <td>{{ m.id }}</td>
+                    <td>
+                        {% if m.user_id %}Usuário{% elif m.designation_id %}Designação{% elif m.team_gai_id %}Equipe{% else %}-{% endif %}
+                    </td>
+                    <td>{{ m.username|default:m.designation_label|default:m.team_gai_name|default:m.user_id|default:"-" }}</td>
+                    <td>{{ m.role|default:"-" }}</td>
+                    <td>
+                        {% if perms.crm.manage_project_members %}
+                        <form method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="remove_member" value="1">
+                            <input type="hidden" name="member_id" value="{{ m.id }}">
+                            <button type="submit" class="action-btn edit-btn" title="Remover"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="muted text-center">Nenhum membro vinculado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if perms.crm.manage_project_members %}
+{% include 'global/partials/_modal_2col.html' with modal_id='memberModal' modal_title='Adicionar membro' form=member_form %}
+<script>
+function openModal(id) { document.getElementById(id).style.display = 'block'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+document.querySelector('#memberModal form').insertAdjacentHTML('afterbegin', '<input type="hidden" name="add_member" value="1">');
+(function () {
+    const typeSelect = document.getElementById('member_type');
+    if (!typeSelect) return;
+    const groups = {
+        user: document.querySelector('[name="user_id"]')?.closest('.form-group'),
+        designation: document.querySelector('[name="designation_id"]')?.closest('.form-group'),
+        team_gai: document.querySelector('[name="team_gai_id"]')?.closest('.form-group'),
+    };
+    function sync() {
+        const t = typeSelect.value;
+        Object.keys(groups).forEach(k => {
+            if (groups[k]) groups[k].style.display = k === t ? 'block' : 'none';
+        });
+    }
+    typeSelect.addEventListener('change', sync);
+    sync();
+})();
+</script>
+{% endif %}
+{% endblock %}

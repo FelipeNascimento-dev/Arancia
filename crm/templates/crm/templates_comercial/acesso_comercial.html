@@ -1,0 +1,119 @@
+{% extends "global/base.html" %}
+{% block content %}
+
+<h2 class="title-skill-ger">
+    <i class="fa-solid fa-user-shield"></i> Acesso — {{ board.display_name|default:board_id }}
+</h2>
+
+<div style="margin: 0 65px 16px;">
+    <a href="{% url 'crm:kanban_comercial' %}" class="btn btn-secondary btn-sm">
+        <i class="fa-solid fa-arrow-left"></i> Voltar ao Kanban
+    </a>
+    {% if perms.crm.manage_board_access %}
+    <button class="btn btn-primary btn-sm" onclick="openModal('accessModal')">
+        <i class="fa-solid fa-plus"></i> Conceder acesso
+    </button>
+    {% endif %}
+</div>
+
+<div class="grid-container">
+    <div class="box" id="box-group">
+        <div class="box-header"><h3>Concessões</h3></div>
+        <ul>
+            {% for g in grants %}
+            <li>
+                <span>
+                    {% if g.subject %}
+                    {{ g.subject.name|default:g.subject.username|default:g.subject.nome|default:g.subject_type }}
+                    {% elif g.user_id %}Usuário {{ g.username|default:g.user_id }}
+                    {% elif g.designation_id %}Designação {{ g.designation_label|default:g.designation_id }}
+                    {% elif g.subject_type == 'customer_gai' or g.customer_gai_id %}
+                    GAI {{ g.customer_gai_name|default:g.subject_id|default:g.customer_gai_id }}
+                    {% elif g.group_id %}Grupo {{ g.group_name|default:g.group_id }}
+                    {% else %}#{{ g.id }}{% endif %}
+                    — {{ g.access_level|default:"-" }}
+                </span>
+            </li>
+            {% empty %}
+            <li class="muted">Nenhum acesso configurado.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="box" id="box-group2">
+        <h3>Lista de acessos</h3>
+        <div class="table-wrapper">
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tipo</th>
+                        <th>Alvo</th>
+                        <th>Nível</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for g in grants %}
+                    <tr>
+                        <td>{{ g.id }}</td>
+                        <td>{{ g.subject_type|default:"-" }}</td>
+                        <td>
+                            {% if g.subject %}
+                            {{ g.subject.name|default:g.subject.username|default:g.subject.nome|default:g.subject_id }}
+                            {% elif g.user_id %}Usuário: {{ g.username|default:g.user_id }}
+                            {% elif g.designation_id %}Designação: {{ g.designation_label|default:g.designation_id }}
+                            {% elif g.subject_type == 'customer_gai' %}GAI: {{ g.customer_gai_name|default:g.subject_id }}
+                            {% elif g.group_id %}Grupo: {{ g.group_name|default:g.group_id }}
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>{{ g.access_level|default:"-" }}</td>
+                        <td>
+                            {% if perms.crm.manage_board_access %}
+                            <form method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="remove_access" value="1">
+                                <input type="hidden" name="access_id" value="{{ g.id }}">
+                                <button type="submit" class="action-btn edit-btn" title="Remover">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="muted text-center">Nenhum registro.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if perms.crm.manage_board_access %}
+{% include 'global/partials/_modal_2col.html' with modal_id='accessModal' modal_title='Conceder acesso' form=access_form %}
+<script>
+function openModal(id) { document.getElementById(id).style.display = 'block'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+document.querySelector('#accessModal form').insertAdjacentHTML('afterbegin', '<input type="hidden" name="add_access" value="1">');
+(function () {
+    const typeSelect = document.getElementById('grant_type');
+    if (!typeSelect) return;
+    const groups = {
+        user: document.querySelector('[name="user_id"]')?.closest('.form-group'),
+        designation: document.querySelector('[name="designation_id"]')?.closest('.form-group'),
+        customer_gai: document.querySelector('[name="customer_gai_id"]')?.closest('.form-group'),
+        group: document.querySelector('[name="group_id"]')?.closest('.form-group'),
+    };
+    function sync() {
+        const t = typeSelect.value;
+        Object.keys(groups).forEach(k => {
+            if (groups[k]) groups[k].style.display = k === t ? 'block' : 'none';
+        });
+    }
+    typeSelect.addEventListener('change', sync);
+    sync();
+})();
+</script>
+{% endif %}
+{% endblock %}

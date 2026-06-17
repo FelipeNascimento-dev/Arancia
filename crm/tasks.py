@@ -1,77 +1,52 @@
 import logging
-from datetime import date
 
 from celery import shared_task
-from django.conf import settings
 
-from crm.services.client import CrmApiClient
-from crm.services.exceptions import CrmApiError
-from crm.services.pagination import normalize_list_response
+from crm_api.client import CrmApiClient
+from crm_api.exceptions import CrmApiError
+from crm_api.services import alerts as alerts_service
+from crm_api.services import recurrences as recurrences_service
 
 logger = logging.getLogger(__name__)
 
 
-def _service_client():
-    return CrmApiClient(service=True)
+@shared_task
+def generate_recurring_tasks():
+    """Dispara o agendador interno da API CRM (idempotente no lado da API)."""
+    client = CrmApiClient(scheduler=True)
+    try:
+        result = recurrences_service.generate_due_tasks(client)
+        logger.info("CRM scheduler generate_due_tasks: %s", result)
+        return "Scheduler CRM executado com sucesso."
+    except CrmApiError as exc:
+        logger.exception("CRM scheduler falhou: %s", exc)
+        return f"Scheduler CRM falhou: {exc}"
 
 
-@shared_task(name='crm.tasks.crm_fire_due_alerts')
-def crm_fire_due_alerts():
-    """
-    Dispara alertas pendentes com due_date <= hoje.
-    API não expõe listagem de vencidos — filtra localmente após GET /alerts/.
-    """
-    if not settings.CRM_API_BASE_URL or not settings.CRM_INTERNAL_API_SECRET:
-        logger.warning('CRM não configurado; crm_fire_due_alerts ignorado.')
-        return 'CRM não configurado.'
-
-    client = _service_client()
-    today = date.today()
+@shared_task
+def fire_contract_alerts():
+    """Lista alertas pendentes e dispara fire para cada um."""
+    client = CrmApiClient(service_user=True)
     fired = 0
     errors = 0
-
     try:
-        raw = client.get('/alerts/', params={'limit': 500})
-        alerts = normalize_list_response(raw)
+        items, _ = alerts_service.list_alerts(client, limit=500)
     except CrmApiError as exc:
-        logger.error('crm_fire_due_alerts: falha ao listar alertas: %s', exc)
-        return f'Erro ao listar alertas: {exc}'
+        logger.exception("CRM fire_contract_alerts — listagem falhou: %s", exc)
+        return f"Listagem de alertas falhou: {exc}"
 
-    for alert in alerts:
-        alert_id = alert.get('id')
-        due = alert.get('due_date')
-        if not alert_id or not due:
+    for alert in items:
+        alert_id = alert.get("id")
+        if alert_id is None:
+            continue
+        status = (alert.get("status") or "").lower()
+        if status in ("fired", "sent", "cancelled", "inactive"):
             continue
         try:
-            due_date = date.fromisoformat(str(due)[:10])
-        except ValueError:
-            continue
-        if due_date > today:
-            continue
-        if alert.get('fired_at') or alert.get('is_fired'):
-            continue
-        try:
-            client.post(f'/alerts/fire/{alert_id}', json={})
+            alerts_service.fire_alert(client, alert_id)
             fired += 1
-        except CrmApiError as exc:
+        except CrmApiError:
             errors += 1
-            logger.warning('crm_fire_due_alerts: fire %s falhou: %s', alert_id, exc)
+            logger.warning("CRM fire alert %s falhou", alert_id)
 
-    return f'{fired} alertas disparados; {errors} erros.'
-
-
-@shared_task(name='crm.tasks.crm_generate_recurring_tasks')
-def crm_generate_recurring_tasks():
-    """Gera tarefas recorrentes vencidas via scheduler interno da API."""
-    if not settings.CRM_API_BASE_URL or not settings.CRM_INTERNAL_API_SECRET:
-        logger.warning('CRM não configurado; crm_generate_recurring_tasks ignorado.')
-        return 'CRM não configurado.'
-
-    client = _service_client()
-    try:
-        result = client.post('/internal/scheduler/generate-due-tasks', json={})
-        count = result.get('generated_count') if isinstance(result, dict) else result
-        return f'Tarefas recorrentes geradas: {count}'
-    except CrmApiError as exc:
-        logger.error('crm_generate_recurring_tasks falhou: %s', exc)
-        return f'Erro: {exc}'
+    return f"{fired} alertas disparados; {errors} erros."

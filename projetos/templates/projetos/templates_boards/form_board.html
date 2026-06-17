@@ -1,0 +1,40 @@
+{% extends 'global/base.html' %}
+{% block content %}
+<style>
+    .form-card-2col { height: auto; margin-top: 65px; }
+    .section-header {
+        display: flex; align-items: center; justify-content: space-between;
+        margin: 40px 25px 40px 90px;
+    }
+    .section-title {
+        font-size: 1.4rem; font-weight: 600;
+        border-bottom: 2px solid var(--primary-color, #c41e3a);
+        display: inline-block; padding-bottom: 4px;
+    }
+</style>
+
+<div class="section-header">
+    <h2 class="section-title"><i class="fa-solid fa-columns"></i> {{ form.nome_formulario }}</h2>
+</div>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST">
+            {% csrf_token %}
+            {% if is_edit %}
+            <input type="hidden" name="edit_board" value="1">
+            {% else %}
+            <input type="hidden" name="create_board" value="1">
+            {% endif %}
+            {% include 'global/partials/_form_2colV2.html' %}
+        </form>
+    </div>
+</div>
+
+<div style="margin: 20px 90px;">
+    <a href="{% url 'projetos:lista_boards' %}" class="btn btn-secondary">Voltar</a>
+    {% if is_edit %}
+    <a href="{% url 'projetos:kanban_board' board_id %}" class="btn btn-primary">Abrir Kanban</a>
+    {% endif %}
+</div>
+{% endblock %}

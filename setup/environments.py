@@ -4,7 +4,6 @@ Perfis de ambiente Arancia (homolog / prod).
 URLs, hosts e paths versionáveis. Secrets (TOKEN, API keys) ficam em
 local_settings.py ou variáveis de ambiente — não neste módulo.
 """
-import os
 
 VALID_ENVIRONMENTS = ('homolog', 'prod')
 
@@ -43,8 +42,7 @@ ENVIRONMENT_PROFILES = {
         'mural_api_url': 'http://192.168.0.214/hg-api-mural/api',
         'api_base': 'http://192.168.0.216/RetencaoAPI/api',
         'api_base_bko': 'http://192.168.0.214/hg-api-equipamentos/api/',
-        'crm_api_base_url_default': 'http://192.168.0.214/hg-api-crm',
-        'crm_internal_api_secret_default': 'homolog-internal-secret',
+        'crm_api_base_url': 'http://192.168.0.214/hg-api-crm',
         'order_origin_ids': _ORDER_ORIGIN_IDS_HOMOLOG,
     },
     'prod': {
@@ -57,8 +55,7 @@ ENVIRONMENT_PROFILES = {
         'mural_api_url': 'http://192.168.0.215/api-mural/api',
         'api_base': 'http://192.168.0.216/RetencaoAPI/api',
         'api_base_bko': 'http://192.168.0.214/api-equipamentos/api/',
-        'crm_api_base_url_default': 'http://192.168.0.215/api-crm',
-        'crm_internal_api_secret_default': 'd5u7sA8x0bB3Q0fAw@$',
+        'crm_api_base_url': 'http://192.168.0.214/api-crm',
         'order_origin_ids': _ORDER_ORIGIN_IDS_PROD,
     },
 }
@@ -82,8 +79,6 @@ def get_profile(environment):
 def apply_environment(environment, namespace):
     """
     Aplica variáveis do perfil no namespace do módulo (ex.: globals() de local_settings).
-
-    CRM_API_BASE_URL e CRM_INTERNAL_API_SECRET aceitam override via env var.
     """
     env = normalize_environment(environment)
     profile = get_profile(env)
@@ -103,13 +98,8 @@ def apply_environment(environment, namespace):
     namespace['MURAL_API_URL'] = profile['mural_api_url']
     namespace['API_BASE'] = profile['api_base']
     namespace['API_BASE_BKO'] = profile['api_base_bko']
-
-    namespace['CRM_API_BASE_URL'] = os.environ.get(
-        'CRM_API_BASE_URL', profile['crm_api_base_url_default']
-    )
-    namespace['CRM_INTERNAL_API_SECRET'] = os.environ.get(
-        'CRM_INTERNAL_API_SECRET', profile['crm_internal_api_secret_default']
-    )
+    namespace['CRM_API_BASE_URL'] = profile['crm_api_base_url']
+    namespace['CRM_API_V1_STR'] = '/api/v1'
 
     for key, origin_id in profile.get('order_origin_ids', {}).items():
         namespace[f'ORDER_ORIGIN_{key}'] = origin_id

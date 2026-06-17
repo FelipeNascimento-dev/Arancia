@@ -1,168 +1,186 @@
-from django.contrib.admin.views.decorators import staff_member_required
+from django.conf import settings
 from django.contrib import messages
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.views.decorators.http import require_GET, require_POST
+from django.shortcuts import redirect, render
+from django.urls import NoReverseMatch, reverse
 
-from crm.decorators import crm_module_required
-from crm.services.client import CrmApiClient
-from crm.services.context import get_user_gai_id
-from crm.services.exceptions import CrmApiError, handle_crm_error
-from crm.services.tasks import enrich_task
-from crm.services.gates import ajax_require_gai
-from crm.services.lookups import (
-    fetch_crm_lookups,
-    fetch_gais,
-    fetch_groups,
-    normalize_lookup_list,
-    parse_customer_gai_id,
-)
+from crm.decorators import crm_any_access_required
+from crm.context_processors import crm_menu_context
+from crm.helpers.dashboard import build_chart_data, build_summary_cards
+from crm_api.client import CrmApiClient
+from crm_api.exceptions import CrmApiError, crm_error_message_pt
+from crm_api.services import alerts as alerts_service
+from crm_api.services import billing as billing_service
 
 
-@crm_module_required
-def dashboard(request):
-    """Dashboard CRM composto: billing/summary, alerts, tasks/my overdue."""
-    gai_id = get_user_gai_id(request.user)
-    if gai_id is None:
-        messages.warning(
-            request,
-            'Seu usuário não possui GAI (designação) configurado. '
-            'Solicite ao gestor antes de usar o CRM.',
-        )
-        return render(request, 'crm/dashboard.html', {
-            'site_title': 'CRM — Dashboard',
-            'current_parent_menu': 'crm',
-            'current_menu': 'crm_dashboard',
-            'missing_gai': True,
+def _menu_context(current_menu, current_submenu=None):
+    return {
+        "current_parent_menu": "crm",
+        "current_menu": current_menu,
+        "current_submenu": current_submenu,
+    }
+
+
+def _nested_label(entity, *flat_keys):
+    if not entity or not isinstance(entity, dict):
+        return ""
+    for key in flat_keys:
+        value = entity.get(key)
+        if value not in (None, ""):
+            return value
+    return ""
+
+
+def _enrich_alert(alert):
+    if not isinstance(alert, dict):
+        return alert
+    customer = alert.get("customer") or {}
+    contract = alert.get("contract") or {}
+    return {
+        **alert,
+        "display_title": alert.get("title") or alert.get("titulo") or "Alerta",
+        "display_customer": _nested_label(customer, "nome", "name") or alert.get("customer_name") or alert.get("client_name") or "",
+        "display_contract": _nested_label(contract, "numero", "number", "titulo", "title") or alert.get("contract_number") or "",
+    }
+
+
+def _enrich_task(task):
+    if not isinstance(task, dict):
+        return task
+    board = task.get("board") or {}
+    status = task.get("status") or {}
+    return {
+        **task,
+        "display_title": task.get("title") or task.get("titulo") or "Task",
+        "display_due": task.get("due_date") or task.get("data_vencimento") or "-",
+        "display_board": _nested_label(board, "name", "nome") or task.get("board_name") or "",
+        "display_status": _nested_label(status, "name", "nome") or task.get("status_name") or "",
+        "task_id": task.get("id"),
+    }
+
+
+def _build_shortcuts(user, crm_context):
+    shortcuts = []
+    comercial_code = getattr(settings, "CRM_COMERCIAL_BOARD_CODE", "crm_comercial")
+    spec = [
+        ("crm.view_clients", "Clientes", "crm:lista_clientes", "fa-building"),
+        ("crm.view_contract", "Contratos", "crm:lista_contratos", "fa-file-contract"),
+        ("crm.view_billing", "Faturamento", "crm:lista_faturamento", "fa-file-invoice-dollar"),
+        ("crm.view_contract", "Alertas", "crm:lista_alertas", "fa-bell"),
+        ("crm.view_task", "Minhas Tasks", "crm:minhas_tasks", "fa-list-check"),
+        ("crm.view_task", "Todas as Tasks", "crm:lista_tasks", "fa-tasks"),
+        ("crm.view_board", "Projeto CRM Comercial", "crm:kanban_comercial", "fa-handshake"),
+        ("crm.view_project", "Projetos", "projetos:lista_projetos", "fa-diagram-project"),
+        ("crm.view_board", "Boards", "projetos:lista_boards", "fa-table-columns"),
+        ("crm.view_settings", "Configurações", "crm:config_index", "fa-gear"),
+    ]
+    for perm, label, url_name, icon in spec:
+        if user.has_perm(perm):
+            shortcuts.append({
+                "label": label,
+                "href": reverse(url_name),
+                "icon": icon,
+            })
+
+    for board in (crm_context or {}).get("accessible_boards") or []:
+        board_id = board.get("id")
+        if board_id is None:
+            continue
+        board_code = board.get("code") or board.get("codigo")
+        try:
+            if board_code == comercial_code:
+                href = reverse("crm:kanban_comercial")
+            else:
+                href = reverse("projetos:kanban_board", kwargs={"board_id": board_id})
+        except NoReverseMatch:
+            continue
+        shortcuts.append({
+            "label": f"Board: {board.get('name') or board.get('nome') or board_id}",
+            "href": href,
+            "icon": "fa-table-columns",
         })
 
-    client = CrmApiClient(request.user)
-    billing_summary = None
-    alerts = None
-    overdue_tasks = None
-    errors = []
-
-    if request.user.has_perm('crm.view_billing'):
+    for project in (crm_context or {}).get("accessible_projects") or []:
+        project_id = project.get("id")
+        if project_id is None:
+            continue
         try:
-            billing_summary = client.get('/billing/summary')
-        except CrmApiError as exc:
-            errors.append('resumo de faturamento')
-            handle_crm_error(request, exc)
-
-    if request.user.has_perm('crm.view_contracts'):
-        try:
-            alerts = client.get('/alerts/')
-        except CrmApiError as exc:
-            errors.append('alertas')
-            handle_crm_error(request, exc)
-
-    if request.user.has_perm('crm.view_tasks'):
-        try:
-            overdue_tasks = client.get('/tasks/my/', params={'overdue_only': 'true'})
-        except CrmApiError as exc:
-            errors.append('tarefas em atraso')
-            handle_crm_error(request, exc)
-
-    if isinstance(alerts, dict):
-        alerts_list = alerts.get('items') or alerts.get('results') or []
-    elif isinstance(alerts, list):
-        alerts_list = alerts
-    else:
-        alerts_list = []
-
-    if isinstance(overdue_tasks, dict):
-        tasks_list = overdue_tasks.get('items') or overdue_tasks.get('results') or []
-    elif isinstance(overdue_tasks, list):
-        tasks_list = overdue_tasks
-    else:
-        tasks_list = []
-
-    tasks_list = [enrich_task(t) for t in tasks_list if isinstance(t, dict)]
-
-    return render(request, 'crm/dashboard.html', {
-        'site_title': 'CRM — Dashboard',
-        'current_parent_menu': 'crm',
-        'current_menu': 'crm_dashboard',
-        'billing_summary': billing_summary,
-        'alerts': alerts_list,
-        'overdue_tasks': tasks_list,
-        'partial_errors': errors,
-    })
-
-
-@require_GET
-@crm_module_required
-def ajax_health(request):
-    """Proxy de health: GET {CRM_API_BASE_URL}/"""
-    try:
-        response = CrmApiClient(request.user).health_check()
-        return JsonResponse({
-            'ok': response.status_code < 400,
-            'status_code': response.status_code,
+            href = reverse("projetos:detalhe_projeto", kwargs={"project_id": project_id})
+        except NoReverseMatch:
+            continue
+        shortcuts.append({
+            "label": f"Projeto: {project.get('name') or project.get('nome') or project_id}",
+            "href": href,
+            "icon": "fa-diagram-project",
         })
-    except CrmApiError as exc:
-        return JsonResponse({
-            'ok': False,
-            'error': str(exc),
-        }, status=502)
+
+    return shortcuts
 
 
-@require_POST
-@staff_member_required
-@crm_module_required
-def validate_context(request):
-    """Diagnóstico staff: POST /auth/validate-context."""
+def _parse_task_list(tasks_data, limit=None):
+    if isinstance(tasks_data, dict):
+        raw_tasks = tasks_data.get("items") or tasks_data.get("results") or []
+    elif isinstance(tasks_data, list):
+        raw_tasks = tasks_data
+    else:
+        raw_tasks = []
+    if limit is not None:
+        raw_tasks = raw_tasks[:limit]
+    return raw_tasks
+
+
+@crm_any_access_required
+def crm_dashboard(request):
+    client = CrmApiClient(request)
+    billing_data = {}
+    summary_cards = []
+    overdue_tasks = []
+    my_tasks = []
+    recent_alerts = []
+    api_ok = True
+
+    crm_context = crm_menu_context(request).get("crm_context", {})
+
     try:
-        client = CrmApiClient(request.user)
-        result = client.post('/auth/validate-context', json={})
-        return JsonResponse({'ok': True, 'result': result})
+        billing_data = billing_service.billing_summary(client) or {}
+        summary_cards = build_summary_cards(billing_data)
     except CrmApiError as exc:
-        handle_crm_error(request, exc)
-        return JsonResponse({'ok': False, 'error': str(exc)}, status=exc.status_code or 502)
+        api_ok = False
+        messages.warning(request, crm_error_message_pt(exc))
 
-
-@require_GET
-@crm_module_required
-def ajax_crm_lookups(request):
-    """GET /lookups/crm com filtro opcional customer_gai_id (service_types por GAI)."""
-    blocked = ajax_require_gai(request)
-    if blocked:
-        return blocked
-    customer_gai_id = parse_customer_gai_id(request.GET.get('customer_gai_id'))
     try:
-        lookups = fetch_crm_lookups(request.user, customer_gai_id=customer_gai_id)
-        return JsonResponse({'ok': True, 'lookups': lookups})
-    except CrmApiError as exc:
-        return JsonResponse({'ok': False, 'error': str(exc.detail or exc)}, status=exc.status_code or 502)
+        alerts_items, _ = alerts_service.list_alerts(client, limit=20)
+        recent_alerts = [_enrich_alert(a) for a in alerts_items[:20]]
+    except CrmApiError:
+        pass
 
-
-@require_GET
-@crm_module_required
-def ajax_lookup_groups(request):
-    """GET /lookups/groups — grupos para filtro de demandantes GAI."""
-    blocked = ajax_require_gai(request)
-    if blocked:
-        return blocked
     try:
-        groups = normalize_lookup_list(fetch_groups(request.user))
-        return JsonResponse({'ok': True, 'groups': groups})
-    except CrmApiError as exc:
-        return JsonResponse({'ok': False, 'error': str(exc.detail or exc)}, status=exc.status_code or 502)
+        tasks_data = client.get("/tasks/my/", params={"overdue_only": "true", "limit": 10})
+        overdue_tasks = [_enrich_task(t) for t in _parse_task_list(tasks_data, limit=10)]
+    except CrmApiError:
+        pass
 
-
-@require_GET
-@crm_module_required
-def ajax_lookup_gais(request):
-    """GET /lookups/gais — GAIs demandantes (typeahead / picker)."""
-    blocked = ajax_require_gai(request)
-    if blocked:
-        return blocked
-    group_id = request.GET.get('group_id')
-    search = request.GET.get('search') or request.GET.get('q')
     try:
-        gais = normalize_lookup_list(
-            fetch_gais(request.user, group_id=group_id, search=search)
-        )
-        return JsonResponse({'ok': True, 'gais': gais})
-    except CrmApiError as exc:
-        return JsonResponse({'ok': False, 'error': str(exc.detail or exc)}, status=exc.status_code or 502)
+        tasks_data = client.get("/tasks/my/", params={"limit": 50})
+        my_tasks = [_enrich_task(t) for t in _parse_task_list(tasks_data, limit=50)]
+    except CrmApiError:
+        pass
+
+    chart_data = build_chart_data(billing_data, my_tasks, recent_alerts)
+    shortcuts = _build_shortcuts(request.user, crm_context)
+
+    return render(
+        request,
+        "crm/templates_dashboard/dashboard.html",
+        {
+            "site_title": "CRM — Dashboard",
+            "summary_cards": summary_cards,
+            "overdue_tasks": overdue_tasks,
+            "recent_alerts": recent_alerts[:10],
+            "shortcuts": shortcuts,
+            "chart_data": chart_data,
+            "api_ok": api_ok,
+            "accessible_boards": crm_context.get("accessible_boards") or [],
+            "accessible_projects": crm_context.get("accessible_projects") or [],
+            **_menu_context("crm_dashboard"),
+        },
+    )

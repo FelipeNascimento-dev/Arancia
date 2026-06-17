@@ -1,0 +1,68 @@
+{% extends 'global/base.html' %}
+{% block content %}
+<div class="user-list-container">
+    <div class="user-table-header">
+        <h2 class="user-table-title"><i class="fa-solid fa-repeat"></i> Recorrências</h2>
+        <form method="get" action="" class="form-user-search">
+            <i class="fa-solid fa-magnifying-glass search-icon-inside"></i>
+            <input type="text" name="q" placeholder="Pesquisar..." value="{{ q }}">
+        </form>
+        <div class="user-create">
+            {% if perms.crm.add_task_recurrence %}
+            <a href="{% url 'crm:form_task' %}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Nova recorrência
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Board</th>
+                    <th>Frequência</th>
+                    <th>Ativa</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td><strong>{{ item.id }}</strong></td>
+                    <td>{{ item.display_title|default:"-" }}</td>
+                    <td>{{ item.display_board|default:"-" }}</td>
+                    <td>{{ item.display_frequency|default:"-" }}</td>
+                    <td>{% if item.is_active %}Sim{% else %}Não{% endif %}</td>
+                    <td>
+                        <a href="{% url 'crm:form_recorrencia' item.id %}" class="action-btn edit-btn" title="Editar">
+                            <i class="fa-solid fa-pencil"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="muted text-center">Nenhuma recorrência encontrada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if pagination.has_previous or pagination.has_next %}
+    <div class="pagination-wrapper">
+        {% if pagination.has_previous %}
+        <a href="{{ pagination.previous_url }}" class="page-btn">Anterior</a>
+        {% else %}
+        <span class="page-btn disabled">Anterior</span>
+        {% endif %}
+        <span class="page-btn active">{{ pagination.page }}</span>
+        {% if pagination.has_next %}
+        <a href="{{ pagination.next_url }}" class="page-btn">Próximo</a>
+        {% else %}
+        <span class="page-btn disabled">Próximo</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

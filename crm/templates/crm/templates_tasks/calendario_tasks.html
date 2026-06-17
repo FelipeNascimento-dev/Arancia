@@ -1,0 +1,57 @@
+{% extends 'global/base.html' %}
+{% block content %}
+<style>
+    .page { max-width: 1550px; margin-top: 50px; margin-left: 65px; padding: 28px; }
+    .mural-shell { background: #fff; border: 1px solid #d9e2ec; border-radius: 18px; overflow: hidden; }
+    .mural-topbar { padding: 28px 30px; border-bottom: 1px solid #e2e8f0; }
+    .mural-toolbar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; padding: 18px 30px; border-bottom: 1px solid #e2e8f0; }
+    .mural-body { padding: 20px 30px; }
+    .table-card { border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; }
+    .user-table { width: 100%; border-collapse: collapse; }
+    .user-table th, .user-table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; }
+    .date-col { font-weight: 700; color: #1d4ed8; white-space: nowrap; }
+    .tag { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #eff6ff; color: #1d4ed8; }
+</style>
+
+<div class="page">
+    <section class="mural-shell">
+        <header class="mural-topbar">
+            <h1><i class="fa-solid fa-calendar-days"></i> Calendário de Tasks</h1>
+            <p>Tasks agendadas atribuídas a você.</p>
+            <div style="margin-top:12px;">
+                <a href="{% url 'crm:lista_tasks' %}" class="btn btn-secondary btn-sm">Lista geral</a>
+                <a href="{% url 'crm:minhas_tasks' %}" class="btn btn-secondary btn-sm">Minhas</a>
+            </div>
+        </header>
+        <div class="mural-toolbar">
+            {% include 'crm/templates_tasks/_task_filters.html' with show_date_range=True %}
+        </div>
+        <section class="mural-body">
+            <div class="table-card">
+                <div class="table-wrapper">
+                    <table class="user-table">
+                        <thead>
+                            <tr><th>Início</th><th>Fim</th><th>Título</th><th>Board</th><th>Status</th><th>Ações</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td class="date-col">{{ item.scheduled_start_at|default:"-" }}</td>
+                                <td>{{ item.scheduled_end_at|default:"-" }}</td>
+                                <td>{{ item.display_title }}</td>
+                                <td>{{ item.display_board }}</td>
+                                <td><span class="tag">{{ item.display_status }}</span></td>
+                                <td><a href="{% url 'crm:detalhe_task' item.id %}" class="action-btn edit-btn"><i class="fa-solid fa-eye"></i></a></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="muted text-center">Nenhuma task agendada no período.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% include 'crm/templates_tasks/_task_pagination.html' %}
+            </div>
+        </section>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,338 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+<style>
+    .crm-dashboard-page .crm-kpi-row {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 16px;
+        width: 1300px;
+        margin: 0 0 25px 65px;
+        align-items: stretch;
+    }
+
+    .crm-dashboard-page .crm-kpi-card {
+        flex: 1 1 0;
+        min-width: 0;
+        background: #fff;
+        border: 1px solid #eaeaea;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        padding: 18px 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .crm-dashboard-page .crm-kpi-card .label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        color: #777;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .crm-dashboard-page .crm-kpi-card .value {
+        font-size: clamp(1rem, 1.6vw, 1.35rem);
+        font-weight: 700;
+        margin-top: 8px;
+        color: #2c3e50;
+        line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .crm-dashboard-page .crm-alert-banner {
+        width: 1300px;
+        margin: 0 0 20px 65px;
+        padding: 12px 16px;
+        background: #fff3cd;
+        border: 1px solid #ffecb5;
+        border-radius: 8px;
+        color: #664d03;
+        font-size: 0.9rem;
+    }
+
+    .crm-dashboard-page .box.crm-charts-box {
+        grid-column: span 2;
+        max-height: none;
+        min-height: 380px;
+        margin-bottom: 25px;
+    }
+
+    .crm-dashboard-page .graficos-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .crm-dashboard-page .chart-card {
+        background: #fafbfc;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 16px;
+        min-height: 260px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .crm-dashboard-page .chart-card h4 {
+        margin: 0 0 12px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #374151;
+    }
+
+    .crm-dashboard-page .chart-card canvas {
+        flex: 1;
+        width: 100% !important;
+        min-height: 200px;
+        max-height: 240px;
+    }
+
+    .crm-dashboard-page .chart-empty {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        font-size: 0.9rem;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .crm-dashboard-page .box.crm-list-box {
+        max-height: 420px;
+        overflow-y: auto;
+    }
+
+    .crm-dashboard-page .box.crm-list-box.wide {
+        max-height: 320px;
+        min-height: 200px;
+    }
+
+    .crm-dashboard-page .crm-meta {
+        font-size: 0.85rem;
+        color: #666;
+    }
+
+    @media (max-width: 1400px) {
+        .crm-dashboard-page .crm-kpi-row,
+        .crm-dashboard-page .crm-alert-banner {
+            width: calc(100% - 65px);
+        }
+        .crm-dashboard-page .graficos-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="crm-dashboard-page">
+    <h2 class="title-skill-ger"><i class="fa-solid fa-chart-pie"></i> CRM — Dashboard</h2>
+
+    {% if not api_ok %}
+    <div class="crm-alert-banner">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        Alguns dados do dashboard não puderam ser carregados. O serviço CRM pode estar indisponível.
+    </div>
+    {% endif %}
+
+    {% if summary_cards %}
+    <div class="crm-kpi-row">
+        {% for card in summary_cards %}
+        <div class="crm-kpi-card">
+            <div class="label" title="{{ card.label }}">{{ card.label }}</div>
+            <div class="value" title="{{ card.title }}">{{ card.value }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="grid-container">
+        <div class="box crm-charts-box">
+            <h3><i class="fa-solid fa-chart-column"></i> Visão geral</h3>
+            {{ chart_data|json_script:"crm-dashboard-chart-data" }}
+            <div class="graficos-grid">
+                <div class="chart-card">
+                    <h4>Faturamento por situação (quantidade)</h4>
+                    <canvas id="chartBillingCounts"></canvas>
+                    <div class="chart-empty" id="chartBillingCountsEmpty" hidden>Sem dados de faturamento.</div>
+                </div>
+                <div class="chart-card">
+                    <h4>Faturamento por situação (valor)</h4>
+                    <canvas id="chartBillingValues"></canvas>
+                    <div class="chart-empty" id="chartBillingValuesEmpty" hidden>Sem dados de valores.</div>
+                </div>
+                <div class="chart-card">
+                    <h4>Minhas tasks por status</h4>
+                    <canvas id="chartTasksStatus"></canvas>
+                    <div class="chart-empty" id="chartTasksStatusEmpty" hidden>Sem tasks para exibir.</div>
+                </div>
+                <div class="chart-card">
+                    <h4>Alertas por status</h4>
+                    <canvas id="chartAlertsStatus"></canvas>
+                    <div class="chart-empty" id="chartAlertsStatusEmpty" hidden>Sem alertas recentes.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="box crm-list-box" id="box-group">
+            <h3><i class="fa-solid fa-bolt"></i> Atalhos</h3>
+            <ul>
+                {% for shortcut in shortcuts %}
+                <li>
+                    <a href="{{ shortcut.href }}">
+                        <i class="fa-solid {{ shortcut.icon }}"></i> {{ shortcut.label }}
+                    </a>
+                </li>
+                {% empty %}
+                <li class="muted">Nenhum atalho disponível para seu perfil.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="box crm-list-box" id="box-group2">
+            <h3><i class="fa-solid fa-clock"></i> Tasks em atraso</h3>
+            <ul>
+                {% for task in overdue_tasks %}
+                <li>
+                    {% if task.task_id %}
+                    <a href="{% url 'crm:detalhe_task' task.task_id %}">{{ task.display_title }}</a>
+                    {% else %}
+                    {{ task.display_title }}
+                    {% endif %}
+                    <span class="crm-meta"> — venc.: {{ task.display_due }}{% if task.display_board %} · {{ task.display_board }}{% endif %}{% if task.display_status %} · {{ task.display_status }}{% endif %}</span>
+                </li>
+                {% empty %}
+                <li class="muted">Nenhuma task em atraso.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="box wide crm-list-box">
+            <h3><i class="fa-solid fa-bell"></i> Alertas recentes</h3>
+            <ul>
+                {% for alert in recent_alerts %}
+                <li>
+                    {{ alert.display_title }}
+                    <span class="crm-meta">
+                        — {{ alert.status|default:"-" }}
+                        {% if alert.display_customer %} · {{ alert.display_customer }}{% endif %}
+                        {% if alert.display_contract %} · contrato {{ alert.display_contract }}{% endif %}
+                    </span>
+                </li>
+                {% empty %}
+                <li class="muted">Nenhum alerta recente.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const dataEl = document.getElementById("crm-dashboard-chart-data");
+    if (!dataEl || typeof Chart === "undefined") return;
+
+    let chartData = {};
+    try {
+        chartData = JSON.parse(dataEl.textContent || "{}");
+    } catch (e) {
+        return;
+    }
+
+    const palette = [
+        "#3498db", "#2ecc71", "#e74c3c", "#f39c12", "#9b59b6",
+        "#1abc9c", "#e67e22", "#34495e", "#16a085", "#c0392b",
+    ];
+
+    function buildColors(size) {
+        return Array.from({ length: size }, (_, i) => palette[i % palette.length]);
+    }
+
+    function hasValues(block) {
+        return block && Array.isArray(block.values) && block.values.some(v => Number(v) > 0);
+    }
+
+    function showEmpty(canvasId, emptyId) {
+        const canvas = document.getElementById(canvasId);
+        const empty = document.getElementById(emptyId);
+        if (canvas) canvas.hidden = true;
+        if (empty) empty.hidden = false;
+    }
+
+    function renderDoughnut(canvasId, emptyId, block) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        if (!hasValues(block)) {
+            showEmpty(canvasId, emptyId);
+            return;
+        }
+        new Chart(canvas.getContext("2d"), {
+            type: "doughnut",
+            data: {
+                labels: block.labels,
+                datasets: [{
+                    data: block.values,
+                    backgroundColor: buildColors(block.values.length),
+                    borderWidth: 1,
+                    borderColor: "#fff",
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: "bottom",
+                        labels: { boxWidth: 12, font: { size: 11 } },
+                    },
+                },
+            },
+        });
+    }
+
+    function renderBar(canvasId, emptyId, block, horizontal) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        if (!hasValues(block)) {
+            showEmpty(canvasId, emptyId);
+            return;
+        }
+        new Chart(canvas.getContext("2d"), {
+            type: "bar",
+            data: {
+                labels: block.labels,
+                datasets: [{
+                    label: "Quantidade",
+                    data: block.values,
+                    backgroundColor: buildColors(block.values.length),
+                    borderRadius: 6,
+                    maxBarThickness: horizontal ? 28 : 42,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: horizontal ? "y" : "x",
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true },
+                    y: { beginAtZero: true },
+                },
+            },
+        });
+    }
+
+    renderDoughnut("chartBillingCounts", "chartBillingCountsEmpty", chartData.billing_counts);
+    renderBar("chartBillingValues", "chartBillingValuesEmpty", chartData.billing_values, false);
+    renderBar("chartTasksStatus", "chartTasksStatusEmpty", chartData.tasks_by_status, true);
+    renderDoughnut("chartAlertsStatus", "chartAlertsStatusEmpty", chartData.alerts_by_status);
+});
+</script>
+{% endblock %}

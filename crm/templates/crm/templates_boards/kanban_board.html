@@ -1,0 +1,81 @@
+{% extends 'global/base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="kanban-page-header">
+    <h2 class="title-skill-ger">
+        <i class="fa-solid fa-table-columns"></i>
+        {{ board.display_name|default:board_id }}
+    </h2>
+    <div class="kanban-toolbar">
+        <a href="{% url 'crm:lista_boards' %}" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left"></i> Boards
+        </a>
+        {% if perms.crm.manage_board_columns %}
+        <a href="{% url 'crm:colunas_board' board_id %}" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-grip-vertical"></i> Colunas
+        </a>
+        {% endif %}
+        {% if perms.crm.manage_board_access %}
+        <a href="{% url 'crm:acesso_board' board_id %}" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-user-shield"></i> Acesso
+        </a>
+        {% endif %}
+        {% if can_create_tasks or perms.crm.add_task %}
+        <a href="{% url 'crm:form_task' %}?board_id={{ board_id }}" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-plus"></i> Nova task
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div id="crm-kanban-root" class="kanban-board">
+    {% for block in columns_with_tasks %}
+    <div class="kanban-column"
+         data-column-id="{{ block.col_key }}"
+         data-status-id="{{ block.col_key }}">
+        <div class="kanban-column-header">
+            <span class="kanban-column-title">{{ block.column.display_name|default:"Coluna" }}</span>
+            <span class="kanban-column-count">{{ block.tasks|length }}</span>
+        </div>
+        <div class="kanban-column-body" data-drop-zone="1">
+            {% for task in block.tasks %}
+            <div class="kanban-card"
+                 draggable="{% if can_move_tasks %}true{% else %}false{% endif %}"
+                 data-task-id="{{ task.id }}">
+                <a href="{% url 'crm:detalhe_task' task.id %}" class="kanban-card-title">
+                    {{ task.title|default:"Task" }}
+                </a>
+                {% if task.priority %}
+                <span class="kanban-tag">{{ task.priority.name|default:"-" }}</span>
+                {% elif task.priority_name %}
+                <span class="kanban-tag">{{ task.priority_name }}</span>
+                {% endif %}
+                {% if task.due_at %}
+                <div class="kanban-card-meta"><i class="fa-regular fa-clock"></i> {{ task.due_at|date:"d/m/Y H:i" }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% empty %}
+    <p class="kanban-empty-msg">Nenhuma coluna configurada.
+        {% if perms.crm.manage_board_columns %}
+        <a href="{% url 'crm:colunas_board' board_id %}">Configurar colunas</a>
+        {% endif %}
+    </p>
+    {% endfor %}
+</div>
+
+<script>
+window.CrmKanbanConfig = {
+    moveUrlTemplate: "{% url 'crm:ajax_move_task' 0 %}".replace('/0/', '/__ID__/'),
+    boardId: "{{ board_id }}",
+    canMove: {% if can_move_tasks %}true{% else %}false{% endif %},
+    canCreate: {% if can_create_tasks or perms.crm.add_task %}true{% else %}false{% endif %},
+    canComment: {% if can_comment %}true{% else %}false{% endif %},
+    csrfToken: "{{ csrf_token }}"
+};
+</script>
+<script src="{% static 'global/javascript/kanban_board.js' %}"></script>
+{% endblock %}

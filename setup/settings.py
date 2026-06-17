@@ -29,7 +29,8 @@ INSTALLED_APPS = [
     "logistica.apps.LogisticaConfig",
     'transportes', 'backoffice',
     'mural',
-    'crm',
+    'crm.apps.CrmConfig',
+    'projetos.apps.ProjetosConfig',
 ]
 
 MIDDLEWARE = [
@@ -64,7 +65,7 @@ TEMPLATES = [
                 'setup.settings.environment_context',
                 'logistica.context_processors.avatar_url',
                 'logistica.context_processors.acompanhamentos_navbar',
-                'crm.context_processors.crm_context',
+                'crm.context_processors.crm_menu_context',
             ],
         },
     },
@@ -148,13 +149,13 @@ CELERY_BEAT_SCHEDULE = {
         "task": "logistica.tasks.deactivate_inactive_users",
         "schedule": crontab(hour=3, minute=0),
     },
-    "crm-disparar-alertas-vencidos": {
-        "task": "crm.tasks.crm_fire_due_alerts",
-        "schedule": crontab(hour=6, minute=0),
+    "crm-gerar-tasks-recorrentes": {
+        "task": "crm.tasks.generate_recurring_tasks",
+        "schedule": crontab(minute="*/15"),
     },
-    "crm-gerar-tarefas-recorrentes": {
-        "task": "crm.tasks.crm_generate_recurring_tasks",
-        "schedule": crontab(hour=6, minute=30),
+    "crm-disparar-alertas-contrato": {
+        "task": "crm.tasks.fire_contract_alerts",
+        "schedule": crontab(hour=8, minute=0),
     },
 }
 
@@ -163,17 +164,15 @@ try:
 except ImportError:
     ...
 
-# CRM — defaults seguros quando ausentes em local_settings (Fase 0 / Fase 1)
-CRM_API_BASE_URL = globals().get('CRM_API_BASE_URL', '')
-CRM_API_V1_STR = globals().get('CRM_API_V1_STR', '/api/v1')
-CRM_INTERNAL_API_SECRET = globals().get('CRM_INTERNAL_API_SECRET', '')
-CRM_API_TIMEOUT = globals().get('CRM_API_TIMEOUT', 30)
-CRM_API_VERIFY_SSL = globals().get('CRM_API_VERIFY_SSL', False)
-CRM_DEFAULT_LIMIT = globals().get('CRM_DEFAULT_LIMIT', 100)
-CRM_SERVICE_USER_ID = globals().get('CRM_SERVICE_USER_ID', 1)
-CRM_SERVICE_USERNAME = globals().get('CRM_SERVICE_USERNAME', 'celery')
-CRM_ENABLE_DEBUG_LOGS = globals().get('CRM_ENABLE_DEBUG_LOGS', False)
-
+CRM_API_BASE_URL = getattr(local_settings, 'CRM_API_BASE_URL', '')
+CRM_API_V1_STR = getattr(local_settings, 'CRM_API_V1_STR', '/api/v1')
+CRM_API_KEY = getattr(local_settings, 'CRM_API_KEY', '')
+CRM_INTERNAL_API_SECRET = getattr(local_settings, 'CRM_INTERNAL_API_SECRET', '')
+CRM_API_TIMEOUT = int(getattr(local_settings, 'CRM_API_TIMEOUT', 30))
+CRM_API_VERIFY_SSL = getattr(local_settings, 'CRM_API_VERIFY_SSL', False)
+CRM_SERVICE_USERNAME = getattr(local_settings, 'CRM_SERVICE_USERNAME', '')
+CRM_SERVICE_PASSWORD = getattr(local_settings, 'CRM_SERVICE_PASSWORD', '')
+CRM_COMERCIAL_BOARD_CODE = getattr(local_settings, 'CRM_COMERCIAL_BOARD_CODE', 'crm_comercial')
 
 def environment_context(request):
     """Expõe ambiente atual (homolog/prod) para templates."""

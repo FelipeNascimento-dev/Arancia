@@ -1,0 +1,27 @@
+{% extends 'global/base.html' %}
+{% block content %}
+
+<h2 class="title-skill-ger"><i class="fa-solid fa-gear"></i> Configurações CRM</h2>
+
+<div class="grid-container">
+    <div class="box" id="box-group">
+        <div class="box-header"><h3>Catálogos</h3></div>
+        <ul>
+            {% if perms.crm.manage_service_types or perms.crm.view_settings %}
+            <li><a href="{% url 'crm:service_types' %}">Tipos de serviço</a></li>
+            {% endif %}
+            {% if perms.crm.manage_priorities or perms.crm.view_settings %}
+            <li><a href="{% url 'crm:priorities' %}">Prioridades</a></li>
+            {% endif %}
+            {% if perms.crm.manage_status_tasks or perms.crm.view_settings %}
+            <li><a href="{% url 'crm:status_tasks' %}">Status de tasks</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    <div class="box" id="box-group2">
+        <h3>Informações</h3>
+        <p>Catálogos compartilhados entre boards, tasks e recorrências. Alterações exigem permissões específicas por recurso.</p>
+        <p class="muted">Criação de tasks recorrentes continua pelo formulário unificado em <a href="{% url 'crm:form_task' %}">Nova Task</a>.</p>
+    </div>
+</div>
+{% endblock %}

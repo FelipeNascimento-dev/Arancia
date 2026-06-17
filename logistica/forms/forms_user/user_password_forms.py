@@ -57,6 +57,7 @@ class LoginComCodigoForm(AuthenticationForm):
 
                 self.request.session["allow_password_change_without_current"] = True
                 self.request.session.modified = True
+                self.request._crm_login_via_access_code = True
 
                 self.confirm_login_allowed(user_codigo)
                 self.user_cache = user_codigo

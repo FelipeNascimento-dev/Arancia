@@ -1,0 +1,25 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+<style>
+    .form-card-2col {
+        height: auto;
+        margin-top: 65px;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST">
+            {% if not is_edit %}<input type="hidden" name="create_client" value="1">{% endif %}
+            {% include 'global/partials/_form_2colV2.html' %}
+        </form>
+    </div>
+</div>
+
+<div style="margin: 20px 90px;">
+    <a href="{% if is_edit %}{% url 'crm:detalhe_cliente' gai_id %}{% else %}{% url 'crm:lista_clientes' %}{% endif %}" class="btn btn-secondary">
+        <i class="fa-solid fa-arrow-left"></i> Voltar
+    </a>
+</div>
+{% endblock %}
