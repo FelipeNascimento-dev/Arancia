@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function openModal(id) {
         const modal = document.getElementById(id);
-        if (modal) modal.style.display = "block";
+        if (modal) modal.style.display = "flex";
     }
 
     function closeModal(id) {

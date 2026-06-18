@@ -14,6 +14,7 @@ from crm_api.exceptions import CrmAuthError
 from crm_api.payloads import (
     board_access_payload,
     billing_payload,
+    billing_api_payload,
     build_rrule,
     contract_payload,
     parse_rrule,
@@ -26,7 +27,7 @@ from crm_api.session_credentials import (
     get_password_from_session,
     store_password_in_session,
 )
-from crm.helpers.api_display import billing_to_json, enrich_billing
+from crm.helpers.api_display import billing_to_json, enrich_billing, enrich_billing_with_lookups
 from crm.helpers.dashboard import build_summary_cards
 from crm.views.views_tasks._helpers import can_comment_on_board
 
@@ -191,6 +192,29 @@ class PayloadTests(SimpleTestCase):
         self.assertEqual(payload["status"], "pending")
         self.assertEqual(payload["notes"], "Nota teste")
 
+    def test_billing_api_payload_adds_planned_amount_and_period(self):
+        from datetime import date
+        from decimal import Decimal
+
+        payload = billing_api_payload(
+            {
+                "client_gai_id": 10,
+                "contract_id": "abc-123",
+                "referencia": "REF-2026-01",
+                "valor": Decimal("2500.00"),
+                "data_vencimento": date(2026, 7, 15),
+            },
+            contract={
+                "id": "abc-123",
+                "start_date": "2026-01-01",
+                "end_date": "2026-12-31",
+            },
+        )
+        self.assertEqual(payload["value"], 2500.0)
+        self.assertEqual(payload["planned_amount"], 2500.0)
+        self.assertEqual(payload["period_start"], "2026-01-01")
+        self.assertEqual(payload["period_end"], "2026-12-31")
+
 
 class EnrichBillingTests(SimpleTestCase):
     def test_enrich_billing_maps_all_api_fields(self):
@@ -245,6 +269,30 @@ class EnrichBillingTests(SimpleTestCase):
             "contract": {"title": "Testes"},
         })
         self.assertEqual(enriched["display_referencia"], "Testes")
+
+    def test_enrich_billing_with_lookups_fills_customer_and_contract(self):
+        enriched = enrich_billing_with_lookups(
+            {
+                "id": "billing-1",
+                "customer_gai_id": 10,
+                "contract_id": "contract-1",
+                "reference": "REF-001",
+                "value": "1500.00",
+            },
+            clients_by_gai={"10": {"gai_id": 10, "nome": "Cliente X"}},
+            contracts_by_id={
+                "contract-1": {
+                    "id": "contract-1",
+                    "title": "Contrato Alpha",
+                    "number": "10",
+                    "customer_gai_id": 10,
+                },
+            },
+        )
+        self.assertEqual(enriched["display_customer"], "Cliente X")
+        self.assertEqual(enriched["display_contract"], "10 — Contrato Alpha")
+        self.assertEqual(enriched["display_referencia"], "REF-001")
+        self.assertEqual(enriched["display_valor"], "R$ 1.500,00")
 
     def test_billing_to_json_includes_modal_fields(self):
         payload = billing_to_json({

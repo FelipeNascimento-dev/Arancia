@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from crm.decorators import crm_permission_required
 from crm.forms import BillingFilterForm
-from crm.helpers.api_display import billing_to_json, enrich_billing
+from crm.helpers.api_display import billing_to_json, enrich_billing_with_lookups
 from crm.helpers.dashboard import build_summary_cards
 from crm.views.views_contratos._helpers import (
     contract_client_gai_id,
@@ -59,6 +59,21 @@ def _lookup_options(lookups):
     return clients, contracts
 
 
+def _billing_lookup_maps(lookups):
+    clients_by_gai = {}
+    for client_row in lookups.get("clients", []):
+        gai_id = client_row.get("gai_id") or client_row.get("id")
+        if gai_id is not None:
+            clients_by_gai[str(gai_id)] = client_row
+
+    contracts_by_id = {}
+    for contract in lookups.get("contracts", []):
+        contract_id = contract.get("id")
+        if contract_id is not None:
+            contracts_by_id[str(contract_id)] = contract
+    return clients_by_gai, contracts_by_id
+
+
 @crm_permission_required("view_billing")
 def lista_faturamento(request):
     client = CrmApiClient(request)
@@ -69,6 +84,12 @@ def lista_faturamento(request):
     summary = {}
     summary_cards = []
     lookups = _billing_lookups(client)
+    clients_by_gai, contracts_by_id = _billing_lookup_maps(lookups)
+
+    if request.GET.get("created") == "1":
+        messages.success(request, "Faturamento criado com sucesso!")
+    elif request.GET.get("updated") == "1":
+        messages.success(request, "Faturamento atualizado com sucesso!")
 
     try:
         summary = billing_service.billing_summary(client) or {}
@@ -84,7 +105,14 @@ def lista_faturamento(request):
             q=q or None,
             status=status or None,
         )
-        items = [enrich_billing(item) for item in raw_items]
+        items = [
+            enrich_billing_with_lookups(
+                item,
+                clients_by_gai=clients_by_gai,
+                contracts_by_id=contracts_by_id,
+            )
+            for item in raw_items
+        ]
         pagination = build_api_pagination(request, items, total_items=total)
     except CrmApiError as exc:
         messages.error(request, crm_error_message_pt(exc))

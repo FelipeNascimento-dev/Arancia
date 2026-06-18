@@ -71,6 +71,32 @@ def billing_payload(cleaned_data):
     return mapped
 
 
+def billing_api_payload(cleaned_data, *, contract=None):
+    """Payload completo para POST/PATCH de faturamento na API."""
+    mapped = billing_payload(cleaned_data)
+    value = mapped.get("value")
+    if value not in (None, ""):
+        try:
+            mapped["value"] = float(value)
+        except (TypeError, ValueError):
+            pass
+        mapped.setdefault("planned_amount", mapped["value"])
+
+    if contract and isinstance(contract, dict):
+        for api_key, contract_keys in (
+            ("period_start", ("start_date", "data_inicio")),
+            ("period_end", ("end_date", "data_fim")),
+        ):
+            if api_key in mapped:
+                continue
+            for contract_key in contract_keys:
+                period_value = contract.get(contract_key)
+                if period_value not in (None, ""):
+                    mapped[api_key] = _json_safe_value(period_value)
+                    break
+    return mapped
+
+
 _RECURRENCE_KEYS = {
     "is_recurring",
     "recurrence_frequency",

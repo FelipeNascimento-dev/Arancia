@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!modal) return;
 
     function openModal() {
-        modal.style.display = "block";
+        modal.style.display = "flex";
         if (window.CrmSearchSelect) {
             CrmSearchSelect.initAll(modal);
         }

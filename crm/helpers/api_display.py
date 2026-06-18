@@ -514,6 +514,72 @@ def enrich_billing(record):
     }
 
 
+def enrich_billing_with_lookups(record, *, clients_by_gai=None, contracts_by_id=None):
+    """Completa exibição quando a listagem da API não traz objetos aninhados."""
+    record = enrich_billing(record)
+    clients_by_gai = clients_by_gai or {}
+    contracts_by_id = contracts_by_id or {}
+
+    if not record.get("display_customer"):
+        gai_id = (
+            record.get("customer_gai_id")
+            or record.get("client_gai_id")
+            or (record.get("customer") or {}).get("gai_id")
+            or (record.get("customer") or {}).get("id")
+        )
+        if gai_id not in (None, ""):
+            client = clients_by_gai.get(str(gai_id))
+            if client:
+                record["display_customer"] = (
+                    client.get("nome") or client.get("name") or str(gai_id)
+                )
+
+    contract_id = record.get("contract_id") or record.get("display_contract_id")
+    contract = None
+    if contract_id not in (None, ""):
+        contract = contracts_by_id.get(str(contract_id))
+        if contract and not record.get("display_contract"):
+            from crm.views.views_contratos._helpers import contract_option_label
+
+            record["display_contract"] = contract_option_label(contract)
+            record["display_contract_id"] = contract_id
+
+    if contract:
+        period_start = entity_key(record, "period_start", default="")
+        period_end = entity_key(record, "period_end", default="")
+        if not period_start:
+            period_start = contract.get("start_date") or contract.get("data_inicio") or ""
+        if not period_end:
+            period_end = contract.get("end_date") or contract.get("data_fim") or ""
+        if period_start and record.get("display_period_start") in (None, "", "-"):
+            record["display_period_start"] = str(period_start)
+        if period_end and record.get("display_period_end") in (None, "", "-"):
+            record["display_period_end"] = str(period_end)
+        if period_start and period_end:
+            record["display_period"] = f"{period_start} — {period_end}"
+            if record.get("display_referencia") in (None, "", "Sem referência"):
+                record["display_referencia"] = f"{period_start} — {period_end}"
+
+    reference = entity_key(record, "referencia", "reference")
+    if reference and not _looks_like_uuid(reference):
+        record["display_referencia"] = str(reference)
+
+    raw_value = entity_key(record, "valor", "value")
+    if raw_value not in (None, "") and record.get("display_valor") in (None, "", "-"):
+        record["display_valor"] = _format_billing_money(raw_value)
+
+    planned_raw = entity_key(record, "planned_amount", default="")
+    if planned_raw in (None, "") and raw_value not in (None, ""):
+        if record.get("display_planned_amount") in (None, "", "-"):
+            record["display_planned_amount"] = _format_billing_money(raw_value)
+
+    due_raw = entity_key(record, "data_vencimento", "due_date", default="")
+    if due_raw and record.get("display_vencimento") in (None, "", "-"):
+        record["display_vencimento"] = str(due_raw)
+
+    return record
+
+
 def billing_to_json(record):
     """Serializa faturamento enriquecido para respostas AJAX / modal."""
     record = enrich_billing(record or {})
