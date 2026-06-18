@@ -108,3 +108,5 @@ def apply_environment(environment, namespace):
         default_db = namespace['DATABASES'].get('default')
         if isinstance(default_db, dict):
             default_db['HOST'] = profile['db_host']
+            default_db.setdefault('CONN_MAX_AGE', 60)
+            default_db.setdefault('CONN_HEALTH_CHECKS', True)

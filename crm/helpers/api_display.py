@@ -168,10 +168,13 @@ def enrich_board_column(column, lookups=None):
     code = column.get("code")
     display_status = status_name or (str(code) if code not in (None, "") else "") or "-"
     display_position = (
-        column.get("position")
-        or column.get("sort_order")
-        or column.get("kanban_position")
-        or 0
+        column.get("kanban_position")
+        if column.get("kanban_position") is not None
+        else column.get("sort_order")
+        if column.get("sort_order") is not None
+        else column.get("position")
+        if column.get("position") is not None
+        else 0
     )
     return {
         **column,
@@ -603,9 +606,12 @@ def enrich_billing_with_lookups(record, *, clients_by_gai=None, contracts_by_id=
     return record
 
 
-def billing_to_json(record):
+def billing_to_json(record, *, already_enriched=False):
     """Serializa faturamento enriquecido para respostas AJAX / modal."""
-    record = enrich_billing(record or {})
+    if not already_enriched:
+        record = enrich_billing(record or {})
+    elif not record:
+        record = {}
     return {
         "id": entity_key(record, "id"),
         "display_referencia": record.get("display_referencia") or "-",

@@ -6,7 +6,11 @@ from django.views.decorators.http import require_GET, require_POST
 from crm.decorators import crm_permission_required
 from crm.forms import BillingForm
 from crm.helpers.api_display import billing_form_json, billing_to_json, enrich_billing_with_lookups
-from crm.views.views_faturamento.view_lista_faturamento import _billing_lookup_maps, _billing_lookups
+from crm.views.views_faturamento.view_lista_faturamento import (
+    _billing_lookup_maps,
+    _lookup_options,
+    get_billing_lookups,
+)
 from crm_api.client import CrmApiClient
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
 from crm_api.payloads import billing_api_payload
@@ -26,7 +30,7 @@ def _parse_request_data(request):
 
 def _billing_form_response(request, raw, *, nome_form):
     gai_id = raw.get("client_gai_id")
-    lookups = _billing_lookups(CrmApiClient(request))
+    lookups = get_billing_lookups(CrmApiClient(request))
     form = BillingForm(raw, lookups=lookups, nome_form=nome_form)
     if not form.is_valid():
         return None, JsonResponse(
@@ -64,6 +68,16 @@ def _billing_api_payload_for_form(client, cleaned_data):
 
 @crm_permission_required("view_billing")
 @require_GET
+def ajax_billing_lookups(request):
+    """Opções de cliente/contrato para modais — carregadas sob demanda."""
+    client = CrmApiClient(request)
+    lookups = get_billing_lookups(client)
+    clients, contracts = _lookup_options(lookups)
+    return JsonResponse({"ok": True, "clients": clients, "contracts": contracts})
+
+
+@crm_permission_required("view_billing")
+@require_GET
 def ajax_get_billing(request, billing_id):
     client = CrmApiClient(request)
     try:
@@ -71,7 +85,7 @@ def ajax_get_billing(request, billing_id):
         data = _enrich_billing_response(client, data)
         return JsonResponse({
             "ok": True,
-            "billing": billing_to_json(data),
+            "billing": billing_to_json(data, already_enriched=True),
             "form": billing_form_json(data),
         })
     except CrmApiError as exc:
@@ -83,7 +97,7 @@ def ajax_get_billing(request, billing_id):
 
 
 def _enrich_billing_response(client, record):
-    lookups = _billing_lookups(client)
+    lookups = get_billing_lookups(client)
     clients_by_gai, contracts_by_id = _billing_lookup_maps(lookups)
     return enrich_billing_with_lookups(
         record,
@@ -118,7 +132,7 @@ def ajax_create_billing(request):
         return JsonResponse({
             "ok": True,
             "message": "Faturamento criado com sucesso!",
-            "billing": billing_to_json(record),
+            "billing": billing_to_json(record, already_enriched=True),
             "form": billing_form_json(record),
         })
     except CrmApiError as exc:
@@ -156,7 +170,7 @@ def ajax_update_billing(request, billing_id):
         return JsonResponse({
             "ok": True,
             "message": "Faturamento atualizado com sucesso!",
-            "billing": billing_to_json(record),
+            "billing": billing_to_json(record, already_enriched=True),
             "form": billing_form_json(record),
         })
     except CrmApiError as exc:

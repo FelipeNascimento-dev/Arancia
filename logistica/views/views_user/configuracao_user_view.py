@@ -8,6 +8,7 @@ from utils.request import RequestClient
 from ...forms import ConfiguracaoUserForm
 from ...models import UserProfile, UserPasswordControl
 import httpx
+from setup.middleware.password_expiration_session import sync_password_expiration_session
 
 
 @login_required(login_url='logistica:login')
@@ -85,6 +86,7 @@ def settings_view(request):
 
             if form.password_changed():
                 control.mark_password_changed()
+                sync_password_expiration_session(request, control)
 
                 request.session.pop(
                     "allow_password_change_without_current",

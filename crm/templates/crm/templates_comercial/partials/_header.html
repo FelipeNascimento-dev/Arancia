@@ -17,10 +17,11 @@
             <i class="fa-solid fa-table-columns"></i> Kanban
         </a>
         {% if perms.crm.manage_board_columns %}
-        <a href="{% url 'crm:colunas_comercial' %}"
-           class="crm-comercial-nav__link{% if comercial_page == 'columns' %} is-active{% endif %}">
+        <button type="button"
+                class="crm-comercial-nav__link"
+                onclick="CrmComercial.openModal('modalManageColumns')">
             <i class="fa-solid fa-grip-vertical"></i> Colunas
-        </a>
+        </button>
         {% endif %}
         {% if perms.crm.manage_board_access %}
         <a href="{% url 'crm:acesso_comercial' %}"
@@ -33,13 +34,6 @@
             <button type="button" class="btn btn-primary btn-sm crm-comercial-nav__action"
                     onclick="CrmComercial.openModal('modalCreateTask')">
                 <i class="fa-solid fa-plus"></i> Nova task
-            </button>
-            {% endif %}
-        {% elif comercial_page == 'columns' %}
-            {% if perms.crm.manage_board_columns %}
-            <button type="button" class="btn btn-primary btn-sm crm-comercial-nav__action"
-                    onclick="CrmComercial.openModal('modalCreateColumn')">
-                <i class="fa-solid fa-plus"></i> Nova coluna
             </button>
             {% endif %}
         {% elif comercial_page == 'access' %}

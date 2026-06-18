@@ -13,6 +13,7 @@ from crm_api.context import (
 from crm_api.exceptions import CrmAuthError
 from crm_api.payloads import (
     board_access_payload,
+    board_column_payload,
     billing_payload,
     billing_api_payload,
     build_rrule,
@@ -135,6 +136,43 @@ class PayloadTests(SimpleTestCase):
         self.assertEqual(payload["subject_type"], "customer_gai")
         self.assertEqual(payload["subject_id"], 42)
         self.assertEqual(payload["access_level"], "editor")
+
+    def test_board_column_payload_includes_code(self):
+        payload = board_column_payload({
+            "name": "coluninhaaaaaa",
+            "status_task_id": "0cf4a088-89ca-4e08-b057-9fa74055d80d",
+            "position": 5,
+        })
+        self.assertEqual(payload["name"], "coluninhaaaaaa")
+        self.assertEqual(payload["code"], "coluninhaaaaaa")
+        self.assertEqual(payload["status_task_id"], "0cf4a088-89ca-4e08-b057-9fa74055d80d")
+        self.assertEqual(payload["position"], 5)
+
+    def test_board_column_payload_slugifies_name(self):
+        payload = board_column_payload({
+            "name": "Em Andamento",
+            "status_task_id": "abc-123",
+        })
+        self.assertEqual(payload["code"], "em_andamento")
+
+    def test_board_column_payload_preserves_explicit_code(self):
+        payload = board_column_payload({
+            "name": "Qualquer",
+            "code": "custom_code",
+        })
+        self.assertEqual(payload["code"], "custom_code")
+
+    def test_column_reorder_payload_maps_ids_to_items(self):
+        from crm_api.services.boards import column_reorder_payload
+
+        payload = column_reorder_payload({
+            "column_ids": ["aaa-111", "bbb-222", "ccc-333"],
+        })
+        self.assertEqual(payload["items"], [
+            {"id": "aaa-111", "kanban_position": 0},
+            {"id": "bbb-222", "kanban_position": 1},
+            {"id": "ccc-333", "kanban_position": 2},
+        ])
 
     def test_service_type_payload_fields(self):
         payload = service_type_payload({

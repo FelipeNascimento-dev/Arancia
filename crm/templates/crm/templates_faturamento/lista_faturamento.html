@@ -341,9 +341,6 @@
                     <label for="billing_client_gai_id">Cliente (GAI) (*)</label>
                     <select class="form-control" id="billing_client_gai_id" name="client_gai_id" required>
                         <option value="">---------</option>
-                        {% for client in list_config.clients %}
-                        <option value="{{ client.id }}">{{ client.label }}</option>
-                        {% endfor %}
                     </select>
                 </div>
                 <div class="form-group">

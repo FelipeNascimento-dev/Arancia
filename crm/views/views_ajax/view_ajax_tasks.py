@@ -1,14 +1,20 @@
 import json
 
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.template.loader import render_to_string
+from django.views.decorators.http import require_GET, require_POST
 
 from crm.decorators import crm_permission_required
 from crm_api.client import CrmApiClient
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
 from crm_api.payloads import assignee_payload, comment_payload, link_payload, subtask_payload
 from crm_api.services import tasks as tasks_service
-from crm.views.views_tasks._helpers import board_access_for_task, can_comment_on_board
+from crm.views.views_tasks._helpers import (
+    board_access_for_task,
+    can_comment_on_board,
+    enrich_task_for_display,
+)
+from crm.views.views_tasks.task_tab_helpers import TASK_DETAIL_TABS, fetch_task_tab_context
 
 
 def _json_error(exc, default_status=400):
@@ -31,6 +37,40 @@ def _require_task_comment_access(request, client, task_id):
             status=403,
         )
     return task, None
+
+
+@crm_permission_required("view_task")
+@require_GET
+def ajax_task_tab(request, task_id):
+    tab = request.GET.get("tab", "info")
+    if tab not in TASK_DETAIL_TABS:
+        return JsonResponse({"ok": False, "detail": "Aba inválida."}, status=400)
+
+    client = CrmApiClient(request)
+    try:
+        task = tasks_service.get_task(client, task_id)
+        if task:
+            task = enrich_task_for_display(task)
+    except CrmApiError as exc:
+        return _json_error(exc, getattr(exc, "status_code", None) or 404)
+
+    board_access = board_access_for_task(client, task)
+    can_comment = can_comment_on_board(request, board_access)
+    context = fetch_task_tab_context(
+        client,
+        request,
+        task_id,
+        tab,
+        task=task,
+        board_access=board_access,
+        can_comment=can_comment,
+    )
+    html = render_to_string(
+        f"crm/templates_tasks/partials/tab_{tab}.html",
+        context,
+        request=request,
+    )
+    return JsonResponse({"ok": True, "html": html, "tab": tab})
 
 
 @crm_permission_required("move_task")

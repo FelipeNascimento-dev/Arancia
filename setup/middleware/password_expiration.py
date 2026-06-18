@@ -3,7 +3,11 @@ from django.shortcuts import redirect
 from django.urls import resolve, Resolver404
 from django.utils import timezone
 
-from logistica.models import UserPasswordControl
+from setup.middleware.password_expiration_session import (
+    SESSION_WARNING_DATE_KEY,
+    get_password_expiration_state,
+    sync_password_expiration_session,
+)
 
 
 class PasswordExpirationMiddleware:
@@ -25,19 +29,18 @@ class PasswordExpirationMiddleware:
                 "admin:logout",
             }
 
-            control, _ = UserPasswordControl.objects.get_or_create(
-                user=request.user
-            )
+            state = get_password_expiration_state(request)
+            if state is None:
+                state = sync_password_expiration_session(request)
 
-            if control.is_password_expired() and view_name not in rotas_liberadas:
+            if state["is_expired"] and view_name not in rotas_liberadas:
                 return redirect("logistica:settings")
 
-            if control.should_warn():
+            if state["should_warn"]:
                 hoje = timezone.localdate().isoformat()
-                session_key = "password_expiration_warning_date"
 
-                if request.session.get(session_key) != hoje:
-                    dias = control.days_to_expire()
+                if request.session.get(SESSION_WARNING_DATE_KEY) != hoje:
+                    dias = state["days_to_expire"]
 
                     if dias == 1:
                         texto = "Sua senha vence em 1 dia. Recomendamos alterar sua senha."
@@ -45,6 +48,7 @@ class PasswordExpirationMiddleware:
                         texto = f"Sua senha vence em {dias} dias. Recomendamos alterar sua senha."
 
                     messages.warning(request, texto)
-                    request.session[session_key] = hoje
+                    request.session[SESSION_WARNING_DATE_KEY] = hoje
+                    request.session.modified = True
 
         return self.get_response(request)

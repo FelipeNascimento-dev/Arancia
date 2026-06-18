@@ -1,0 +1,134 @@
+{% if perms.crm.manage_board_columns %}
+<div id="modalManageColumns" class="modal">
+    <div class="modal-dialog modal-dialog--columns">
+        <div class="modal-header">
+            <h5><i class="fa-solid fa-grip-vertical"></i> Colunas do board</h5>
+            <button type="button" class="modal-close" data-close-modal="modalManageColumns">&times;</button>
+        </div>
+        <div class="modal-body modal-body--flush">
+            <div class="crm-comercial-columns-toolbar">
+                <p class="muted crm-comercial-columns-toolbar__hint">
+                    Arraste para reordenar e clique em <strong>Salvar ordem</strong> para confirmar.
+                </p>
+                <button type="button" class="btn btn-primary btn-sm"
+                        onclick="CrmComercial.openModal('modalCreateColumn')">
+                    <i class="fa-solid fa-plus"></i> Nova coluna
+                </button>
+            </div>
+            <div class="table-wrapper">
+                <table class="user-table" id="columns-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Ordem</th>
+                            <th>Nome</th>
+                            <th>Status / código</th>
+                            <th style="width: 120px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="columns-sortable"
+                           data-reorder-url="{% url 'crm:ajax_reorder_columns' board_id %}"
+                           data-csrf="{{ csrf_token }}">
+                        {% for col in board_columns %}
+                        <tr data-column-id="{{ col.id }}"
+                            data-name="{{ col.name|default:col.display_name|default:'' }}"
+                            data-status-id="{{ col.status_task_id|default:'' }}"
+                            data-position="{{ col.display_position|default:forloop.counter }}">
+                            <td>{{ col.display_position|default:forloop.counter }}</td>
+                            <td>
+                                {% if col.color %}
+                                <span class="crm-comercial-color-dot" style="background: {{ col.color }};"></span>
+                                {% endif %}
+                                {{ col.display_name|default:"-" }}
+                            </td>
+                            <td>{{ col.display_status|default:"-" }}</td>
+                            <td>
+                                <div class="crm-comercial-actions">
+                                    <button type="button" class="action-pill btn-edit-column" title="Editar coluna">
+                                        <i class="fa-solid fa-pencil"></i>
+                                    </button>
+                                    <button type="button" class="action-pill drag-handle" title="Arrastar" draggable="false">
+                                        <i class="fa-solid fa-grip-lines"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="muted text-center">Nenhuma coluna configurada.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer modal-footer-split">
+            <div class="footer-left">
+                <span id="columns-order-status" class="muted small">Nenhuma alteração pendente.</span>
+            </div>
+            <div class="footer-right">
+                <button type="button" id="btnSaveColumnOrder" class="btn btn-secondary btn-sm" disabled>
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar ordem
+                </button>
+                <button type="button" class="btn btn-secondary" data-close-modal="modalManageColumns">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalCreateColumn" class="modal modal--nested">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5><i class="fa-solid fa-plus"></i> Nova coluna</h5>
+            <button type="button" class="modal-close" data-close-modal="modalCreateColumn">&times;</button>
+        </div>
+        <form method="post" id="formCreateColumn">
+            {% csrf_token %}
+            <input type="hidden" name="add_column" value="1">
+            <div class="modal-body fields-grid">
+                {% for field in column_form %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="text-danger small">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="modal-footer modal-footer-split">
+                <div class="footer-left">
+                    {% include "global/partials/_required_fields.html" %}
+                </div>
+                <div class="footer-right">
+                    <button type="button" class="btn btn-secondary" data-close-modal="modalCreateColumn">Fechar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modalEditColumn" class="modal modal--nested">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5><i class="fa-solid fa-pencil"></i> Editar coluna</h5>
+            <button type="button" class="modal-close" data-close-modal="modalEditColumn">&times;</button>
+        </div>
+        <form method="post" id="formEditColumn">
+            {% csrf_token %}
+            <input type="hidden" name="edit_column" value="1">
+            <input type="hidden" name="column_id" value="">
+            <div class="modal-body fields-grid">
+                {% for field in column_form %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-close-modal="modalEditColumn">Fechar</button>
+                <button type="submit" class="btn btn-primary">Salvar alterações</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}

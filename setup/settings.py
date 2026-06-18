@@ -1,6 +1,9 @@
 from pathlib import Path
-from setup import local_settings
+
 from celery.schedules import crontab
+
+from setup import local_settings
+from setup.cache_settings import build_caches, build_redis_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -13,7 +16,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-wg8bt!49d#axro8-8299a1pup&&f*kueeu=%x=2)k0i(0@rtpj'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # NUNCA mude para FALSE. Se não para de funcionar
+# Legado: DEBUG=True é exigido por partes do projeto; não alterar sem auditoria.
+# Sobrescreva em local_settings.py apenas após validar dependências.
+DEBUG = getattr(local_settings, 'DEBUG', True)
 
 ALLOWED_HOSTS = ["*"]
 
@@ -42,10 +47,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'setup.middleware.auto_logout.AutoLogoutMiddleware',
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-
+    "setup.middleware.crm_http_client.CrmHttpClientMiddleware",
     "setup.middleware.password_expiration.PasswordExpirationMiddleware",
+    "setup.middleware.request_timing.RequestTimingMiddleware",
 ]
 
 ROOT_URLCONF = 'setup.urls'
@@ -139,8 +143,20 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
 
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'  # ou RabbitMQ, se preferir
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+_REDIS_ENABLED = getattr(local_settings, 'REDIS_ENABLED', True)
+_REDIS_HOST = getattr(local_settings, 'REDIS_HOST', '127.0.0.1')
+_REDIS_PORT = int(getattr(local_settings, 'REDIS_PORT', 6379))
+_REDIS_PASSWORD = getattr(local_settings, 'REDIS_PASSWORD', '')
+_REDIS_CELERY_DB = int(getattr(local_settings, 'REDIS_CELERY_DB', 0))
+_CELERY_REDIS_URL = build_redis_url(
+    host=_REDIS_HOST,
+    port=_REDIS_PORT,
+    db=_REDIS_CELERY_DB,
+    password=_REDIS_PASSWORD,
+)
+
+CELERY_BROKER_URL = getattr(local_settings, 'CELERY_BROKER_URL', _CELERY_REDIS_URL)
+CELERY_RESULT_BACKEND = getattr(local_settings, 'CELERY_RESULT_BACKEND', _CELERY_REDIS_URL)
 
 
 # Configuração de agendamento
@@ -173,6 +189,55 @@ CRM_API_VERIFY_SSL = getattr(local_settings, 'CRM_API_VERIFY_SSL', False)
 CRM_SERVICE_USERNAME = getattr(local_settings, 'CRM_SERVICE_USERNAME', '')
 CRM_SERVICE_PASSWORD = getattr(local_settings, 'CRM_SERVICE_PASSWORD', '')
 CRM_COMERCIAL_BOARD_CODE = getattr(local_settings, 'CRM_COMERCIAL_BOARD_CODE', 'crm_comercial')
+ENVIRONMENT = getattr(local_settings, 'ENVIRONMENT', 'homolog')
+
+# Instrumentação de performance (Fase 0) — ativar em dev/homolog via local_settings
+PERFORMANCE_INSTRUMENTATION = getattr(local_settings, 'PERFORMANCE_INSTRUMENTATION', False)
+CRM_MENU_CONTEXT_CACHE_TTL = int(getattr(local_settings, 'CRM_MENU_CONTEXT_CACHE_TTL', 90))
+CRM_LOOKUPS_REDIS_CACHE_TTL = int(getattr(local_settings, 'CRM_LOOKUPS_REDIS_CACHE_TTL', 300))
+CRM_ME_CONTEXT_REDIS_CACHE_TTL = int(
+    getattr(local_settings, 'CRM_ME_CONTEXT_REDIS_CACHE_TTL', 300)
+)
+CRM_REDIS_CACHE_ENABLED = getattr(local_settings, 'CRM_REDIS_CACHE_ENABLED', _REDIS_ENABLED)
+ACOMPANHAMENTOS_NAVBAR_CACHE_TTL = int(
+    getattr(local_settings, 'ACOMPANHAMENTOS_NAVBAR_CACHE_TTL', 600)
+)
+
+# Cache Django — Redis (Fase 3); LocMem quando REDIS_ENABLED=false
+CACHES = build_caches(
+    redis_enabled=_REDIS_ENABLED,
+    redis_host=_REDIS_HOST,
+    redis_port=_REDIS_PORT,
+    redis_db=int(getattr(local_settings, 'REDIS_DB', 1)),
+    redis_password=_REDIS_PASSWORD,
+    redis_max_connections=int(getattr(local_settings, 'REDIS_MAX_CONNECTIONS', 50)),
+    redis_socket_timeout=float(getattr(local_settings, 'REDIS_SOCKET_TIMEOUT', 2.0)),
+    redis_socket_connect_timeout=float(
+        getattr(local_settings, 'REDIS_SOCKET_CONNECT_TIMEOUT', 2.0)
+    ),
+)
+
+_IS_HOMOLOG_ENV = getattr(local_settings, 'ENVIRONMENT', 'homolog') == 'homolog'
+_CRM_API_LOG_LEVEL = 'DEBUG' if (
+    _IS_HOMOLOG_ENV or PERFORMANCE_INSTRUMENTATION
+) else 'WARNING'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'crm_api': {
+            'handlers': ['console'],
+            'level': _CRM_API_LOG_LEVEL,
+            'propagate': False,
+        },
+    },
+}
 
 def environment_context(request):
     """Expõe ambiente atual (homolog/prod) para templates."""

@@ -1,0 +1,19 @@
+<div class="tab-card">
+    <ul>
+        {% for a in attachments %}
+        <li>
+            <a href="{{ a.display_url|default:'#' }}" target="_blank">{{ a.display_name|default:"Anexo" }}</a>
+        </li>
+        {% empty %}
+        <li class="muted">Nenhum anexo.</li>
+        {% endfor %}
+    </ul>
+    {% if can_comment %}
+    <form method="post" enctype="multipart/form-data" style="margin-top:12px;">
+        {% csrf_token %}
+        <input type="hidden" name="upload_attachment" value="1">
+        <input type="file" name="attachment" class="form-control">
+        <button type="submit" class="btn btn-primary btn-sm">Enviar</button>
+    </form>
+    {% endif %}
+</div>

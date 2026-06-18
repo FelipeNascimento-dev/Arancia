@@ -1,5 +1,6 @@
 from crm.helpers.api_display import enrich_task_lookups, nested_label
 from crm.helpers.date_format import format_datetime_br
+from crm.helpers.lookup_cache import get_cached_lookup_for_client
 from crm_api.client import CrmApiClient
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
 from crm_api.pagination import build_api_pagination
@@ -72,37 +73,57 @@ def _normalize_gai_item(item):
 
 
 def _load_active_gais(client: CrmApiClient):
-    items = []
-    try:
-        items = unwrap_lookup_items(get_gais(client))
-    except CrmApiError:
-        pass
-    items = [_normalize_gai_item(item) for item in _filter_active_gais(items)]
-    if items:
-        return items
-    try:
-        clients, _ = clients_service.list_clients(client, limit=500)
-        return [_normalize_gai_item(item) for item in _filter_active_gais(clients)]
-    except CrmApiError:
-        return []
+    def _fetch():
+        items = []
+        try:
+            items = unwrap_lookup_items(get_gais(client))
+        except CrmApiError:
+            pass
+        items = [_normalize_gai_item(item) for item in _filter_active_gais(items)]
+        if items:
+            return items
+        try:
+            clients, _ = clients_service.list_clients(client, limit=500)
+            return [_normalize_gai_item(item) for item in _filter_active_gais(clients)]
+        except CrmApiError:
+            return []
+
+    return get_cached_lookup_for_client(
+        client,
+        "gais",
+        _fetch,
+        redis_key="lookups:gais",
+    )
 
 
-def _load_system_users(client: CrmApiClient):
+def _get_crm_lookups_normalized(client: CrmApiClient):
+    def _fetch():
+        try:
+            return _normalize_crm_lookups(get_crm_lookups(client) or {})
+        except CrmApiError:
+            return {}
+
+    return get_cached_lookup_for_client(
+        client,
+        "crm_lookups_raw",
+        _fetch,
+        redis_key="lookups:crm",
+    )
+
+
+def _load_system_users(client: CrmApiClient, *, crm_lookups=None):
     try:
         users = unwrap_lookup_items(get_users(client))
         if users:
             return users
     except CrmApiError:
         pass
-    try:
-        crm = _normalize_crm_lookups(get_crm_lookups(client) or {})
-        users = crm.get("users")
-        if isinstance(users, list):
-            return users
-        if isinstance(users, dict):
-            return unwrap_lookup_items(users)
-    except CrmApiError:
-        pass
+    crm = crm_lookups if crm_lookups is not None else _get_crm_lookups_normalized(client)
+    users = crm.get("users")
+    if isinstance(users, list):
+        return users
+    if isinstance(users, dict):
+        return unwrap_lookup_items(users)
     return _django_system_users()
 
 
@@ -119,44 +140,46 @@ def _django_system_users():
     ]
 
 
-def _load_designations(client: CrmApiClient):
+def _load_designations(client: CrmApiClient, *, crm_lookups=None):
     try:
         designations = unwrap_lookup_items(get_designations(client))
         if designations:
             return designations
     except CrmApiError:
         pass
-    try:
-        crm = _normalize_crm_lookups(get_crm_lookups(client) or {})
-        designations = crm.get("designations")
-        if isinstance(designations, list):
-            return designations
-        if isinstance(designations, dict):
-            return unwrap_lookup_items(designations)
-    except CrmApiError:
-        pass
+    crm = crm_lookups if crm_lookups is not None else _get_crm_lookups_normalized(client)
+    designations = crm.get("designations")
+    if isinstance(designations, list):
+        return designations
+    if isinstance(designations, dict):
+        return unwrap_lookup_items(designations)
     return []
 
 
-def load_task_lookups(client: CrmApiClient):
-    lookups = {}
-    try:
-        lookups = enrich_task_lookups(_normalize_crm_lookups(get_crm_lookups(client) or {}))
-    except CrmApiError:
-        lookups = {}
+def _load_task_lookups(client: CrmApiClient):
+    crm_lookups = _get_crm_lookups_normalized(client)
+    lookups = enrich_task_lookups(crm_lookups) if crm_lookups else {}
 
     if not lookups.get("gais"):
         lookups["gais"] = _load_active_gais(client)
     if not lookups.get("users"):
-        lookups["users"] = _load_system_users(client)
+        lookups["users"] = _load_system_users(client, crm_lookups=crm_lookups)
     if not lookups.get("designations"):
-        lookups["designations"] = _load_designations(client)
+        lookups["designations"] = _load_designations(client, crm_lookups=crm_lookups)
 
     return enrich_task_lookups(lookups)
 
 
-def load_project_lookups(client: CrmApiClient):
-    lookups = load_task_lookups(client)
+def load_task_lookups(client: CrmApiClient):
+    return get_cached_lookup_for_client(
+        client,
+        "task_lookups",
+        lambda: _load_task_lookups(client),
+    )
+
+
+def _load_project_lookups(client: CrmApiClient):
+    lookups = dict(load_task_lookups(client))
     try:
         team_gais = get_team_gais(client)
         if isinstance(team_gais, dict):
@@ -173,8 +196,16 @@ def load_project_lookups(client: CrmApiClient):
     return lookups
 
 
-def load_board_lookups(client: CrmApiClient):
-    lookups = load_project_lookups(client)
+def load_project_lookups(client: CrmApiClient):
+    return get_cached_lookup_for_client(
+        client,
+        "project_lookups",
+        lambda: _load_project_lookups(client),
+    )
+
+
+def _load_board_lookups(client: CrmApiClient):
+    lookups = dict(load_project_lookups(client))
     try:
         groups = get_groups(client)
         if isinstance(groups, dict):
@@ -193,14 +224,44 @@ def load_board_lookups(client: CrmApiClient):
             lookups["column_templates"] = templates
     except CrmApiError:
         lookups.setdefault("column_templates", [])
-    try:
-        from crm_api.services import boards as boards_service
-
-        boards, _ = boards_service.list_boards(client, limit=200)
-        lookups["boards"] = boards
-    except CrmApiError:
-        lookups.setdefault("boards", [])
+    lookups["boards"] = _load_boards_list(client)
     return enrich_task_lookups(lookups)
+
+
+def load_board_lookups(client: CrmApiClient):
+    return get_cached_lookup_for_client(
+        client,
+        "board_lookups",
+        lambda: _load_board_lookups(client),
+    )
+
+
+def _load_boards_list(client: CrmApiClient):
+    def _fetch():
+        try:
+            from crm_api.services import boards as boards_service
+
+            boards, _ = boards_service.list_boards(client, limit=200)
+            return boards
+        except CrmApiError:
+            return []
+
+    return get_cached_lookup_for_client(client, "boards_list", _fetch)
+
+
+def _load_task_list_lookups(client: CrmApiClient):
+    """Lookups para listagens de tasks — sem groups/column-templates."""
+    lookups = dict(load_project_lookups(client))
+    lookups["boards"] = _load_boards_list(client)
+    return enrich_task_lookups(lookups)
+
+
+def load_task_list_lookups(client: CrmApiClient):
+    return get_cached_lookup_for_client(
+        client,
+        "task_list_lookups",
+        lambda: _load_task_list_lookups(client),
+    )
 
 
 def task_list_filters(request):
@@ -217,6 +278,19 @@ def task_list_filters(request):
         "start_at_from": request.GET.get("start_at_from") or request.GET.get("date_from") or None,
         "start_at_to": request.GET.get("start_at_to") or request.GET.get("date_to") or None,
         "requester_gai_id": request.GET.get("requester_gai_id") or None,
+    }
+
+
+def enrich_task_for_kanban_card(task):
+    """Campos mínimos para card Kanban — evita enrichment completo em listagens."""
+    if not isinstance(task, dict):
+        return task
+    priority = task.get("priority") or {}
+    due_raw = task.get("due_at") or task.get("due_date") or task.get("data_vencimento")
+    return {
+        **task,
+        "display_due": format_datetime_br(due_raw, default="-"),
+        "priority_name": nested_label(priority, "name", "nome") or task.get("priority_name") or "",
     }
 
 
@@ -350,7 +424,7 @@ def fetch_task_list(request, *, my_tasks=False, role=None, extra_filters=None):
     items = []
     error_message = None
     try:
-        lookups = load_board_lookups(client)
+        lookups = load_task_list_lookups(client)
     except Exception:
         lookups = {}
 

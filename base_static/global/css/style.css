@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+/* Produção usa arancia-core.bundle.css (ver _head.html). Regenerar o bundle após editar estes arquivos. */
 @import url(navbar.css);
 @import url(login.css);
 @import url(logout.css);
@@ -260,10 +261,6 @@ body {
   color: #64748b;
 }
 
-#columns-sortable tr.dragging {
-  opacity: 0.5;
-}
-
 /* CRM Comercial */
 .crm-comercial-page {
   padding-bottom: 32px;
@@ -314,6 +311,8 @@ body {
   text-decoration: none;
   font-size: 0.9rem;
   transition: background 0.2s, border-color 0.2s, color 0.2s;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .crm-comercial-nav__link:hover {
@@ -372,6 +371,27 @@ body {
   color: #15803d;
 }
 
+.crm-comercial-actions .drag-handle {
+  cursor: grab;
+}
+
+.crm-comercial-actions .drag-handle:active {
+  cursor: grabbing;
+}
+
+#columns-sortable tr[data-column-id] {
+  cursor: grab;
+}
+
+#columns-sortable tr[data-column-id].dragging {
+  opacity: 0.55;
+  cursor: grabbing;
+}
+
+#columns-sortable tr[data-column-id] .btn-edit-column {
+  cursor: pointer;
+}
+
 .crm-comercial-actions .action-pill--danger:hover {
   background: #fef2f2;
   border-color: #fecaca;
@@ -391,6 +411,36 @@ body {
 .crm-comercial-page .modal-dialog {
   max-width: 720px;
   margin: 5% auto;
+}
+
+.crm-comercial-page .modal-dialog--columns {
+  max-width: 860px;
+}
+
+.crm-comercial-columns-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.crm-comercial-columns-toolbar__hint {
+  margin: 0;
+  flex: 1 1 220px;
+}
+
+.crm-comercial-page .modal-body--flush {
+  padding-top: 8px;
+}
+
+.modal.modal--nested.modal--stacked {
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.modal.modal--nested .modal-dialog {
+  max-width: 640px;
 }
 
 .crm-comercial-page .modal-body.fields-grid {

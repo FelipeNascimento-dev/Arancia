@@ -9,12 +9,13 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    const items = config.items || {};
-    const clients = config.clients || [];
-    const contracts = config.contracts || [];
     const csrfInput = document.querySelector("[name=csrfmiddlewaretoken]");
     const csrfToken = csrfInput ? csrfInput.value : "";
     let currentViewBillingId = null;
+    let clients = [];
+    let contracts = [];
+    let lookupsLoaded = false;
+    let lookupsLoading = null;
 
     function urlFor(key, id) {
         const pattern = (config.urls || {})[key] || "";
@@ -86,6 +87,54 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = window.location.pathname + suffix;
     }
 
+    function ensureBillingLookups() {
+        if (lookupsLoaded) {
+            return Promise.resolve({ clients, contracts });
+        }
+        if (lookupsLoading) {
+            return lookupsLoading;
+        }
+        const lookupsUrl = (config.urls || {}).lookups;
+        if (!lookupsUrl) {
+            return Promise.resolve({ clients: [], contracts: [] });
+        }
+        lookupsLoading = fetch(lookupsUrl, {
+            headers: { Accept: "application/json" },
+            credentials: "same-origin",
+        })
+            .then((response) => response.json().then((payload) => ({ ok: response.ok, payload })))
+            .then(({ ok, payload }) => {
+                if (!ok || !payload.ok) {
+                    throw new Error(payload.detail || "Não foi possível carregar opções.");
+                }
+                clients = payload.clients || [];
+                contracts = payload.contracts || [];
+                lookupsLoaded = true;
+                populateClientSelect();
+                return { clients, contracts };
+            })
+            .finally(() => {
+                lookupsLoading = null;
+            });
+        return lookupsLoading;
+    }
+
+    function populateClientSelect() {
+        const selectEl = document.getElementById("billing_client_gai_id");
+        if (!selectEl) return;
+        const current = selectEl.value;
+        selectEl.innerHTML = '<option value="">---------</option>';
+        clients.forEach((item) => {
+            const opt = document.createElement("option");
+            opt.value = String(item.id);
+            opt.textContent = item.label || String(item.id);
+            selectEl.appendChild(opt);
+        });
+        if (current) {
+            selectEl.value = current;
+        }
+    }
+
     function contractsForGai(gaiId) {
         if (!gaiId) return contracts;
         const gaiKey = String(gaiId);
@@ -147,10 +196,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     window.openCreateBillingModal = function () {
-        populateBillingForm({});
-        document.getElementById("modalFormBillingTitle").innerHTML =
-            '<i class="fa-solid fa-plus"></i> Novo Faturamento';
-        openModal("modalFormBilling");
+        ensureBillingLookups()
+            .then(() => {
+                populateBillingForm({});
+                document.getElementById("modalFormBillingTitle").innerHTML =
+                    '<i class="fa-solid fa-plus"></i> Novo Faturamento';
+                openModal("modalFormBilling");
+            })
+            .catch((err) => showBillingToast(err.message || "Erro ao carregar opções.", "error"));
     };
 
     window.resetBillingForm = function () {
@@ -162,11 +215,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    function openViewBilling(billingId) {
-        const item = items[String(billingId)];
-        if (!item) return;
-
-        currentViewBillingId = billingId;
+    function fillViewBilling(item) {
+        currentViewBillingId = item.id;
         setText("viewBillingReferencia", item.display_referencia);
         setText("viewBillingCliente", item.display_customer);
         setText("viewBillingPeriodStart", item.display_period_start);
@@ -192,8 +242,32 @@ document.addEventListener("DOMContentLoaded", function () {
                 contractBtn.hidden = true;
             }
         }
+    }
 
+    function openViewBilling(billingId) {
         openModal("modalViewBilling");
+        fillViewBilling({ id: billingId });
+
+        fetch(urlFor("get", billingId), {
+            headers: { Accept: "application/json" },
+            credentials: "same-origin",
+        })
+            .then((response) => response.json().then((payload) => ({ ok: response.ok, payload })))
+            .then(({ ok, payload }) => {
+                if (!ok || !payload.ok) {
+                    const message = payload.detail || "Não foi possível carregar o faturamento.";
+                    showBillingToast(message, "error");
+                    closeModal("modalViewBilling");
+                    return;
+                }
+                const item = payload.billing || {};
+                item.id = billingId;
+                fillViewBilling(item);
+            })
+            .catch(() => {
+                showBillingToast("Erro ao carregar faturamento.", "error");
+                closeModal("modalViewBilling");
+            });
     }
 
     function openEditBillingModal(billingId) {
@@ -203,12 +277,15 @@ document.addEventListener("DOMContentLoaded", function () {
             '<i class="fa-solid fa-pencil"></i> Editar Faturamento';
         openModal("modalFormBilling");
 
-        fetch(urlFor("get", billingId), {
-            headers: { Accept: "application/json" },
-            credentials: "same-origin",
-        })
-            .then((response) => response.json().then((payload) => ({ ok: response.ok, payload })))
-            .then(({ ok, payload }) => {
+        Promise.all([
+            ensureBillingLookups(),
+            fetch(urlFor("get", billingId), {
+                headers: { Accept: "application/json" },
+                credentials: "same-origin",
+            }).then((response) => response.json().then((payload) => ({ ok: response.ok, payload }))),
+        ])
+            .then(([, billingResult]) => {
+                const { ok, payload } = billingResult;
                 if (!ok || !payload.ok) {
                     const message = payload.detail || "Não foi possível carregar o faturamento.";
                     showFormError(message);

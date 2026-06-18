@@ -10,38 +10,33 @@ from crm_api.services import tasks as tasks_service
 from crm.views.views_tasks._helpers import (
     board_access_for_task,
     can_comment_on_board,
-    enrich_assignee_for_display,
-    enrich_attachment_for_display,
-    enrich_comment_for_display,
-    enrich_move_history_for_display,
-    enrich_subtask_for_display,
     enrich_task_for_display,
-    enrich_watcher_for_display,
     load_task_lookups,
     menu_context,
     task_display_value,
 )
+from crm.views.views_tasks.task_tab_helpers import TASK_DETAIL_TABS, fetch_task_tab_context
 
 
 @crm_permission_required("view_task")
 def detalhe_task(request, task_id):
     client = CrmApiClient(request)
     active_tab = request.GET.get("tab", "info")
+    if active_tab not in TASK_DETAIL_TABS:
+        active_tab = "info"
     task = None
-    subtasks = []
-    links = []
-    assignees = []
-    watchers = []
-    attachments = []
-    move_history = []
-    comments = []
     board_access = {}
 
-    lookups = load_task_lookups(client)
     comment_form = TaskCommentForm()
     subtask_form = TaskSubtaskForm()
     link_form = TaskLinkForm()
-    assignee_form = TaskAssigneeForm(lookups=lookups)
+    needs_assignee_lookups = active_tab == "info" or (
+        request.method == "POST" and "add_assignee" in request.POST
+    )
+    if needs_assignee_lookups:
+        assignee_form = TaskAssigneeForm(lookups=load_task_lookups(client))
+    else:
+        assignee_form = TaskAssigneeForm()
 
     try:
         task = tasks_service.get_task(client, task_id)
@@ -114,7 +109,7 @@ def detalhe_task(request, task_id):
             if not request.user.has_perm("crm.assign_task"):
                 messages.error(request, "Você não tem permissão para atribuir tasks.")
                 return redirect("crm:detalhe_task", task_id=task_id)
-            assignee_form = TaskAssigneeForm(request.POST, lookups=lookups)
+            assignee_form = TaskAssigneeForm(request.POST, lookups=load_task_lookups(client))
             if assignee_form.is_valid():
                 try:
                     tasks_service.add_assignee(
@@ -171,42 +166,16 @@ def detalhe_task(request, task_id):
                     messages.error(request, crm_error_message_pt(exc))
             return redirect(f"{request.path}?tab=anexos")
 
-    try:
-        subtasks = [enrich_subtask_for_display(s) for s in tasks_service.list_subtasks(client, task_id)]
-    except CrmApiError:
-        pass
-    try:
-        links = tasks_service.list_links(client, task_id)
-    except CrmApiError:
-        pass
-    try:
-        assignees = [enrich_assignee_for_display(a) for a in tasks_service.list_assignees(client, task_id)]
-    except CrmApiError:
-        pass
-    try:
-        watchers = [enrich_watcher_for_display(w) for w in tasks_service.list_watchers(client, task_id)]
-    except CrmApiError:
-        pass
-    try:
-        attachments = [
-            enrich_attachment_for_display(a)
-            for a in tasks_service.list_attachments(client, task_id)
-        ]
-    except CrmApiError:
-        pass
-    try:
-        move_history = [
-            enrich_move_history_for_display(h)
-            for h in tasks_service.get_move_history(client, task_id)
-        ]
-    except CrmApiError:
-        pass
+    tab_context = fetch_task_tab_context(
+        client,
+        request,
+        task_id,
+        active_tab,
+        task=task,
+        board_access=board_access,
+        can_comment=can_comment,
+    )
 
-    comments = [
-        enrich_comment_for_display(c)
-        for c in (task.get("comments", []) if task else [])
-    ]
-    linked_tasks = task.get("linked_tasks", []) if task else []
     recurrence_template_id = task.get("recurrence_template_id") if task else None
 
     return render(
@@ -216,14 +185,6 @@ def detalhe_task(request, task_id):
             "site_title": f"CRM — {task.get('display_title') or task_id}",
             "task": task,
             "task_id": task_id,
-            "subtasks": subtasks,
-            "links": links,
-            "linked_tasks": linked_tasks,
-            "assignees": assignees,
-            "watchers": watchers,
-            "attachments": attachments,
-            "move_history": move_history,
-            "comments": comments,
             "comment_form": comment_form,
             "subtask_form": subtask_form,
             "link_form": link_form,
@@ -233,6 +194,7 @@ def detalhe_task(request, task_id):
             "board_access": board_access,
             "recurrence_template_id": recurrence_template_id,
             "task_display_value": task_display_value,
+            **tab_context,
             **menu_context("projetos_tasks", "detalhe"),
         },
     )

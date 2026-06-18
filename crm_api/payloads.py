@@ -1,6 +1,9 @@
 """Helpers para montar payloads enviados à API CRM."""
 
+import re
 from decimal import Decimal
+
+from django.utils.text import slugify
 
 
 def client_payload(cleaned_data):
@@ -203,8 +206,23 @@ def board_payload(cleaned_data):
     return client_payload(cleaned_data)
 
 
+def _board_column_code(name, status_task_id=None):
+    code = slugify(name or "").replace("-", "_")
+    code = re.sub(r"[^\w]", "", code, flags=re.UNICODE)
+    if code:
+        return code[:64]
+    if status_task_id not in (None, ""):
+        return f"status_{str(status_task_id).replace('-', '_')}"[:64]
+    return None
+
+
 def board_column_payload(cleaned_data):
-    return client_payload(cleaned_data)
+    payload = client_payload(cleaned_data)
+    if not payload.get("code"):
+        code = _board_column_code(payload.get("name"), payload.get("status_task_id"))
+        if code:
+            payload["code"] = code
+    return payload
 
 
 def recurrence_edit_payload(cleaned_data):
