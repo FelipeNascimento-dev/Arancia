@@ -337,7 +337,7 @@ def enrich_task_lookups(lookups):
     if not isinstance(lookups, dict):
         return lookups or {}
     result = dict(lookups)
-    for key in ("status_tasks", "priorities", "boards", "column_templates"):
+    for key in ("status_tasks", "priorities", "boards", "column_templates", "gais", "users"):
         items = result.get(key)
         if isinstance(items, list):
             result[key] = [
@@ -345,6 +345,13 @@ def enrich_task_lookups(lookups):
                 for item in items
                 if isinstance(item, dict)
             ]
+    designations = result.get("designations")
+    if isinstance(designations, list):
+        result["designations"] = [
+            with_label_aliases(item, ("label", "username", "nome", "name"))
+            for item in designations
+            if isinstance(item, dict)
+        ]
     projects = result.get("projects")
     if isinstance(projects, list):
         result["projects"] = [

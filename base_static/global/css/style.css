@@ -419,3 +419,151 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* CRM — modais compartilhados (tasks, contratos, etc.) */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  overflow-y: auto;
+}
+
+.modal-dialog {
+  margin: 5% auto;
+  width: 90%;
+  max-width: 1150px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.modal-header h5 {
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: 0;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 20px 30px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 20px;
+  border-top: 1px solid #ddd;
+  gap: 10px;
+}
+
+.modal-footer.modal-footer-split {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-footer.modal-footer-split .footer-left {
+  text-align: left;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.modal-footer.modal-footer-split .footer-right {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.fields-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px 24px;
+}
+
+.fields-grid .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.fields-grid .form-group label {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* CRM — select pesquisável */
+.crm-search-select {
+  position: relative;
+}
+
+.crm-search-select-native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.crm-search-select-input {
+  width: 100%;
+}
+
+.crm-search-select-list {
+  display: none;
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+}
+
+.crm-search-select-list.open {
+  display: block;
+}
+
+.crm-search-select-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: 0;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.crm-search-select-option:hover,
+.crm-search-select-option.active {
+  background: #eff6ff;
+}
+
+.crm-search-select-empty {
+  padding: 12px;
+  color: #64748b;
+  font-size: 13px;
+}
