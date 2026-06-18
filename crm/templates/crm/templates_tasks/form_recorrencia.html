@@ -48,7 +48,7 @@
                         <a href="{% url 'crm:detalhe_task' run.task_id %}">#{{ run.task_id }}</a>
                         {% else %}-{% endif %}
                     </td>
-                    <td>{{ run.executed_at|default:run.created_at|default:"-" }}</td>
+                    <td>{{ run.display_executed_at|default:"-" }}</td>
                     <td>{{ run.status|default:"-" }}</td>
                 </tr>
                 {% endfor %}

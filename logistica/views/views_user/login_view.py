@@ -2,8 +2,10 @@ from django.contrib import messages
 from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
 
+from crm.context_processors import sync_crm_module_session
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
 from crm_api.session_credentials import store_password_in_session
+from setup.middleware.password_expiration_session import sync_password_expiration_session
 
 
 class UserLoginView(LoginView):
@@ -18,9 +20,14 @@ class UserLoginView(LoginView):
         password = (form.cleaned_data.get("password") or "").strip()
         response = super().form_valid(form)
 
+        sync_crm_module_session(self.request)
+
         if password and not getattr(self.request, "_crm_login_via_access_code", False):
             store_password_in_session(self.request, password)
-            self._validate_crm_api_credentials()
+            if self.request.user.has_module_perms("crm"):
+                self._validate_crm_api_credentials()
+
+        sync_password_expiration_session(self.request)
 
         return response
 

@@ -1,4 +1,5 @@
 import logging
+import time
 
 import httpx
 from django.conf import settings
@@ -16,6 +17,8 @@ from crm_api.exceptions import (
     CrmPermissionError,
     CrmValidationError,
 )
+from crm_api.instrumentation import record_crm_api_call
+from setup.middleware.crm_http_client import CRM_HTTP_CLIENT_ATTR
 
 logger = logging.getLogger(__name__)
 
@@ -57,10 +60,19 @@ def _parse_error_response(response):
 
 
 class CrmApiClient:
-    def __init__(self, request=None, *, service_user=False, scheduler=False, timeout=None):
+    def __init__(
+        self,
+        request=None,
+        *,
+        service_user=False,
+        scheduler=False,
+        timeout=None,
+        dedicated_http=False,
+    ):
         self.request = request
         self.service_user = service_user
         self.scheduler = scheduler
+        self.dedicated_http = dedicated_http
         self.timeout = timeout or getattr(settings, "CRM_API_TIMEOUT", 30)
         base = getattr(settings, "CRM_API_BASE_URL", "").rstrip("/")
         v1 = getattr(settings, "CRM_API_V1_STR", "/api/v1")
@@ -79,38 +91,70 @@ class CrmApiClient:
             "Credenciais CRM indisponíveis — informe request, service_user ou scheduler."
         )
 
+    def _http_client(self):
+        """Reutiliza cliente request-scoped quando disponível (keep-alive)."""
+        if not self.dedicated_http and self.request is not None:
+            client = getattr(self.request, CRM_HTTP_CLIENT_ATTR, None)
+            if client is not None:
+                return client, False
+        return httpx.Client(timeout=self.timeout, verify=self.verify_ssl), True
+
     def _request(self, method, path, *, params=None, json=None, files=None, data=None, headers=None):
         url = f"{self.base_url}/{path.lstrip('/')}"
         headers = headers if headers is not None else self._headers()
         if files:
             headers = {k: v for k, v in headers.items() if k.lower() != "content-type"}
 
-        logger.info(
+        logger.debug(
             "CRM API %s %s | headers=%s",
             method.upper(),
             url,
             _mask_headers(headers),
         )
 
+        started = time.perf_counter()
+        client, owns_client = self._http_client()
         try:
-            with httpx.Client(timeout=self.timeout, verify=self.verify_ssl) as client:
-                response = client.request(
-                    method.upper(),
-                    url,
-                    headers=headers,
-                    params=params,
-                    json=json,
-                    files=files,
-                    data=data,
-                )
+            response = client.request(
+                method.upper(),
+                url,
+                headers=headers,
+                params=params,
+                json=json,
+                files=files,
+                data=data,
+            )
         except httpx.RequestError as exc:
+            elapsed_ms = (time.perf_counter() - started) * 1000
+            record_crm_api_call(
+                self.request,
+                method=method.upper(),
+                url=url,
+                elapsed_ms=elapsed_ms,
+            )
             logger.exception("CRM connection error: %s", exc)
             raise CrmConnectionError(
                 "Falha de conexão com a API CRM.",
                 detail=str(exc),
             ) from exc
+        finally:
+            if owns_client:
+                client.close()
 
-        logger.info("CRM API response %s %s", response.status_code, url)
+        elapsed_ms = (time.perf_counter() - started) * 1000
+        record_crm_api_call(
+            self.request,
+            method=method.upper(),
+            url=url,
+            elapsed_ms=elapsed_ms,
+            status_code=response.status_code,
+        )
+        logger.debug(
+            "CRM API response %s %s (%.1fms)",
+            response.status_code,
+            url,
+            elapsed_ms,
+        )
 
         if response.status_code >= 400:
             _parse_error_response(response)

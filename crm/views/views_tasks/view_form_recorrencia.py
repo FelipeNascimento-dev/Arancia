@@ -8,6 +8,7 @@ from crm_api.exceptions import CrmApiError, crm_error_message_pt
 from crm_api.payloads import recurrence_edit_payload
 from crm_api.services import recurrences as recurrences_service
 from crm_api.payloads import parse_rrule
+from crm.helpers.date_format import format_datetime_br
 from crm.views.views_tasks._helpers import load_board_lookups, menu_context
 
 
@@ -91,6 +92,17 @@ def form_recorrencia(request, recurrence_id):
 
     try:
         runs, _ = recurrences_service.list_runs(client, recurrence_id, limit=50)
+        runs = [
+            {
+                **run,
+                "display_executed_at": format_datetime_br(
+                    run.get("executed_at") or run.get("created_at"),
+                    default="-",
+                ),
+            }
+            for run in runs
+            if isinstance(run, dict)
+        ]
     except CrmApiError:
         runs = []
 

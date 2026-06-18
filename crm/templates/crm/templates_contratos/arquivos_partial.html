@@ -10,9 +10,9 @@
     <tbody id="contract-files-table">
         {% for arquivo in arquivos %}
         <tr data-file-id="{{ arquivo.id }}">
-            <td>{{ arquivo.filename|default:arquivo.name|default:"-" }}</td>
-            <td>{{ arquivo.content_type|default:arquivo.tipo|default:"-" }}</td>
-            <td>{{ arquivo.created_at|default:arquivo.uploaded_at|default:"-" }}</td>
+            <td>{{ arquivo.filename|default:"-" }}</td>
+            <td>{{ arquivo.content_type|default:"-" }}</td>
+            <td>{{ arquivo.display_uploaded_at|default:"-" }}</td>
             {% if perms.crm.upload_contract_file %}
             <td>
                 <button type="button"

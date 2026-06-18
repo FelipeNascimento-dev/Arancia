@@ -1,4 +1,5 @@
 from crm.helpers.api_display import enrich_contract, service_type_client_gai_id, service_type_option_label
+from crm.helpers.lookup_cache import get_cached_lookup_for_client
 from crm_api.exceptions import CrmApiError
 from crm_api.services import clients as clients_service
 from crm_api.services.lookups import get_crm_lookups
@@ -61,7 +62,7 @@ def filter_service_types_for_gai(service_types, gai_id):
     return filtered
 
 
-def contract_lookups(client, *, client_gai_id=None):
+def _contract_lookups(client, *, client_gai_id=None):
     lookups = {"clients": [], "service_types": []}
     try:
         clients, _ = clients_service.list_clients(client, limit=200)
@@ -79,6 +80,15 @@ def contract_lookups(client, *, client_gai_id=None):
     except CrmApiError:
         pass
     return lookups
+
+
+def contract_lookups(client, *, client_gai_id=None):
+    cache_key = f"contract_lookups:{client_gai_id or 'all'}"
+    return get_cached_lookup_for_client(
+        client,
+        cache_key,
+        lambda: _contract_lookups(client, client_gai_id=client_gai_id),
+    )
 
 
 def service_type_choices(service_types):

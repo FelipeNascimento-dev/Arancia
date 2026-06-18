@@ -1,6 +1,9 @@
 """Helpers para montar payloads enviados à API CRM."""
 
+import re
 from decimal import Decimal
+
+from django.utils.text import slugify
 
 
 def client_payload(cleaned_data):
@@ -68,6 +71,32 @@ def billing_payload(cleaned_data):
     for key, value in data.items():
         api_key = _BILLING_API_KEYS.get(key, key)
         mapped[api_key] = _json_safe_value(value)
+    return mapped
+
+
+def billing_api_payload(cleaned_data, *, contract=None):
+    """Payload completo para POST/PATCH de faturamento na API."""
+    mapped = billing_payload(cleaned_data)
+    value = mapped.get("value")
+    if value not in (None, ""):
+        try:
+            mapped["value"] = float(value)
+        except (TypeError, ValueError):
+            pass
+        mapped.setdefault("planned_amount", mapped["value"])
+
+    if contract and isinstance(contract, dict):
+        for api_key, contract_keys in (
+            ("period_start", ("start_date", "data_inicio")),
+            ("period_end", ("end_date", "data_fim")),
+        ):
+            if api_key in mapped:
+                continue
+            for contract_key in contract_keys:
+                period_value = contract.get(contract_key)
+                if period_value not in (None, ""):
+                    mapped[api_key] = _json_safe_value(period_value)
+                    break
     return mapped
 
 
@@ -177,8 +206,23 @@ def board_payload(cleaned_data):
     return client_payload(cleaned_data)
 
 
+def _board_column_code(name, status_task_id=None):
+    code = slugify(name or "").replace("-", "_")
+    code = re.sub(r"[^\w]", "", code, flags=re.UNICODE)
+    if code:
+        return code[:64]
+    if status_task_id not in (None, ""):
+        return f"status_{str(status_task_id).replace('-', '_')}"[:64]
+    return None
+
+
 def board_column_payload(cleaned_data):
-    return client_payload(cleaned_data)
+    payload = client_payload(cleaned_data)
+    if not payload.get("code"):
+        code = _board_column_code(payload.get("name"), payload.get("status_task_id"))
+        if code:
+            payload["code"] = code
+    return payload
 
 
 def recurrence_edit_payload(cleaned_data):

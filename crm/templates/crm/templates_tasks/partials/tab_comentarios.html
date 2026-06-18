@@ -1,0 +1,18 @@
+<div class="tab-card">
+    {% for c in comments %}
+    <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #e5e7eb;">
+        <strong>{{ c.display_author|default:"Usuário" }}</strong>
+        <p>{{ c.display_body|default:"" }}</p>
+    </div>
+    {% empty %}
+    <p class="muted">Nenhum comentário.</p>
+    {% endfor %}
+    {% if can_comment %}
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="add_comment" value="1">
+        {{ comment_form.body.label_tag }}{{ comment_form.body }}
+        <button type="submit" class="btn btn-primary btn-sm">Comentar</button>
+    </form>
+    {% endif %}
+</div>

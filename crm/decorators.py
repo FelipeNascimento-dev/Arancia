@@ -17,7 +17,7 @@ def crm_permission_required(codename):
 
 
 def _user_has_crm_access(user):
-    return any(perm.startswith("crm.") for perm in user.get_all_permissions())
+    return user.has_module_perms("crm")
 
 
 def crm_any_access_required(view):

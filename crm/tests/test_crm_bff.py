@@ -13,7 +13,9 @@ from crm_api.context import (
 from crm_api.exceptions import CrmAuthError
 from crm_api.payloads import (
     board_access_payload,
+    board_column_payload,
     billing_payload,
+    billing_api_payload,
     build_rrule,
     contract_payload,
     parse_rrule,
@@ -26,7 +28,8 @@ from crm_api.session_credentials import (
     get_password_from_session,
     store_password_in_session,
 )
-from crm.helpers.api_display import billing_to_json, enrich_billing
+from crm.helpers.api_display import billing_to_json, enrich_billing, enrich_billing_with_lookups
+from crm.helpers.date_format import format_date_br, format_datetime_br, format_period_br
 from crm.helpers.dashboard import build_summary_cards
 from crm.views.views_tasks._helpers import can_comment_on_board
 
@@ -134,6 +137,43 @@ class PayloadTests(SimpleTestCase):
         self.assertEqual(payload["subject_id"], 42)
         self.assertEqual(payload["access_level"], "editor")
 
+    def test_board_column_payload_includes_code(self):
+        payload = board_column_payload({
+            "name": "coluninhaaaaaa",
+            "status_task_id": "0cf4a088-89ca-4e08-b057-9fa74055d80d",
+            "position": 5,
+        })
+        self.assertEqual(payload["name"], "coluninhaaaaaa")
+        self.assertEqual(payload["code"], "coluninhaaaaaa")
+        self.assertEqual(payload["status_task_id"], "0cf4a088-89ca-4e08-b057-9fa74055d80d")
+        self.assertEqual(payload["position"], 5)
+
+    def test_board_column_payload_slugifies_name(self):
+        payload = board_column_payload({
+            "name": "Em Andamento",
+            "status_task_id": "abc-123",
+        })
+        self.assertEqual(payload["code"], "em_andamento")
+
+    def test_board_column_payload_preserves_explicit_code(self):
+        payload = board_column_payload({
+            "name": "Qualquer",
+            "code": "custom_code",
+        })
+        self.assertEqual(payload["code"], "custom_code")
+
+    def test_column_reorder_payload_maps_ids_to_items(self):
+        from crm_api.services.boards import column_reorder_payload
+
+        payload = column_reorder_payload({
+            "column_ids": ["aaa-111", "bbb-222", "ccc-333"],
+        })
+        self.assertEqual(payload["items"], [
+            {"id": "aaa-111", "kanban_position": 0},
+            {"id": "bbb-222", "kanban_position": 1},
+            {"id": "ccc-333", "kanban_position": 2},
+        ])
+
     def test_service_type_payload_fields(self):
         payload = service_type_payload({
             "type": "support",
@@ -191,6 +231,40 @@ class PayloadTests(SimpleTestCase):
         self.assertEqual(payload["status"], "pending")
         self.assertEqual(payload["notes"], "Nota teste")
 
+    def test_billing_api_payload_adds_planned_amount_and_period(self):
+        from datetime import date
+        from decimal import Decimal
+
+        payload = billing_api_payload(
+            {
+                "client_gai_id": 10,
+                "contract_id": "abc-123",
+                "referencia": "REF-2026-01",
+                "valor": Decimal("2500.00"),
+                "data_vencimento": date(2026, 7, 15),
+            },
+            contract={
+                "id": "abc-123",
+                "start_date": "2026-01-01",
+                "end_date": "2026-12-31",
+            },
+        )
+        self.assertEqual(payload["value"], 2500.0)
+        self.assertEqual(payload["planned_amount"], 2500.0)
+        self.assertEqual(payload["period_start"], "2026-01-01")
+        self.assertEqual(payload["period_end"], "2026-12-31")
+
+
+class DateFormatTests(SimpleTestCase):
+    def test_format_date_br_from_iso_string(self):
+        self.assertEqual(format_date_br("2026-07-15"), "15/07/2026")
+
+    def test_format_datetime_br_from_iso_string(self):
+        self.assertEqual(format_datetime_br("2026-06-17T10:30:00"), "17/06/2026 10:30")
+
+    def test_format_period_br(self):
+        self.assertEqual(format_period_br("2026-01-01", "2026-12-31"), "01/01/2026 — 31/12/2026")
+
 
 class EnrichBillingTests(SimpleTestCase):
     def test_enrich_billing_maps_all_api_fields(self):
@@ -215,13 +289,13 @@ class EnrichBillingTests(SimpleTestCase):
         self.assertEqual(enriched["display_customer"], "Cliente Teste")
         self.assertEqual(enriched["display_contract"], "Contrato Alpha")
         self.assertEqual(enriched["display_contract_id"], 7)
-        self.assertEqual(enriched["display_period_start"], "2026-07-01")
-        self.assertEqual(enriched["display_period_end"], "2026-07-31")
-        self.assertEqual(enriched["display_period"], "2026-07-01 — 2026-07-31")
+        self.assertEqual(enriched["display_period_start"], "01/07/2026")
+        self.assertEqual(enriched["display_period_end"], "31/07/2026")
+        self.assertEqual(enriched["display_period"], "01/07/2026 — 31/07/2026")
         self.assertEqual(enriched["display_planned_amount"], "R$ 1.600,00")
         self.assertEqual(enriched["display_actual_amount"], "R$ 1.500,00")
         self.assertEqual(enriched["display_valor"], "R$ 1.500,00")
-        self.assertEqual(enriched["display_vencimento"], "2026-07-15")
+        self.assertEqual(enriched["display_vencimento"], "15/07/2026")
         self.assertEqual(enriched["display_status"], "pending")
         self.assertEqual(enriched["display_observacoes"], "Observação da API")
 
@@ -235,7 +309,7 @@ class EnrichBillingTests(SimpleTestCase):
             "period_end": "2026-12-31",
         })
         self.assertNotIn("584fe3e0", enriched["display_referencia"])
-        self.assertEqual(enriched["display_referencia"], "2026-01-01 — 2026-12-31")
+        self.assertEqual(enriched["display_referencia"], "01/01/2026 — 31/12/2026")
 
     def test_enrich_billing_falls_back_to_contract_name(self):
         enriched = enrich_billing({
@@ -245,6 +319,50 @@ class EnrichBillingTests(SimpleTestCase):
             "contract": {"title": "Testes"},
         })
         self.assertEqual(enriched["display_referencia"], "Testes")
+
+    def test_enrich_billing_with_lookups_fills_customer_and_contract(self):
+        enriched = enrich_billing_with_lookups(
+            {
+                "id": "billing-1",
+                "customer_gai_id": 10,
+                "contract_id": "contract-1",
+                "reference": "REF-001",
+                "value": "1500.00",
+            },
+            clients_by_gai={"10": {"gai_id": 10, "nome": "Cliente X"}},
+            contracts_by_id={
+                "contract-1": {
+                    "id": "contract-1",
+                    "title": "Contrato Alpha",
+                    "number": "10",
+                    "customer_gai_id": 10,
+                },
+            },
+        )
+        self.assertEqual(enriched["display_customer"], "Cliente X")
+        self.assertEqual(enriched["display_contract"], "10 — Contrato Alpha")
+        self.assertEqual(enriched["display_referencia"], "REF-001")
+        self.assertEqual(enriched["display_valor"], "R$ 1.500,00")
+        self.assertEqual(enriched["customer_gai_id"], 10)
+        self.assertEqual(enriched["client_gai_id"], 10)
+
+    def test_billing_initial_uses_enriched_fields(self):
+        from crm.helpers.api_display import billing_form_json
+
+        form_data = billing_form_json({
+            "id": "billing-1",
+            "contract_id": "contract-1",
+            "customer_gai_id": 10,
+            "planned_amount": "1500.00",
+            "due_date": "2026-07-15",
+            "display_referencia": "REF-2026-07",
+            "reference": "584fe3e0-11f3-4db3-9d91-264a60627b69",
+        })
+        self.assertEqual(form_data["client_gai_id"], 10)
+        self.assertEqual(form_data["contract_id"], "contract-1")
+        self.assertEqual(form_data["referencia"], "REF-2026-07")
+        self.assertEqual(form_data["valor"], "1500.00")
+        self.assertEqual(form_data["data_vencimento"], "2026-07-15")
 
     def test_billing_to_json_includes_modal_fields(self):
         payload = billing_to_json({

@@ -45,6 +45,9 @@ def clear_password_from_session(request: HttpRequest) -> None:
 
 @receiver(user_logged_in)
 def _on_login(sender, request, user, **kwargs):
+    from crm.context_processors import clear_crm_context_cache
+
+    clear_crm_context_cache(request)
     password = getattr(request, "_crm_login_password", None)
     if password:
         store_password_in_session(request, password)
@@ -52,4 +55,8 @@ def _on_login(sender, request, user, **kwargs):
 
 @receiver(user_logged_out)
 def _on_logout(sender, request, user, **kwargs):
+    from crm.context_processors import clear_crm_context_cache
+
     clear_password_from_session(request)
+    if request is not None:
+        clear_crm_context_cache(request)

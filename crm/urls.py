@@ -27,6 +27,11 @@ urlpatterns = [
         name="ajax_delete_contract_file",
     ),
     path(
+        "crm/ajax/billing/lookups/",
+        ajax_billing_lookups,
+        name="ajax_billing_lookups",
+    ),
+    path(
         "crm/ajax/billing/create/",
         ajax_create_billing,
         name="ajax_create_billing",
@@ -78,6 +83,7 @@ urlpatterns = [
     ),
     path("crm/tasks/<str:task_id>/edit/", edit_task, name="edit_task"),
     path("crm/tasks/<str:task_id>/", detalhe_task, name="detalhe_task"),
+    path("crm/ajax/tasks/<str:task_id>/tab/", ajax_task_tab, name="ajax_task_tab"),
     path("crm/ajax/tasks/<str:task_id>/move/", ajax_move_task, name="ajax_move_task"),
     path("crm/ajax/tasks/<str:task_id>/assign/", ajax_assign_task, name="ajax_assign_task"),
     path(
@@ -104,6 +110,11 @@ urlpatterns = [
     path("crm/comercial/", kanban_comercial, name="kanban_comercial"),
     path("crm/comercial/access/", acesso_comercial, name="acesso_comercial"),
     path("crm/comercial/columns/", colunas_comercial, name="colunas_comercial"),
+    path(
+        "crm/ajax/boards/<str:board_id>/tasks/",
+        ajax_kanban_tasks,
+        name="ajax_kanban_tasks",
+    ),
     path(
         "crm/ajax/boards/<str:board_id>/columns/reorder/",
         ajax_reorder_columns,

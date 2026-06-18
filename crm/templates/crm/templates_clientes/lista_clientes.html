@@ -100,6 +100,63 @@
     #modalDeleteClient .modal-dialog {
         max-width: 480px;
     }
+
+    /* Modal de criação — centralizado na tela, scroll só no corpo se necessário */
+    #modalCreateClient {
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+
+    #modalCreateClient .modal-dialog {
+        margin: auto;
+        width: min(960px, 96vw);
+        max-height: calc(100vh - 32px);
+    }
+
+    #modalCreateClient .modal-body {
+        overflow-y: auto;
+        flex: 1;
+        min-height: 0;
+        padding: 14px 20px;
+    }
+
+    #modalCreateClient .fields-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px 14px;
+    }
+
+    #modalCreateClient .fields-grid .form-group:last-child {
+        grid-column: 1 / -1;
+    }
+
+    #modalCreateClient .fields-grid .form-group label {
+        font-size: 0.82rem;
+        margin-bottom: 4px;
+    }
+
+    #modalCreateClient .fields-grid .form-group input,
+    #modalCreateClient .fields-grid .form-group textarea {
+        padding: 6px 8px;
+        font-size: 0.9rem;
+    }
+
+    #modalCreateClient .modal-header,
+    #modalCreateClient .modal-footer {
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 900px) {
+        #modalCreateClient .fields-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 520px) {
+        #modalCreateClient .fields-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 
 {% csrf_token %}

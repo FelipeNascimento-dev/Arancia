@@ -74,5 +74,16 @@ status_colors = {
     'sem_horario_definido': 'bg-gray-500',
 }
 
+# Redis — mesmo host da API CRM FastAPI; Django cache usa db 1, Celery db 0
+REDIS_ENABLED = False
+REDIS_HOST = '192.168.0.221'
+REDIS_PORT = 6379
+REDIS_DB = 1
+REDIS_PASSWORD = ''
+REDIS_MAX_CONNECTIONS = 50
+REDIS_SOCKET_TIMEOUT = 2.0
+REDIS_SOCKET_CONNECT_TIMEOUT = 2.0
+REDIS_CELERY_DB = 0
+
 # CRM API — Basic Auth (usuário logado) + X-API-Key
 CRM_API_KEY = 'F7UuScgkRNn2rrSFWM0yuqkbI9RlOuuwPYyC1RPVe8KW'

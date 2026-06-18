@@ -32,22 +32,31 @@
                     {% elif task.priority_name %}
                     <span class="kanban-tag">{{ task.priority_name }}</span>
                     {% endif %}
-                    {% if task.due_at %}
-                    <div class="kanban-card-meta"><i class="fa-regular fa-clock"></i> {{ task.due_at|date:"d/m/Y H:i" }}</div>
+                    {% if task.due_at or task.due_date or task.display_due != "-" %}
+                    <div class="kanban-card-meta"><i class="fa-regular fa-clock"></i> {{ task.display_due }}</div>
                     {% endif %}
                 </div>
                 {% endfor %}
             </div>
         </div>
         {% empty %}
-        <p class="kanban-empty-msg">Nenhuma coluna configurada.
+        <p class="kanban-empty-msg">
+            Nenhuma coluna configurada.
             {% if perms.crm.manage_board_columns %}
-            <a href="{% url 'crm:colunas_comercial' %}">Configurar colunas</a>
+            <button type="button" class="btn btn-link btn-sm p-0 align-baseline"
+                    onclick="CrmComercial.openModal('modalManageColumns')">Configurar colunas</button>
             {% endif %}
         </p>
         {% endfor %}
     </div>
-</div>
+
+    {% if kanban_has_more_tasks %}
+    <div class="kanban-load-more-wrap" style="text-align:center; margin: 16px 0 24px;">
+        <button type="button" id="crm-kanban-load-more" class="btn btn-secondary btn-sm">
+            Carregar mais tasks
+        </button>
+    </div>
+    {% endif %}
 
 {% if can_create_tasks or perms.crm.add_task %}
 <div id="modalCreateTask" class="modal">
@@ -84,6 +93,9 @@
 </div>
 {% endif %}
 
+{% include 'crm/templates_comercial/partials/_columns_modals.html' %}
+</div>
+
 <script>
 window.CrmKanbanConfig = {
     moveUrlTemplate: "{% url 'crm:ajax_move_task' 0 %}".replace('/0/', '/__ID__/'),
@@ -91,7 +103,11 @@ window.CrmKanbanConfig = {
     canMove: {% if can_move_tasks %}true{% else %}false{% endif %},
     canCreate: {% if can_create_tasks or perms.crm.add_task %}true{% else %}false{% endif %},
     canComment: {% if can_comment %}true{% else %}false{% endif %},
-    csrfToken: "{{ csrf_token }}"
+    csrfToken: "{{ csrf_token }}",
+    tasksUrl: "{% url 'crm:ajax_kanban_tasks' board_id %}",
+    tasksLoaded: {{ kanban_tasks_loaded|default:0 }},
+    hasMoreTasks: {% if kanban_has_more_tasks %}true{% else %}false{% endif %},
+    loadMoreLimit: 50
 };
 </script>
 <script src="{% static 'global/javascript/kanban_board.js' %}"></script>
@@ -100,6 +116,37 @@ window.CrmKanbanConfig = {
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     if (window.CrmComercial) CrmComercial.openModal('modalCreateTask');
+});
+</script>
+{% endif %}
+{% if columns_ui_state.manage_columns_modal %}
+{% if columns_ui_state.edit_column_post %}
+{{ columns_ui_state.edit_column_post|json_script:"edit-column-post-data" }}
+{% endif %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (!window.CrmComercial) return;
+    CrmComercial.openModal('modalManageColumns');
+    {% if columns_ui_state.create_column_modal %}
+    CrmComercial.openModal('modalCreateColumn');
+    {% elif columns_ui_state.edit_column_modal %}
+    CrmComercial.openModal('modalEditColumn');
+    const editPostEl = document.getElementById('edit-column-post-data');
+    if (editPostEl) {
+        const data = JSON.parse(editPostEl.textContent);
+        const editForm = document.getElementById('formEditColumn');
+        if (editForm && data) {
+            const columnId = editForm.querySelector('[name="column_id"]');
+            if (columnId) columnId.value = data.column_id || '';
+            const nameInput = editForm.querySelector('[name="name"]');
+            if (nameInput) nameInput.value = data.name || '';
+            const statusSelect = editForm.querySelector('[name="status_task_id"]');
+            if (statusSelect) statusSelect.value = data.status_task_id || '';
+            const positionInput = editForm.querySelector('[name="position"]');
+            if (positionInput) positionInput.value = data.position || '';
+        }
+    }
+    {% endif %}
 });
 </script>
 {% endif %}

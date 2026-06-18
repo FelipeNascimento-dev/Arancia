@@ -2,13 +2,12 @@ from urllib.parse import urlencode
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth import get_user_model
 from django.contrib import messages
 import requests
 import json
 from pathlib import Path
-from logistica.models import GroupAditionalInformation, Group
 from setup.local_settings import MURAL_API_URL, TRANSP_API_URL
+from mural.helpers.target_catalogs import empty_target_catalogs, get_mural_target_catalogs
 from utils import request
 from utils.request import RequestClient
 
@@ -293,46 +292,10 @@ def mural(request):
     user_id = request.user.id
     gai_id = request.user.designacao.informacao_adicional_id
 
-    User = get_user_model()
-
-    target_users = list(
-        User.objects.filter(
-            username__istartswith="ARC"
-        )
-        .order_by("username")
-        .values("id", "username", "first_name", "last_name")
-    )
-
-    target_groups = list(
-        Group.objects.filter(
-            name__istartswith="arancia_"
-        )
-        .order_by("name")
-        .values("id", "name")
-    )
-
-    target_gais_raw = list(
-        GroupAditionalInformation.objects
-        .select_related("group")
-        .filter(group__name__istartswith="arancia_")
-        .order_by("nome")
-        .values(
-            "id",
-            "nome",
-            "group_id",
-            "group__name",
-        )
-    )
-
-    target_gais = [
-        {
-            "id": gai["id"],
-            "nome": gai["nome"],
-            "group_id": gai["group_id"],
-            "group_name": gai["group__name"],
-        }
-        for gai in target_gais_raw
-    ]
+    if request.user.has_perm("mural.ger_mural"):
+        target_users, target_groups, target_gais = get_mural_target_catalogs()
+    else:
+        target_users, target_groups, target_gais = empty_target_catalogs()
 
     reads_param = request.GET.get("reads", "false").lower()
 

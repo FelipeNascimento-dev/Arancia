@@ -1,6 +1,11 @@
 from .view_dashboard import crm_dashboard
-from .views_ajax.view_ajax_billing import ajax_create_billing, ajax_get_billing, ajax_update_billing
-from .views_ajax.view_ajax_boards import ajax_reorder_columns
+from .views_ajax.view_ajax_billing import (
+    ajax_billing_lookups,
+    ajax_create_billing,
+    ajax_get_billing,
+    ajax_update_billing,
+)
+from .views_ajax.view_ajax_boards import ajax_kanban_tasks, ajax_reorder_columns
 from .views_ajax.view_ajax_clients import ajax_delete_client, ajax_get_client, ajax_update_client
 from .views_ajax.view_ajax_contracts import (
     ajax_delete_contract_file,
@@ -18,6 +23,7 @@ from .views_ajax.view_ajax_tasks import (
     ajax_remove_watcher,
     ajax_subtask,
     ajax_task_link,
+    ajax_task_tab,
     ajax_watch_task,
 )
 from .views_alertas.view_lista_alertas import lista_alertas

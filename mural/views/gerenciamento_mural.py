@@ -1,13 +1,11 @@
 from urllib.parse import urlencode
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth import get_user_model
 from django.contrib import messages
 import requests
 import json
 import math
 from pathlib import Path
-from logistica.models import GroupAditionalInformation, Group
 from setup.local_settings import MURAL_API_URL, TRANSP_API_URL
 from utils import request
 from utils.request import RequestClient
@@ -323,46 +321,9 @@ def gerenciar_mural(request):
 
     offset = (page - 1) * limit
 
-    User = get_user_model()
+    from mural.helpers.target_catalogs import get_mural_target_catalogs
 
-    target_users = list(
-        User.objects.filter(
-            username__istartswith="ARC"
-        )
-        .order_by("username")
-        .values("id", "username", "first_name", "last_name")
-    )
-
-    target_groups = list(
-        Group.objects.filter(
-            name__istartswith="arancia_"
-        )
-        .order_by("name")
-        .values("id", "name")
-    )
-
-    target_gais_raw = list(
-        GroupAditionalInformation.objects
-        .select_related("group")
-        .filter(group__name__istartswith="arancia_")
-        .order_by("nome")
-        .values(
-            "id",
-            "nome",
-            "group_id",
-            "group__name",
-        )
-    )
-
-    target_gais = [
-        {
-            "id": gai["id"],
-            "nome": gai["nome"],
-            "group_id": gai["group_id"],
-            "group_name": gai["group__name"],
-        }
-        for gai in target_gais_raw
-    ]
+    target_users, target_groups, target_gais = get_mural_target_catalogs()
 
     if "view_reads" in request.POST:
         view_read_search_done = True

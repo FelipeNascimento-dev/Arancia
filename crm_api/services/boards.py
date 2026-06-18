@@ -41,8 +41,38 @@ def update_column(client: CrmApiClient, board_id, column_id, payload):
     return client.patch(f"/boards/{board_id}/columns/{column_id}", json=payload)
 
 
+def _column_sort_key(column):
+    for key in ("kanban_position", "sort_order", "position"):
+        value = column.get(key)
+        if value is not None:
+            return value
+    return 0
+
+
+def column_reorder_payload(payload):
+    """Normaliza payload para PATCH /boards/{id}/columns/reorder."""
+    if isinstance(payload, list):
+        column_ids = payload
+    elif isinstance(payload, dict):
+        if isinstance(payload.get("items"), list):
+            return payload
+        column_ids = payload.get("column_ids") or payload.get("ids") or []
+    else:
+        column_ids = []
+
+    items = []
+    for index, column_id in enumerate(column_ids):
+        if column_id in (None, ""):
+            continue
+        items.append({"id": column_id, "kanban_position": index})
+    return {"items": items}
+
+
 def reorder_columns(client: CrmApiClient, board_id, payload):
-    return client.patch(f"/boards/{board_id}/columns/reorder", json=payload)
+    return client.patch(
+        f"/boards/{board_id}/columns/reorder",
+        json=column_reorder_payload(payload),
+    )
 
 
 def list_access(client: CrmApiClient, board_id):

@@ -341,9 +341,6 @@
                     <label for="billing_client_gai_id">Cliente (GAI) (*)</label>
                     <select class="form-control" id="billing_client_gai_id" name="client_gai_id" required>
                         <option value="">---------</option>
-                        {% for client in list_config.clients %}
-                        <option value="{{ client.id }}">{{ client.label }}</option>
-                        {% endfor %}
                     </select>
                 </div>
                 <div class="form-group">
@@ -372,8 +369,8 @@
                     <label for="billing_observacoes">Observações</label>
                     <textarea class="form-control" id="billing_observacoes" name="observacoes" rows="3"></textarea>
                 </div>
+                <div id="billingFormError" class="crm-modal-alert" style="grid-column: 1 / -1;" hidden></div>
             </div>
-            <div id="billingFormError" class="crm-modal-alert" hidden></div>
             <div class="modal-footer modal-footer-split">
                 <div class="footer-left">
                     {% include "global/partials/_required_fields.html" %}

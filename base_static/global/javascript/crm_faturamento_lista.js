@@ -9,12 +9,13 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    const items = config.items || {};
-    const clients = config.clients || [];
-    const contracts = config.contracts || [];
     const csrfInput = document.querySelector("[name=csrfmiddlewaretoken]");
     const csrfToken = csrfInput ? csrfInput.value : "";
     let currentViewBillingId = null;
+    let clients = [];
+    let contracts = [];
+    let lookupsLoaded = false;
+    let lookupsLoading = null;
 
     function urlFor(key, id) {
         const pattern = (config.urls || {})[key] || "";
@@ -23,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function openModal(id) {
         const modal = document.getElementById(id);
-        if (modal) modal.style.display = "block";
+        if (modal) modal.style.display = "flex";
     }
 
     function closeModal(id) {
@@ -48,6 +49,92 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    function formatApiErrors(data) {
+        if (!data) return "Erro ao salvar faturamento.";
+        if (data.errors && typeof data.errors === "object") {
+            const parts = [];
+            Object.keys(data.errors).forEach((field) => {
+                const messages = data.errors[field];
+                if (Array.isArray(messages)) {
+                    messages.forEach((msg) => parts.push(`${field}: ${msg}`));
+                } else if (messages) {
+                    parts.push(`${field}: ${messages}`);
+                }
+            });
+            if (parts.length) {
+                return parts.join("\n");
+            }
+        }
+        return data.detail || data.message || "Erro ao salvar faturamento.";
+    }
+
+    function showBillingToast(message, level) {
+        if (typeof Toastify === "undefined" || !message) return;
+        const bg = level === "error" ? "#e74c3c" : "#2ecc71";
+        Toastify({
+            text: message,
+            duration: 5000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: bg,
+            stopOnFocus: true,
+            close: true,
+        }).showToast();
+    }
+
+    function redirectAfterSave(isUpdate) {
+        const suffix = isUpdate ? "?updated=1" : "?created=1";
+        window.location.href = window.location.pathname + suffix;
+    }
+
+    function ensureBillingLookups() {
+        if (lookupsLoaded) {
+            return Promise.resolve({ clients, contracts });
+        }
+        if (lookupsLoading) {
+            return lookupsLoading;
+        }
+        const lookupsUrl = (config.urls || {}).lookups;
+        if (!lookupsUrl) {
+            return Promise.resolve({ clients: [], contracts: [] });
+        }
+        lookupsLoading = fetch(lookupsUrl, {
+            headers: { Accept: "application/json" },
+            credentials: "same-origin",
+        })
+            .then((response) => response.json().then((payload) => ({ ok: response.ok, payload })))
+            .then(({ ok, payload }) => {
+                if (!ok || !payload.ok) {
+                    throw new Error(payload.detail || "Não foi possível carregar opções.");
+                }
+                clients = payload.clients || [];
+                contracts = payload.contracts || [];
+                lookupsLoaded = true;
+                populateClientSelect();
+                return { clients, contracts };
+            })
+            .finally(() => {
+                lookupsLoading = null;
+            });
+        return lookupsLoading;
+    }
+
+    function populateClientSelect() {
+        const selectEl = document.getElementById("billing_client_gai_id");
+        if (!selectEl) return;
+        const current = selectEl.value;
+        selectEl.innerHTML = '<option value="">---------</option>';
+        clients.forEach((item) => {
+            const opt = document.createElement("option");
+            opt.value = String(item.id);
+            opt.textContent = item.label || String(item.id);
+            selectEl.appendChild(opt);
+        });
+        if (current) {
+            selectEl.value = current;
+        }
+    }
+
     function contractsForGai(gaiId) {
         if (!gaiId) return contracts;
         const gaiKey = String(gaiId);
@@ -62,7 +149,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!selectEl) return;
 
         const current = selectedId !== undefined ? String(selectedId || "") : selectEl.value;
-        const options = contractsForGai(gaiId);
+        let options = contractsForGai(gaiId);
+        if (current && !options.some((item) => String(item.id) === current)) {
+            const fallback = contracts.find((item) => String(item.id) === current);
+            if (fallback) {
+                options = [fallback, ...options];
+            }
+        }
         selectEl.innerHTML = '<option value="">---------</option>';
         options.forEach((item) => {
             const opt = document.createElement("option");
@@ -103,10 +196,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     window.openCreateBillingModal = function () {
-        populateBillingForm({});
-        document.getElementById("modalFormBillingTitle").innerHTML =
-            '<i class="fa-solid fa-plus"></i> Novo Faturamento';
-        openModal("modalFormBilling");
+        ensureBillingLookups()
+            .then(() => {
+                populateBillingForm({});
+                document.getElementById("modalFormBillingTitle").innerHTML =
+                    '<i class="fa-solid fa-plus"></i> Novo Faturamento';
+                openModal("modalFormBilling");
+            })
+            .catch((err) => showBillingToast(err.message || "Erro ao carregar opções.", "error"));
     };
 
     window.resetBillingForm = function () {
@@ -118,11 +215,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    function openViewBilling(billingId) {
-        const item = items[String(billingId)];
-        if (!item) return;
-
-        currentViewBillingId = billingId;
+    function fillViewBilling(item) {
+        currentViewBillingId = item.id;
         setText("viewBillingReferencia", item.display_referencia);
         setText("viewBillingCliente", item.display_customer);
         setText("viewBillingPeriodStart", item.display_period_start);
@@ -148,8 +242,32 @@ document.addEventListener("DOMContentLoaded", function () {
                 contractBtn.hidden = true;
             }
         }
+    }
 
+    function openViewBilling(billingId) {
         openModal("modalViewBilling");
+        fillViewBilling({ id: billingId });
+
+        fetch(urlFor("get", billingId), {
+            headers: { Accept: "application/json" },
+            credentials: "same-origin",
+        })
+            .then((response) => response.json().then((payload) => ({ ok: response.ok, payload })))
+            .then(({ ok, payload }) => {
+                if (!ok || !payload.ok) {
+                    const message = payload.detail || "Não foi possível carregar o faturamento.";
+                    showBillingToast(message, "error");
+                    closeModal("modalViewBilling");
+                    return;
+                }
+                const item = payload.billing || {};
+                item.id = billingId;
+                fillViewBilling(item);
+            })
+            .catch(() => {
+                showBillingToast("Erro ao carregar faturamento.", "error");
+                closeModal("modalViewBilling");
+            });
     }
 
     function openEditBillingModal(billingId) {
@@ -157,24 +275,31 @@ document.addEventListener("DOMContentLoaded", function () {
         showFormError("");
         document.getElementById("modalFormBillingTitle").innerHTML =
             '<i class="fa-solid fa-pencil"></i> Editar Faturamento';
+        openModal("modalFormBilling");
 
-        fetch(urlFor("get", billingId), {
-            headers: { Accept: "application/json" },
-            credentials: "same-origin",
-        })
-            .then((response) => response.json())
-            .then((payload) => {
-                if (!payload.ok) {
-                    showFormError(payload.detail || "Não foi possível carregar o faturamento.");
+        Promise.all([
+            ensureBillingLookups(),
+            fetch(urlFor("get", billingId), {
+                headers: { Accept: "application/json" },
+                credentials: "same-origin",
+            }).then((response) => response.json().then((payload) => ({ ok: response.ok, payload }))),
+        ])
+            .then(([, billingResult]) => {
+                const { ok, payload } = billingResult;
+                if (!ok || !payload.ok) {
+                    const message = payload.detail || "Não foi possível carregar o faturamento.";
+                    showFormError(message);
+                    showBillingToast(message, "error");
                     return;
                 }
                 const formData = payload.form || {};
                 formData.id = billingId;
                 populateBillingForm(formData);
-                openModal("modalFormBilling");
             })
             .catch(() => {
-                showFormError("Erro ao carregar faturamento.");
+                const message = "Erro ao carregar faturamento.";
+                showFormError(message);
+                showBillingToast(message, "error");
             });
     }
 
@@ -227,13 +352,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
                 .then(({ ok, data }) => {
                     if (!ok || !data.ok) {
-                        showFormError(data.detail || "Erro ao salvar faturamento.");
+                        showFormError(formatApiErrors(data));
+                        showBillingToast(formatApiErrors(data), "error");
                         return;
                     }
-                    window.location.reload();
+                    closeModal("modalFormBilling");
+                    showBillingToast(
+                        data.message || (billingId ? "Faturamento atualizado com sucesso!" : "Faturamento criado com sucesso!"),
+                        "success",
+                    );
+                    setTimeout(() => redirectAfterSave(Boolean(billingId)), 500);
                 })
                 .catch(() => {
-                    showFormError("Erro ao salvar faturamento.");
+                    const message = "Erro ao salvar faturamento.";
+                    showFormError(message);
+                    showBillingToast(message, "error");
                 });
         });
     }

@@ -2,6 +2,8 @@
 
 import re
 
+from crm.helpers.date_format import format_date_br, format_datetime_br, format_period_br
+
 _UUID_RE = re.compile(
     r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
     re.IGNORECASE,
@@ -166,10 +168,13 @@ def enrich_board_column(column, lookups=None):
     code = column.get("code")
     display_status = status_name or (str(code) if code not in (None, "") else "") or "-"
     display_position = (
-        column.get("position")
-        or column.get("sort_order")
-        or column.get("kanban_position")
-        or 0
+        column.get("kanban_position")
+        if column.get("kanban_position") is not None
+        else column.get("sort_order")
+        if column.get("sort_order") is not None
+        else column.get("position")
+        if column.get("position") is not None
+        else 0
     )
     return {
         **column,
@@ -210,7 +215,10 @@ def enrich_alert(alert):
         or "",
         "display_contract_id": contract_id,
         "display_status": alert.get("status") or alert.get("alert_type") or "",
-        "display_vencimento": entity_key(alert, "due_date", "data_vencimento", default=""),
+        "display_vencimento": format_date_br(
+            entity_key(alert, "due_date", "data_vencimento", default=""),
+            default="-",
+        ),
     }
 
 
@@ -240,8 +248,14 @@ def enrich_contract(contract):
         or "",
         "display_numero": entity_key(contract, "numero", "number", default=""),
         "display_titulo": entity_key(contract, "titulo", "title", default=""),
-        "display_data_inicio": entity_key(contract, "data_inicio", "start_date", default=""),
-        "display_data_fim": entity_key(contract, "data_fim", "end_date", default=""),
+        "display_data_inicio": format_date_br(
+            entity_key(contract, "data_inicio", "start_date", default=""),
+            default="-",
+        ),
+        "display_data_fim": format_date_br(
+            entity_key(contract, "data_fim", "end_date", default=""),
+            default="-",
+        ),
         "display_valor": entity_key(contract, "valor", "value", default=""),
         "display_status": contract.get("status") or "",
     }
@@ -263,6 +277,10 @@ def contract_to_json(contract):
         "status": contract.get("status") or "",
         "data_inicio": entity_key(contract, "data_inicio", "start_date"),
         "data_fim": entity_key(contract, "data_fim", "end_date"),
+        "display_data_inicio": contract.get("display_data_inicio")
+        or format_date_br(entity_key(contract, "data_inicio", "start_date"), default="-"),
+        "display_data_fim": contract.get("display_data_fim")
+        or format_date_br(entity_key(contract, "data_fim", "end_date"), default="-"),
         "valor": entity_key(contract, "valor", "value"),
         "service_type_id": contract.get("service_type_id") or service_type.get("id") or "",
         "descricao": entity_key(contract, "descricao", "description"),
@@ -424,11 +442,11 @@ def _billing_reference_label(record, *, period_start, period_end, customer, cont
         return str(ref)
 
     if period_start and period_end:
-        return f"{period_start} — {period_end}"
+        return format_period_br(period_start, period_end)
     if period_start:
-        return str(period_start)
+        return format_date_br(period_start)
     if period_end:
-        return str(period_end)
+        return format_date_br(period_end)
 
     contract_label = nested_label(contract, "titulo", "title", "numero", "number")
     if contract_label:
@@ -478,11 +496,11 @@ def enrich_billing(record):
     )
 
     if period_start and period_end:
-        display_period = f"{period_start} — {period_end}"
+        display_period = format_period_br(period_start, period_end)
     elif period_start:
-        display_period = str(period_start)
+        display_period = format_date_br(period_start)
     elif period_end:
-        display_period = str(period_end)
+        display_period = format_date_br(period_end)
     else:
         display_period = ""
 
@@ -500,23 +518,100 @@ def enrich_billing(record):
         or "",
         "display_contract_id": record.get("contract_id") or contract.get("id"),
         "display_referencia": display_referencia,
-        "display_period_start": period_start or "-",
-        "display_period_end": period_end or "-",
+        "display_period_start": format_date_br(period_start, default="-"),
+        "display_period_end": format_date_br(period_end, default="-"),
         "display_period": display_period or "-",
         "display_planned_amount": _format_billing_money(planned_raw),
         "display_actual_amount": _format_billing_money(actual_raw),
         "display_valor": _format_billing_money(value_raw),
-        "display_vencimento": entity_key(
-            record, "data_vencimento", "due_date", default="",
-        ) or "-",
+        "display_vencimento": format_date_br(
+            entity_key(record, "data_vencimento", "due_date", default=""),
+            default="-",
+        ),
         "display_status": record.get("status") or "-",
         "display_observacoes": entity_key(record, "observacoes", "notes", default="") or "-",
     }
 
 
-def billing_to_json(record):
+def enrich_billing_with_lookups(record, *, clients_by_gai=None, contracts_by_id=None):
+    """Completa exibição quando a listagem da API não traz objetos aninhados."""
+    from crm.views.views_contratos._helpers import contract_client_gai_id, contract_option_label
+
+    record = enrich_billing(record)
+    clients_by_gai = clients_by_gai or {}
+    contracts_by_id = contracts_by_id or {}
+
+    if not record.get("display_customer"):
+        gai_id = (
+            record.get("customer_gai_id")
+            or record.get("client_gai_id")
+            or (record.get("customer") or {}).get("gai_id")
+            or (record.get("customer") or {}).get("id")
+        )
+        if gai_id not in (None, ""):
+            client = clients_by_gai.get(str(gai_id))
+            if client:
+                record["display_customer"] = (
+                    client.get("nome") or client.get("name") or str(gai_id)
+                )
+
+    contract_id = record.get("contract_id") or record.get("display_contract_id")
+    contract = None
+    if contract_id not in (None, ""):
+        record.setdefault("contract_id", contract_id)
+        contract = contracts_by_id.get(str(contract_id))
+        if contract and not record.get("display_contract"):
+            record["display_contract"] = contract_option_label(contract)
+            record["display_contract_id"] = contract_id
+
+    if contract:
+        period_start = entity_key(record, "period_start", default="")
+        period_end = entity_key(record, "period_end", default="")
+        if not period_start:
+            period_start = contract.get("start_date") or contract.get("data_inicio") or ""
+        if not period_end:
+            period_end = contract.get("end_date") or contract.get("data_fim") or ""
+        if period_start and record.get("display_period_start") in (None, "", "-"):
+            record["display_period_start"] = format_date_br(period_start, default="-")
+        if period_end and record.get("display_period_end") in (None, "", "-"):
+            record["display_period_end"] = format_date_br(period_end, default="-")
+        if period_start and period_end:
+            record["display_period"] = format_period_br(period_start, period_end)
+            if record.get("display_referencia") in (None, "", "Sem referência"):
+                record["display_referencia"] = format_period_br(period_start, period_end)
+
+    if contract:
+        gai_id = contract_client_gai_id(contract)
+        if gai_id not in (None, ""):
+            record.setdefault("customer_gai_id", gai_id)
+            record.setdefault("client_gai_id", gai_id)
+
+    reference = entity_key(record, "referencia", "reference")
+    if reference and not _looks_like_uuid(reference):
+        record["display_referencia"] = str(reference)
+
+    raw_value = entity_key(record, "valor", "value")
+    if raw_value not in (None, "") and record.get("display_valor") in (None, "", "-"):
+        record["display_valor"] = _format_billing_money(raw_value)
+
+    planned_raw = entity_key(record, "planned_amount", default="")
+    if planned_raw in (None, "") and raw_value not in (None, ""):
+        if record.get("display_planned_amount") in (None, "", "-"):
+            record["display_planned_amount"] = _format_billing_money(raw_value)
+
+    due_raw = entity_key(record, "data_vencimento", "due_date", default="")
+    if due_raw and record.get("display_vencimento") in (None, "", "-"):
+        record["display_vencimento"] = format_date_br(due_raw, default="-")
+
+    return record
+
+
+def billing_to_json(record, *, already_enriched=False):
     """Serializa faturamento enriquecido para respostas AJAX / modal."""
-    record = enrich_billing(record or {})
+    if not already_enriched:
+        record = enrich_billing(record or {})
+    elif not record:
+        record = {}
     return {
         "id": entity_key(record, "id"),
         "display_referencia": record.get("display_referencia") or "-",
@@ -581,14 +676,24 @@ def billing_form_json(data):
 def billing_initial(data):
     customer = data.get("customer") or {}
     contract = data.get("contract") or {}
+    referencia = data.get("referencia") or data.get("reference")
+    if not referencia or _looks_like_uuid(referencia):
+        display_ref = data.get("display_referencia")
+        if (
+            display_ref
+            and display_ref not in ("-", "Sem referência")
+            and not _looks_like_uuid(display_ref)
+        ):
+            referencia = display_ref
+
     return {
         "client_gai_id": data.get("client_gai_id")
         or data.get("customer_gai_id")
         or customer.get("gai_id")
         or customer.get("id"),
-        "contract_id": data.get("contract_id") or contract.get("id"),
-        "referencia": data.get("referencia") or data.get("reference"),
-        "valor": data.get("valor") or data.get("value"),
+        "contract_id": data.get("contract_id") or contract.get("id") or data.get("display_contract_id"),
+        "referencia": referencia,
+        "valor": data.get("valor") or data.get("value") or data.get("planned_amount"),
         "data_vencimento": data.get("data_vencimento") or data.get("due_date"),
         "status": data.get("status"),
         "observacoes": data.get("observacoes") or data.get("notes"),

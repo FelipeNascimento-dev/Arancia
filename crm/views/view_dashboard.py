@@ -3,11 +3,12 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import NoReverseMatch, reverse
 
+from crm.context_processors import resolve_crm_context_data
 from crm.decorators import crm_any_access_required
-from crm.context_processors import crm_menu_context
 from crm.helpers.dashboard import build_chart_data, build_summary_cards
-from crm_api.client import CrmApiClient
+from crm.helpers.date_format import format_datetime_br
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
+from crm_api.parallel import run_parallel_crm_fetches
 from crm_api.services import alerts as alerts_service
 from crm_api.services import billing as billing_service
 
@@ -51,7 +52,10 @@ def _enrich_task(task):
     return {
         **task,
         "display_title": task.get("title") or task.get("titulo") or "Task",
-        "display_due": task.get("due_date") or task.get("data_vencimento") or "-",
+        "display_due": format_datetime_br(
+            task.get("due_date") or task.get("due_at") or task.get("data_vencimento"),
+            default="-",
+        ),
         "display_board": _nested_label(board, "name", "nome") or task.get("board_name") or "",
         "display_status": _nested_label(status, "name", "nome") or task.get("status_name") or "",
         "task_id": task.get("id"),
@@ -130,7 +134,6 @@ def _parse_task_list(tasks_data, limit=None):
 
 @crm_any_access_required
 def crm_dashboard(request):
-    client = CrmApiClient(request)
     billing_data = {}
     summary_cards = []
     overdue_tasks = []
@@ -138,32 +141,40 @@ def crm_dashboard(request):
     recent_alerts = []
     api_ok = True
 
-    crm_context = crm_menu_context(request).get("crm_context", {})
+    crm_context = getattr(request, "_crm_context_data", None) or resolve_crm_context_data(request)
+    user = request.user
 
-    try:
-        billing_data = billing_service.billing_summary(client) or {}
+    jobs = []
+    if user.has_perm("crm.view_billing"):
+        jobs.append(
+            ("billing", lambda c: billing_service.billing_summary(c) or {}),
+        )
+    if user.has_perm("crm.view_contract"):
+        jobs.append(
+            ("alerts", lambda c: alerts_service.list_alerts(c, limit=20)),
+        )
+    if user.has_perm("crm.view_task"):
+        jobs.append(
+            ("tasks", lambda c: c.get("/tasks/my/", params={"limit": 50})),
+        )
+
+    results, errors = run_parallel_crm_fetches(request, jobs, max_workers=3)
+
+    if "billing" in results:
+        billing_data = results["billing"]
         summary_cards = build_summary_cards(billing_data)
-    except CrmApiError as exc:
+    elif "billing" in errors and isinstance(errors["billing"], CrmApiError):
         api_ok = False
-        messages.warning(request, crm_error_message_pt(exc))
+        messages.warning(request, crm_error_message_pt(errors["billing"]))
 
-    try:
-        alerts_items, _ = alerts_service.list_alerts(client, limit=20)
+    if "alerts" in results:
+        alerts_items, _ = results["alerts"]
         recent_alerts = [_enrich_alert(a) for a in alerts_items[:20]]
-    except CrmApiError:
-        pass
 
-    try:
-        tasks_data = client.get("/tasks/my/", params={"overdue_only": "true", "limit": 10})
-        overdue_tasks = [_enrich_task(t) for t in _parse_task_list(tasks_data, limit=10)]
-    except CrmApiError:
-        pass
-
-    try:
-        tasks_data = client.get("/tasks/my/", params={"limit": 50})
-        my_tasks = [_enrich_task(t) for t in _parse_task_list(tasks_data, limit=50)]
-    except CrmApiError:
-        pass
+    if "tasks" in results:
+        raw_tasks = _parse_task_list(results["tasks"], limit=50)
+        my_tasks = [_enrich_task(t) for t in raw_tasks]
+        overdue_tasks = [t for t in my_tasks if t.get("is_overdue")][:10]
 
     chart_data = build_chart_data(billing_data, my_tasks, recent_alerts)
     shortcuts = _build_shortcuts(request.user, crm_context)
