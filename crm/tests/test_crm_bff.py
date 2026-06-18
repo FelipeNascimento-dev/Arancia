@@ -28,6 +28,7 @@ from crm_api.session_credentials import (
     store_password_in_session,
 )
 from crm.helpers.api_display import billing_to_json, enrich_billing, enrich_billing_with_lookups
+from crm.helpers.date_format import format_date_br, format_datetime_br, format_period_br
 from crm.helpers.dashboard import build_summary_cards
 from crm.views.views_tasks._helpers import can_comment_on_board
 
@@ -216,6 +217,17 @@ class PayloadTests(SimpleTestCase):
         self.assertEqual(payload["period_end"], "2026-12-31")
 
 
+class DateFormatTests(SimpleTestCase):
+    def test_format_date_br_from_iso_string(self):
+        self.assertEqual(format_date_br("2026-07-15"), "15/07/2026")
+
+    def test_format_datetime_br_from_iso_string(self):
+        self.assertEqual(format_datetime_br("2026-06-17T10:30:00"), "17/06/2026 10:30")
+
+    def test_format_period_br(self):
+        self.assertEqual(format_period_br("2026-01-01", "2026-12-31"), "01/01/2026 — 31/12/2026")
+
+
 class EnrichBillingTests(SimpleTestCase):
     def test_enrich_billing_maps_all_api_fields(self):
         record = {
@@ -239,13 +251,13 @@ class EnrichBillingTests(SimpleTestCase):
         self.assertEqual(enriched["display_customer"], "Cliente Teste")
         self.assertEqual(enriched["display_contract"], "Contrato Alpha")
         self.assertEqual(enriched["display_contract_id"], 7)
-        self.assertEqual(enriched["display_period_start"], "2026-07-01")
-        self.assertEqual(enriched["display_period_end"], "2026-07-31")
-        self.assertEqual(enriched["display_period"], "2026-07-01 — 2026-07-31")
+        self.assertEqual(enriched["display_period_start"], "01/07/2026")
+        self.assertEqual(enriched["display_period_end"], "31/07/2026")
+        self.assertEqual(enriched["display_period"], "01/07/2026 — 31/07/2026")
         self.assertEqual(enriched["display_planned_amount"], "R$ 1.600,00")
         self.assertEqual(enriched["display_actual_amount"], "R$ 1.500,00")
         self.assertEqual(enriched["display_valor"], "R$ 1.500,00")
-        self.assertEqual(enriched["display_vencimento"], "2026-07-15")
+        self.assertEqual(enriched["display_vencimento"], "15/07/2026")
         self.assertEqual(enriched["display_status"], "pending")
         self.assertEqual(enriched["display_observacoes"], "Observação da API")
 
@@ -259,7 +271,7 @@ class EnrichBillingTests(SimpleTestCase):
             "period_end": "2026-12-31",
         })
         self.assertNotIn("584fe3e0", enriched["display_referencia"])
-        self.assertEqual(enriched["display_referencia"], "2026-01-01 — 2026-12-31")
+        self.assertEqual(enriched["display_referencia"], "01/01/2026 — 31/12/2026")
 
     def test_enrich_billing_falls_back_to_contract_name(self):
         enriched = enrich_billing({
@@ -293,6 +305,26 @@ class EnrichBillingTests(SimpleTestCase):
         self.assertEqual(enriched["display_contract"], "10 — Contrato Alpha")
         self.assertEqual(enriched["display_referencia"], "REF-001")
         self.assertEqual(enriched["display_valor"], "R$ 1.500,00")
+        self.assertEqual(enriched["customer_gai_id"], 10)
+        self.assertEqual(enriched["client_gai_id"], 10)
+
+    def test_billing_initial_uses_enriched_fields(self):
+        from crm.helpers.api_display import billing_form_json
+
+        form_data = billing_form_json({
+            "id": "billing-1",
+            "contract_id": "contract-1",
+            "customer_gai_id": 10,
+            "planned_amount": "1500.00",
+            "due_date": "2026-07-15",
+            "display_referencia": "REF-2026-07",
+            "reference": "584fe3e0-11f3-4db3-9d91-264a60627b69",
+        })
+        self.assertEqual(form_data["client_gai_id"], 10)
+        self.assertEqual(form_data["contract_id"], "contract-1")
+        self.assertEqual(form_data["referencia"], "REF-2026-07")
+        self.assertEqual(form_data["valor"], "1500.00")
+        self.assertEqual(form_data["data_vencimento"], "2026-07-15")
 
     def test_billing_to_json_includes_modal_fields(self):
         payload = billing_to_json({

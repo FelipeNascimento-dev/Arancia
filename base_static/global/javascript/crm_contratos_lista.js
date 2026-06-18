@@ -122,8 +122,8 @@ document.addEventListener("DOMContentLoaded", function () {
         setText("viewContractCliente", contract.display_customer);
         setText("viewContractServiceType", contract.display_service_type);
         setText("viewContractStatus", contract.status);
-        setText("viewContractInicio", contract.data_inicio);
-        setText("viewContractFim", contract.data_fim);
+        setText("viewContractInicio", contract.display_data_inicio || contract.data_inicio);
+        setText("viewContractFim", contract.display_data_fim || contract.data_fim);
         setText("viewContractValor", contract.valor);
         setText("viewContractDescricao", contract.descricao || "Sem descrição.");
 
@@ -177,8 +177,8 @@ document.addEventListener("DOMContentLoaded", function () {
             cells[2].textContent = contract.titulo || "-";
             cells[3].textContent = contract.display_customer || "-";
             cells[4].textContent = contract.display_service_type || "-";
-            cells[5].textContent = contract.data_inicio || "-";
-            cells[6].textContent = contract.data_fim || "-";
+            cells[5].textContent = contract.display_data_inicio || contract.data_inicio || "-";
+            cells[6].textContent = contract.display_data_fim || contract.data_fim || "-";
             cells[7].textContent = contract.valor || "-";
             cells[8].innerHTML = `<span class="tag">${contract.status || "-"}</span>`;
         }

@@ -6,6 +6,7 @@ from django.urls import NoReverseMatch, reverse
 from crm.decorators import crm_any_access_required
 from crm.context_processors import crm_menu_context
 from crm.helpers.dashboard import build_chart_data, build_summary_cards
+from crm.helpers.date_format import format_datetime_br
 from crm_api.client import CrmApiClient
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
 from crm_api.services import alerts as alerts_service
@@ -51,7 +52,10 @@ def _enrich_task(task):
     return {
         **task,
         "display_title": task.get("title") or task.get("titulo") or "Task",
-        "display_due": task.get("due_date") or task.get("data_vencimento") or "-",
+        "display_due": format_datetime_br(
+            task.get("due_date") or task.get("due_at") or task.get("data_vencimento"),
+            default="-",
+        ),
         "display_board": _nested_label(board, "name", "nome") or task.get("board_name") or "",
         "display_status": _nested_label(status, "name", "nome") or task.get("status_name") or "",
         "task_id": task.get("id"),

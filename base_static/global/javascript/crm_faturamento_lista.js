@@ -100,7 +100,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!selectEl) return;
 
         const current = selectedId !== undefined ? String(selectedId || "") : selectEl.value;
-        const options = contractsForGai(gaiId);
+        let options = contractsForGai(gaiId);
+        if (current && !options.some((item) => String(item.id) === current)) {
+            const fallback = contracts.find((item) => String(item.id) === current);
+            if (fallback) {
+                options = [fallback, ...options];
+            }
+        }
         selectEl.innerHTML = '<option value="">---------</option>';
         options.forEach((item) => {
             const opt = document.createElement("option");
@@ -195,24 +201,28 @@ document.addEventListener("DOMContentLoaded", function () {
         showFormError("");
         document.getElementById("modalFormBillingTitle").innerHTML =
             '<i class="fa-solid fa-pencil"></i> Editar Faturamento';
+        openModal("modalFormBilling");
 
         fetch(urlFor("get", billingId), {
             headers: { Accept: "application/json" },
             credentials: "same-origin",
         })
-            .then((response) => response.json())
-            .then((payload) => {
-                if (!payload.ok) {
-                    showFormError(payload.detail || "Não foi possível carregar o faturamento.");
+            .then((response) => response.json().then((payload) => ({ ok: response.ok, payload })))
+            .then(({ ok, payload }) => {
+                if (!ok || !payload.ok) {
+                    const message = payload.detail || "Não foi possível carregar o faturamento.";
+                    showFormError(message);
+                    showBillingToast(message, "error");
                     return;
                 }
                 const formData = payload.form || {};
                 formData.id = billingId;
                 populateBillingForm(formData);
-                openModal("modalFormBilling");
             })
             .catch(() => {
-                showFormError("Erro ao carregar faturamento.");
+                const message = "Erro ao carregar faturamento.";
+                showFormError(message);
+                showBillingToast(message, "error");
             });
     }
 

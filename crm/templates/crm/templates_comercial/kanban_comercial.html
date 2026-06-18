@@ -32,8 +32,8 @@
                     {% elif task.priority_name %}
                     <span class="kanban-tag">{{ task.priority_name }}</span>
                     {% endif %}
-                    {% if task.due_at %}
-                    <div class="kanban-card-meta"><i class="fa-regular fa-clock"></i> {{ task.due_at|date:"d/m/Y H:i" }}</div>
+                    {% if task.due_at or task.due_date or task.display_due != "-" %}
+                    <div class="kanban-card-meta"><i class="fa-regular fa-clock"></i> {{ task.display_due }}</div>
                     {% endif %}
                 </div>
                 {% endfor %}

@@ -1,4 +1,5 @@
 from crm.helpers.api_display import enrich_task_lookups, nested_label
+from crm.helpers.date_format import format_datetime_br
 from crm_api.client import CrmApiClient
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
 from crm_api.pagination import build_api_pagination
@@ -227,6 +228,7 @@ def enrich_task_for_display(task):
     priority = task.get("priority") or {}
     project = task.get("project") or {}
     customer = task.get("customer") or {}
+    due_raw = task.get("due_at") or task.get("due_date") or task.get("data_vencimento")
     return {
         **task,
         "display_title": task.get("title") or task.get("titulo") or task.get("nome") or "-",
@@ -235,8 +237,9 @@ def enrich_task_for_display(task):
         "display_priority": nested_label(priority, "name", "nome") or task.get("priority_name") or "-",
         "display_project": nested_label(project, "name", "nome", "title") or task.get("project_name") or "-",
         "display_customer": nested_label(customer, "nome", "name", "razao_social") or "-",
-        "display_due": task.get("due_at") or task.get("due_date") or task.get("data_vencimento") or "-",
-        "display_scheduled_start": task.get("scheduled_start_at") or "-",
+        "display_due": format_datetime_br(due_raw, default="-"),
+        "display_scheduled_start": format_datetime_br(task.get("scheduled_start_at"), default="-"),
+        "display_scheduled_end": format_datetime_br(task.get("scheduled_end_at"), default="-"),
     }
 
 
@@ -258,7 +261,10 @@ def enrich_move_history_for_display(entry):
     to_status = entry.get("to_status") or {}
     return {
         **entry,
-        "display_moved_at": entry.get("moved_at") or entry.get("created_at") or "-",
+        "display_moved_at": format_datetime_br(
+            entry.get("moved_at") or entry.get("created_at"),
+            default="-",
+        ),
         "display_from_status": nested_label(from_status, "name", "nome") or entry.get("from_status_name") or "-",
         "display_to_status": nested_label(to_status, "name", "nome") or entry.get("to_status_name") or "-",
         "display_user": (

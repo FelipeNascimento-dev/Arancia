@@ -6,6 +6,28 @@ from crm.views.views_contratos._helpers import (
 )
 
 
+def _selected_contract_id(form):
+    if form.is_bound:
+        value = form.data.get("contract_id")
+        if value not in (None, ""):
+            return str(value)
+    value = form.initial.get("contract_id")
+    if value not in (None, ""):
+        return str(value)
+    return None
+
+
+def _append_contract_choice(choices, contract):
+    contract_id = contract.get("id")
+    if contract_id is None:
+        return choices
+    contract_key = str(contract_id)
+    if contract_key in dict(choices):
+        return choices
+    label = contract_option_label(contract)
+    return [*choices, (contract_key, label)]
+
+
 class BillingForm(forms.Form):
     client_gai_id = forms.IntegerField(
         label="Cliente (GAI)",
@@ -70,6 +92,14 @@ class BillingForm(forms.Form):
             label = contract_option_label(contract)
             if contract_id is not None:
                 contract_choices.append((str(contract_id), label))
+
+        selected_contract_id = _selected_contract_id(self)
+        if selected_contract_id:
+            for contract in lookups.get("contracts", []):
+                if str(contract.get("id")) == selected_contract_id:
+                    contract_choices = _append_contract_choice(contract_choices, contract)
+                    break
+
         self.fields["contract_id"].widget = forms.Select(
             choices=contract_choices,
             attrs={"class": "form-control"},

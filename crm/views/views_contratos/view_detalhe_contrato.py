@@ -4,6 +4,7 @@ from django.shortcuts import redirect, render
 from crm.decorators import crm_permission_required
 from crm.forms import ContractFileForm, ContractForm
 from crm.helpers.api_display import contract_initial, enrich_contract
+from crm.helpers.date_format import format_datetime_br
 from crm.views.views_contratos._helpers import contract_lookups
 from crm_api.client import CrmApiClient
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
@@ -21,6 +22,17 @@ def detalhe_contrato(request, contract_id):
     try:
         contrato = enrich_contract(contracts_service.get_contract(client, contract_id))
         arquivos = contracts_service.list_contract_files(client, contract_id)
+        arquivos = [
+            {
+                **arquivo,
+                "display_uploaded_at": format_datetime_br(
+                    arquivo.get("created_at") or arquivo.get("uploaded_at"),
+                    default="-",
+                ),
+            }
+            for arquivo in arquivos
+            if isinstance(arquivo, dict)
+        ]
     except CrmApiError as exc:
         messages.error(request, crm_error_message_pt(exc))
         return redirect("crm:lista_contratos")

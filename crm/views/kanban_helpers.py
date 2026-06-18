@@ -1,4 +1,5 @@
 from crm.helpers.api_display import enrich_board, enrich_board_column
+from crm.views.views_tasks._helpers import enrich_task_for_display
 from crm_api.client import CrmApiClient
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
 from crm_api.services import boards as boards_service
@@ -24,7 +25,7 @@ def _tasks_by_status(tasks, columns):
         col_key = status_to_column.get(status_id)
         if col_key is None:
             col_key = status_id
-        grouped.setdefault(col_key, []).append(task)
+        grouped.setdefault(col_key, []).append(enrich_task_for_display(task))
 
     for key in grouped:
         grouped[key].sort(
