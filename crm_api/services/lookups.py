@@ -39,3 +39,13 @@ def get_users(client: CrmApiClient):
 
 def get_designations(client: CrmApiClient):
     return client.get("/lookups/designations")
+
+
+def get_board_page(client: CrmApiClient, *, gais_limit=50):
+    """GET /lookups/board-page — CRM + GAIs + groups + column templates."""
+    return client.get("/lookups/board-page", params={"gais_limit": gais_limit})
+
+
+def get_billing_lookups_bundle(client: CrmApiClient):
+    """GET /lookups/billing — clients + contracts for faturamento pickers."""
+    return client.get("/lookups/billing")

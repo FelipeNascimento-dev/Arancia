@@ -27,7 +27,24 @@ def build_crm_headers(*, user, password: str, api_key: str | None = None) -> dic
     }
 
 
+def build_bff_headers(*, username: str) -> dict[str, str]:
+    secret = getattr(settings, "CRM_INTERNAL_API_SECRET", "") or ""
+    if not secret:
+        raise CrmAuthError("CRM_INTERNAL_API_SECRET não configurado.")
+    if not username:
+        raise CrmAuthError("Username indisponível para X-Acting-User.")
+    return {
+        "Authorization": f"Bearer {secret}",
+        "X-Acting-User": username,
+    }
+
+
 def build_crm_headers_from_request(request) -> dict[str, str]:
+    auth_mode = getattr(settings, "CRM_BFF_AUTH_MODE", "bearer") or "bearer"
+    if auth_mode == "bearer":
+        if not request.user or not request.user.is_authenticated:
+            raise CrmAuthError("Usuário não autenticado.")
+        return build_bff_headers(username=request.user.username)
     password = get_password_from_session(request)
     if password is None:
         raise CrmAuthError("Senha não encontrada na sessão — refaça o login.")
@@ -35,9 +52,14 @@ def build_crm_headers_from_request(request) -> dict[str, str]:
 
 
 def build_service_user_headers() -> dict[str, str]:
+    username = getattr(settings, "CRM_SERVICE_USERNAME", "") or ""
+    auth_mode = getattr(settings, "CRM_BFF_AUTH_MODE", "bearer") or "bearer"
+    if auth_mode == "bearer":
+        if not username:
+            raise CrmAuthError("CRM_SERVICE_USERNAME não configurado.")
+        return build_bff_headers(username=username)
     from django.contrib.auth import get_user_model
 
-    username = getattr(settings, "CRM_SERVICE_USERNAME", "") or ""
     password = getattr(settings, "CRM_SERVICE_PASSWORD", "") or ""
     if not username or not password:
         raise CrmAuthError("CRM_SERVICE_USERNAME/PASSWORD não configurados.")

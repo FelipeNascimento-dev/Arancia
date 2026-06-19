@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from crm.helpers.api_display import enrich_board, enrich_board_column
 from crm.views.views_tasks._helpers import enrich_task_for_kanban_card
 from crm_api.client import CrmApiClient
@@ -11,10 +13,50 @@ KANBAN_TASK_LIMIT = 100
 KANBAN_LOAD_MORE_LIMIT = 50
 
 
+def _use_aggregated_endpoints():
+    return getattr(settings, "CRM_USE_AGGREGATED_ENDPOINTS", True)
+
+
+def _kanban_permission_flags(request):
+    return {
+        "can_create_tasks": request.user.has_perm("crm.add_task"),
+        "can_move_tasks": request.user.has_perm("crm.move_task"),
+        "can_comment": request.user.has_perm("crm.view_task"),
+    }
+
+
+def _build_kanban_result(request, board, board_id, columns, tasks, my_access, *, tasks_total=None):
+    tasks_by_column = _tasks_by_status(tasks, columns)
+    columns_with_tasks = []
+    for col in columns:
+        col_key = col.get("id") or col.get("status_task_id")
+        columns_with_tasks.append({
+            "column": col,
+            "col_key": col_key,
+            "tasks": tasks_by_column.get(col_key, []),
+        })
+
+    loaded_count = len(tasks)
+    has_more_tasks = tasks_total is not None and tasks_total > loaded_count
+    if tasks_total is None and loaded_count >= KANBAN_TASK_LIMIT:
+        has_more_tasks = True
+
+    return {
+        "board": board,
+        "board_id": board_id,
+        "columns_with_tasks": columns_with_tasks,
+        "my_access": my_access or {},
+        **_kanban_permission_flags(request),
+        "kanban_tasks_loaded": loaded_count,
+        "kanban_tasks_total": tasks_total,
+        "kanban_has_more_tasks": has_more_tasks,
+    }
+
+
 def _tasks_by_status(tasks, columns, *, enrich_fn=enrich_task_for_kanban_card):
     status_to_column = {}
     for col in columns:
-        status_id = col.get("status_task_id") or col.get("status_id")
+        status_id = col.get("status_task_id") or col.get("status_id") or col.get("id")
         if status_id is not None:
             status_to_column[status_id] = col.get("id") or status_id
 
@@ -40,6 +82,43 @@ def _tasks_by_status(tasks, columns, *, enrich_fn=enrich_task_for_kanban_card):
 
 
 def build_kanban_context(request, client: CrmApiClient, board_id):
+    if _use_aggregated_endpoints():
+        return build_kanban_context_from_bundle(request, client, board_id)
+    return build_kanban_context_legacy(request, client, board_id)
+
+
+def build_kanban_context_from_bundle(request, client: CrmApiClient, board_id):
+    errors = []
+    try:
+        bundle = boards_service.get_kanban_bundle(
+            client, board_id, task_limit=KANBAN_TASK_LIMIT,
+        ) or {}
+    except CrmApiError as exc:
+        errors.append(crm_error_message_pt(exc))
+        return None, errors
+
+    board = bundle.get("board")
+    if board:
+        board = enrich_board(board)
+
+    columns = bundle.get("columns") or []
+    columns = sorted(columns, key=_column_sort_key)
+    columns = [enrich_board_column(col) for col in columns]
+
+    tasks = bundle.get("tasks") or []
+    my_access = bundle.get("access") or {}
+
+    return _build_kanban_result(
+        request,
+        board,
+        board_id,
+        columns,
+        tasks,
+        my_access,
+    ), errors
+
+
+def build_kanban_context_legacy(request, client: CrmApiClient, board_id):
     board = None
     columns = []
     tasks = []
@@ -99,34 +178,15 @@ def build_kanban_context(request, client: CrmApiClient, board_id):
     if "access" in parallel_results:
         my_access = parallel_results["access"]
 
-    tasks_by_column = _tasks_by_status(tasks, columns)
-    columns_with_tasks = []
-    for col in columns:
-        col_key = col.get("id") or col.get("status_task_id")
-        columns_with_tasks.append({
-            "column": col,
-            "col_key": col_key,
-            "tasks": tasks_by_column.get(col_key, []),
-        })
-
-    loaded_count = len(tasks)
-    has_more_tasks = tasks_total is not None and tasks_total > loaded_count
-    if tasks_total is None and loaded_count >= KANBAN_TASK_LIMIT:
-        has_more_tasks = True
-
-    return {
-        "board": board,
-        "board_id": board_id,
-        "columns_with_tasks": columns_with_tasks,
-        "my_access": my_access,
-        "can_create_tasks": my_access.get("can_create_tasks", False),
-        "can_move_tasks": my_access.get("can_move_tasks", False)
-        or request.user.has_perm("crm.move_task"),
-        "can_comment": my_access.get("can_comment", False),
-        "kanban_tasks_loaded": loaded_count,
-        "kanban_tasks_total": tasks_total,
-        "kanban_has_more_tasks": has_more_tasks,
-    }, errors
+    return _build_kanban_result(
+        request,
+        board,
+        board_id,
+        columns,
+        tasks,
+        my_access,
+        tasks_total=tasks_total,
+    ), errors
 
 
 def kanban_tasks_page(client, board_id, *, skip=0, limit=KANBAN_LOAD_MORE_LIMIT):

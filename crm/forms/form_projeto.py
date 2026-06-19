@@ -1,5 +1,7 @@
 from django import forms
 
+from crm.helpers.lookup_choices import build_select_choices, build_user_choices
+
 
 class ProjectForm(forms.Form):
     name = forms.CharField(
@@ -28,14 +30,12 @@ class ProjectForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.nome_formulario = nome_form or "Novo Projeto"
         lookups = lookups or {}
-        gai_choices = [("", "---------")]
-        for gai in lookups.get("gais", []):
-            gai_id = gai.get("id") or gai.get("gai_id")
-            label = gai.get("nome") or gai.get("name") or str(gai_id)
-            if gai_id is not None:
-                gai_choices.append((gai_id, label))
         self.fields["customer_gai_id"].widget = forms.Select(
-            choices=gai_choices,
+            choices=build_select_choices(
+                lookups.get("gais", []),
+                id_keys=("id", "gai_id", "customer_gai_id"),
+                label_keys=("nome", "name", "razao_social"),
+            ),
             attrs={"class": "form-control"},
         )
 
@@ -76,26 +76,25 @@ class ProjectMemberForm(forms.Form):
         super().__init__(*args, **kwargs)
         lookups = lookups or {}
         self.fields["user_id"].widget = forms.Select(
-            choices=self._choices_from(lookups.get("users", []), "id", ("username", "name")),
+            choices=build_user_choices(lookups.get("users", [])),
             attrs={"class": "form-control"},
         )
         self.fields["designation_id"].widget = forms.Select(
-            choices=self._choices_from(lookups.get("designations", []), "id", ("label", "username")),
+            choices=build_select_choices(
+                lookups.get("designations", []),
+                id_keys=("id", "designation_id", "user_designation_id"),
+                label_keys=("label", "username", "name", "nome"),
+            ),
             attrs={"class": "form-control"},
         )
         self.fields["team_gai_id"].widget = forms.Select(
-            choices=self._choices_from(lookups.get("team_gais", []), "id", ("nome", "name")),
+            choices=build_select_choices(
+                lookups.get("team_gais", []),
+                id_keys=("id", "gai_id", "team_gai_id"),
+                label_keys=("nome", "name"),
+            ),
             attrs={"class": "form-control"},
         )
-
-    def _choices_from(self, items, id_key, label_keys):
-        choices = [("", "---------")]
-        for item in items:
-            item_id = item.get(id_key)
-            label = next((item.get(k) for k in label_keys if item.get(k)), None)
-            if item_id is not None:
-                choices.append((item_id, label or str(item_id)))
-        return choices
 
     def clean(self):
         cleaned = super().clean()

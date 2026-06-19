@@ -9,7 +9,7 @@
         <div class="user-list-container">
             <div class="user-table-header">
                 <h3 class="user-table-title"><i class="fa-solid fa-grip-vertical"></i> Colunas do board</h3>
-                <p class="muted" style="margin: 0;">Arraste para reordenar. Clique em editar para alterar nome ou status.</p>
+                <p class="muted" style="margin: 0;">Arraste para reordenar e clique em <strong>Salvar ordem</strong> para confirmar.</p>
             </div>
             <div class="table-wrapper">
                 <table class="user-table" id="columns-table">
@@ -56,6 +56,14 @@
                     </tbody>
                 </table>
             </div>
+            {% if perms.crm.manage_board_columns %}
+            <div class="crm-comercial-columns-toolbar" style="margin-top: 14px;">
+                <span id="columns-order-status" class="muted small">Nenhuma alteração pendente.</span>
+                <button type="button" id="btnSaveColumnOrder" class="btn btn-secondary btn-sm" disabled>
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar ordem
+                </button>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

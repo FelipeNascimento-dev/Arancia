@@ -6,9 +6,11 @@ from django.urls import NoReverseMatch, reverse
 from crm.context_processors import resolve_crm_context_data
 from crm.decorators import crm_any_access_required
 from crm.helpers.dashboard import build_chart_data, build_summary_cards
+from crm_api.client import CrmApiClient
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
 from crm_api.parallel import run_parallel_crm_fetches
 from crm_api.services import billing as billing_service
+from crm_api.services.dashboard import get_dashboard_summary
 
 
 def _menu_context(current_menu, current_submenu=None):
@@ -77,14 +79,17 @@ def _build_shortcuts(user, crm_context):
     return shortcuts
 
 
-@crm_any_access_required
-def crm_dashboard(request):
-    billing_data = {}
-    summary_cards = []
-    api_ok = True
+def _dashboard_needs_summary(user):
+    return (
+        user.has_perm("crm.view_billing")
+        or user.has_perm("crm.view_contract")
+        or user.has_perm("crm.view_task")
+    )
 
-    crm_context = getattr(request, "_crm_context_data", None) or resolve_crm_context_data(request)
-    user = request.user
+
+def _load_dashboard_widgets_legacy(request, user):
+    billing_data = {}
+    api_ok = True
 
     jobs = []
     if user.has_perm("crm.view_billing"):
@@ -96,12 +101,58 @@ def crm_dashboard(request):
 
     if "billing" in results:
         billing_data = results["billing"]
-        summary_cards = build_summary_cards(billing_data)
     elif "billing" in errors and isinstance(errors["billing"], CrmApiError):
         api_ok = False
         messages.warning(request, crm_error_message_pt(errors["billing"]))
 
-    chart_data = build_chart_data(billing_data)
+    return billing_data, [], [], api_ok
+
+
+def _load_dashboard_widgets_aggregated(request, user):
+    billing_data = {}
+    alerts = []
+    my_tasks = []
+    api_ok = True
+
+    try:
+        summary = get_dashboard_summary(CrmApiClient(request)) or {}
+    except CrmApiError as exc:
+        api_ok = False
+        messages.warning(request, crm_error_message_pt(exc))
+        return billing_data, alerts, my_tasks, api_ok
+
+    if user.has_perm("crm.view_billing"):
+        billing_data = summary.get("billing") or {}
+    if user.has_perm("crm.view_contract"):
+        alerts = summary.get("alerts") or []
+    if user.has_perm("crm.view_task"):
+        my_tasks = summary.get("my_tasks") or []
+
+    return billing_data, alerts, my_tasks, api_ok
+
+
+@crm_any_access_required
+def crm_dashboard(request):
+    crm_context = getattr(request, "_crm_context_data", None) or resolve_crm_context_data(request)
+    user = request.user
+
+    billing_data = {}
+    alerts = []
+    my_tasks = []
+    api_ok = True
+
+    if _dashboard_needs_summary(user):
+        if getattr(settings, "CRM_USE_AGGREGATED_ENDPOINTS", True):
+            billing_data, alerts, my_tasks, api_ok = _load_dashboard_widgets_aggregated(
+                request, user,
+            )
+        else:
+            billing_data, alerts, my_tasks, api_ok = _load_dashboard_widgets_legacy(
+                request, user,
+            )
+
+    summary_cards = build_summary_cards(billing_data) if billing_data else []
+    chart_data = build_chart_data(billing_data, alerts=alerts, my_tasks=my_tasks)
     shortcuts = _build_shortcuts(request.user, crm_context)
 
     return render(

@@ -154,9 +154,18 @@
         let savedOrder = [];
 
         function currentColumnIds() {
-            return [...tbody.querySelectorAll("tr[data-column-id]")].map(
-                (item) => item.dataset.columnId,
-            );
+            return [...tbody.querySelectorAll("tr[data-column-id]")]
+                .map((item) => (item.dataset.columnId || "").trim())
+                .filter(Boolean);
+        }
+
+        function buildReorderPayload(ids) {
+            return {
+                items: ids.map((id, index) => ({
+                    id,
+                    kanban_position: index,
+                })),
+            };
         }
 
         function setSaveButtonDirty(isDirty) {
@@ -205,15 +214,20 @@
                     "Content-Type": "application/json",
                     "X-CSRFToken": csrf,
                 },
-                body: JSON.stringify({ column_ids: ids }),
+                body: JSON.stringify(buildReorderPayload(ids)),
             })
                 .then((response) => response.json().then((payload) => ({
                     ok: response.ok,
+                    status: response.status,
                     payload,
                 })))
-                .then(({ ok, payload }) => {
+                .then(({ ok, status, payload }) => {
                     if (!ok || !payload.ok) {
-                        throw new Error(payload.detail || "Não foi possível reordenar as colunas.");
+                        const detail = payload.detail
+                            || (status === 403
+                                ? "Você não tem permissão para reordenar colunas."
+                                : "Não foi possível reordenar as colunas.");
+                        throw new Error(detail);
                     }
                     savedOrder = ids.slice();
                     setSaveButtonDirty(false);
@@ -243,6 +257,13 @@
         tbody.querySelectorAll("tr[data-column-id]").forEach((row) => {
             row.setAttribute("draggable", "true");
 
+            row.querySelectorAll(".drag-handle").forEach((handle) => {
+                handle.addEventListener("mousedown", (event) => {
+                    if (event.button !== 0) return;
+                    row.draggable = true;
+                });
+            });
+
             row.addEventListener("dragstart", (event) => {
                 if (event.target.closest(".btn-edit-column")) {
                     event.preventDefault();
@@ -258,7 +279,10 @@
                 row.classList.remove("dragging");
                 dragEl = null;
                 updateColumnOrderNumbers(tbody);
-                markDirtyIfChanged();
+                const changed = markDirtyIfChanged();
+                if (!saveBtn && changed) {
+                    persistColumnOrder();
+                }
             });
 
             row.addEventListener("dragover", (event) => {
@@ -297,12 +321,24 @@
         });
     }
 
+    function bindTaskCreateModal() {
+        if (!document.getElementById("taskCreateDescription") || !window.CrmTaskModal) {
+            return;
+        }
+        const textarea = document.getElementById("taskCreateDescription");
+        CrmTaskModal.init({
+            formId: "formCreateTask",
+            initialDescription: textarea ? textarea.value : "",
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
         bindModalClose();
         bindGrantTypeToggle();
         bindColumnEdit();
         bindColumnReorder();
         bindAccessRemoveConfirm();
+        bindTaskCreateModal();
     });
 
     window.CrmComercial = {

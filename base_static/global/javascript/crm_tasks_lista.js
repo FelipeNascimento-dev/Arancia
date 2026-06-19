@@ -33,6 +33,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const form = document.getElementById("formCreateTask");
         if (!form) return;
         form.reset();
+        if (window.CrmTaskModal) {
+            CrmTaskModal.resetEditor();
+        }
         if (window.CrmSearchSelect) {
             form.querySelectorAll("select.js-crm-search-select").forEach((select) => {
                 select.dispatchEvent(new Event("change", { bubbles: true }));
@@ -42,6 +45,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (window.CrmSearchSelect) {
         CrmSearchSelect.initAll(modal);
+    }
+
+    if (window.CrmTaskModal) {
+        const textarea = document.getElementById("taskCreateDescription");
+        CrmTaskModal.init({
+            formId: "formCreateTask",
+            initialDescription: textarea ? textarea.value : "",
+        });
     }
 
     if (modal.dataset.showOnLoad === "true") {

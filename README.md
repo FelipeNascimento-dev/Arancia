@@ -108,7 +108,21 @@ Rotas completas: [`logistica/urls.py`](./logistica/urls.py), [`transportes/urls.
 
 ### CRM (BFF)
 
-Browser → Django (`/arancia/crm/...`) → FastAPI (`CRM_API_BASE_URL` + `/api/v1`). Auth de negócio: `CRM_API_KEY` + senha do usuário (Basic, senha na sessão server-side). Scheduler: `CRM_INTERNAL_API_SECRET` (Bearer). Jobs Celery: `CRM_SERVICE_USERNAME` / `CRM_SERVICE_PASSWORD`. Variáveis em [`.env.example`](./.env.example) — não versionar valores reais.
+Browser → Django (`/arancia/crm/...`) → FastAPI (`CRM_API_BASE_URL` + `/api/v1`). Auth BFF (padrão): `Bearer {CRM_INTERNAL_API_SECRET}` + `X-Acting-User` (username logado ou `CRM_SERVICE_USERNAME` em jobs Celery) — montados server-side em `crm_api/context.py`. Rollback: `CRM_BFF_AUTH_MODE=legacy_basic` (Basic + `X-API-Key` + senha na sessão). Scheduler: Bearer only (`CrmApiClient(scheduler=True)`).
+
+**Endpoints agregados** (`CRM_USE_AGGREGATED_ENDPOINTS=true`, default): `/lookups/board-page`, `/boards/{id}/kanban`, `/dashboard/summary`, `/lookups/billing` — reduzem fan-out do Kanban (~10 → 2–3 calls). Rollback: `CRM_USE_AGGREGATED_ENDPOINTS=false`.
+
+**Probe e validação homolog:**
+
+```bash
+# Latência direta na API (Bearer)
+python manage.py measure_crm_api_latency --username ARC0000 --include-aggregates --board-id {UUID}
+
+# Smoke + SLA bundles (Kanban <3 s, dashboard <2 s, cache MISS após write)
+python scripts/validate_crm_bff_homolog.py --username ARC0000
+```
+
+Variáveis em [`.env.example`](./.env.example) — não versionar valores reais.
 
 Rotas principais: dashboard, clientes, contratos, faturamento, alertas, tasks (lista/minhas/calendário/novo/edit/detalhe), recorrências, projetos (detalhe/edit/membros/tasks), boards (Kanban + acesso/colunas), configurações (tipos de serviço, prioridades, status). AJAX interno em `/crm/ajax/` (move task, assign/watch/comment/link/subtask, reorder colunas, health).
 
@@ -125,7 +139,8 @@ Documentação Cursor: [`.cursor/rules/220-business-crm-auto.mdc`](./.cursor/rul
 
 | Data | Tipo | Módulo/Pasta | Alteração | Impacto |
 | ---- | ---- | ------------ | --------- | ------- |
-| 2026-06-17 | Adicionado | `crm/` | Fases 6–11: form unificado/recorrências, edit task, AJAX com `can_comment`, projetos, Kanban, settings, Celery | Scheduler one-shot Bearer; service types spec; codenames Django documentados no roadmap |
+| 2026-06-19 | Ajustado | `crm/`, `crm_api/` | Fase 6: probe agregados, SLA homolog, bundles + gates Django | Kanban/dashboard via bundles; `measure_crm_api_latency --include-aggregates` |
+| 2026-06-19 | Ajustado | `crm_api/` | Fase 1 auth Bearer BFF → API (`CRM_BFF_AUTH_MODE=bearer`) | Elimina ~1,5 s de latência fixa por request; rollback via `legacy_basic` |
 | 2026-06-17 | Adicionado | `crm/` | Fases 1–2: dashboard enriquecido, clientes com soft delete AJAX | Dashboard acessível com qualquer perm CRM; `DELETE /clients/{id}` via ajax |
 | 2026-06-17 | Adicionado | `crm/`, `crm_api/` | Módulo CRM BFF reintroduzido (fases 1–3: fundação, clientes, contratos/faturamento/alertas) | Rotas `/arancia/crm/`; menu lateral condicionado a `crm.*`; depende da API FastAPI CRM |
 | 2026-06-17 | Removido | `crm/` | App CRM e integrações removidos do Django | Superseded pela reintrodução BFF na mesma data |

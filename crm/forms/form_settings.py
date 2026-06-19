@@ -1,5 +1,7 @@
 from django import forms
 
+from crm.helpers.lookup_choices import build_select_choices
+
 
 class RecurrenceEditForm(forms.Form):
     title = forms.CharField(
@@ -93,12 +95,12 @@ class RecurrenceEditForm(forms.Form):
         self._apply_select("customer_gai_id", lookups.get("gais", []), ("nome", "name"))
 
     def _apply_select(self, field_name, items, label_keys):
-        choices = [("", "---------")]
-        for item in items:
-            item_id = item.get("id")
-            label = next((item.get(k) for k in label_keys if item.get(k)), None)
-            if item_id is not None:
-                choices.append((item_id, label or str(item_id)))
+        extra_id_keys = ("gai_id", "customer_gai_id") if "gai" in field_name or field_name == "client_id" else ()
+        choices = build_select_choices(
+            items,
+            id_keys=("id", *extra_id_keys),
+            label_keys=label_keys,
+        )
         self.fields[field_name].widget = forms.Select(
             choices=choices,
             attrs={"class": "form-control"},
@@ -150,14 +152,12 @@ class ServiceTypeForm(forms.Form):
             choices=status_choices,
             attrs={"class": "form-control"},
         )
-        gai_choices = [("", "---------")]
-        for gai in lookups.get("gais", []):
-            gai_id = gai.get("id") or gai.get("gai_id")
-            label = gai.get("nome") or gai.get("name") or str(gai_id)
-            if gai_id is not None:
-                gai_choices.append((gai_id, label))
         self.fields["client_id"].widget = forms.Select(
-            choices=gai_choices,
+            choices=build_select_choices(
+                lookups.get("gais", []),
+                id_keys=("id", "gai_id", "customer_gai_id", "client_id"),
+                label_keys=("nome", "name", "razao_social"),
+            ),
             attrs={"class": "form-control"},
         )
 

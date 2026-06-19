@@ -351,11 +351,19 @@ def enrich_project(project):
 
 
 def enrich_task_lookups(lookups):
-    """Preenche aliases nome/name nos catálogos usados nos filtros de tasks."""
+    """Preenche aliases e normaliza catálogos usados nos filtros/forms de tasks."""
+    from crm.helpers.lookup_entities import (
+        merge_gai_candidate_lists,
+        normalize_lookup_designations,
+        normalize_lookup_gais,
+        normalize_lookup_users,
+    )
+
     if not isinstance(lookups, dict):
         return lookups or {}
     result = dict(lookups)
-    for key in ("status_tasks", "priorities", "boards", "column_templates", "gais", "users"):
+
+    for key in ("status_tasks", "priorities", "boards", "column_templates", "projects"):
         items = result.get(key)
         if isinstance(items, list):
             result[key] = [
@@ -363,18 +371,34 @@ def enrich_task_lookups(lookups):
                 for item in items
                 if isinstance(item, dict)
             ]
+
+    users = result.get("users")
+    if isinstance(users, list):
+        result["users"] = normalize_lookup_users(users)
+
     designations = result.get("designations")
     if isinstance(designations, list):
-        result["designations"] = [
-            with_label_aliases(item, ("label", "username", "nome", "name"))
-            for item in designations
-            if isinstance(item, dict)
-        ]
+        result["designations"] = normalize_lookup_designations(designations)
+
+    gais = merge_gai_candidate_lists(
+        result.get("gais"),
+        result.get("customers"),
+    )
+    if gais:
+        result["gais"] = gais
+    elif isinstance(result.get("gais"), list):
+        result["gais"] = normalize_lookup_gais(result["gais"])
+
+    team_gais = result.get("team_gais")
+    if isinstance(team_gais, list):
+        result["team_gais"] = normalize_lookup_gais(team_gais)
+
     projects = result.get("projects")
     if isinstance(projects, list):
         result["projects"] = [
             enrich_project(item) for item in projects if isinstance(item, dict)
         ]
+
     return result
 
 

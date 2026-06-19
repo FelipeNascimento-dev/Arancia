@@ -152,6 +152,7 @@ class PermissaoUsuarioDummy(models.Model):
             ("entrada_flfm", "Entrada (Fulfillment)"),
             ("pode_gerenciar_filiais", "Pode Gerenciar Filiais"),
             ("gestao_total", "Gestão Total"),
+            ("gerenciamento", "Gerenciamento de Usuários e GAIs"),
             ("inst_simplified", "Instalação Simplificada"),
             ("entrega_com_sap", "Entrega com SAP"),
             ("checkin_principal", "Check-in Principal"),
