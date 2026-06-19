@@ -1,50 +1,54 @@
-<h4>Atribuído</h4>
-<ul class="crm-person-list">
-    {% for a in assignees %}
-    <li>
-        <span class="crm-person-avatar">{{ a.display_name|default:"?"|slice:":2" }}</span>
-        <span class="person-name">
-            {{ a.display_name|default:"-" }}
-            {% if a.is_primary %}<span class="person-badge">principal</span>{% endif %}
-        </span>
-        {% if perms.crm.assign_task %}
-        <form method="post" style="display:inline;">
-            {% csrf_token %}
-            <input type="hidden" name="remove_assignee" value="1">
-            <input type="hidden" name="assignee_id" value="{{ a.id }}">
-            <button type="submit" class="btn-remove" title="Remover">×</button>
-        </form>
-        {% endif %}
-    </li>
-    {% empty %}
-    <li class="muted">Nenhum responsável.</li>
-    {% endfor %}
-</ul>
-{% if perms.crm.assign_task %}
-<form method="post" class="crm-inline-form">
-    {% csrf_token %}
-    <input type="hidden" name="add_assignee" value="1">
-    <div class="form-group">{{ assignee_form.user_id.label_tag }}{{ assignee_form.user_id }}</div>
-    <button type="submit" class="btn btn-primary btn-sm">+ Atribuir</button>
-</form>
-{% endif %}
+<div class="crm-sidebar-people-group">
+    <h4>Atribuído</h4>
+    <ul class="crm-person-list">
+        {% for a in assignees %}
+        <li>
+            <span class="crm-person-avatar">{{ a.display_name|default:"?"|slice:":2" }}</span>
+            <span class="person-name">
+                {{ a.display_name|default:"-" }}
+                {% if a.is_primary %}<span class="person-badge">principal</span>{% endif %}
+            </span>
+            {% if perms.crm.assign_task %}
+            <form method="post" class="crm-person-action-form">
+                {% csrf_token %}
+                <input type="hidden" name="remove_assignee" value="1">
+                <input type="hidden" name="assignee_id" value="{{ a.id }}">
+                <button type="submit" class="btn-remove" title="Remover">×</button>
+            </form>
+            {% endif %}
+        </li>
+        {% empty %}
+        <li class="muted">Nenhum responsável.</li>
+        {% endfor %}
+    </ul>
+    {% if perms.crm.assign_task %}
+    <form method="post" class="crm-inline-form">
+        {% csrf_token %}
+        <input type="hidden" name="add_assignee" value="1">
+        <div class="form-group">{{ assignee_form.user_id.label_tag }}{{ assignee_form.user_id }}</div>
+        <button type="submit" class="btn btn-primary btn-sm">+ Atribuir</button>
+    </form>
+    {% endif %}
+</div>
 
-<h4 style="margin-top:18px;">Observadores</h4>
-<ul class="crm-person-list">
-    {% for w in watchers %}
-    <li>
-        <span class="crm-person-avatar">{{ w.display_name|default:"?"|slice:":2" }}</span>
-        <span class="person-name">{{ w.display_name|default:"-" }}</span>
-        {% if perms.crm.manage_watchers %}
-        <form method="post" style="display:inline;">
-            {% csrf_token %}
-            <input type="hidden" name="remove_watcher" value="1">
-            <input type="hidden" name="watcher_id" value="{{ w.id }}">
-            <button type="submit" class="btn-remove" title="Remover">×</button>
-        </form>
-        {% endif %}
-    </li>
-    {% empty %}
-    <li class="muted">Nenhum observador.</li>
-    {% endfor %}
-</ul>
+<div class="crm-sidebar-people-group">
+    <h4>Observadores</h4>
+    <ul class="crm-person-list">
+        {% for w in watchers %}
+        <li>
+            <span class="crm-person-avatar crm-person-avatar--muted">{{ w.display_name|default:"?"|slice:":2" }}</span>
+            <span class="person-name">{{ w.display_name|default:"-" }}</span>
+            {% if perms.crm.manage_watchers %}
+            <form method="post" class="crm-person-action-form">
+                {% csrf_token %}
+                <input type="hidden" name="remove_watcher" value="1">
+                <input type="hidden" name="watcher_id" value="{{ w.id }}">
+                <button type="submit" class="btn-remove" title="Remover">×</button>
+            </form>
+            {% endif %}
+        </li>
+        {% empty %}
+        <li class="muted">Nenhum observador.</li>
+        {% endfor %}
+    </ul>
+</div>

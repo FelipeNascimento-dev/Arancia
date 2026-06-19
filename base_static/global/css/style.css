@@ -186,6 +186,7 @@ body {
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 180px);
+  transition: flex-basis 0.2s ease, width 0.2s ease;
 }
 
 .kanban-column-header {
@@ -225,8 +226,10 @@ body {
 }
 
 .kanban-column.is-collapsed {
-  max-height: none;
-  align-self: flex-start;
+  flex: 0 0 52px;
+  width: 52px;
+  min-width: 52px;
+  align-self: stretch;
 }
 
 .kanban-column.is-collapsed .kanban-column-body {
@@ -234,7 +237,30 @@ body {
 }
 
 .kanban-column.is-collapsed .kanban-column-header {
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 12px 6px;
   border-bottom: 0;
+  height: 100%;
+}
+
+.kanban-column.is-collapsed .kanban-column-title {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: calc(100vh - 260px);
+  text-align: center;
+}
+
+.kanban-column.is-collapsed .kanban-column-title .crm-comercial-color-dot {
+  display: inline-block;
+  margin: 0 0 6px;
 }
 
 .kanban-column-count {

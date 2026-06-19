@@ -188,7 +188,9 @@ CRM_API_TIMEOUT = int(getattr(local_settings, 'CRM_API_TIMEOUT', 30))
 CRM_API_VERIFY_SSL = getattr(local_settings, 'CRM_API_VERIFY_SSL', False)
 CRM_SERVICE_USERNAME = getattr(local_settings, 'CRM_SERVICE_USERNAME', '')
 CRM_SERVICE_PASSWORD = getattr(local_settings, 'CRM_SERVICE_PASSWORD', '')
+CRM_BFF_AUTH_MODE = getattr(local_settings, 'CRM_BFF_AUTH_MODE', 'bearer')
 CRM_COMERCIAL_BOARD_CODE = getattr(local_settings, 'CRM_COMERCIAL_BOARD_CODE', 'crm_comercial')
+CRM_USE_AGGREGATED_ENDPOINTS = getattr(local_settings, 'CRM_USE_AGGREGATED_ENDPOINTS', True)
 ENVIRONMENT = getattr(local_settings, 'ENVIRONMENT', 'homolog')
 
 # Instrumentação de performance (Fase 0) — ativar em dev/homolog via local_settings

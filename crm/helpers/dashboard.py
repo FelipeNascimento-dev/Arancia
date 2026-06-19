@@ -97,21 +97,33 @@ def _numeric(value):
         return 0.0
 
 
-def _count_group(items, label_key, fallback="Outros"):
+def _count_by_label(items, *field_names):
     counts = {}
     for item in items or []:
         if not isinstance(item, dict):
             continue
-        label = item.get(label_key) or fallback
+        label = None
+        for field in field_names:
+            raw = item.get(field)
+            if isinstance(raw, dict):
+                for key in ("name", "nome", "label", "title"):
+                    value = raw.get(key)
+                    if value not in (None, ""):
+                        label = str(value)
+                        break
+            elif raw not in (None, ""):
+                label = str(raw)
+            if label:
+                break
+        label = label or "Sem status"
         counts[label] = counts.get(label, 0) + 1
+    if not counts:
+        return {"labels": [], "values": []}
     labels = list(counts.keys())
-    return {
-        "labels": labels,
-        "values": [counts[label] for label in labels],
-    }
+    return {"labels": labels, "values": [counts[label] for label in labels]}
 
 
-def build_chart_data(billing_data, my_tasks, recent_alerts):
+def build_chart_data(billing_data, *, alerts=None, my_tasks=None):
     billing = billing_data if isinstance(billing_data, dict) else {}
 
     billing_counts = {
@@ -131,12 +143,9 @@ def build_chart_data(billing_data, my_tasks, recent_alerts):
         ],
     }
 
-    tasks_by_status = _count_group(my_tasks, "display_status")
-    alerts_by_status = _count_group(recent_alerts, "status")
-
     return {
         "billing_counts": billing_counts,
         "billing_values": billing_values,
-        "tasks_by_status": tasks_by_status,
-        "alerts_by_status": alerts_by_status,
+        "tasks_by_status": _count_by_label(my_tasks, "status", "status_name"),
+        "alerts_by_status": _count_by_label(alerts, "status", "status_name"),
     }

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render
 from django.urls import reverse
@@ -17,11 +18,22 @@ from crm_api.pagination import build_api_pagination
 from crm_api.services import billing as billing_service
 from crm_api.services import clients as clients_service
 from crm_api.services import contracts as contracts_service
+from crm_api.services.lookups import get_billing_lookups_bundle
 
 BILLING_LIST_SKIP_KEYS = frozenset({"items", "detail"})
 
 
 def _billing_lookups(client):
+    if getattr(settings, "CRM_USE_AGGREGATED_ENDPOINTS", True):
+        try:
+            bundle = get_billing_lookups_bundle(client) or {}
+            return {
+                "clients": bundle.get("clients") or [],
+                "contracts": bundle.get("contracts") or [],
+            }
+        except CrmApiError:
+            pass
+
     lookups = {"clients": [], "contracts": []}
     try:
         clients, _ = clients_service.list_clients(client, limit=200)

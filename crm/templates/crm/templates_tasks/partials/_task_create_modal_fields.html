@@ -1,0 +1,23 @@
+<div class="modal-body fields-grid crm-task-modal-grid">
+    {% for field in task_form %}
+        {% if field.is_hidden %}
+            {{ field }}
+        {% elif field.name == "description" %}
+            <div class="form-group form-group--wide crm-task-description-field">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <div class="text-danger small">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                <div class="text-danger small">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>

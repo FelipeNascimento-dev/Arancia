@@ -87,3 +87,8 @@ REDIS_CELERY_DB = 0
 
 # CRM API — Basic Auth (usuário logado) + X-API-Key
 CRM_API_KEY = 'F7UuScgkRNn2rrSFWM0yuqkbI9RlOuuwPYyC1RPVe8KW'
+
+CRM_INTERNAL_API_SECRET = 'homolog-internal-secret'
+
+# Usuário operacional para jobs Celery (X-Acting-User em modo Bearer)
+CRM_SERVICE_USERNAME = os.environ.get('CRM_SERVICE_USERNAME', 'celery')

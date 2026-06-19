@@ -1,13 +1,20 @@
-{% for c in comments %}
-<div class="crm-comment-item">
-    <strong>{{ c.display_author|default:"Usuário" }}</strong>
-    <p>{{ c.display_body|default:"" }}</p>
+<div class="crm-comment-list">
+    {% for c in comments %}
+    <article class="crm-comment-item">
+        <div class="crm-comment-avatar">{{ c.display_author|default:"?"|slice:":2" }}</div>
+        <div class="crm-comment-body">
+            <header class="crm-comment-header">
+                <strong>{{ c.display_author|default:"Usuário" }}</strong>
+            </header>
+            <p>{{ c.display_body|default:"" }}</p>
+        </div>
+    </article>
+    {% empty %}
+    <p class="crm-empty-state muted">Nenhum comentário.</p>
+    {% endfor %}
 </div>
-{% empty %}
-<p class="muted">Nenhum comentário.</p>
-{% endfor %}
 {% if can_comment %}
-<form method="post" style="margin-top:16px;">
+<form method="post" class="crm-comment-form">
     {% csrf_token %}
     <input type="hidden" name="add_comment" value="1">
     <div class="form-group">{{ comment_form.body.label_tag }}{{ comment_form.body }}</div>

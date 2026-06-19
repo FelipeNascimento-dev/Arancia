@@ -1,5 +1,16 @@
 from django import forms
 
+from crm.helpers.lookup_choices import build_select_choices, build_user_choices
+
+
+_TASK_DESCRIPTION_WIDGET = forms.Textarea(
+    attrs={
+        "class": "form-control crm-task-description-input",
+        "id": "taskCreateDescription",
+        "rows": 5,
+    },
+)
+
 
 class UnifiedTaskForm(forms.Form):
     title = forms.CharField(
@@ -10,7 +21,7 @@ class UnifiedTaskForm(forms.Form):
     description = forms.CharField(
         label="Descrição",
         required=False,
-        widget=forms.Textarea(attrs={"class": "form-control", "rows": 4}),
+        widget=_TASK_DESCRIPTION_WIDGET,
     )
     board_id = forms.IntegerField(
         label="Board",
@@ -116,21 +127,20 @@ class UnifiedTaskForm(forms.Form):
         self._set_choices("service_type_id", lookups.get("service_types", []), "id", ("description", "type", "name", "nome", "label"))
         self._set_choices("project_id", lookups.get("projects", []), "id", ("name", "nome", "title"))
         self._set_choices("customer_gai_id", lookups.get("gais", []), "id", ("nome", "name"))
-        requester_choices = []
-        for item in lookups.get("gais", []):
-            item_id = item.get("id") or item.get("gai_id")
-            label = item.get("nome") or item.get("name") or str(item_id)
-            if item_id is not None:
-                requester_choices.append((str(item_id), label))
-        self.fields["requester_gai_ids"].choices = requester_choices
+        self.fields["requester_gai_ids"].choices = build_select_choices(
+            lookups.get("gais", []),
+            id_keys=("id", "gai_id", "customer_gai_id"),
+            label_keys=("nome", "name"),
+            as_str=True,
+        )
 
     def _set_choices(self, field_name, items, id_key, label_keys):
-        choices = [("", "---------")]
-        for item in items:
-            item_id = item.get(id_key) or item.get("gai_id")
-            label = next((item.get(k) for k in label_keys if item.get(k)), None)
-            if item_id is not None:
-                choices.append((item_id, label or str(item_id)))
+        extra_id_keys = ("gai_id", "customer_gai_id") if "gai" in field_name else ()
+        choices = build_select_choices(
+            items,
+            id_keys=(id_key, *extra_id_keys),
+            label_keys=label_keys,
+        )
         self.fields[field_name].widget = forms.Select(
             choices=choices,
             attrs={"class": "form-control"},
@@ -169,7 +179,7 @@ class TaskListModalForm(forms.Form):
     description = forms.CharField(
         label="Descrição",
         required=False,
-        widget=forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+        widget=_TASK_DESCRIPTION_WIDGET,
     )
     board_id = forms.ChoiceField(
         label="Board",
@@ -252,30 +262,16 @@ class TaskListModalForm(forms.Form):
         self.fields["status_id"].required = True
 
     def _set_user_choices(self, field_name, items):
-        choices = [("", "---------")]
-        for item in items or []:
-            if not isinstance(item, dict):
-                continue
-            item_id = item.get("id")
-            username = item.get("username") or item.get("name")
-            name = item.get("name") or item.get("full_name")
-            if item_id is None:
-                continue
-            if username and name and name != username:
-                label = f"{username} — {name}"
-            else:
-                label = username or name or str(item_id)
-            choices.append((str(item_id), label))
-        self.fields[field_name].choices = choices
+        self.fields[field_name].choices = build_user_choices(items)
 
     def _set_choices(self, field_name, items, id_key, label_keys):
-        choices = [("", "---------")]
-        for item in items:
-            item_id = item.get(id_key) or item.get("gai_id")
-            label = next((item.get(k) for k in label_keys if item.get(k)), None)
-            if item_id is not None:
-                choices.append((str(item_id), label or str(item_id)))
-        self.fields[field_name].choices = choices
+        extra_id_keys = ("gai_id",) if field_name.endswith("gai_id") or "gai" in field_name else ()
+        self.fields[field_name].choices = build_select_choices(
+            items,
+            id_keys=(id_key, *extra_id_keys),
+            label_keys=label_keys,
+            as_str=True,
+        )
 
 
 class ComercialTaskModalForm(forms.Form):
@@ -289,7 +285,7 @@ class ComercialTaskModalForm(forms.Form):
     description = forms.CharField(
         label="Descrição",
         required=False,
-        widget=forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+        widget=_TASK_DESCRIPTION_WIDGET,
     )
     status_id = forms.ChoiceField(
         label="Status",
@@ -330,13 +326,13 @@ class ComercialTaskModalForm(forms.Form):
         self.fields["status_id"].required = True
 
     def _set_choices(self, field_name, items, id_key, label_keys):
-        choices = [("", "---------")]
-        for item in items:
-            item_id = item.get(id_key) or item.get("gai_id")
-            label = next((item.get(k) for k in label_keys if item.get(k)), None)
-            if item_id is not None:
-                choices.append((str(item_id), label or str(item_id)))
-        self.fields[field_name].choices = choices
+        extra_id_keys = ("gai_id", "customer_gai_id") if "gai" in field_name else ()
+        self.fields[field_name].choices = build_select_choices(
+            items,
+            id_keys=(id_key, *extra_id_keys),
+            label_keys=label_keys,
+            as_str=True,
+        )
 
 
 class TaskEditForm(forms.Form):
@@ -348,7 +344,7 @@ class TaskEditForm(forms.Form):
     description = forms.CharField(
         label="Descrição",
         required=False,
-        widget=forms.Textarea(attrs={"class": "form-control", "rows": 4}),
+        widget=_TASK_DESCRIPTION_WIDGET,
     )
     board_id = forms.IntegerField(
         label="Board",
@@ -416,21 +412,20 @@ class TaskEditForm(forms.Form):
         self._set_choices("priority_id", lookups.get("priorities", []), "id", ("name", "nome", "label"))
         self._set_choices("project_id", lookups.get("projects", []), "id", ("name", "nome", "title"))
         self._set_choices("customer_gai_id", lookups.get("gais", []), "id", ("nome", "name"))
-        requester_choices = []
-        for item in lookups.get("gais", []):
-            item_id = item.get("id") or item.get("gai_id")
-            label = item.get("nome") or item.get("name") or str(item_id)
-            if item_id is not None:
-                requester_choices.append((str(item_id), label))
-        self.fields["requester_gai_ids"].choices = requester_choices
+        self.fields["requester_gai_ids"].choices = build_select_choices(
+            lookups.get("gais", []),
+            id_keys=("id", "gai_id", "customer_gai_id"),
+            label_keys=("nome", "name"),
+            as_str=True,
+        )
 
     def _set_choices(self, field_name, items, id_key, label_keys):
-        choices = [("", "---------")]
-        for item in items:
-            item_id = item.get(id_key) or item.get("gai_id")
-            label = next((item.get(k) for k in label_keys if item.get(k)), None)
-            if item_id is not None:
-                choices.append((item_id, label or str(item_id)))
+        extra_id_keys = ("gai_id", "customer_gai_id") if "gai" in field_name else ()
+        choices = build_select_choices(
+            items,
+            id_keys=(id_key, *extra_id_keys),
+            label_keys=label_keys,
+        )
         self.fields[field_name].widget = forms.Select(
             choices=choices,
             attrs={"class": "form-control"},
@@ -494,24 +489,17 @@ class TaskAssigneeForm(forms.Form):
         super().__init__(*args, **kwargs)
         lookups = lookups or {}
         self.fields["user_id"].widget = forms.Select(
-            choices=self._choices_from(lookups.get("users", []), "id", ("username", "name")),
+            choices=build_user_choices(lookups.get("users", [])),
             attrs={"class": "form-control"},
         )
         self.fields["designation_id"].widget = forms.Select(
-            choices=self._choices_from(
-                lookups.get("designations", []), "id", ("label", "username"),
+            choices=build_select_choices(
+                lookups.get("designations", []),
+                id_keys=("id", "designation_id", "user_designation_id"),
+                label_keys=("label", "username", "name", "nome"),
             ),
             attrs={"class": "form-control"},
         )
-
-    def _choices_from(self, items, id_key, label_keys):
-        choices = [("", "---------")]
-        for item in items:
-            item_id = item.get(id_key)
-            label = next((item.get(k) for k in label_keys if item.get(k)), None)
-            if item_id is not None:
-                choices.append((item_id, label or str(item_id)))
-        return choices
 
     def clean(self):
         cleaned = super().clean()

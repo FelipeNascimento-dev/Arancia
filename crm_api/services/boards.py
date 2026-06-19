@@ -54,8 +54,20 @@ def column_reorder_payload(payload):
     if isinstance(payload, list):
         column_ids = payload
     elif isinstance(payload, dict):
-        if isinstance(payload.get("items"), list):
-            return payload
+        raw_items = payload.get("items")
+        if isinstance(raw_items, list):
+            items = []
+            for index, item in enumerate(raw_items):
+                if not isinstance(item, dict):
+                    continue
+                column_id = item.get("id")
+                if column_id in (None, ""):
+                    continue
+                position = item.get("kanban_position")
+                if position is None:
+                    position = index
+                items.append({"id": column_id, "kanban_position": int(position)})
+            return {"items": items}
         column_ids = payload.get("column_ids") or payload.get("ids") or []
     else:
         column_ids = []
@@ -118,3 +130,23 @@ def get_comercial_board_id(client: CrmApiClient, *, code=None):
     if board_id is None:
         raise CrmNotFoundError("Board CRM Comercial sem ID.")
     return board_id
+
+
+def get_kanban_bundle(client: CrmApiClient, board_id, *, task_limit=100):
+    """GET /boards/{id}/kanban — board, columns, tasks and access (UI)."""
+    return client.get(
+        f"/boards/{board_id}/kanban",
+        params={"task_limit": task_limit},
+    )
+
+
+def resolve_board_id_from_page(board_page, code=None):
+    """Resolve board UUID from board-page bundle by code."""
+    from django.conf import settings
+
+    board_code = code or getattr(settings, "CRM_COMERCIAL_BOARD_CODE", "crm_comercial")
+    crm = (board_page or {}).get("crm") or {}
+    for board in crm.get("boards") or []:
+        if isinstance(board, dict) and board.get("code") == board_code:
+            return board.get("id")
+    return None

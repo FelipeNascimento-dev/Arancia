@@ -1,4 +1,14 @@
+from django.conf import settings
+
 from crm.helpers.api_display import enrich_task_lookups, nested_label
+from crm.helpers.lookup_entities import (
+    django_designations,
+    django_system_gais,
+    django_system_users,
+    merge_gai_candidate_lists,
+    normalize_lookup_designations,
+    normalize_lookup_users,
+)
 from crm.helpers.date_format import format_datetime_br
 from crm.helpers.lookup_cache import get_cached_lookup_for_client
 from crm_api.client import CrmApiClient
@@ -8,6 +18,7 @@ from crm_api.services import clients as clients_service
 from crm_api.services import projects as projects_service
 from crm_api.services import tasks as tasks_service
 from crm_api.services.lookups import (
+    get_board_page,
     get_column_templates,
     get_crm_lookups,
     get_designations,
@@ -27,6 +38,116 @@ def menu_context(current_menu, current_submenu=None, *, parent_menu="projetos"):
     if current_submenu:
         ctx["current_submenu"] = current_submenu
     return ctx
+
+
+def _use_aggregated_endpoints():
+    return getattr(settings, "CRM_USE_AGGREGATED_ENDPOINTS", True)
+
+
+def _get_board_page_bundle(client: CrmApiClient):
+    return get_cached_lookup_for_client(
+        client,
+        "board_page",
+        lambda: get_board_page(client, gais_limit=50),
+        redis_key="lookups:board-page",
+    )
+
+
+def _normalize_column_templates(raw):
+    if isinstance(raw, list):
+        return raw
+    if not isinstance(raw, dict):
+        return []
+    items = raw.get("items") or raw.get("results")
+    if isinstance(items, list):
+        return items
+    templates = raw.get("templates")
+    if isinstance(templates, dict):
+        flattened = []
+        for group in templates.values():
+            if isinstance(group, list):
+                flattened.extend(group)
+        return flattened
+    if isinstance(templates, list):
+        return templates
+    return []
+
+
+def _normalize_lookup_list(raw):
+    if isinstance(raw, list):
+        return raw
+    if isinstance(raw, dict):
+        return raw.get("items") or raw.get("results") or []
+    return []
+
+
+def _derive_task_lookups_from_board_page(board_page, client: CrmApiClient):
+    page = board_page or {}
+    crm_lookups = _normalize_crm_lookups(page.get("crm") or {})
+    lookups = enrich_task_lookups(crm_lookups) if crm_lookups else {}
+
+    gais = merge_gai_candidate_lists(
+        _filter_active_gais(page.get("gais") or []),
+        crm_lookups.get("customers"),
+    )
+    if gais:
+        lookups["gais"] = gais
+    elif not lookups.get("gais"):
+        lookups["gais"] = _load_active_gais(client, crm_lookups=crm_lookups)
+
+    users = normalize_lookup_users(lookups.get("users") or [])
+    if users:
+        lookups["users"] = users
+    else:
+        lookups["users"] = _load_system_users(client, crm_lookups=crm_lookups)
+
+    designations = normalize_lookup_designations(lookups.get("designations") or [])
+    if designations:
+        lookups["designations"] = designations
+    else:
+        lookups["designations"] = _load_designations(client, crm_lookups=crm_lookups)
+
+    return enrich_task_lookups(lookups)
+
+
+def _derive_board_lookups_from_board_page(board_page, client: CrmApiClient):
+    lookups = dict(_derive_task_lookups_from_board_page(board_page, client))
+    page = board_page or {}
+
+    groups = _normalize_lookup_list(page.get("groups"))
+    if groups:
+        lookups["groups"] = groups
+    else:
+        lookups.setdefault("groups", [])
+
+    templates = _normalize_column_templates(page.get("column_templates"))
+    if templates:
+        lookups["column_templates"] = templates
+    else:
+        lookups.setdefault("column_templates", [])
+
+    crm = _normalize_crm_lookups(page.get("crm") or {})
+    if crm.get("boards"):
+        lookups["boards"] = crm.get("boards")
+    else:
+        lookups["boards"] = _load_boards_list(client)
+
+    return enrich_task_lookups(lookups)
+
+
+def resolve_comercial_board_id(client: CrmApiClient, *, board_page=None):
+    """Resolve board comercial UUID — board-page quando agregado, senão fan-out legado."""
+    from crm_api.exceptions import CrmNotFoundError
+    from crm_api.services import boards as boards_service
+    from crm_api.services.boards import resolve_board_id_from_page
+
+    if _use_aggregated_endpoints():
+        page = board_page if board_page is not None else _get_board_page_bundle(client)
+        board_id = resolve_board_id_from_page(page)
+        if board_id:
+            return board_id
+
+    return boards_service.get_comercial_board_id(client)
 
 
 def _normalize_crm_lookups(data):
@@ -72,21 +193,37 @@ def _normalize_gai_item(item):
     }
 
 
-def _load_active_gais(client: CrmApiClient):
+def _load_active_gais(client: CrmApiClient, *, crm_lookups=None):
     def _fetch():
         items = []
         try:
             items = unwrap_lookup_items(get_gais(client))
         except CrmApiError:
             pass
-        items = [_normalize_gai_item(item) for item in _filter_active_gais(items)]
-        if items:
-            return items
+
+        crm = crm_lookups
+        if crm is None:
+            try:
+                crm = _get_crm_lookups_normalized(client)
+            except Exception:
+                crm = {}
+
+        gais = merge_gai_candidate_lists(
+            _filter_active_gais(items),
+            (crm or {}).get("customers"),
+        )
+        if gais:
+            return gais
+
         try:
             clients, _ = clients_service.list_clients(client, limit=500)
-            return [_normalize_gai_item(item) for item in _filter_active_gais(clients)]
+            gais = merge_gai_candidate_lists(_filter_active_gais(clients))
+            if gais:
+                return gais
         except CrmApiError:
-            return []
+            pass
+
+        return django_system_gais()
 
     return get_cached_lookup_for_client(
         client,
@@ -112,56 +249,52 @@ def _get_crm_lookups_normalized(client: CrmApiClient):
 
 
 def _load_system_users(client: CrmApiClient, *, crm_lookups=None):
+    candidates = []
     try:
-        users = unwrap_lookup_items(get_users(client))
-        if users:
-            return users
+        candidates = unwrap_lookup_items(get_users(client))
     except CrmApiError:
         pass
-    crm = crm_lookups if crm_lookups is not None else _get_crm_lookups_normalized(client)
-    users = crm.get("users")
-    if isinstance(users, list):
-        return users
-    if isinstance(users, dict):
-        return unwrap_lookup_items(users)
-    return _django_system_users()
 
+    if not candidates:
+        crm = crm_lookups if crm_lookups is not None else _get_crm_lookups_normalized(client)
+        users = crm.get("users")
+        if isinstance(users, list):
+            candidates = users
+        elif isinstance(users, dict):
+            candidates = unwrap_lookup_items(users)
 
-def _django_system_users():
-    from django.contrib.auth.models import User
-
-    return [
-        {
-            "id": user.id,
-            "username": user.username,
-            "name": user.get_full_name() or user.username,
-        }
-        for user in User.objects.filter(is_active=True).order_by("username")
-    ]
+    users = normalize_lookup_users(candidates)
+    return users if users else django_system_users()
 
 
 def _load_designations(client: CrmApiClient, *, crm_lookups=None):
+    candidates = []
     try:
-        designations = unwrap_lookup_items(get_designations(client))
-        if designations:
-            return designations
+        candidates = unwrap_lookup_items(get_designations(client))
     except CrmApiError:
         pass
-    crm = crm_lookups if crm_lookups is not None else _get_crm_lookups_normalized(client)
-    designations = crm.get("designations")
-    if isinstance(designations, list):
-        return designations
-    if isinstance(designations, dict):
-        return unwrap_lookup_items(designations)
-    return []
+
+    if not candidates:
+        crm = crm_lookups if crm_lookups is not None else _get_crm_lookups_normalized(client)
+        designations = crm.get("designations")
+        if isinstance(designations, list):
+            candidates = designations
+        elif isinstance(designations, dict):
+            candidates = unwrap_lookup_items(designations)
+
+    designations = normalize_lookup_designations(candidates)
+    return designations if designations else django_designations()
 
 
 def _load_task_lookups(client: CrmApiClient):
+    if _use_aggregated_endpoints():
+        return _derive_task_lookups_from_board_page(_get_board_page_bundle(client), client)
+
     crm_lookups = _get_crm_lookups_normalized(client)
     lookups = enrich_task_lookups(crm_lookups) if crm_lookups else {}
 
     if not lookups.get("gais"):
-        lookups["gais"] = _load_active_gais(client)
+        lookups["gais"] = _load_active_gais(client, crm_lookups=crm_lookups)
     if not lookups.get("users"):
         lookups["users"] = _load_system_users(client, crm_lookups=crm_lookups)
     if not lookups.get("designations"):
@@ -193,7 +326,7 @@ def _load_project_lookups(client: CrmApiClient):
         lookups["projects"] = projects
     except CrmApiError:
         lookups.setdefault("projects", [])
-    return lookups
+    return enrich_task_lookups(lookups)
 
 
 def load_project_lookups(client: CrmApiClient):
@@ -205,6 +338,23 @@ def load_project_lookups(client: CrmApiClient):
 
 
 def _load_board_lookups(client: CrmApiClient):
+    if _use_aggregated_endpoints():
+        lookups = _derive_board_lookups_from_board_page(_get_board_page_bundle(client), client)
+        try:
+            team_gais = get_team_gais(client)
+            if isinstance(team_gais, dict):
+                lookups["team_gais"] = team_gais.get("items") or team_gais.get("results") or []
+            elif isinstance(team_gais, list):
+                lookups["team_gais"] = team_gais
+        except CrmApiError:
+            lookups.setdefault("team_gais", [])
+        try:
+            projects, _ = projects_service.list_projects(client, limit=200)
+            lookups["projects"] = projects
+        except CrmApiError:
+            lookups.setdefault("projects", [])
+        return enrich_task_lookups(lookups)
+
     lookups = dict(load_project_lookups(client))
     try:
         groups = get_groups(client)
@@ -496,7 +646,9 @@ def board_access_for_task(client: CrmApiClient, task):
 def can_comment_on_board(request, board_access):
     if not request.user.has_perm("crm.view_task"):
         return False
-    return board_access.get("can_comment", True)
+    if board_access.get("can_comment") is False:
+        return False
+    return True
 
 
 _TASK_ASSIGNEE_FIELDS = frozenset({"assignee_user_id", "assignee_customer_gai_id"})

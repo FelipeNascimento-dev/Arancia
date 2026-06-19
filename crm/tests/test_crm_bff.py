@@ -6,11 +6,13 @@ from django.test import RequestFactory, SimpleTestCase, TestCase, override_setti
 
 from crm_api.context import (
     build_basic_token,
+    build_bff_headers,
     build_crm_headers,
     build_crm_headers_from_request,
     build_scheduler_headers,
+    build_service_user_headers,
 )
-from crm_api.exceptions import CrmAuthError
+from crm_api.exceptions import CrmApiError, CrmAuthError
 from crm_api.payloads import (
     board_access_payload,
     board_column_payload,
@@ -55,6 +57,82 @@ class BuildCrmHeadersTests(SimpleTestCase):
         self.assertEqual(headers["Authorization"], "Bearer scheduler-secret")
 
 
+class BearerAuthTests(SimpleTestCase):
+    @override_settings(CRM_INTERNAL_API_SECRET="bff-secret")
+    def test_build_bff_headers_includes_bearer_and_acting_user(self):
+        headers = build_bff_headers(username="arc_user")
+        self.assertEqual(headers["Authorization"], "Bearer bff-secret")
+        self.assertEqual(headers["X-Acting-User"], "arc_user")
+        self.assertNotIn("X-API-Key", headers)
+
+    @override_settings(CRM_INTERNAL_API_SECRET="")
+    def test_build_bff_headers_requires_secret(self):
+        with self.assertRaises(CrmAuthError):
+            build_bff_headers(username="arc_user")
+
+    @override_settings(CRM_INTERNAL_API_SECRET="bff-secret")
+    def test_build_bff_headers_requires_username(self):
+        with self.assertRaises(CrmAuthError):
+            build_bff_headers(username="")
+
+    @override_settings(
+        CRM_BFF_AUTH_MODE="bearer",
+        CRM_INTERNAL_API_SECRET="bff-secret",
+    )
+    def test_build_crm_headers_from_request_bearer_mode_no_session_password(self):
+        user = Mock(is_authenticated=True, username="joao")
+        request = RequestFactory().get("/")
+        request.user = user
+        request.session = {}
+        headers = build_crm_headers_from_request(request)
+        self.assertEqual(headers["Authorization"], "Bearer bff-secret")
+        self.assertEqual(headers["X-Acting-User"], "joao")
+        self.assertNotIn("X-API-Key", headers)
+
+    @override_settings(
+        CRM_BFF_AUTH_MODE="bearer",
+        CRM_INTERNAL_API_SECRET="bff-secret",
+    )
+    def test_build_crm_headers_from_request_bearer_requires_authenticated_user(self):
+        request = RequestFactory().get("/")
+        request.user = Mock(is_authenticated=False)
+        request.session = {}
+        with self.assertRaises(CrmAuthError):
+            build_crm_headers_from_request(request)
+
+    @override_settings(
+        CRM_BFF_AUTH_MODE="legacy_basic",
+        CRM_API_KEY="test-key",
+    )
+    def test_build_crm_headers_from_request_legacy_requires_password(self):
+        user = Mock(is_authenticated=True, username="joao")
+        request = RequestFactory().get("/")
+        request.user = user
+        request.session = {}
+        with self.assertRaises(CrmAuthError):
+            build_crm_headers_from_request(request)
+
+    @override_settings(
+        CRM_BFF_AUTH_MODE="bearer",
+        CRM_INTERNAL_API_SECRET="bff-secret",
+        CRM_SERVICE_USERNAME="celery_svc",
+    )
+    def test_build_service_user_headers_bearer_mode(self):
+        headers = build_service_user_headers()
+        self.assertEqual(headers["Authorization"], "Bearer bff-secret")
+        self.assertEqual(headers["X-Acting-User"], "celery_svc")
+        self.assertNotIn("X-API-Key", headers)
+
+    @override_settings(
+        CRM_BFF_AUTH_MODE="bearer",
+        CRM_INTERNAL_API_SECRET="bff-secret",
+        CRM_SERVICE_USERNAME="",
+    )
+    def test_build_service_user_headers_bearer_requires_username(self):
+        with self.assertRaises(CrmAuthError):
+            build_service_user_headers()
+
+
 class SessionCredentialsTests(TestCase):
     @override_settings(
         SECRET_KEY="test-secret-key-for-fernet-derivation",
@@ -68,14 +146,33 @@ class SessionCredentialsTests(TestCase):
         clear_password_from_session(request)
         self.assertIsNone(get_password_from_session(request))
 
-    @override_settings(CRM_API_KEY="test-key")
-    def test_build_crm_headers_from_request_without_session_raises(self):
+    @override_settings(
+        CRM_BFF_AUTH_MODE="legacy_basic",
+        CRM_API_KEY="test-key",
+        SECRET_KEY="test-secret-key-for-fernet-derivation",
+    )
+    def test_build_crm_headers_from_request_legacy_without_session_raises(self):
         user = User(username="joao", is_active=True)
         request = RequestFactory().get("/")
         request.user = user
         request.session = {}
         with self.assertRaises(CrmAuthError):
             build_crm_headers_from_request(request)
+
+    @override_settings(
+        CRM_BFF_AUTH_MODE="legacy_basic",
+        CRM_API_KEY="test-key",
+        SECRET_KEY="test-secret-key-for-fernet-derivation",
+    )
+    def test_build_crm_headers_from_request_legacy_with_session_password(self):
+        user = User(username="joao", is_active=True)
+        request = RequestFactory().get("/")
+        request.user = user
+        request.session = self.client.session
+        store_password_in_session(request, "my-password")
+        headers = build_crm_headers_from_request(request)
+        self.assertEqual(headers["X-API-Key"], "test-key")
+        self.assertTrue(headers["Authorization"].startswith("Basic "))
 
 
 class ClientMaskTests(SimpleTestCase):
@@ -88,6 +185,16 @@ class ClientMaskTests(SimpleTestCase):
         })
         self.assertEqual(masked["Authorization"], "Basic ***")
         self.assertEqual(masked["X-API-Key"], "***")
+
+    def test_crm_client_masks_bearer_in_logs(self):
+        from crm_api.client import _mask_headers
+
+        masked = _mask_headers({
+            "Authorization": "Bearer secret-token",
+            "X-Acting-User": "arc_user",
+        })
+        self.assertEqual(masked["Authorization"], "Bearer ***")
+        self.assertEqual(masked["X-Acting-User"], "arc_user")
 
 
 class PayloadTests(SimpleTestCase):
@@ -172,6 +279,20 @@ class PayloadTests(SimpleTestCase):
             {"id": "aaa-111", "kanban_position": 0},
             {"id": "bbb-222", "kanban_position": 1},
             {"id": "ccc-333", "kanban_position": 2},
+        ])
+
+    def test_column_reorder_payload_normalizes_items(self):
+        from crm_api.services.boards import column_reorder_payload
+
+        payload = column_reorder_payload({
+            "items": [
+                {"id": "bbb-222", "kanban_position": 1},
+                {"id": "aaa-111", "kanban_position": 0},
+            ],
+        })
+        self.assertEqual(payload["items"], [
+            {"id": "bbb-222", "kanban_position": 1},
+            {"id": "aaa-111", "kanban_position": 0},
         ])
 
     def test_service_type_payload_fields(self):
@@ -541,7 +662,7 @@ class CeleryTaskTests(SimpleTestCase):
     @patch("crm.tasks.CrmApiClient")
     @patch("crm.tasks.alerts_service.fire_alert")
     @patch("crm.tasks.alerts_service.list_alerts")
-    def test_fire_contract_alerts_skips_fired(self, mock_list, mock_fire, mock_client_cls):
+    def test_fire_contract_alerts_uses_service_user_client(self, mock_list, mock_fire, mock_client_cls):
         from crm.tasks import fire_contract_alerts
 
         mock_list.return_value = (
@@ -563,3 +684,390 @@ class CanCommentTests(SimpleTestCase):
         self.assertFalse(can_comment_on_board(request, {"can_comment": False}))
         user.has_perm = lambda codename: False
         self.assertFalse(can_comment_on_board(request, {"can_comment": True}))
+
+
+class CrmContextPermissionsTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth.models import Permission
+        from django.contrib.contenttypes.models import ContentType
+
+        from crm.models import CrmPermissions
+        from logistica.models import PermissaoUsuarioDummy
+
+        self.user = User.objects.create_user(username="crm_ctx", password="pass")
+        crm_ct = ContentType.objects.get_for_model(CrmPermissions)
+        logistica_ct = ContentType.objects.get_for_model(PermissaoUsuarioDummy)
+        view_task = Permission.objects.get_or_create(
+            codename="view_task",
+            content_type=crm_ct,
+            defaults={"name": "Visualizar task"},
+        )[0]
+        acesso = Permission.objects.get_or_create(
+            codename="acesso_arancia",
+            content_type=logistica_ct,
+            defaults={"name": "Acesso Arancia"},
+        )[0]
+        self.user.user_permissions.add(view_task, acesso)
+
+    @patch("crm.context_processors._fetch_me_context")
+    def test_permission_codenames_from_django_not_api(self, mock_fetch):
+        from crm.context_processors import resolve_crm_context_data
+
+        mock_fetch.return_value = {
+            "permission_codenames": ["add_task", "move_task"],
+            "accessible_boards": [{"id": "b1", "code": "crm_comercial"}],
+            "accessible_projects": [],
+        }
+        request = RequestFactory().get("/arancia/crm/comercial/")
+        request.user = self.user
+        request.session = self.client.session
+
+        data = resolve_crm_context_data(request)
+
+        self.assertIn("view_task", data["permission_codenames"])
+        self.assertNotIn("add_task", data["permission_codenames"])
+        self.assertEqual(len(data["accessible_boards"]), 1)
+
+    @patch("crm.context_processors._fetch_me_context")
+    def test_api_permission_codenames_not_used_for_has_any_access_gate(self, mock_fetch):
+        from crm.context_processors import resolve_crm_context_data
+
+        mock_fetch.return_value = {
+            "permission_codenames": ["add_task"],
+            "has_any_access": True,
+            "accessible_boards": [],
+        }
+        user = User.objects.create_user(username="no_crm", password="pass")
+        request = RequestFactory().get("/arancia/crm/comercial/")
+        request.user = user
+        request.session = self.client.session
+
+        data = resolve_crm_context_data(request)
+
+        self.assertFalse(data["has_any_access"])
+        self.assertEqual(data["permission_codenames"], [])
+
+
+class KanbanPermissionGateTests(SimpleTestCase):
+    @override_settings(CRM_USE_AGGREGATED_ENDPOINTS=False)
+    def test_kanban_flags_use_django_perms_not_api_access_legacy(self):
+        from crm.views.kanban_helpers import build_kanban_context
+
+        user = Mock()
+        user.has_perm = lambda codename: codename == "crm.view_task"
+        request = Mock(user=user)
+        client = Mock()
+
+        board = {"id": "board-1", "code": "crm_comercial", "name": "Comercial"}
+        columns = [{"id": "col-1", "status_task_id": "st-1", "kanban_position": 0}]
+        access = {
+            "can_create_tasks": True,
+            "can_move_tasks": True,
+            "can_comment": True,
+        }
+
+        with patch("crm.views.kanban_helpers.boards_service.get_board", return_value=board):
+            with patch("crm.views.kanban_helpers.enrich_board", side_effect=lambda b: b):
+                with patch("crm.views.kanban_helpers.run_parallel_crm_fetches") as mock_parallel:
+                    mock_parallel.return_value = (
+                        {
+                            "columns": columns,
+                            "tasks": ([], 0),
+                            "access": access,
+                        },
+                        {},
+                    )
+                    with patch(
+                        "crm.views.kanban_helpers.enrich_board_column",
+                        side_effect=lambda c: c,
+                    ):
+                        ctx, errors = build_kanban_context(request, client, "board-1")
+
+        self.assertEqual(errors, [])
+        self.assertFalse(ctx["can_create_tasks"])
+        self.assertFalse(ctx["can_move_tasks"])
+        self.assertTrue(ctx["can_comment"])
+
+    def test_kanban_bundle_flags_use_django_perms_not_api_access(self):
+        from crm.views.kanban_helpers import build_kanban_context
+
+        user = Mock()
+        user.has_perm = lambda codename: codename == "crm.view_task"
+        request = Mock(user=user)
+        client = Mock()
+
+        bundle = {
+            "board": {"id": "board-1", "code": "crm_comercial", "name": "Comercial"},
+            "columns": [{"id": "col-1", "status_task_id": "st-1", "kanban_position": 0}],
+            "tasks": [],
+            "access": {
+                "can_create_tasks": True,
+                "can_move_tasks": True,
+                "can_comment": True,
+            },
+        }
+
+        with patch(
+            "crm.views.kanban_helpers.boards_service.get_kanban_bundle",
+            return_value=bundle,
+        ):
+            with patch("crm.views.kanban_helpers.enrich_board", side_effect=lambda b: b):
+                with patch(
+                    "crm.views.kanban_helpers.enrich_board_column",
+                    side_effect=lambda c: c,
+                ):
+                    ctx, errors = build_kanban_context(request, client, "board-1")
+
+        self.assertEqual(errors, [])
+        self.assertFalse(ctx["can_create_tasks"])
+        self.assertFalse(ctx["can_move_tasks"])
+        self.assertTrue(ctx["can_comment"])
+
+
+class FormTaskPermissionGateTests(SimpleTestCase):
+    def test_can_create_on_board_denies_without_add_task_even_if_api_would_allow(self):
+        from crm.views.views_tasks.view_form_task import _can_create_on_board
+
+        user = Mock()
+        user.has_perm = lambda codename: False
+        request = Mock(user=user)
+        self.assertFalse(_can_create_on_board(request, "board-uuid"))
+
+    def test_can_create_on_board_allows_with_add_task(self):
+        from crm.views.views_tasks.view_form_task import _can_create_on_board
+
+        user = Mock()
+        user.has_perm = lambda codename: codename == "crm.add_task"
+        request = Mock(user=user)
+        self.assertTrue(_can_create_on_board(request, "board-uuid"))
+
+
+class AggregatedServicesTests(SimpleTestCase):
+    def test_get_board_page_calls_aggregated_endpoint(self):
+        from crm_api.services.lookups import get_board_page
+
+        client = Mock()
+        client.get.return_value = {"crm": {}}
+        get_board_page(client, gais_limit=25)
+        client.get.assert_called_once_with(
+            "/lookups/board-page",
+            params={"gais_limit": 25},
+        )
+
+    def test_get_kanban_bundle_calls_endpoint_with_task_limit(self):
+        from crm_api.services.boards import get_kanban_bundle
+
+        client = Mock()
+        get_kanban_bundle(client, "uuid-board", task_limit=50)
+        client.get.assert_called_once_with(
+            "/boards/uuid-board/kanban",
+            params={"task_limit": 50},
+        )
+
+    def test_resolve_board_id_from_page(self):
+        from crm_api.services.boards import resolve_board_id_from_page
+
+        page = {
+            "crm": {
+                "boards": [
+                    {"id": "aaa", "code": "other"},
+                    {"id": "bbb", "code": "crm_comercial"},
+                ],
+            },
+        }
+        self.assertEqual(resolve_board_id_from_page(page), "bbb")
+        self.assertIsNone(resolve_board_id_from_page({"crm": {"boards": []}}))
+
+
+class BundleContractTests(SimpleTestCase):
+    def test_validate_board_page_detects_missing_crm_keys(self):
+        from crm_api.bundle_contracts import validate_board_page_response
+
+        errors = validate_board_page_response({"crm": {"boards": []}})
+        self.assertIn("crm.customers", errors)
+
+    def test_validate_kanban_bundle_requires_access(self):
+        from crm_api.bundle_contracts import validate_kanban_bundle_response
+
+        errors = validate_kanban_bundle_response({
+            "board": {"id": "x"},
+            "columns": [],
+            "tasks": [],
+        })
+        self.assertIn("access", errors)
+
+
+class ProbeHelpersTests(SimpleTestCase):
+    def test_sla_kanban_and_dashboard_thresholds(self):
+        from crm_api.probe_helpers import (
+            DASHBOARD_SLA_MS,
+            KANBAN_SLA_MS,
+            sla_met,
+            sla_threshold_ms,
+        )
+
+        self.assertEqual(sla_threshold_ms("kanban_bundle"), KANBAN_SLA_MS)
+        self.assertEqual(sla_threshold_ms("dashboard_summary"), DASHBOARD_SLA_MS)
+        self.assertTrue(sla_met("kanban_bundle", 2500)[0])
+        self.assertFalse(sla_met("kanban_bundle", 3500)[0])
+        self.assertTrue(sla_met("dashboard_summary", 1800)[0])
+        self.assertFalse(sla_met("dashboard_summary", 2500)[0])
+
+    def test_sla_lookups_warm_vs_cold(self):
+        from crm_api.probe_helpers import LOOKUPS_COLD_SLA_MS, LOOKUPS_WARM_SLA_MS, sla_met
+
+        self.assertTrue(sla_met("lookups_crm", 400, x_cache="MISS")[0])
+        self.assertFalse(sla_met("lookups_crm", 600, x_cache="MISS")[0])
+        self.assertTrue(sla_met("lookups_crm", 80, x_cache="HIT")[0])
+        self.assertFalse(sla_met("lookups_crm", 150, x_cache="HIT")[0])
+        self.assertEqual(LOOKUPS_WARM_SLA_MS, 100)
+        self.assertEqual(LOOKUPS_COLD_SLA_MS, 500)
+
+    def test_cache_invalidation_expects_hit_then_miss(self):
+        from crm_api.probe_helpers import cache_invalidation_ok
+
+        ok, _ = cache_invalidation_ok("HIT", "MISS")
+        self.assertTrue(ok)
+        ok, reason = cache_invalidation_ok("MISS", "MISS")
+        self.assertFalse(ok)
+        self.assertIn("HIT", reason)
+        ok, reason = cache_invalidation_ok("HIT", "HIT")
+        self.assertFalse(ok)
+        self.assertIn("MISS", reason)
+
+    def test_build_probe_endpoints_aggregates_with_board_uuid(self):
+        from crm_api.probe_helpers import build_probe_endpoints
+
+        board_id = "a2a44d6e-2313-40d6-b7d8-c33718895563"
+        labels = [
+            row[0]
+            for row in build_probe_endpoints(board_id, include_aggregates=True)
+        ]
+        self.assertIn("board_page", labels)
+        self.assertIn("kanban_bundle", labels)
+        self.assertIn("dashboard_summary", labels)
+        self.assertNotIn("board_access", labels)
+
+    def test_build_probe_endpoints_legacy_fanout(self):
+        from crm_api.probe_helpers import build_probe_endpoints
+
+        board_id = "a2a44d6e-2313-40d6-b7d8-c33718895563"
+        labels = [
+            row[0]
+            for row in build_probe_endpoints(board_id, include_aggregates=False)
+        ]
+        self.assertIn("board_access", labels)
+        self.assertNotIn("kanban_bundle", labels)
+
+    def test_validate_board_id_accepts_uuid_string(self):
+        from crm_api.probe_helpers import validate_board_id
+
+        uid = "a2a44d6e-2313-40d6-b7d8-c33718895563"
+        self.assertEqual(validate_board_id(uid), uid)
+
+    def test_capture_instrumentation_headers(self):
+        from crm_api.probe_helpers import capture_instrumentation_headers
+
+        response = Mock()
+        response.headers = {
+            "X-Cache": "HIT",
+            "X-SQL-Queries": "12",
+            "Content-Type": "application/json",
+        }
+        captured = capture_instrumentation_headers(response)
+        self.assertEqual(captured["X-Cache"], "HIT")
+        self.assertEqual(captured["X-SQL-Queries"], "12")
+        self.assertNotIn("Content-Type", captured)
+
+
+class AggregatedDashboardTests(SimpleTestCase):
+    def test_get_dashboard_summary_calls_aggregated_endpoint(self):
+        from crm_api.services.dashboard import get_dashboard_summary
+
+        client = Mock()
+        get_dashboard_summary(client)
+        client.get.assert_called_once_with("/dashboard/summary")
+
+    def test_get_billing_lookups_bundle(self):
+        from crm_api.services.lookups import get_billing_lookups_bundle
+
+        client = Mock()
+        get_billing_lookups_bundle(client)
+        client.get.assert_called_once_with("/lookups/billing")
+
+
+class LookupEntitiesTests(SimpleTestCase):
+    def test_enrich_task_lookups_maps_customers_to_gais(self):
+        from crm.helpers.api_display import enrich_task_lookups
+
+        enriched = enrich_task_lookups({
+            "customers": [
+                {"customer_gai_id": 10, "razao_social": "Cliente A"},
+                {"gai_id": 11, "nome": "Cliente B"},
+            ],
+        })
+        self.assertEqual(len(enriched["gais"]), 2)
+        self.assertEqual(enriched["gais"][0]["id"], 10)
+        self.assertEqual(enriched["gais"][0]["nome"], "Cliente A")
+        self.assertEqual(enriched["gais"][1]["id"], 11)
+
+    def test_normalize_lookup_user_accepts_user_id(self):
+        from crm.helpers.lookup_entities import normalize_lookup_users
+
+        users = normalize_lookup_users([
+            {"user_id": 7, "user_username": "arc.test", "full_name": "Test User"},
+        ])
+        self.assertEqual(users[0]["id"], 7)
+        self.assertEqual(users[0]["username"], "arc.test")
+        self.assertEqual(users[0]["name"], "Test User")
+
+    def test_load_system_users_falls_back_to_django(self):
+        from crm.views.views_tasks._helpers import _load_system_users
+
+        client = Mock()
+        with patch("crm.views.views_tasks._helpers.get_users", side_effect=CrmApiError("fail")):
+            with patch("crm.views.views_tasks._helpers._get_crm_lookups_normalized", return_value={}):
+                with patch("crm.views.views_tasks._helpers.django_system_users", return_value=[{"id": 1, "username": "arc", "name": "Arc"}]):
+                    users = _load_system_users(client)
+        self.assertEqual(users[0]["id"], 1)
+
+    def test_task_list_modal_form_populates_user_and_gai_choices(self):
+        from crm.forms import TaskListModalForm
+
+        form = TaskListModalForm(lookups={
+            "users": [{"user_id": 3, "username": "arc.user", "name": "User"}],
+            "gais": [{"customer_gai_id": 9, "nome": "PA Centro"}],
+            "boards": [{"id": 1, "name": "Board"}],
+            "status_tasks": [{"id": 2, "name": "Aberto"}],
+        })
+        user_values = [value for value, _ in form.fields["assignee_user_id"].choices if value]
+        gai_values = [value for value, _ in form.fields["customer_gai_id"].choices if value]
+        self.assertIn("3", user_values)
+        self.assertIn("9", gai_values)
+
+
+class HomologAcceptanceTests(SimpleTestCase):
+    """Unit-level acceptance helpers used by validate_crm_bff_homolog (no live API)."""
+
+    def test_bundle_sla_row_structure(self):
+        from crm_api.probe_helpers import sla_met
+
+        for label, elapsed, expected in (
+            ("kanban_bundle", 2800, True),
+            ("kanban_bundle", 3100, False),
+            ("dashboard_summary", 1900, True),
+            ("dashboard_summary", 2100, False),
+        ):
+            ok, _ = sla_met(label, elapsed)
+            self.assertEqual(ok, expected, msg=label)
+
+    def test_summarize_probe_rows_flags_sla_failures(self):
+        from crm_api.probe_helpers import summarize_probe_rows
+
+        summary = summarize_probe_rows([
+            {"label": "kanban_bundle", "status": 200, "elapsed_ms": 3500, "sla_ok": False},
+            {"label": "kanban_bundle", "status": 200, "elapsed_ms": 2000, "sla_ok": True, "x_cache": "HIT"},
+        ])
+        self.assertEqual(summary["kanban_bundle"]["sla_failures"], 1)
+        self.assertEqual(summary["kanban_bundle"]["x_cache"], ["HIT"])
+

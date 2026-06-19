@@ -59,7 +59,8 @@
     {% endif %}
 
 {% if can_create_tasks or perms.crm.add_task %}
-<div id="modalCreateTask" class="modal">
+<link rel="stylesheet" href="{% static 'global/css/crm_task_modal.css' %}">
+<div id="modalCreateTask" class="modal crm-task-modal">
     <div class="modal-dialog">
         <div class="modal-header">
             <h5><i class="fa-solid fa-plus"></i> Nova task</h5>
@@ -68,17 +69,7 @@
         <form method="post" id="formCreateTask">
             {% csrf_token %}
             <input type="hidden" name="create_task" value="1">
-            <div class="modal-body fields-grid">
-                {% for field in task_form %}
-                <div class="form-group{% if field.name == 'description' %} form-group--wide{% endif %}{% if field.is_hidden %} d-none{% endif %}">
-                    {% if not field.is_hidden %}{{ field.label_tag }}{% endif %}
-                    {{ field }}
-                    {% if field.errors %}
-                    <div class="text-danger small">{{ field.errors }}</div>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
+            {% include "crm/templates_tasks/partials/_task_create_modal_fields.html" %}
             <div class="modal-footer modal-footer-split">
                 <div class="footer-left">
                     {% include "global/partials/_required_fields.html" %}
@@ -110,7 +101,9 @@ window.CrmKanbanConfig = {
     loadMoreLimit: 50
 };
 </script>
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
 <script src="{% static 'global/javascript/kanban_board.js' %}"></script>
+<script src="{% static 'global/javascript/crm_task_modal.js' %}"></script>
 <script src="{% static 'global/javascript/crm_comercial.js' %}"></script>
 {% if task_form.errors %}
 <script>

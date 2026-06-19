@@ -8,18 +8,22 @@ from crm.views.views_comercial.comercial_column_helpers import (
     handle_column_post,
     load_board_columns,
 )
-from crm.views.views_tasks._helpers import load_board_lookups, load_task_lookups, menu_context
+from crm.views.views_tasks._helpers import (
+    load_board_lookups,
+    load_task_lookups,
+    menu_context,
+    resolve_comercial_board_id,
+)
 from crm.views.views_tasks.view_form_task import _can_create_on_board
 from crm_api.client import CrmApiClient
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
 from crm_api.payloads import task_payload
-from crm_api.services import boards as boards_service
 from crm_api.services import tasks as tasks_service
 
 
 def _resolve_comercial_board_id(request, client):
     try:
-        return boards_service.get_comercial_board_id(client)
+        return resolve_comercial_board_id(client)
     except CrmApiError as exc:
         messages.error(request, crm_error_message_pt(exc))
         return None
@@ -71,7 +75,7 @@ def kanban_comercial(request):
         task_form = ComercialTaskModalForm(
             request.POST, lookups=lookups, board_id=board_id,
         )
-        if not _can_create_on_board(client, board_id):
+        if not _can_create_on_board(request, board_id):
             messages.error(request, "Você não tem permissão para criar tasks neste board.")
             return redirect("crm:kanban_comercial")
 

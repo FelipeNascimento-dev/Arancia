@@ -1,0 +1,87 @@
+/* Modal de criação de task — layout alinhado ao mural */
+.crm-task-modal .modal-dialog {
+  width: min(920px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+}
+
+.crm-task-modal .modal-body {
+  overflow-x: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.crm-task-modal .modal-header {
+  padding: 18px 24px;
+  background: linear-gradient(135deg, #fff 0%, #f8fbff 100%);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.crm-task-modal .modal-header h5 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.crm-task-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 18px;
+  align-items: start;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.crm-task-modal-grid .form-group {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  margin: 0;
+}
+
+.crm-task-modal-grid .form-group--wide {
+  grid-column: 1 / -1;
+}
+
+.crm-task-modal-grid label,
+.crm-task-modal-grid .form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin: 0;
+}
+
+.crm-task-description-field .ck-editor__editable {
+  min-height: 160px;
+  max-height: 280px;
+}
+
+.crm-task-description-field .ck.ck-editor {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.crm-task-description-field .ck.ck-editor__main,
+.crm-task-description-field .ck.ck-toolbar {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.crm-task-description-field .ck.ck-editor__main > .ck-editor__editable {
+  background: #fff;
+  border-color: #cbd5e1;
+}
+
+.crm-task-description-field .ck.ck-toolbar {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+@media (max-width: 768px) {
+  .crm-task-modal-grid {
+    grid-template-columns: 1fr;
+  }
+}

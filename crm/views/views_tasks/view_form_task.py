@@ -13,14 +13,12 @@ from crm_api.services import tasks as tasks_service
 from crm.views.views_tasks._helpers import load_task_lookups, menu_context
 
 
-def _can_create_on_board(client, board_id):
+def _can_create_on_board(request, board_id):
+    if not request.user.has_perm("crm.add_task"):
+        return False
     if not board_id:
         return True
-    try:
-        access = client.get(f"/boards/{board_id}/access/me")
-        return access.get("can_create_tasks", True)
-    except CrmApiError:
-        return True
+    return True
 
 
 @crm_permission_required("view_task")
@@ -48,7 +46,7 @@ def form_task(request):
 
         if form.is_valid():
             board_id = form.cleaned_data.get("board_id")
-            if not _can_create_on_board(client, board_id):
+            if not _can_create_on_board(request, board_id):
                 messages.error(request, "Você não tem permissão para criar tasks neste board.")
             else:
                 try:

@@ -79,7 +79,7 @@ def _set_cached_context(request, data: dict) -> None:
 
 
 def _django_crm_permissions(user):
-    """Fallback barato — evita get_all_permissions() em toda página."""
+    """Permissões CRM locais (gates) — não usar permission_codenames da API."""
     if not user.has_module_perms("crm"):
         return []
     return [
@@ -89,37 +89,17 @@ def _django_crm_permissions(user):
     ]
 
 
-def _lightweight_menu_context(request) -> dict:
-    has_access = _user_has_crm_module(request)
-    return {
-        "has_any_access": has_access,
-        "permission_codenames": [],
-        "modules": [],
-        "accessible_boards": [],
-        "accessible_projects": [],
-    }
-
-
-def _fallback_context_from_django(user):
-    codenames = _django_crm_permissions(user)
-    return {
-        "has_any_access": bool(codenames) or user.has_module_perms("crm"),
-        "permission_codenames": codenames,
-        "modules": [],
-        "accessible_boards": [],
-        "accessible_projects": [],
-    }
-
-
 def _fetch_me_context(request) -> dict:
+    """Carrega /me/context só para accessible_boards/projects (não para gates)."""
+
     def _load():
         try:
             client = CrmApiClient(request)
             return get_me_context(client) or {}
         except CrmApiError:
-            return _fallback_context_from_django(request.user)
+            return {}
         except Exception:
-            return _fallback_context_from_django(request.user)
+            return {}
 
     ttl = int(getattr(settings, "CRM_ME_CONTEXT_REDIS_CACHE_TTL", 300))
     return get_user_scoped_lookup(request, "me_context", _load, redis_ttl=ttl)
@@ -130,30 +110,26 @@ def resolve_crm_context_data(request) -> dict:
     if not request.user.is_authenticated:
         return _empty_crm_context()
 
+    permission_codenames = _django_crm_permissions(request.user)
+
     cached = _get_cached_context(request)
     if cached is not None:
-        data = cached
+        api_data = cached
     elif _path_needs_full_crm_context(request):
-        data = _fetch_me_context(request)
-        _set_cached_context(request, data)
+        api_data = _fetch_me_context(request)
+        _set_cached_context(request, api_data)
     else:
-        data = _lightweight_menu_context(request)
+        api_data = {}
 
-    permission_codenames = data.get("permission_codenames") or []
-    if not permission_codenames and _path_needs_full_crm_context(request):
-        permission_codenames = _django_crm_permissions(request.user)
-
-    has_any_access = bool(permission_codenames) or data.get("has_any_access", False)
-    if not has_any_access:
-        has_any_access = _user_has_crm_module(request)
+    has_any_access = bool(permission_codenames) or _user_has_crm_module(request)
 
     return {
         "has_any_access": has_any_access,
         "permission_codenames": permission_codenames,
-        "modules": data.get("modules") or [],
-        "user": data.get("user") or {},
-        "accessible_boards": data.get("accessible_boards") or [],
-        "accessible_projects": data.get("accessible_projects") or [],
+        "modules": api_data.get("modules") or [],
+        "user": api_data.get("user") or {},
+        "accessible_boards": api_data.get("accessible_boards") or [],
+        "accessible_projects": api_data.get("accessible_projects") or [],
     }
 
 

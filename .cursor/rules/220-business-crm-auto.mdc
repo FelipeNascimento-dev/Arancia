@@ -11,17 +11,21 @@ alwaysApply: false
 - Browser **nunca** chama a FastAPI CRM diretamente.
 - Fluxo obrigatório: templates/JS → views Django (`/arancia/crm/...`) → `crm_api.client.CrmApiClient` → FastAPI `/api/v1`.
 - Secrets (`CRM_API_KEY`, `CRM_INTERNAL_API_SECRET`, `CRM_SERVICE_*`) ficam em env/`local_settings.py` — **não** expor no JS.
+- **Bundles agregados** (default `CRM_USE_AGGREGATED_ENDPOINTS=true`): `GET /lookups/board-page`, `GET /boards/{id}/kanban`, `GET /dashboard/summary`, `GET /lookups/billing`. Rollback: flag `false` → fan-out legado.
 
 ## Autenticação e permissões (UI)
 
 - Baseline em toda tela: `@login_required` + `logistica.acesso_arancia` + permissão `crm.*` (`crm.decorators.crm_permission_required`).
 - Dashboard: `crm_any_access_required` (qualquer permissão `crm.*`).
-- Auth API (negócio): `Authorization: Basic` com **username do usuário logado** + senha capturada no login + header `X-API-Key` (`CRM_API_KEY`); montados em `crm_api/context.py`; senha em sessão criptografada (`crm_api/session_credentials.py`).
-- Scheduler interno: somente `Bearer` (`CRM_INTERNAL_API_SECRET`) — `CrmApiClient(scheduler=True)`.
-- Jobs Celery de negócio (ex.: `fire_contract_alerts`): `CrmApiClient(service_user=True)` → Basic + key com `CRM_SERVICE_USERNAME`/`CRM_SERVICE_PASSWORD`.
-- Gates de botão: `{% if perms.crm.<codename> %}` — mesmo padrão do menu lateral.
+- Auth API BFF (padrão, Fase 1): `Authorization: Bearer {CRM_INTERNAL_API_SECRET}` + `X-Acting-User: {username}` montados **server-side** em `crm_api/context.py` (`build_bff_headers`). Flag `CRM_BFF_AUTH_MODE=bearer` (default em `setup/settings.py`). Equivalência handoff: `CRM_USE_LEGACY_BASIC_AUTH` → `CRM_BFF_AUTH_MODE=legacy_basic`.
+- Rollback auth: `CRM_BFF_AUTH_MODE=legacy_basic` → `Authorization: Basic` (username logado + senha Fernet na sessão) + `X-API-Key` (`CRM_API_KEY`); senha ainda capturada no login via `crm_api/session_credentials.py` enquanto rollback existir.
+- Scheduler interno: somente `Bearer` (`CRM_INTERNAL_API_SECRET`) — `CrmApiClient(scheduler=True)`; **sem** `X-Acting-User`.
+- Jobs Celery de negócio (ex.: `fire_contract_alerts`): `CrmApiClient(service_user=True)` → Bearer + `X-Acting-User: {CRM_SERVICE_USERNAME}` (modo bearer); legacy usa Basic + key com `CRM_SERVICE_USERNAME`/`CRM_SERVICE_PASSWORD`.
+- **Gates de ação:** Django `request.user.has_perm('crm.*')` — **não** usar `/access/me` nem `permission_codenames` da API como gate único.
+- Gates de botão/template: `{% if perms.crm.<codename> %}` — mesmo padrão do menu lateral.
+- `can_create_tasks` ← `crm.add_task`; `can_move_tasks` ← `crm.move_task`; `can_manage_columns` ← `crm.manage_board_columns`; `can_comment` ← `crm.view_task` (+ flag UI do bundle quando disponível).
 - Permissões Django vêm do seed Alembic (`app_label=crm`); modelo dummy `CrmPermissions` só documenta codenames.
-- Menu/contexto: `GET /me/context` via `crm.context_processors.crm_menu_context` (`accessible_boards`, `accessible_projects`, `permission_codenames`).
+- Menu/contexto: `GET /me/context` **somente** para `accessible_boards` / `accessible_projects` (read-only); `permission_codenames` vêm de `_django_crm_permissions()` em `crm/context_processors.py`.
 
 ## Layout e templates
 
@@ -33,11 +37,12 @@ alwaysApply: false
 
 ## Boards e Kanban
 
-- **Projeto CRM Comercial** (`/crm/comercial/`): board fixo `crm_comercial` (`CRM_COMERCIAL_BOARD_CODE`); Kanban, acesso e colunas no app `crm`.
+- **Projeto CRM Comercial** (`/crm/comercial/`): board fixo `crm_comercial` (`CRM_COMERCIAL_BOARD_CODE`); Kanban via bundle quando agregado ativo.
 - **Boards operacionais** (`/projetos/boards/`): app Django `projetos` — separado do CRM comercial.
 - Rotas legadas `/crm/projects/*` e `/crm/boards/*` redirecionam para `projetos:*`.
 - Mover card: `PATCH /tasks/{id}/move` via `crm/ajax/tasks/<id>/move/` com `status_id` + `kanban_position` + `board_id`.
 - Colunas: reorder via `crm/ajax/boards/<id>/columns/reorder/`.
+- Fluxo agregado Kanban: `board-page` → resolver `board_id` → `kanban` bundle (board + columns + tasks + access para UI).
 
 ## Tasks e recorrências
 
@@ -45,6 +50,11 @@ alwaysApply: false
 - Edição de template recorrente existente: `/crm/tasks/recurrences/<id>/edit/` apenas.
 - Se `start_at <= now` ao criar recorrência, disparar `POST /internal/scheduler/generate-due-tasks` com `CrmApiClient(scheduler=True)` (one-shot pós-create).
 - Celery: `crm.tasks.generate_recurring_tasks` a cada 15 min com `scheduler=True`; idempotência delegada à API.
+
+## Dashboard
+
+- Com bundles: `GET /dashboard/summary` → `billing`, `alerts`, `my_tasks` (carregar só se usuário tiver permissão do widget).
+- Meta SLA aceite: TTFB dashboard **< 2 s**; Kanban BFF **< 3 s**.
 
 ## Alertas de contrato
 
@@ -57,14 +67,21 @@ alwaysApply: false
 - Endpoints API: `/service-types`, `/prioritys`, `/status-tasks` (+ reorder em status).
 - Permissões granulares: `manage_service_types`, `manage_priorities`, `manage_status_tasks`.
 
+## Performance e cache
+
+- API FastAPI cacheia bundles (`X-Cache: HIT/MISS`); após `PATCH /tasks/{id}/move`, próximo `GET /boards/{id}/kanban` deve ser **MISS**.
+- Cache L2 Django (`REDIS_ENABLED`, `CRM_LOOKUPS_REDIS_CACHE_TTL`) opcional — API é fonte primária quando agregado ativo.
+- Probe: `python manage.py measure_crm_api_latency --include-aggregates`; homolog: `scripts/validate_crm_bff_homolog.py`.
+
 ## Gaps da API — não implementar no Django
 
 - DELETE contrato/faturamento; PATCH/DELETE contato/endereço individual.
 - CRUD `/teams/*` (usar lookups read-only).
-- Dashboard endpoint dedicado; notificações e-mail/push; JWT na API.
+- Notificações e-mail/push; JWT na API.
 
 ## Proibido
 
 - Montar URLs da FastAPI manualmente nas views (usar `crm_api/services/*`).
 - Retornar dados de todos os clientes sem elevação explícita na API.
+- Usar `/access/me` ou `permission_codenames` da API como **único** gate de autorização.
 - Unificar flags de escopo GAI (`sales_channel == 'all'`) com `gestao_total` em refactors não solicitados.
