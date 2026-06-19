@@ -110,16 +110,6 @@
         overflow-y: auto;
     }
 
-    .crm-dashboard-page .box.crm-list-box.wide {
-        max-height: 320px;
-        min-height: 200px;
-    }
-
-    .crm-dashboard-page .crm-meta {
-        font-size: 0.85rem;
-        color: #666;
-    }
-
     @media (max-width: 1400px) {
         .crm-dashboard-page .crm-kpi-row,
         .crm-dashboard-page .crm-alert-banner {
@@ -191,42 +181,6 @@
                 </li>
                 {% empty %}
                 <li class="muted">Nenhum atalho disponível para seu perfil.</li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <div class="box crm-list-box" id="box-group2">
-            <h3><i class="fa-solid fa-clock"></i> Tasks em atraso</h3>
-            <ul>
-                {% for task in overdue_tasks %}
-                <li>
-                    {% if task.task_id %}
-                    <a href="{% url 'crm:detalhe_task' task.task_id %}">{{ task.display_title }}</a>
-                    {% else %}
-                    {{ task.display_title }}
-                    {% endif %}
-                    <span class="crm-meta"> — venc.: {{ task.display_due }}{% if task.display_board %} · {{ task.display_board }}{% endif %}{% if task.display_status %} · {{ task.display_status }}{% endif %}</span>
-                </li>
-                {% empty %}
-                <li class="muted">Nenhuma task em atraso.</li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <div class="box wide crm-list-box">
-            <h3><i class="fa-solid fa-bell"></i> Alertas recentes</h3>
-            <ul>
-                {% for alert in recent_alerts %}
-                <li>
-                    {{ alert.display_title }}
-                    <span class="crm-meta">
-                        — {{ alert.status|default:"-" }}
-                        {% if alert.display_customer %} · {{ alert.display_customer }}{% endif %}
-                        {% if alert.display_contract %} · contrato {{ alert.display_contract }}{% endif %}
-                    </span>
-                </li>
-                {% empty %}
-                <li class="muted">Nenhum alerta recente.</li>
                 {% endfor %}
             </ul>
         </div>

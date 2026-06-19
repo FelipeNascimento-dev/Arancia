@@ -127,9 +127,9 @@
         const isCollapsed = column.classList.contains('is-collapsed');
         btn.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
         btn.innerHTML = isCollapsed
-            ? '<i class="fa-solid fa-chevron-down"></i>'
-            : '<i class="fa-solid fa-chevron-up"></i>';
-        btn.title = isCollapsed ? 'Expandir coluna' : 'Minimizar coluna';
+            ? '<i class="fa-solid fa-chevron-right"></i>'
+            : '<i class="fa-solid fa-chevron-left"></i>';
+        btn.title = isCollapsed ? 'Expandir coluna' : 'Recolher coluna';
     }
 
     function setColumnCollapsed(column, columnId, collapsed, isCollapsed) {
@@ -153,7 +153,7 @@
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'kanban-column-toggle';
-            btn.setAttribute('aria-label', 'Minimizar coluna');
+            btn.setAttribute('aria-label', 'Recolher coluna');
             const count = header.querySelector('.kanban-column-count');
             header.insertBefore(btn, count || null);
 
