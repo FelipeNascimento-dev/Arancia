@@ -2,6 +2,11 @@
 
 Documento para repasse ao time FastAPI. Consolidado a partir do plano de performance (Fase 5–6A) e medições reais coletadas em **18/Jun/2026**.
 
+**Documentos relacionados:**
+
+- [Relatório de latência CRM](crm-api-latency-report.md) — ranking por endpoint, fan-out por tela, inventário BFF e metas de SLA
+- [Prompt de migração de permissões para hg-api-crm](fastapi-permissions-migration-prompt.md) — auth interna Bearer, remoção de permission checks, fases e riscos
+
 ---
 
 ## 1. Resumo executivo
@@ -313,6 +318,8 @@ Para o time FastAPI saber o que **não** precisa replicar:
 
 | Arquivo | Descrição |
 |---------|-----------|
+| [docs/crm-api-latency-report.md](crm-api-latency-report.md) | Relatório consolidado de latência e fan-out |
+| [docs/fastapi-permissions-migration-prompt.md](fastapi-permissions-migration-prompt.md) | Prompt copy-paste para o repositório FastAPI |
 | `logistica/management/commands/measure_crm_api_latency.py` | Probe direto na API CRM |
 | `logistica/management/commands/measure_performance_baseline.py` | Baseline por página Django |
 | `setup/middleware/request_timing.py` | Headers de instrumentação |

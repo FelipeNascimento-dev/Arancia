@@ -13,6 +13,36 @@ from crm.views.views_tasks._helpers import (
 
 TASK_DETAIL_TABS = frozenset({"info", "subtasks", "links", "comentarios", "anexos", "historico"})
 
+TASK_DETAIL_SECTIONS = frozenset({"subtasks", "links", "comentarios", "anexos", "historico"})
+
+# Abas que não precisam re-buscar a task nem board access (só permissão Django).
+TABS_WITHOUT_TASK_FETCH = frozenset({"historico", "subtasks"})
+
+
+def fetch_task_sidebar_context(client, task_id, *, user=None):
+    """Responsáveis e observadores para a sidebar (sempre visíveis)."""
+    needs_assignee_lookups = user is None or user.has_perm("crm.assign_task")
+    lookups = load_task_lookups(client) if needs_assignee_lookups else {}
+    try:
+        assignees = [
+            enrich_assignee_for_display(a)
+            for a in tasks_service.list_assignees(client, task_id)
+        ]
+    except CrmApiError:
+        assignees = []
+    try:
+        watchers = [
+            enrich_watcher_for_display(w)
+            for w in tasks_service.list_watchers(client, task_id)
+        ]
+    except CrmApiError:
+        watchers = []
+    return {
+        "assignees": assignees,
+        "watchers": watchers,
+        "assignee_form": TaskAssigneeForm(lookups=lookups),
+    }
+
 
 def fetch_task_tab_context(client, request, task_id, tab, *, task, board_access, can_comment):
     """Carrega dados de uma aba do detalhe de task (lazy-load)."""
@@ -24,26 +54,7 @@ def fetch_task_tab_context(client, request, task_id, tab, *, task, board_access,
     }
 
     if tab == "info":
-        lookups = load_task_lookups(client)
-        try:
-            assignees = [
-                enrich_assignee_for_display(a)
-                for a in tasks_service.list_assignees(client, task_id)
-            ]
-        except CrmApiError:
-            assignees = []
-        try:
-            watchers = [
-                enrich_watcher_for_display(w)
-                for w in tasks_service.list_watchers(client, task_id)
-            ]
-        except CrmApiError:
-            watchers = []
-        ctx.update({
-            "assignees": assignees,
-            "watchers": watchers,
-            "assignee_form": TaskAssigneeForm(lookups=lookups),
-        })
+        ctx.update(fetch_task_sidebar_context(client, task_id, user=getattr(request, "user", None)))
 
     elif tab == "subtasks":
         try:

@@ -15,22 +15,26 @@ from crm.views.views_tasks._helpers import (
     menu_context,
     task_display_value,
 )
-from crm.views.views_tasks.task_tab_helpers import TASK_DETAIL_TABS, fetch_task_tab_context
+from crm.views.views_tasks.task_tab_helpers import (
+    TASK_DETAIL_TABS,
+    fetch_task_sidebar_context,
+    fetch_task_tab_context,
+)
 
 
 @crm_permission_required("view_task")
 def detalhe_task(request, task_id):
     client = CrmApiClient(request)
-    active_tab = request.GET.get("tab", "info")
-    if active_tab not in TASK_DETAIL_TABS:
-        active_tab = "info"
+    active_tab = request.GET.get("tab", "")
+    if active_tab and active_tab not in TASK_DETAIL_TABS:
+        active_tab = ""
     task = None
     board_access = {}
 
     comment_form = TaskCommentForm()
     subtask_form = TaskSubtaskForm()
     link_form = TaskLinkForm()
-    needs_assignee_lookups = active_tab == "info" or (
+    needs_assignee_lookups = (
         request.method == "POST" and "add_assignee" in request.POST
     )
     if needs_assignee_lookups:
@@ -61,7 +65,7 @@ def detalhe_task(request, task_id):
                         client, task_id, comment_payload(comment_form.cleaned_data),
                     )
                     messages.success(request, "Comentário adicionado.")
-                    return redirect(f"{request.path}?tab=comentarios")
+                    return redirect(f"{request.path}?tab=comentarios#comentarios")
                 except CrmApiError as exc:
                     messages.error(request, crm_error_message_pt(exc))
 
@@ -76,7 +80,7 @@ def detalhe_task(request, task_id):
                         client, task_id, subtask_payload(subtask_form.cleaned_data),
                     )
                     messages.success(request, "Subtarefa adicionada.")
-                    return redirect(f"{request.path}?tab=subtasks")
+                    return redirect(f"{request.path}?tab=subtasks#subtasks")
                 except CrmApiError as exc:
                     messages.error(request, crm_error_message_pt(exc))
 
@@ -91,7 +95,7 @@ def detalhe_task(request, task_id):
                         client, task_id, link_payload(link_form.cleaned_data),
                     )
                     messages.success(request, "Vínculo criado.")
-                    return redirect(f"{request.path}?tab=links")
+                    return redirect(f"{request.path}?tab=links#links")
                 except CrmApiError as exc:
                     messages.error(request, crm_error_message_pt(exc))
 
@@ -103,7 +107,7 @@ def detalhe_task(request, task_id):
                     messages.success(request, "Vínculo removido.")
                 except CrmApiError as exc:
                     messages.error(request, crm_error_message_pt(exc))
-            return redirect(f"{request.path}?tab=links")
+            return redirect(f"{request.path}?tab=links#links")
 
         elif "add_assignee" in request.POST:
             if not request.user.has_perm("crm.assign_task"):
@@ -116,7 +120,7 @@ def detalhe_task(request, task_id):
                         client, task_id, assignee_payload(assignee_form.cleaned_data),
                     )
                     messages.success(request, "Responsável adicionado.")
-                    return redirect(f"{request.path}?tab=info")
+                    return redirect(f"{request.path}#atribuidos")
                 except CrmApiError as exc:
                     messages.error(request, crm_error_message_pt(exc))
 
@@ -128,7 +132,7 @@ def detalhe_task(request, task_id):
                     messages.success(request, "Responsável removido.")
                 except CrmApiError as exc:
                     messages.error(request, crm_error_message_pt(exc))
-            return redirect(f"{request.path}?tab=info")
+            return redirect(f"{request.path}#atribuidos")
 
         elif "watch_task" in request.POST:
             if request.user.has_perm("crm.view_task"):
@@ -147,7 +151,7 @@ def detalhe_task(request, task_id):
                     messages.success(request, "Observador removido.")
                 except CrmApiError as exc:
                     messages.error(request, crm_error_message_pt(exc))
-            return redirect(f"{request.path}?tab=info")
+            return redirect(f"{request.path}#atribuidos")
 
         elif "upload_attachment" in request.POST:
             if not can_comment:
@@ -164,17 +168,21 @@ def detalhe_task(request, task_id):
                     messages.success(request, "Anexo enviado.")
                 except CrmApiError as exc:
                     messages.error(request, crm_error_message_pt(exc))
-            return redirect(f"{request.path}?tab=anexos")
+            return redirect(f"{request.path}?tab=anexos#anexos")
 
-    tab_context = fetch_task_tab_context(
-        client,
-        request,
-        task_id,
-        active_tab,
-        task=task,
-        board_access=board_access,
-        can_comment=can_comment,
-    )
+    sidebar_context = fetch_task_sidebar_context(client, task_id, user=request.user)
+
+    tab_context = {}
+    if active_tab:
+        tab_context = fetch_task_tab_context(
+            client,
+            request,
+            task_id,
+            active_tab,
+            task=task,
+            board_access=board_access,
+            can_comment=can_comment,
+        )
 
     recurrence_template_id = task.get("recurrence_template_id") if task else None
 
@@ -190,10 +198,12 @@ def detalhe_task(request, task_id):
             "link_form": link_form,
             "assignee_form": assignee_form,
             "active_tab": active_tab,
+            "active_section": active_tab if active_tab in {"subtasks", "links", "comentarios", "anexos", "historico"} else "",
             "can_comment": can_comment,
             "board_access": board_access,
             "recurrence_template_id": recurrence_template_id,
             "task_display_value": task_display_value,
+            **sidebar_context,
             **tab_context,
             **menu_context("projetos_tasks", "detalhe"),
         },

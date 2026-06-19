@@ -14,7 +14,11 @@ from crm.views.views_tasks._helpers import (
     can_comment_on_board,
     enrich_task_for_display,
 )
-from crm.views.views_tasks.task_tab_helpers import TASK_DETAIL_TABS, fetch_task_tab_context
+from crm.views.views_tasks.task_tab_helpers import (
+    TASK_DETAIL_TABS,
+    TABS_WITHOUT_TASK_FETCH,
+    fetch_task_tab_context,
+)
 
 
 def _json_error(exc, default_status=400):
@@ -47,15 +51,21 @@ def ajax_task_tab(request, task_id):
         return JsonResponse({"ok": False, "detail": "Aba inválida."}, status=400)
 
     client = CrmApiClient(request)
-    try:
-        task = tasks_service.get_task(client, task_id)
-        if task:
-            task = enrich_task_for_display(task)
-    except CrmApiError as exc:
-        return _json_error(exc, getattr(exc, "status_code", None) or 404)
+    task = None
+    board_access = {}
+    can_comment = False
 
-    board_access = board_access_for_task(client, task)
-    can_comment = can_comment_on_board(request, board_access)
+    if tab not in TABS_WITHOUT_TASK_FETCH:
+        try:
+            task = tasks_service.get_task(client, task_id)
+            if task:
+                task = enrich_task_for_display(task)
+        except CrmApiError as exc:
+            return _json_error(exc, getattr(exc, "status_code", None) or 404)
+
+        board_access = board_access_for_task(client, task)
+        can_comment = can_comment_on_board(request, board_access)
+
     context = fetch_task_tab_context(
         client,
         request,
