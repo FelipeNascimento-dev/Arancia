@@ -21,6 +21,7 @@
 @import url(dinamic_table.css);
 @import url(responsividade.css);
 @import url(campo.css);
+@import url(crm_task_detail.css);
 @import url(ferramentas.css);
 /* @import url(detalhe_os.css); */
 
@@ -191,10 +192,49 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
   padding: 12px 14px;
   border-bottom: 1px solid #e2e8f0;
   font-weight: 600;
   color: #1e293b;
+}
+
+.kanban-column-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kanban-column-toggle {
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+  font-size: 0.85rem;
+}
+
+.kanban-column-toggle:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.kanban-column.is-collapsed {
+  max-height: none;
+  align-self: flex-start;
+}
+
+.kanban-column.is-collapsed .kanban-column-body {
+  display: none;
+}
+
+.kanban-column.is-collapsed .kanban-column-header {
+  border-bottom: 0;
 }
 
 .kanban-column-count {

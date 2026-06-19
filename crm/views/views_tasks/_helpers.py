@@ -314,6 +314,17 @@ def enrich_task_for_display(task):
         "display_due": format_datetime_br(due_raw, default="-"),
         "display_scheduled_start": format_datetime_br(task.get("scheduled_start_at"), default="-"),
         "display_scheduled_end": format_datetime_br(task.get("scheduled_end_at"), default="-"),
+        "display_created_at": format_datetime_br(
+            task.get("created_at") or task.get("created_on"),
+            default="",
+        ),
+        "display_created_by": (
+            task.get("created_by_username")
+            or task.get("creator_username")
+            or task.get("author_username")
+            or nested_label(task.get("created_by") or {}, "username", "name", "nome")
+            or ""
+        ),
     }
 
 

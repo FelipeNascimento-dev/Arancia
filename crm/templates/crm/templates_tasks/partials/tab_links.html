@@ -1,43 +1,41 @@
-<div class="tab-card">
-    <ul>
-        {% for link in links %}
+<ul class="crm-attachment-list">
+    {% for link in links %}
+    <li>
+        {% if link.related %}
+        <a href="{% url 'crm:detalhe_task' link.related.id %}">{{ link.related.title|default:link.related.id }}</a>
+        <span class="muted">({{ link.link_type|default:"related" }})</span>
+        {% else %}
+        Task #{{ link.target_task_id|default:link.id }} ({{ link.link_type|default:"related" }})
+        {% endif %}
+        {% if perms.crm.change_task %}
+        <form method="post" style="display:inline; margin-left:auto;">
+            {% csrf_token %}
+            <input type="hidden" name="delete_link" value="1">
+            <input type="hidden" name="link_id" value="{{ link.id }}">
+            <button type="submit" class="btn-remove" title="Remover">×</button>
+        </form>
+        {% endif %}
+    </li>
+    {% empty %}
+        {% for link in linked_tasks %}
         <li>
-            {% if link.related %}
-            <a href="{% url 'crm:detalhe_task' link.related.id %}">{{ link.related.title|default:link.related.id }}</a>
-            <span class="muted">({{ link.link_type|default:"related" }})</span>
+            {% if link.can_view_full %}
+            <a href="{% url 'crm:detalhe_task' link.id %}">{{ link.title|default:link.id }}</a>
             {% else %}
-            Task #{{ link.target_task_id|default:link.id }} ({{ link.link_type|default:"related" }})
-            {% endif %}
-            {% if perms.crm.change_task %}
-            <form method="post" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="delete_link" value="1">
-                <input type="hidden" name="link_id" value="{{ link.id }}">
-                <button type="submit" class="btn btn-danger btn-sm">×</button>
-            </form>
+            Task restrita ({{ link.link_type }})
             {% endif %}
         </li>
         {% empty %}
-            {% for link in linked_tasks %}
-            <li>
-                {% if link.can_view_full %}
-                <a href="{% url 'crm:detalhe_task' link.id %}">{{ link.title|default:link.id }}</a>
-                {% else %}
-                Task restrita ({{ link.link_type }})
-                {% endif %}
-            </li>
-            {% empty %}
-            <li class="muted">Nenhum vínculo.</li>
-            {% endfor %}
+        <li class="muted">Nenhum vínculo.</li>
         {% endfor %}
-    </ul>
-    {% if perms.crm.change_task %}
-    <form method="post" style="margin-top:12px;">
-        {% csrf_token %}
-        <input type="hidden" name="add_link" value="1">
-        {{ link_form.target_task_id.label_tag }}{{ link_form.target_task_id }}
-        {{ link_form.link_type.label_tag }}{{ link_form.link_type }}
-        <button type="submit" class="btn btn-primary btn-sm">Vincular</button>
-    </form>
-    {% endif %}
-</div>
+    {% endfor %}
+</ul>
+{% if perms.crm.change_task %}
+<form method="post" class="crm-inline-form">
+    {% csrf_token %}
+    <input type="hidden" name="add_link" value="1">
+    <div class="form-group">{{ link_form.target_task_id.label_tag }}{{ link_form.target_task_id }}</div>
+    <div class="form-group">{{ link_form.link_type.label_tag }}{{ link_form.link_type }}</div>
+    <button type="submit" class="btn btn-primary btn-sm">Vincular</button>
+</form>
+{% endif %}

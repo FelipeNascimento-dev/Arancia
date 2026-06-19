@@ -105,6 +105,80 @@
         }
     }
 
+    function collapsedStorageKey() {
+        return 'kanban-collapsed-' + String(cfg.boardId || 'default');
+    }
+
+    function loadCollapsedColumnIds() {
+        try {
+            return new Set(JSON.parse(sessionStorage.getItem(collapsedStorageKey()) || '[]'));
+        } catch (_err) {
+            return new Set();
+        }
+    }
+
+    function saveCollapsedColumnIds(collapsed) {
+        sessionStorage.setItem(collapsedStorageKey(), JSON.stringify([...collapsed]));
+    }
+
+    function syncColumnToggle(column) {
+        const btn = column.querySelector('.kanban-column-toggle');
+        if (!btn) return;
+        const isCollapsed = column.classList.contains('is-collapsed');
+        btn.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+        btn.innerHTML = isCollapsed
+            ? '<i class="fa-solid fa-chevron-down"></i>'
+            : '<i class="fa-solid fa-chevron-up"></i>';
+        btn.title = isCollapsed ? 'Expandir coluna' : 'Minimizar coluna';
+    }
+
+    function setColumnCollapsed(column, columnId, collapsed, isCollapsed) {
+        column.classList.toggle('is-collapsed', isCollapsed);
+        if (isCollapsed) collapsed.add(columnId);
+        else collapsed.delete(columnId);
+        saveCollapsedColumnIds(collapsed);
+        syncColumnToggle(column);
+    }
+
+    function bindColumnCollapse() {
+        const collapsed = loadCollapsedColumnIds();
+
+        board.querySelectorAll('.kanban-column').forEach(column => {
+            const columnId = column.dataset.columnId || column.dataset.statusId;
+            if (!columnId) return;
+
+            const header = column.querySelector('.kanban-column-header');
+            if (!header || header.querySelector('.kanban-column-toggle')) return;
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'kanban-column-toggle';
+            btn.setAttribute('aria-label', 'Minimizar coluna');
+            const count = header.querySelector('.kanban-column-count');
+            header.insertBefore(btn, count || null);
+
+            if (collapsed.has(columnId)) {
+                setColumnCollapsed(column, columnId, collapsed, true);
+            } else {
+                syncColumnToggle(column);
+            }
+
+            btn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const isCollapsed = !column.classList.contains('is-collapsed');
+                setColumnCollapsed(column, columnId, collapsed, isCollapsed);
+            });
+
+            if (cfg.canMove) {
+                column.addEventListener('dragover', (event) => {
+                    if (!draggedCard || !column.classList.contains('is-collapsed')) return;
+                    event.preventDefault();
+                    setColumnCollapsed(column, columnId, collapsed, false);
+                });
+            }
+        });
+    }
+
     function appendTasks(tasks) {
         (tasks || []).forEach(task => {
             const body = findColumnBody(task.column_key);
@@ -161,6 +235,7 @@
     }
 
     board.querySelectorAll('.kanban-card[draggable="true"]').forEach(bindCardDrag);
+    bindColumnCollapse();
 
     board.querySelectorAll('.kanban-column-body').forEach(zone => {
         zone.addEventListener('dragover', e => {

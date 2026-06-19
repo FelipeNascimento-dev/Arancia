@@ -1,115 +1,186 @@
 {% extends 'global/base.html' %}
 {% load static %}
 {% block content %}
-<style>
-    .card-2col { height: auto; margin-top: 65px; margin-bottom: 32px; }
-    .tabs { width: 100%; }
-    .tab-list { display: flex; gap: 16px; border-bottom: 1px solid #e5e7eb; margin-bottom: 16px; }
-    .tab { background: transparent; border: 0; padding: 10px 8px; font-weight: 600; color: #6b7280; cursor: pointer; }
-    .tab.active { color: #111827; border-bottom: 2px solid #6366f1; }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-    .tab-loading { padding: 24px; text-align: center; color: #6b7280; }
-</style>
+<link rel="stylesheet" href="{% static 'global/css/crm_task_detail.css' %}">
 
-<div class="form-container">
-    <div class="form-card-2col card-2col">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
-            <a href="{% url 'crm:lista_tasks' %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
-            <div style="display:flex; gap:8px; align-items:center;">
-                {% if recurrence_template_id %}
-                <span style="background:#e0e7ff;color:#3730a3;padding:4px 10px;border-radius:6px;font-size:13px;">
-                    Recorrente —
-                    <a href="{% url 'crm:form_recorrencia' recurrence_template_id %}">Ver template</a>
-                </span>
+<div class="crm-task-detail-page">
+    <div class="crm-task-detail-toolbar">
+        <a href="{% url 'crm:lista_tasks' %}" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left"></i> Voltar
+        </a>
+        <div class="crm-task-detail-toolbar-actions">
+            {% if recurrence_template_id %}
+            <span class="crm-recurrence-badge">
+                <i class="fa-solid fa-rotate"></i> Recorrente —
+                <a href="{% url 'crm:form_recorrencia' recurrence_template_id %}">Ver template</a>
+            </span>
+            {% endif %}
+            {% if perms.crm.change_task %}
+            <a href="{% url 'crm:edit_task' task_id %}" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-pen"></i> Editar
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="crm-task-detail-layout">
+        <main class="crm-task-detail-main">
+            <header class="crm-task-detail-header">
+                <div class="crm-task-detail-header-main">
+                    <span class="task-ref">#{{ task_id|slice:":8" }}</span>
+                    <h1>{{ task.display_title|default:task_id }}</h1>
+                    {% if task.display_board and task.display_board != "-" %}
+                    <span class="task-type">{{ task.display_board }}</span>
+                    {% endif %}
+                </div>
+                {% if task.display_created_by or task.display_created_at %}
+                <div class="task-created-meta">
+                    {% if task.display_created_by %}Criado por {{ task.display_created_by }}{% endif %}
+                    {% if task.display_created_at %}<br>{{ task.display_created_at }}{% endif %}
+                </div>
                 {% endif %}
-                {% if perms.crm.change_task %}
-                <a href="{% url 'crm:edit_task' task_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen"></i> Editar</a>
+            </header>
+
+            <div class="crm-task-description">
+                {{ task.description|default:"Sem descrição." }}
+            </div>
+
+            <section class="crm-task-section" id="anexos"
+                     data-section="anexos"
+                     data-loaded="{% if active_section == 'anexos' %}1{% else %}0{% endif %}">
+                <div class="crm-task-section-header">
+                    <span><i class="fa-solid fa-paperclip"></i> Anexos</span>
+                </div>
+                <div class="crm-task-section-body section-panel">
+                    {% if active_section == 'anexos' %}
+                    {% include "crm/templates_tasks/partials/tab_anexos.html" %}
+                    {% else %}
+                    <div class="tab-lazy-placeholder muted"></div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="crm-task-section" id="subtasks"
+                     data-section="subtasks"
+                     data-loaded="{% if active_section == 'subtasks' %}1{% else %}0{% endif %}">
+                <div class="crm-task-section-header">
+                    <span><i class="fa-solid fa-list-check"></i> Tarefas</span>
+                </div>
+                <div class="crm-task-section-body section-panel">
+                    {% if active_section == 'subtasks' %}
+                    {% include "crm/templates_tasks/partials/tab_subtasks.html" %}
+                    {% else %}
+                    <div class="tab-lazy-placeholder muted"></div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="crm-task-section" id="comentarios"
+                     data-section="comentarios"
+                     data-loaded="{% if active_section == 'comentarios' %}1{% else %}0{% endif %}">
+                <div class="crm-task-section-header">
+                    <span><i class="fa-solid fa-comments"></i> Comentários</span>
+                </div>
+                <div class="crm-task-section-body section-panel">
+                    {% if active_section == 'comentarios' %}
+                    {% include "crm/templates_tasks/partials/tab_comentarios.html" %}
+                    {% else %}
+                    <div class="tab-lazy-placeholder muted"></div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="crm-task-section" id="links"
+                     data-section="links"
+                     data-loaded="{% if active_section == 'links' %}1{% else %}0{% endif %}">
+                <div class="crm-task-section-header">
+                    <span><i class="fa-solid fa-link"></i> Vínculos</span>
+                </div>
+                <div class="crm-task-section-body section-panel">
+                    {% if active_section == 'links' %}
+                    {% include "crm/templates_tasks/partials/tab_links.html" %}
+                    {% else %}
+                    <div class="tab-lazy-placeholder muted"></div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="crm-task-section" id="historico"
+                     data-section="historico"
+                     data-loaded="{% if active_section == 'historico' %}1{% else %}0{% endif %}">
+                <div class="crm-task-section-header">
+                    <span><i class="fa-solid fa-clock-rotate-left"></i> Histórico</span>
+                </div>
+                <div class="crm-task-section-body section-panel">
+                    {% if active_section == 'historico' %}
+                    {% include "crm/templates_tasks/partials/tab_historico.html" %}
+                    {% else %}
+                    <div class="tab-lazy-placeholder muted"></div>
+                    {% endif %}
+                </div>
+            </section>
+        </main>
+
+        <aside class="crm-task-detail-sidebar">
+            <div class="crm-sidebar-block">
+                <div class="crm-sidebar-status">{{ task.display_status|default:"—" }}</div>
+                {% if task.display_priority and task.display_priority != "-" %}
+                <span class="crm-sidebar-tag">{{ task.display_priority }}</span>
                 {% endif %}
+            </div>
+
+            <div class="crm-sidebar-block">
+                <h4>Detalhes</h4>
+                <div class="crm-sidebar-meta-row">
+                    <span class="label">Board</span>
+                    <span class="value">{{ task.display_board|default:"-" }}</span>
+                </div>
+                <div class="crm-sidebar-meta-row">
+                    <span class="label">Cliente</span>
+                    <span class="value">{{ task.display_customer|default:"-" }}</span>
+                </div>
+                <div class="crm-sidebar-meta-row">
+                    <span class="label">Projeto</span>
+                    <span class="value">{{ task.display_project|default:"-" }}</span>
+                </div>
+                <div class="crm-sidebar-meta-row">
+                    <span class="label">Prazo</span>
+                    <span class="value">{{ task.display_due|default:"-" }}</span>
+                </div>
+                <div class="crm-sidebar-meta-row">
+                    <span class="label">Início</span>
+                    <span class="value">{{ task.display_scheduled_start|default:"-" }}</span>
+                </div>
+            </div>
+
+            <div class="crm-sidebar-block" id="atribuidos">
+                {% include "crm/templates_tasks/partials/sidebar_people.html" %}
+            </div>
+
+            <div class="crm-sidebar-actions">
                 {% if perms.crm.view_task %}
                 <form method="post" style="display:inline;">
                     {% csrf_token %}
                     <input type="hidden" name="watch_task" value="1">
-                    <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-eye"></i> Observar</button>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fa-solid fa-eye"></i> Observar
+                    </button>
                 </form>
                 {% endif %}
-            </div>
-        </div>
-
-        <h2>{{ task.display_title|default:task_id }}</h2>
-
-        <div class="info-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">
-            <div class="info-item"><label style="font-size:12px;color:#6b7280;display:block;">Status</label><span style="font-weight:600;">{{ task.display_status|default:"-" }}</span></div>
-            <div class="info-item"><label style="font-size:12px;color:#6b7280;display:block;">Prioridade</label><span style="font-weight:600;">{{ task.display_priority|default:"-" }}</span></div>
-            <div class="info-item"><label style="font-size:12px;color:#6b7280;display:block;">Board</label><span style="font-weight:600;">{{ task.display_board|default:"-" }}</span></div>
-            <div class="info-item"><label style="font-size:12px;color:#6b7280;display:block;">Cliente</label><span style="font-weight:600;">{{ task.display_customer|default:"-" }}</span></div>
-            <div class="info-item"><label style="font-size:12px;color:#6b7280;display:block;">Prazo</label><span style="font-weight:600;">{{ task.display_due|default:"-" }}</span></div>
-            <div class="info-item"><label style="font-size:12px;color:#6b7280;display:block;">Início</label><span style="font-weight:600;">{{ task.display_scheduled_start|default:"-" }}</span></div>
-            <div class="info-item"><label style="font-size:12px;color:#6b7280;display:block;">Projeto</label><span style="font-weight:600;">{{ task.display_project|default:"-" }}</span></div>
-        </div>
-
-        <div class="tabs" id="crm-task-detail-tabs"
-             data-tab-url="{% url 'crm:ajax_task_tab' task_id %}"
-             data-active-tab="{{ active_tab }}">
-            <div class="tab-list">
-                <button type="button" class="tab {% if active_tab == 'info' %}active{% endif %}" data-tab="info" data-panel="tab-info">Info</button>
-                <button type="button" class="tab {% if active_tab == 'subtasks' %}active{% endif %}" data-tab="subtasks" data-panel="tab-subtasks">Subtasks</button>
-                <button type="button" class="tab {% if active_tab == 'links' %}active{% endif %}" data-tab="links" data-panel="tab-links">Links</button>
-                <button type="button" class="tab {% if active_tab == 'comentarios' %}active{% endif %}" data-tab="comentarios" data-panel="tab-comentarios">Comentários</button>
-                <button type="button" class="tab {% if active_tab == 'anexos' %}active{% endif %}" data-tab="anexos" data-panel="tab-anexos">Anexos</button>
-                <button type="button" class="tab {% if active_tab == 'historico' %}active{% endif %}" data-tab="historico" data-panel="tab-historico">Histórico</button>
-            </div>
-
-            <div class="tab-panel {% if active_tab == 'info' %}active{% endif %}" id="tab-info" data-tab-name="info" data-loaded="{% if active_tab == 'info' %}1{% else %}0{% endif %}">
-                {% if active_tab == 'info' %}
-                {% include "crm/templates_tasks/partials/tab_info.html" %}
-                {% else %}
-                <div class="tab-loading">Carregando...</div>
+                {% if perms.crm.change_task %}
+                <a href="{% url 'crm:edit_task' task_id %}" class="btn btn-secondary btn-sm">
+                    <i class="fa-solid fa-pen"></i> Editar
+                </a>
                 {% endif %}
             </div>
-
-            <div class="tab-panel {% if active_tab == 'subtasks' %}active{% endif %}" id="tab-subtasks" data-tab-name="subtasks" data-loaded="{% if active_tab == 'subtasks' %}1{% else %}0{% endif %}">
-                {% if active_tab == 'subtasks' %}
-                {% include "crm/templates_tasks/partials/tab_subtasks.html" %}
-                {% else %}
-                <div class="tab-loading">Carregando...</div>
-                {% endif %}
-            </div>
-
-            <div class="tab-panel {% if active_tab == 'links' %}active{% endif %}" id="tab-links" data-tab-name="links" data-loaded="{% if active_tab == 'links' %}1{% else %}0{% endif %}">
-                {% if active_tab == 'links' %}
-                {% include "crm/templates_tasks/partials/tab_links.html" %}
-                {% else %}
-                <div class="tab-loading">Carregando...</div>
-                {% endif %}
-            </div>
-
-            <div class="tab-panel {% if active_tab == 'comentarios' %}active{% endif %}" id="tab-comentarios" data-tab-name="comentarios" data-loaded="{% if active_tab == 'comentarios' %}1{% else %}0{% endif %}">
-                {% if active_tab == 'comentarios' %}
-                {% include "crm/templates_tasks/partials/tab_comentarios.html" %}
-                {% else %}
-                <div class="tab-loading">Carregando...</div>
-                {% endif %}
-            </div>
-
-            <div class="tab-panel {% if active_tab == 'anexos' %}active{% endif %}" id="tab-anexos" data-tab-name="anexos" data-loaded="{% if active_tab == 'anexos' %}1{% else %}0{% endif %}">
-                {% if active_tab == 'anexos' %}
-                {% include "crm/templates_tasks/partials/tab_anexos.html" %}
-                {% else %}
-                <div class="tab-loading">Carregando...</div>
-                {% endif %}
-            </div>
-
-            <div class="tab-panel {% if active_tab == 'historico' %}active{% endif %}" id="tab-historico" data-tab-name="historico" data-loaded="{% if active_tab == 'historico' %}1{% else %}0{% endif %}">
-                {% if active_tab == 'historico' %}
-                {% include "crm/templates_tasks/partials/tab_historico.html" %}
-                {% else %}
-                <div class="tab-loading">Carregando...</div>
-                {% endif %}
-            </div>
-        </div>
+        </aside>
     </div>
 </div>
+
+<div id="crm-task-detail-sections"
+     data-tab-url="{% url 'crm:ajax_task_tab' task_id %}"
+     data-active-section="{{ active_section }}"
+     hidden></div>
 
 <script src="{% static 'global/javascript/crm_task_detail.js' %}"></script>
 {% endblock %}
