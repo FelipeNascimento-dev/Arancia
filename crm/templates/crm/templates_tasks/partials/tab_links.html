@@ -1,11 +1,12 @@
+{% load crm_display %}
 <ul class="crm-attachment-list">
     {% for link in links %}
     <li>
         {% if link.related %}
-        <a href="{% url 'crm:detalhe_task' link.related.id %}">{{ link.related.title|default:link.related.id }}</a>
+        <a href="{% url 'crm:detalhe_task' link.related.id %}">{{ link.related.title|default:"Task vinculada" }}</a>
         <span class="muted">({{ link.link_type|default:"related" }})</span>
         {% else %}
-        Task #{{ link.target_task_id|default:link.id }} ({{ link.link_type|default:"related" }})
+        Task {{ link.target_task_id|default:link.id|crm_ref|default:"vinculada" }} ({{ link.link_type|default:"related" }})
         {% endif %}
         {% if perms.crm.change_task %}
         <form method="post" style="display:inline; margin-left:auto;">
@@ -20,7 +21,7 @@
         {% for link in linked_tasks %}
         <li>
             {% if link.can_view_full %}
-            <a href="{% url 'crm:detalhe_task' link.id %}">{{ link.title|default:link.id }}</a>
+            <a href="{% url 'crm:detalhe_task' link.id %}">{{ link.title|default:"Task vinculada" }}</a>
             {% else %}
             Task restrita ({{ link.link_type }})
             {% endif %}

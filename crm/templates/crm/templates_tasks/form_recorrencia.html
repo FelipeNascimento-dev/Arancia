@@ -1,4 +1,5 @@
 {% extends 'global/base.html' %}
+{% load crm_display %}
 {% block content %}
 <style>
     .form-card-2col { height: auto; margin-top: 65px; }
@@ -33,7 +34,6 @@
         <table class="user-table">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Task gerada</th>
                     <th>Executado em</th>
                     <th>Status</th>
@@ -42,10 +42,9 @@
             <tbody>
                 {% for run in runs %}
                 <tr>
-                    <td>{{ run.id }}</td>
                     <td>
                         {% if run.task_id %}
-                        <a href="{% url 'crm:detalhe_task' run.task_id %}">#{{ run.task_id }}</a>
+                        <a href="{% url 'crm:detalhe_task' run.task_id %}">{{ run.task_title|default:run.task_id|crm_ref|default:"Task gerada" }}</a>
                         {% else %}-{% endif %}
                     </td>
                     <td>{{ run.display_executed_at|default:"-" }}</td>

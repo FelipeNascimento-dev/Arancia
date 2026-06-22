@@ -20,7 +20,6 @@
         <table class="user-table">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nome</th>
                     <th>Cliente</th>
                     <th>Status</th>
@@ -30,7 +29,6 @@
             <tbody>
                 {% for item in items %}
                 <tr>
-                    <td>{{ item.id }}</td>
                     <td>{{ item.display_name|default:"-" }}</td>
                     <td>{{ item.display_customer|default:"-" }}</td>
                     <td>{% if item.is_active %}Ativo{% else %}Inativo{% endif %}</td>
@@ -41,7 +39,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="muted text-center">Nenhum projeto encontrado.</td></tr>
+                <tr><td colspan="4" class="muted text-center">Nenhum projeto encontrado.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

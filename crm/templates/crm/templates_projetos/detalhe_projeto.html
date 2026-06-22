@@ -1,7 +1,7 @@
 {% extends "global/base.html" %}
 {% block content %}
 
-<h2 class="title-skill-ger"><i class="fa-solid fa-diagram-project"></i> {{ projeto.name|default:projeto.nome|default:project_id }}</h2>
+<h2 class="title-skill-ger"><i class="fa-solid fa-diagram-project"></i> {{ projeto.display_name|default:projeto.name|default:projeto.nome|default:"Projeto" }}</h2>
 
 <div class="grid-container">
     <div class="box" id="box-group">

@@ -10,7 +10,6 @@
         <table class="user-table">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Título</th>
                     <th>Cliente</th>
                     <th>Contrato</th>
@@ -21,7 +20,6 @@
             <tbody>
                 {% for item in items %}
                 <tr>
-                    <td><strong>{{ item.id }}</strong></td>
                     <td>{{ item.display_title|default:"-" }}</td>
                     <td>{{ item.display_customer|default:"-" }}</td>
                     <td>
@@ -38,7 +36,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="muted text-center">Nenhum alerta encontrado.</td>
+                    <td colspan="5" class="muted text-center">Nenhum alerta encontrado.</td>
                 </tr>
                 {% endfor %}
             </tbody>
