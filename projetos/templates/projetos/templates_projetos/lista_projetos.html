@@ -65,7 +65,7 @@
 {% if perms.crm.add_project %}
 {% include 'global/partials/_modal_2col.html' with modal_id='registerModal' modal_title='Novo Projeto' form=form %}
 <script>
-function openModal(id) { document.getElementById(id).style.display = 'block'; }
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 </script>
 {% endif %}

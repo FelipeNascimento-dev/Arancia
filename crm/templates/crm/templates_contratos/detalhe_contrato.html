@@ -2,90 +2,188 @@
 
 {% block content %}
 <style>
-    .container {
-        max-width: 1300px;
-        margin-left: 25px;
-        margin-bottom: 40px;
+    .crm-contract-detail {
+        max-width: 1200px;
+        margin: 65px auto 40px;
+        padding: 0 24px;
     }
-    .os-card {
-        margin-top: 70px;
-        background: var(--card-bg, #fff);
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-        padding: 24px;
-    }
-    .os-header {
+
+    .crm-contract-detail-header {
         display: flex;
+        align-items: flex-start;
         justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 12px;
-        margin-bottom: 16px;
-    }
-    .os-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
         gap: 16px;
         margin-bottom: 20px;
+        flex-wrap: wrap;
     }
-    .os-field span {
+
+    .crm-contract-detail-header h2 {
+        margin: 0;
+        font-size: 1.35rem;
+        color: #0f172a;
+    }
+
+    .crm-contract-detail-header .subtitle {
+        margin: 4px 0 0;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .crm-contract-detail-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .crm-contract-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .crm-contract-view-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .crm-contract-view-item {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px 12px;
+    }
+
+    .crm-contract-view-item .label {
         display: block;
-        font-size: 12px;
-        color: #777;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        color: #64748b;
+        font-weight: 700;
         margin-bottom: 4px;
     }
-    .os-section {
-        margin-top: 24px;
+
+    .crm-contract-view-item .value {
+        color: #0f172a;
+        font-weight: 500;
+        word-break: break-word;
     }
-    .os-section h3 {
-        font-size: 15px;
-        margin-bottom: 10px;
-        border-left: 4px solid #d32f2f;
-        padding-left: 8px;
+
+    .crm-contract-view-item--wide {
+        grid-column: 1 / -1;
+    }
+
+    .crm-contract-section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #0f172a;
+        margin: 0 0 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .crm-contract-section-title i {
+        color: #64748b;
+    }
+
+    .crm-contract-edit-form .form-grid-2col {
+        gap: 12px 16px;
+    }
+
+    @media (max-width: 900px) {
+        .crm-contract-view-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 640px) {
+        .crm-contract-detail {
+            padding: 0 12px;
+        }
+
+        .crm-contract-view-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 
-<div class="container">
-    <div class="os-card">
-        <div class="os-header">
-            <h2><i class="fa-solid fa-file-contract"></i> Contrato {{ contrato.display_numero|default:contrato.display_titulo|default:"-" }}</h2>
-            <span class="tag">{{ contrato.status|default:"-" }}</span>
+<div class="crm-contract-detail">
+    <div class="crm-contract-detail-header">
+        <div>
+            <h2><i class="fa-solid fa-file-contract"></i> {{ contrato.display_titulo|default:"Contrato" }}</h2>
+            <p class="subtitle">
+                {% if contrato.display_numero %}Nº {{ contrato.display_numero }} · {% endif %}
+                {{ contrato.display_customer|default:"-" }}
+            </p>
         </div>
-
-        <div class="os-grid">
-            <div class="os-field"><span>Título</span>{{ contrato.display_titulo|default:"-" }}</div>
-            <div class="os-field"><span>Cliente</span>{{ contrato.display_customer|default:"-" }}</div>
-            <div class="os-field"><span>Tipo de serviço</span>{{ contrato.display_service_type|default:"-" }}</div>
-            <div class="os-field"><span>Início</span>{{ contrato.display_data_inicio|default:"-" }}</div>
-            <div class="os-field"><span>Fim</span>{{ contrato.display_data_fim|default:"-" }}</div>
-            <div class="os-field"><span>Valor</span>{{ contrato.valor|default:"-" }}</div>
-            <div class="os-field"><span>Descrição</span>{{ contrato.descricao|default:"-" }}</div>
-        </div>
-
-        {% if perms.crm.change_contract %}
-        <div class="os-section">
-            <h3>Editar contrato</h3>
-            <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="edit_contract" value="1">
-                <div class="form-grid-2col">
-                    {% for field in edit_form %}
-                    <div class="form-group">{{ field.label_tag }}{{ field }}</div>
-                    {% endfor %}
-                </div>
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
-            </form>
-        </div>
-        {% endif %}
-
-        <div class="os-section">
-            <h3>Arquivos</h3>
-            {% include 'crm/templates_contratos/arquivos_partial.html' %}
+        <div class="crm-contract-detail-actions">
+            <span class="tag">{{ contrato.display_status|default:contrato.status|default:"-" }}</span>
+            <a href="{% url 'crm:lista_contratos' %}" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </a>
         </div>
     </div>
 
-    <a href="{% url 'crm:lista_contratos' %}" class="btn btn-secondary" style="margin-top: 16px;">
-        <i class="fa-solid fa-arrow-left"></i> Voltar
-    </a>
+    <div class="crm-contract-card">
+        <h3 class="crm-contract-section-title"><i class="fa-solid fa-circle-info"></i> Dados do contrato</h3>
+        <div class="crm-contract-view-grid">
+            <div class="crm-contract-view-item">
+                <span class="label">Nº contrato</span>
+                <span class="value">{{ contrato.display_numero|default:"-" }}</span>
+            </div>
+            <div class="crm-contract-view-item">
+                <span class="label">Cliente</span>
+                <span class="value">{{ contrato.display_customer|default:"-" }}</span>
+            </div>
+            <div class="crm-contract-view-item">
+                <span class="label">Tipo de serviço</span>
+                <span class="value">{{ contrato.display_service_type|default:"-" }}</span>
+            </div>
+            <div class="crm-contract-view-item">
+                <span class="label">Início</span>
+                <span class="value">{{ contrato.display_data_inicio|default:"-" }}</span>
+            </div>
+            <div class="crm-contract-view-item">
+                <span class="label">Fim</span>
+                <span class="value">{{ contrato.display_data_fim|default:"-" }}</span>
+            </div>
+            <div class="crm-contract-view-item">
+                <span class="label">Valor</span>
+                <span class="value">{{ contrato.display_valor|default:"-" }}</span>
+            </div>
+            <div class="crm-contract-view-item crm-contract-view-item--wide">
+                <span class="label">Descrição</span>
+                <span class="value">{{ contrato.display_descricao|default:contrato.descricao|default:"-" }}</span>
+            </div>
+        </div>
+    </div>
+
+    {% if perms.crm.change_contract %}
+    <div class="crm-contract-card crm-contract-edit-form">
+        <h3 class="crm-contract-section-title"><i class="fa-solid fa-pencil"></i> Editar contrato</h3>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="edit_contract" value="1">
+            <div class="form-grid-2col">
+                {% for field in edit_form %}
+                <div class="form-group">{{ field.label_tag }}{{ field }}</div>
+                {% endfor %}
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: 12px;">
+                <i class="fa-solid fa-floppy-disk"></i> Salvar alterações
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="crm-contract-card">
+        <h3 class="crm-contract-section-title"><i class="fa-solid fa-paperclip"></i> Arquivos</h3>
+        {% include 'crm/templates_contratos/arquivos_partial.html' %}
+    </div>
 </div>
 {% endblock %}

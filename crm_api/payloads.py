@@ -45,6 +45,42 @@ def contract_payload(cleaned_data):
     return mapped
 
 
+def contract_api_payload(cleaned_data, *, is_create=False):
+    """
+    Payload aceito pela API CRM (OpenAPI).
+
+    ``number`` e ``value`` ainda não existem no schema do contrato — número e
+    valor do formulário são persistidos em ``description`` via metadados BFF.
+    """
+    from crm.helpers.contract_meta import merge_contract_description
+
+    data = client_payload(cleaned_data)
+    numero = data.pop("numero", None)
+    valor = data.pop("valor", None)
+    status = data.pop("status", None) if is_create else data.get("status")
+
+    merged_description = merge_contract_description(
+        data.get("descricao", ""),
+        numero=numero,
+        valor=valor,
+    )
+    if merged_description:
+        data["descricao"] = merged_description
+    elif "descricao" in data and not merged_description:
+        data.pop("descricao", None)
+
+    mapped = {}
+    for key, value in data.items():
+        api_key = _CONTRACT_API_KEYS.get(key, key)
+        if api_key in ("number", "value"):
+            continue
+        mapped[api_key] = _json_safe_value(value)
+
+    if not is_create and status not in (None, ""):
+        mapped["status"] = status
+    return mapped
+
+
 _CONTRACT_API_KEYS = {
     "client_gai_id": "customer_gai_id",
     "titulo": "title",
@@ -175,8 +211,23 @@ def recurrence_payload(cleaned_data):
     return base
 
 
-def project_payload(cleaned_data):
-    return client_payload(cleaned_data)
+def _name_slug_code(name, *, fallback=None):
+    code = slugify(name or "").replace("-", "_")
+    code = re.sub(r"[^\w]", "", code, flags=re.UNICODE)
+    if code:
+        return code[:64]
+    if fallback not in (None, ""):
+        return str(fallback)[:64]
+    return None
+
+
+def project_payload(cleaned_data, *, is_create=False):
+    payload = client_payload(cleaned_data)
+    if is_create and not payload.get("code"):
+        code = _name_slug_code(payload.get("name"))
+        if code:
+            payload["code"] = code
+    return payload
 
 
 def project_member_payload(cleaned_data):
@@ -207,10 +258,9 @@ def board_payload(cleaned_data):
 
 
 def _board_column_code(name, status_task_id=None):
-    code = slugify(name or "").replace("-", "_")
-    code = re.sub(r"[^\w]", "", code, flags=re.UNICODE)
+    code = _name_slug_code(name)
     if code:
-        return code[:64]
+        return code
     if status_task_id not in (None, ""):
         return f"status_{str(status_task_id).replace('-', '_')}"[:64]
     return None

@@ -41,7 +41,16 @@ class BillingForm(forms.Form):
     referencia = forms.CharField(
         label="Referência",
         max_length=100,
-        widget=forms.TextInput(attrs={"class": "form-control"}),
+        help_text=(
+            "Identificação curta na listagem: competência (06/2026), código interno "
+            "(FAT-2026-06) ou nº da nota (NF 4521). Não é período nem vencimento."
+        ),
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Ex.: 06/2026, FAT-CIELO-06 ou NF 4521",
+            },
+        ),
     )
     valor = forms.DecimalField(
         label="Valor",

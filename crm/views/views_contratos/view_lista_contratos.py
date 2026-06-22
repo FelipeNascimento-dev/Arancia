@@ -9,7 +9,7 @@ from crm.views.views_contratos._helpers import contract_lookups
 from crm_api.client import CrmApiClient
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
 from crm_api.pagination import build_api_pagination
-from crm_api.payloads import contract_payload
+from crm_api.payloads import contract_api_payload
 from crm_api.services import contracts as contracts_service
 from crm_api.services.lookups import get_crm_lookups
 
@@ -44,7 +44,7 @@ def lista_contratos(request):
             try:
                 created = contracts_service.create_contract(
                     client,
-                    contract_payload(form.cleaned_data),
+                    contract_api_payload(form.cleaned_data, is_create=True),
                 )
                 messages.success(request, "Contrato criado com sucesso!")
                 new_id = (created or {}).get("id")

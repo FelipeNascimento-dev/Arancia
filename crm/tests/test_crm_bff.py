@@ -20,7 +20,9 @@ from crm_api.payloads import (
     billing_api_payload,
     build_rrule,
     contract_payload,
+    contract_api_payload,
     parse_rrule,
+    project_payload,
     recurrence_payload,
     service_type_payload,
     task_payload,
@@ -38,6 +40,7 @@ from crm.helpers.api_display import (
     enrich_board,
     enrich_project,
     is_opaque_id,
+    service_types_for_gai,
     short_ref,
 )
 from crm.helpers.date_format import format_date_br, format_datetime_br, format_period_br
@@ -278,6 +281,31 @@ class PayloadTests(SimpleTestCase):
         })
         self.assertEqual(payload["code"], "custom_code")
 
+    def test_project_payload_includes_code_on_create(self):
+        payload = project_payload({
+            "name": "teste criar projeto",
+            "description": "hahahahaha projetei",
+            "customer_gai_id": 29,
+            "is_active": True,
+        }, is_create=True)
+        self.assertEqual(payload["code"], "teste_criar_projeto")
+        self.assertEqual(payload["name"], "teste criar projeto")
+        self.assertEqual(payload["customer_gai_id"], 29)
+
+    def test_project_payload_preserves_explicit_code_on_create(self):
+        payload = project_payload({
+            "name": "Qualquer",
+            "code": "custom_code",
+        }, is_create=True)
+        self.assertEqual(payload["code"], "custom_code")
+
+    def test_project_payload_omits_code_on_update(self):
+        payload = project_payload({
+            "name": "teste criar projeto",
+            "description": "atualizado",
+        })
+        self.assertNotIn("code", payload)
+
     def test_column_reorder_payload_maps_ids_to_items(self):
         from crm_api.services.boards import column_reorder_payload
 
@@ -339,6 +367,41 @@ class PayloadTests(SimpleTestCase):
         self.assertEqual(payload["description"], "Observação")
         self.assertNotIn("titulo", payload)
         self.assertNotIn("data_inicio", payload)
+
+    def test_contract_api_payload_embeds_number_and_value_in_description(self):
+        from decimal import Decimal
+
+        payload = contract_api_payload({
+            "client_gai_id": 10,
+            "titulo": "Contrato teste",
+            "numero": "C-2024-001",
+            "valor": Decimal("1500.50"),
+            "descricao": "Observação livre",
+        }, is_create=True)
+        self.assertNotIn("number", payload)
+        self.assertNotIn("value", payload)
+        self.assertNotIn("status", payload)
+        self.assertIn("<!--crm-contract:", payload["description"])
+        self.assertIn("numero=C-2024-001", payload["description"])
+        self.assertIn("valor=1500.50", payload["description"])
+        self.assertIn("Observação livre", payload["description"])
+
+    def test_enrich_contract_reads_embedded_number_and_value(self):
+        from crm.helpers.api_display import enrich_contract
+
+        enriched = enrich_contract({
+            "id": "abc",
+            "title": "Contrato Alpha",
+            "description": (
+                "<!--crm-contract:numero=C-7;valor=2500.00-->\n"
+                "Texto da descrição"
+            ),
+            "customer": {"name": "Cliente"},
+        })
+        self.assertEqual(enriched["display_numero"], "C-7")
+        self.assertEqual(enriched["display_valor"], "R$ 2.500,00")
+        self.assertEqual(enriched["display_descricao"], "Texto da descrição")
+        self.assertEqual(enriched["descricao"], "Texto da descrição")
 
     def test_billing_payload_serializes_dates_and_decimal(self):
         from datetime import date
@@ -418,6 +481,48 @@ class OpaqueIdDisplayTests(SimpleTestCase):
     def test_enrich_project_without_name_does_not_expose_uuid(self):
         project = enrich_project({"id": "71054561-6c12-4c3b-b11f-28c1bb5ec790"})
         self.assertEqual(project["display_name"], "-")
+
+
+class ServiceTypesForGaiTests(SimpleTestCase):
+    def test_without_gai_returns_only_global_types(self):
+        service_types = [
+            {"id": 1, "type": "ENTREGA SIMPLES"},
+            {"id": 2, "type": "ENTREGA SIMPLES", "client_id": 10},
+            {"id": 3, "type": "REVERSA PA/CD"},
+        ]
+        result = service_types_for_gai(service_types, None)
+        self.assertEqual([item["id"] for item in result], [1, 3])
+
+    def test_with_gai_prefers_client_specific_over_global_duplicate(self):
+        service_types = [
+            {"id": 1, "type": "ENTREGA SIMPLES"},
+            {"id": 2, "type": "ENTREGA SIMPLES", "client_id": 10},
+            {"id": 3, "type": "ENTREGA AO DESTINATARIO"},
+            {"id": 4, "type": "ENTREGA AO DESTINATARIO", "client_id": 10},
+            {"id": 5, "type": "REVERSA PA/CD"},
+        ]
+        result = service_types_for_gai(service_types, 10)
+        self.assertEqual([item["id"] for item in result], [2, 4, 5])
+
+
+class EnrichContractFileTests(SimpleTestCase):
+    def test_enrich_contract_file_detects_preview_kind(self):
+        from crm.helpers.api_display import enrich_contract_file
+
+        audio = enrich_contract_file({
+            "filename": "gravacao.mp3",
+            "firebase_url": "https://example.com/a.mp3",
+            "file_size": 2048,
+        })
+        self.assertEqual(audio["preview_kind"], "audio")
+        self.assertEqual(audio["display_file_size"], "2.0 KB")
+
+        pdf = enrich_contract_file({
+            "filename": "contrato.pdf",
+            "content_type": "application/pdf",
+            "firebase_url": "https://example.com/c.pdf",
+        })
+        self.assertEqual(pdf["preview_kind"], "pdf")
 
 
 class EnrichBillingTests(SimpleTestCase):
@@ -638,9 +743,83 @@ class ListaFaturamentoViewTests(TestCase):
         self.assertIn("crm-billing-list-config", content)
         self.assertIn("modalFormBilling", content)
         self.assertIn("openCreateBillingModal", content)
+        self.assertIn('"/{id}/"', content)
+
+    @patch("crm.views.views_faturamento.view_lista_faturamento.billing_service.list_billing")
+    @patch("crm.views.views_faturamento.view_lista_faturamento.billing_service.billing_summary")
+    def test_ajax_get_billing_returns_enriched_payload(
+        self,
+        mock_summary,
+        mock_list,
+    ):
+        from django.urls import reverse
+
+        mock_summary.return_value = {}
+        mock_list.return_value = ([], 0)
+
+        billing_id = "fe8be1d1-bff5-4361-8c6f-0fc6f9abee24"
+        billing_record = {
+            "id": billing_id,
+            "reference": "REF-2026-06",
+            "value": "1500.00",
+            "due_date": "2026-07-15",
+            "customer_gai_id": 10,
+            "contract_id": "contract-1",
+        }
+
+        with patch(
+            "crm.views.views_ajax.view_ajax_billing.billing_service.get_billing",
+            return_value=billing_record,
+        ), patch(
+            "crm.views.views_ajax.view_ajax_billing.get_billing_lookups",
+            return_value={"clients": [], "contracts": []},
+        ):
+            self.client.force_login(self.user)
+            response = self.client.get(
+                reverse("crm:ajax_get_billing", kwargs={"billing_id": billing_id}),
+            )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["billing"]["display_referencia"], "REF-2026-06")
+        self.assertEqual(payload["form"]["referencia"], "REF-2026-06")
 
 
-class ContractOptionLabelTests(SimpleTestCase):
+class GetBillingServiceTests(SimpleTestCase):
+    def test_get_billing_falls_back_to_list_when_detail_get_not_allowed(self):
+        from crm_api.exceptions import CrmApiError
+        from crm_api.services import billing as billing_service
+
+        billing_id = "fe8be1d1-bff5-4361-8c6f-0fc6f9abee24"
+        client = Mock()
+        client.get.side_effect = CrmApiError(
+            "Method Not Allowed",
+            status_code=405,
+            detail="Method Not Allowed",
+        )
+
+        with patch.object(
+            billing_service,
+            "list_billing",
+            return_value=([{"id": billing_id, "reference": "REF-1"}], 1),
+        ) as mock_list:
+            record = billing_service.get_billing(client, billing_id)
+
+        self.assertEqual(record["reference"], "REF-1")
+        mock_list.assert_called_once()
+    def test_contract_to_json_without_value_does_not_raise(self):
+        from crm.helpers.api_display import contract_to_json
+
+        payload = contract_to_json({
+            "id": "abc-123",
+            "title": "Contrato sem valor",
+            "customer": {"gai_id": 10, "name": "Cliente"},
+        })
+        self.assertEqual(payload["titulo"], "Contrato sem valor")
+        self.assertEqual(payload["display_valor"], "")
+        self.assertEqual(payload["valor"], "")
+
     def test_contract_option_label_uses_title_not_uuid(self):
         from crm.views.views_contratos._helpers import contract_option_label
 

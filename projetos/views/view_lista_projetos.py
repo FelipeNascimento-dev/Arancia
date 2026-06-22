@@ -30,7 +30,9 @@ def lista_projetos(request):
         form = ProjectForm(request.POST, lookups=lookups, nome_form="Novo Projeto")
         if form.is_valid():
             try:
-                projects_service.create_project(client, project_payload(form.cleaned_data))
+                projects_service.create_project(
+                    client, project_payload(form.cleaned_data, is_create=True),
+                )
                 messages.success(request, "Projeto criado com sucesso!")
                 return redirect("projetos:lista_projetos")
             except CrmApiError as exc:

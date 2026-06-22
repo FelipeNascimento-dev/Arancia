@@ -3,12 +3,12 @@ from django.shortcuts import redirect, render
 
 from crm.decorators import crm_permission_required
 from crm.forms import ContractFileForm, ContractForm
-from crm.helpers.api_display import contract_initial, enrich_contract
+from crm.helpers.api_display import contract_initial, enrich_contract, enrich_contract_file
 from crm.helpers.date_format import format_datetime_br
 from crm.views.views_contratos._helpers import contract_lookups
 from crm_api.client import CrmApiClient
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
-from crm_api.payloads import contract_payload
+from crm_api.payloads import contract_api_payload
 from crm_api.services import contracts as contracts_service
 
 
@@ -23,13 +23,13 @@ def detalhe_contrato(request, contract_id):
         contrato = enrich_contract(contracts_service.get_contract(client, contract_id))
         arquivos = contracts_service.list_contract_files(client, contract_id)
         arquivos = [
-            {
+            enrich_contract_file({
                 **arquivo,
                 "display_uploaded_at": format_datetime_br(
                     arquivo.get("created_at") or arquivo.get("uploaded_at"),
                     default="-",
                 ),
-            }
+            })
             for arquivo in arquivos
             if isinstance(arquivo, dict)
         ]
@@ -54,7 +54,8 @@ def detalhe_contrato(request, contract_id):
         if edit_form.is_valid():
             try:
                 contracts_service.update_contract(
-                    client, contract_id, contract_payload(edit_form.cleaned_data),
+                    client, contract_id,
+                    contract_api_payload(edit_form.cleaned_data, is_create=False),
                 )
                 messages.success(request, "Contrato atualizado com sucesso!")
                 return redirect("crm:detalhe_contrato", contract_id=contract_id)
@@ -82,7 +83,7 @@ def detalhe_contrato(request, contract_id):
         request,
         "crm/templates_contratos/detalhe_contrato.html",
         {
-            "site_title": f"CRM — Contrato {contrato.get('numero') or contract_id}",
+            "site_title": f"CRM — Contrato {contrato.get('display_numero') or contrato.get('display_titulo') or contract_id}",
             "contrato": contrato,
             "contract_id": contract_id,
             "arquivos": arquivos,

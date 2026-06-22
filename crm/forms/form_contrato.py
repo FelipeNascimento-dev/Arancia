@@ -1,5 +1,7 @@
 from django import forms
 
+from crm.helpers.api_display import service_type_option_label
+
 
 class ContractForm(forms.Form):
     client_gai_id = forms.IntegerField(
@@ -12,10 +14,15 @@ class ContractForm(forms.Form):
         widget=forms.TextInput(attrs={"class": "form-control"}),
     )
     numero = forms.CharField(
-        label="Número",
+        label="Número do contrato",
         max_length=100,
         required=False,
-        widget=forms.TextInput(attrs={"class": "form-control"}),
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Ex.: C-2024-001 ou referência interna",
+            },
+        ),
     )
     status = forms.CharField(
         label="Status",
@@ -61,11 +68,21 @@ class ContractForm(forms.Form):
             id_keys=("gai_id", "id"),
             label_keys=("nome", "name"),
         )
-        self._set_choices(
-            "service_type_id",
-            lookups.get("service_types", []),
-            id_keys=("id",),
-            label_keys=("name", "nome", "type"),
+        self._set_service_type_choices(lookups.get("service_types", []))
+
+    def _set_service_type_choices(self, items):
+        choices = [("", "---------")]
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            item_id = item.get("id")
+            if item_id is None:
+                continue
+            label = service_type_option_label(item)
+            choices.append((item_id, label or str(item_id)))
+        self.fields["service_type_id"].widget = forms.Select(
+            choices=choices,
+            attrs={"class": "form-control"},
         )
 
     def _set_choices(self, field_name, items, id_keys, label_keys):
