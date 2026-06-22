@@ -27,6 +27,7 @@ from .views_gerenciamento.view_gestao_skills import skill_ger
 from .views_reverse.view_criar_reversa import reverse_create, delete_btn, cancel_btn
 from .views_reverse.view_consulta_romaneio import consult_rom
 from .views_reverse.view_print_etiqueta_reversa import print_etiqueta_reversa
+from .views_reverse.view_consulta_etiqueta_reversa import consulta_etiqueta_reversa
 from .views_reverse.view_enviar_cotacao import send_quotes
 from .views_user.toggle_db_view import toggle_db
 from .views_fluxo_entrega.view_insucesso import unsuccessful_insert

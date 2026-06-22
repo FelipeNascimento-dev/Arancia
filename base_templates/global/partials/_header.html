@@ -150,6 +150,10 @@
                         class="{% if current_subsubmenu == 'lista_romaneio' %}active{% endif %}">
                             Lista de Romaneios
                         </a>
+                        <a href="{% url 'logistica:consulta_etiqueta_reversa' %}"
+                        class="{% if current_subsubmenu == 'consulta_etiqueta_reversa' %}active{% endif %}">
+                            Etiquetas de Reversa
+                        </a>
                         <a href="{% url 'logistica:consulta_etiquetas' %}">Consulta de Etiquetas</a>
                     </div>
                     {% endif %}

@@ -98,6 +98,7 @@ urls_LastmileB2C = [
          consulta_cotacao, name='consulta_cotacao'),
     path('reversa/etiqueta/<str:romaneio>/<int:volume>/',
          print_etiqueta_reversa, name='print_etiqueta_reversa'),
+    path('reversa/etiquetas/', consulta_etiqueta_reversa, name='consulta_etiqueta_reversa'),
 ]
 
 urls_Gerenciamento = [
