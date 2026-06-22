@@ -1,5 +1,6 @@
 from urllib.parse import urlencode
 
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
@@ -7,6 +8,7 @@ import requests
 import json
 from pathlib import Path
 from setup.local_settings import MURAL_API_URL, TRANSP_API_URL
+from mural.helpers.create_item_payload import build_create_item_v2_payload
 from mural.helpers.target_catalogs import empty_target_catalogs, get_mural_target_catalogs
 from utils import request
 from utils.request import RequestClient
@@ -274,6 +276,75 @@ def validate_critical_duration(severity, starts_at_raw, ends_at_raw):
     return True, None
 
 
+def _normalize_reads_param(raw_value):
+    reads_param = (raw_value or "false").lower()
+    if reads_param not in ("true", "false"):
+        return "false"
+    return reads_param
+
+
+def fetch_mural_items_for_user(user_id, gai_id, reads_param="false"):
+    """Busca itens do feed consumidor na API do mural."""
+    params = {
+        "user_id": user_id,
+        "gai_id": gai_id,
+        "offset": 0,
+        "limit": 100,
+        "reads": reads_param,
+    }
+
+    url = f"{MURAL_API_URL}/v1/items/by-user/?{urlencode(params)}"
+
+    client = RequestClient(
+        url=url,
+        method="GET",
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
+    )
+
+    resp = client.send_api_request()
+
+    if isinstance(resp, dict) and "detail" in resp:
+        raise ValueError(resp.get("detail") or "Erro ao carregar itens do mural.")
+
+    if isinstance(resp, list):
+        items = resp
+    elif isinstance(resp, dict):
+        items = (
+            resp.get("items")
+            or resp.get("results")
+            or resp.get("data")
+            or []
+        )
+    else:
+        items = []
+
+    return [normalize_item(item) for item in items]
+
+
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
+def mural_items_feed(request):
+    """JSON do feed — carregado pelo browser após o shell da página."""
+    reads_param = _normalize_reads_param(request.GET.get("reads"))
+
+    try:
+        items = fetch_mural_items_for_user(
+            user_id=request.user.id,
+            gai_id=request.user.designacao.informacao_adicional_id,
+            reads_param=reads_param,
+        )
+    except Exception as exc:
+        return JsonResponse(
+            {"items": [], "error": str(exc)},
+            status=502,
+        )
+
+    return JsonResponse({"items": items})
+
+
 @login_required(login_url='logistica:login')
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def mural(request):
@@ -297,59 +368,8 @@ def mural(request):
     else:
         target_users, target_groups, target_gais = empty_target_catalogs()
 
-    reads_param = request.GET.get("reads", "false").lower()
-
-    if reads_param not in ["true", "false"]:
-        reads_param = "false"
-
+    reads_param = _normalize_reads_param(request.GET.get("reads"))
     show_reads = reads_param == "true"
-
-    try:
-        params = {
-            "user_id": user_id,
-            "gai_id": gai_id,
-            "offset": 0,
-            "limit": 100,
-            "reads": reads_param,
-        }
-
-        url = f"{MURAL_API_URL}/v1/items/by-user/?{urlencode(params)}"
-
-        client = RequestClient(
-            url=url,
-            method="GET",
-            headers={
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            },
-        )
-
-        resp = client.send_api_request()
-
-        if isinstance(resp, dict) and 'detail' in resp:
-            messages.error(request, resp.get('detail'))
-
-        if isinstance(resp, list):
-            items = resp
-        elif isinstance(resp, dict):
-            items = (
-                resp.get("items")
-                or resp.get("results")
-                or resp.get("data")
-                or []
-            )
-        else:
-            items = []
-
-        mural_data["items"] = [
-            normalize_item(item)
-            for item in items
-        ]
-
-    except Exception as e:
-        messages.warning(
-            request, f"Não foi possível carregar os itens do mural. Erro: {e}"
-        )
 
     if "view_reads" in request.POST:
         view_read_search_done = True
@@ -437,18 +457,7 @@ def mural(request):
             view_read_results = []
 
     if "create_mural_item" in request.POST:
-        title = request.POST.get("title")
-        summary = request.POST.get("summary")
-        content = request.POST.get("content")
-        item_type = request.POST.get("item_type")
         severity = request.POST.get("severity")
-        target_type = request.POST.get("target_type")
-
-        is_active = request.POST.get("is_active") == "on"
-        is_pinned = request.POST.get("is_pinned") == "on"
-        is_indefinite = request.POST.get("is_indefinite") == "on"
-        until_read = request.POST.get("until_read") == "on"
-
         starts_at_raw = request.POST.get("starts_at")
         ends_at_raw = request.POST.get("ends_at")
 
@@ -461,11 +470,6 @@ def mural(request):
         if not is_valid_critical:
             messages.error(request, critical_error)
             return redirect('mural:mural')
-
-        starts_at = format_datetime_to_api(starts_at_raw)
-        ends_at = format_datetime_to_api(ends_at_raw)
-
-        external_link = request.POST.get("external_link") or None
 
         attachment_files = request.FILES.getlist("attachment_files")
         attachment_descriptions = request.POST.getlist(
@@ -492,44 +496,20 @@ def mural(request):
             )
             return redirect('mural:mural')
 
-        created_by_id = request.user.id
+        payload, target_error = build_create_item_v2_payload(
+            post_data=request.POST,
+            user_id=request.user.id,
+            attachments=attachments,
+            image_url=image_url,
+        )
 
-        target_ids = request.POST.getlist("target_id")
-
-        if target_type == "all":
-            ids = []
-        else:
-            ids = [
-                int(target_id)
-                for target_id in target_ids
-                if str(target_id).strip().isdigit()
-            ]
-
-        payload = {
-            "title": title,
-            "summary": summary,
-            "content": content,
-            "item_type": item_type,
-            "severity": severity,
-            "target_type": target_type,
-            "is_active": is_active,
-            "is_pinned": is_pinned,
-            "is_indefinite": is_indefinite,
-            "until_read": until_read,
-            "starts_at": starts_at,
-            "ends_at": ends_at,
-            "external_link": external_link,
-            "attachments": attachments,
-            "image_url": image_url,
-            "created_by_id": created_by_id,
-            "ids": ids
-        }
-
-        print(payload)
+        if target_error:
+            messages.error(request, target_error)
+            return redirect('mural:mural')
 
         try:
             create_url = (
-                f"{MURAL_API_URL}/v1/items/create-item/"
+                f"{MURAL_API_URL}/v2/items/create-item/"
             )
 
             create_client = RequestClient(
