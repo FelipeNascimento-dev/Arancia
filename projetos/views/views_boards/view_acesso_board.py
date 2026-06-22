@@ -3,7 +3,7 @@ from django.shortcuts import redirect, render
 
 from crm.decorators import crm_permission_required
 from crm.forms import BoardAccessForm
-from crm.helpers.api_display import enrich_board
+from crm.helpers.api_display import enrich_board, enrich_board_access_grant
 from crm_api.client import CrmApiClient
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
 from crm_api.payloads import board_access_payload
@@ -65,7 +65,10 @@ def acesso_board(request, board_id):
         return redirect("projetos:acesso_board", board_id=board_id)
 
     try:
-        grants = boards_service.list_access(client, board_id)
+        grants = [
+            enrich_board_access_grant(g)
+            for g in boards_service.list_access(client, board_id)
+        ]
     except CrmApiError as exc:
         messages.error(request, crm_error_message_pt(exc))
 

@@ -1,40 +1,91 @@
 {% extends 'global/base.html' %}
 {% block content %}
 <style>
-    .form-card-2col { height: auto; margin-top: 65px; }
-    .section-header {
-        display: flex; align-items: center; justify-content: space-between;
-        margin: 40px 25px 40px 90px;
+    .board-form-page .form-container {
+        align-items: flex-start;
+        justify-content: flex-start;
     }
-    .section-title {
-        font-size: 1.4rem; font-weight: 600;
-        border-bottom: 2px solid var(--primary-color, #c41e3a);
-        display: inline-block; padding-bottom: 4px;
+    .board-form-page .form-card-2col {
+        height: auto;
+        margin-top: 65px;
+        margin-bottom: 24px;
+    }
+    .board-form-page .form-group-full {
+        grid-column: 1 / -1;
+    }
+    .board-form-page .form-group-checkbox {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-top: 4px;
+    }
+    .board-form-page .form-group-checkbox label {
+        margin-bottom: 0;
+        font-weight: bold;
+        color: var(--form-label-color);
+        font-size: 15px;
+        order: 2;
+    }
+    .board-form-page .form-group-checkbox input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+        order: 1;
+    }
+    .board-form-page .field-hint {
+        display: block;
+        margin-top: 4px;
+        font-size: 13px;
+        color: var(--text-muted, #6b7280);
     }
 </style>
 
-<div class="section-header">
-    <h2 class="section-title"><i class="fa-solid fa-columns"></i> {{ form.nome_formulario }}</h2>
-</div>
-
-<div class="form-container">
-    <div class="form-card-2col">
-        <form method="POST">
-            {% csrf_token %}
-            {% if is_edit %}
-            <input type="hidden" name="edit_board" value="1">
-            {% else %}
-            <input type="hidden" name="create_board" value="1">
-            {% endif %}
-            {% include 'global/partials/_form_2colV2.html' %}
-        </form>
+<div class="board-form-page">
+    <div class="form-container">
+        <div class="form-card-2col">
+            <form method="POST">
+                <h2><i class="fa-solid fa-columns"></i> {{ form.nome_formulario }}</h2>
+                {% csrf_token %}
+                {% if is_edit %}
+                <input type="hidden" name="edit_board" value="1">
+                {% else %}
+                <input type="hidden" name="create_board" value="1">
+                {% endif %}
+                {{ form.non_field_errors }}
+                <div class="form-grid-2col">
+                    {% for campo in form %}
+                    <div class="form-group{% if campo.name == 'description' %} form-group-full{% elif campo.name == 'is_active' %} form-group-checkbox{% endif %}">
+                        {% if campo.name != 'is_active' %}{{ campo.label_tag }}{% endif %}
+                        {{ campo }}
+                        {% if campo.name == 'is_active' %}{{ campo.label_tag }}{% endif %}
+                        {% if campo.errors %}<div class="error">{{ campo.errors }}</div>{% endif %}
+                        {% if campo.name == 'column_template_id' and not is_edit %}
+                        <small class="field-hint">Opcional. Cria colunas iniciais a partir de um template.</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="form-actions" style="gap: 8px;">
+                    <a href="{% url 'projetos:lista_boards' %}" class="btn btn-secondary">Cancelar</a>
+                    {% if is_edit and perms.crm.change_board or not is_edit and perms.crm.add_board %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar
+                    </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 
-<div style="margin: 20px 90px;">
-    <a href="{% url 'projetos:lista_boards' %}" class="btn btn-secondary">Voltar</a>
-    {% if is_edit %}
-    <a href="{% url 'projetos:kanban_board' board_id %}" class="btn btn-primary">Abrir Kanban</a>
-    {% endif %}
+    <div style="margin: 0 0 24px 90px;">
+        <a href="{% url 'projetos:lista_boards' %}" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left"></i> Voltar
+        </a>
+        {% if is_edit %}
+        <a href="{% url 'projetos:kanban_board' board_id %}" class="btn btn-secondary btn-sm" style="margin-left: 8px;">
+            <i class="fa-solid fa-table-columns"></i> Abrir Kanban
+        </a>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

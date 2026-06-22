@@ -57,7 +57,7 @@ def form_board(request, board_id=None):
         form = BoardForm(request.POST, lookups=lookups, nome_form=form.nome_formulario)
         if form.is_valid():
             try:
-                payload = board_payload(form.cleaned_data)
+                payload = board_payload(form.cleaned_data, is_create=not is_edit)
                 if is_edit:
                     boards_service.update_board(client, board_id, payload)
                     messages.success(request, "Board atualizado com sucesso!")

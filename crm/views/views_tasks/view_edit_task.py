@@ -11,6 +11,22 @@ from crm_api.services import tasks as tasks_service
 from crm.views.views_tasks._helpers import load_task_lookups, menu_context, task_display_value
 
 
+def _lookup_id(task, flat_key, nested_key):
+    value = task.get(flat_key)
+    if value not in (None, ""):
+        return value
+    nested = task.get(nested_key) or {}
+    if isinstance(nested, dict):
+        return nested.get("id")
+    return None
+
+
+def _select_initial(value):
+    if value in (None, ""):
+        return None
+    return str(value)
+
+
 def _task_edit_initial(task):
     if not task:
         return {}
@@ -21,15 +37,15 @@ def _task_edit_initial(task):
             for r in task["requesters"]
             if r.get("gai_id") is not None
         ]
+    customer_gai_id = task.get("customer_gai_id") or (task.get("customer") or {}).get("gai_id")
     return {
         "title": task.get("title"),
         "description": task.get("description"),
-        "board_id": task.get("board_id") or (task.get("board") or {}).get("id"),
-        "status_id": task.get("status_id") or (task.get("status") or {}).get("id"),
-        "priority_id": task.get("priority_id") or (task.get("priority") or {}).get("id"),
-        "project_id": task.get("project_id") or (task.get("project") or {}).get("id"),
-        "customer_gai_id": task.get("customer_gai_id")
-        or (task.get("customer") or {}).get("gai_id"),
+        "board_id": _select_initial(_lookup_id(task, "board_id", "board")),
+        "status_id": _select_initial(_lookup_id(task, "status_id", "status")),
+        "priority_id": _select_initial(_lookup_id(task, "priority_id", "priority")),
+        "project_id": _select_initial(_lookup_id(task, "project_id", "project")),
+        "customer_gai_id": _select_initial(customer_gai_id),
         "scheduled_start_at": task.get("scheduled_start_at"),
         "scheduled_end_at": task.get("scheduled_end_at"),
         "due_at": task.get("due_at") or task.get("due_date"),

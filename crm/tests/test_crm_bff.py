@@ -16,6 +16,7 @@ from crm_api.exceptions import CrmApiError, CrmAuthError
 from crm_api.payloads import (
     board_access_payload,
     board_column_payload,
+    board_payload,
     billing_payload,
     billing_api_payload,
     build_rrule,
@@ -25,6 +26,7 @@ from crm_api.payloads import (
     project_payload,
     recurrence_payload,
     service_type_payload,
+    settings_item_payload,
     task_payload,
 )
 from crm_api.session_credentials import (
@@ -38,6 +40,7 @@ from crm.helpers.api_display import (
     enrich_billing,
     enrich_billing_with_lookups,
     enrich_board,
+    enrich_board_access_grant,
     enrich_project,
     is_opaque_id,
     service_types_for_gai,
@@ -306,6 +309,39 @@ class PayloadTests(SimpleTestCase):
         })
         self.assertNotIn("code", payload)
 
+    def test_board_payload_includes_code_on_create(self):
+        payload = board_payload({
+            "name": "new board test",
+            "description": "hahaa testei o board",
+            "is_active": True,
+        }, is_create=True)
+        self.assertEqual(payload["code"], "new_board_test")
+        self.assertEqual(payload["name"], "new board test")
+
+    def test_board_payload_omits_code_on_update(self):
+        payload = board_payload({
+            "name": "new board test",
+            "description": "atualizado",
+        })
+        self.assertNotIn("code", payload)
+
+    def test_settings_item_payload_includes_code_on_create(self):
+        payload = settings_item_payload({
+            "name": "Muitissima altissima",
+            "color": "#ff05hg",
+            "sort_order": 4,
+            "is_active": True,
+        }, is_create=True)
+        self.assertEqual(payload["code"], "muitissima_altissima")
+        self.assertEqual(payload["name"], "Muitissima altissima")
+
+    def test_settings_item_payload_omits_code_on_update(self):
+        payload = settings_item_payload({
+            "name": "Muitissima altissima",
+            "color": "#ff05hg",
+        })
+        self.assertNotIn("code", payload)
+
     def test_column_reorder_payload_maps_ids_to_items(self):
         from crm_api.services.boards import column_reorder_payload
 
@@ -477,6 +513,17 @@ class OpaqueIdDisplayTests(SimpleTestCase):
     def test_enrich_board_without_name_does_not_expose_uuid(self):
         board = enrich_board({"id": "71054561-6c12-4c3b-b11f-28c1bb5ec790"})
         self.assertEqual(board["display_name"], "-")
+
+    def test_enrich_board_access_grant_builds_display_subject(self):
+        grant = enrich_board_access_grant({
+            "id": "acc-1",
+            "subject_type": "user",
+            "user_id": 7,
+            "username": "ARC0007",
+            "access_level": "editor",
+        })
+        self.assertEqual(grant["display_subject"], "Usuário: ARC0007")
+        self.assertEqual(grant["display_access_level"], "editor")
 
     def test_enrich_project_without_name_does_not_expose_uuid(self):
         project = enrich_project({"id": "71054561-6c12-4c3b-b11f-28c1bb5ec790"})
@@ -1223,6 +1270,91 @@ class LookupEntitiesTests(SimpleTestCase):
         self.assertEqual(enriched["gais"][0]["nome"], "Cliente A")
         self.assertEqual(enriched["gais"][1]["id"], 11)
 
+    def test_enrich_task_lookups_maps_prioritys_alias(self):
+        from crm.helpers.api_display import enrich_task_lookups
+
+        enriched = enrich_task_lookups({
+            "prioritys": [
+                {"id": 1, "name": "Alta"},
+                {"id": 2, "name": "Baixa"},
+            ],
+        })
+        self.assertEqual(len(enriched["priorities"]), 2)
+        self.assertEqual(enriched["priorities"][0]["name"], "Alta")
+
+    def test_task_edit_initial_resolves_nested_priority_and_project(self):
+        from crm.views.views_tasks.view_edit_task import _task_edit_initial
+
+        initial = _task_edit_initial({
+            "title": "Task teste",
+            "board": {"id": "a2a44d6e-2313-40d6-b7d8-c33718895563", "name": "Board A"},
+            "status": {"id": "0cf4a088-89ca-4e08-b057-9fa74055d80d", "name": "Aberto"},
+            "priority": {"id": "3f8e2a1b-4c5d-6e7f-8a9b-0c1d2e3f4a5b", "name": "Média"},
+            "project": {"id": "71054561-6c12-4c3b-b11f-28c1bb5ec790", "name": "Projeto X"},
+        })
+        self.assertEqual(initial["board_id"], "a2a44d6e-2313-40d6-b7d8-c33718895563")
+        self.assertEqual(initial["status_id"], "0cf4a088-89ca-4e08-b057-9fa74055d80d")
+        self.assertEqual(initial["priority_id"], "3f8e2a1b-4c5d-6e7f-8a9b-0c1d2e3f4a5b")
+        self.assertEqual(
+            initial["project_id"],
+            "71054561-6c12-4c3b-b11f-28c1bb5ec790",
+        )
+
+    def test_task_edit_form_accepts_uuid_selects_on_post(self):
+        from crm.forms import TaskEditForm
+
+        board_id = "a2a44d6e-2313-40d6-b7d8-c33718895563"
+        status_id = "0cf4a088-89ca-4e08-b057-9fa74055d80d"
+        priority_id = "3f8e2a1b-4c5d-6e7f-8a9b-0c1d2e3f4a5b"
+        project_id = "71054561-6c12-4c3b-b11f-28c1bb5ec790"
+        lookups = {
+            "boards": [{"id": board_id, "name": "Board A"}],
+            "status_tasks": [{"id": status_id, "name": "Aberto"}],
+            "priorities": [{"id": priority_id, "name": "Média"}],
+            "projects": [{"id": project_id, "name": "Projeto X"}],
+            "gais": [],
+        }
+        form = TaskEditForm(
+            {
+                "title": "Task teste",
+                "board_id": board_id,
+                "status_id": status_id,
+                "priority_id": priority_id,
+                "project_id": project_id,
+            },
+            lookups=lookups,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_task_edit_form_selects_priority_and_project(self):
+        from crm.forms import TaskEditForm
+
+        board_id = "a2a44d6e-2313-40d6-b7d8-c33718895563"
+        status_id = "0cf4a088-89ca-4e08-b057-9fa74055d80d"
+        priority_id = "3f8e2a1b-4c5d-6e7f-8a9b-0c1d2e3f4a5b"
+        project_id = "71054561-6c12-4c3b-b11f-28c1bb5ec790"
+        lookups = {
+            "boards": [{"id": board_id, "name": "Board A"}],
+            "status_tasks": [{"id": status_id, "name": "Aberto"}],
+            "priorities": [{"id": priority_id, "name": "Média"}],
+            "projects": [{"id": project_id, "name": "Projeto X"}],
+            "gais": [],
+        }
+        form = TaskEditForm(
+            lookups=lookups,
+            initial={
+                "title": "Task teste",
+                "board_id": board_id,
+                "status_id": status_id,
+                "priority_id": priority_id,
+                "project_id": project_id,
+            },
+        )
+        self.assertEqual(form["board_id"].value(), board_id)
+        self.assertEqual(form["status_id"].value(), status_id)
+        self.assertEqual(form["priority_id"].value(), priority_id)
+        self.assertEqual(form["project_id"].value(), project_id)
+
     def test_normalize_lookup_user_accepts_user_id(self):
         from crm.helpers.lookup_entities import normalize_lookup_users
 
@@ -1256,6 +1388,47 @@ class LookupEntitiesTests(SimpleTestCase):
         gai_values = [value for value, _ in form.fields["customer_gai_id"].choices if value]
         self.assertIn("3", user_values)
         self.assertIn("9", gai_values)
+
+
+class UserDisplayTests(TestCase):
+    def setUp(self):
+        from logistica.models import UserProfile
+
+        self.user = User.objects.create_user(
+            username="ARC0003",
+            password="pass",
+            first_name="Felipe",
+            last_name="Silva",
+        )
+        UserProfile.objects.create(
+            user=self.user,
+            avatar="https://example.com/avatar.jpg",
+        )
+
+    def test_enrich_assignee_resolves_django_user_by_id(self):
+        from crm.views.views_tasks._helpers import enrich_assignees_for_display
+
+        assignees = enrich_assignees_for_display([{"id": "a1", "user_id": self.user.id, "is_primary": True}])
+        self.assertEqual(assignees[0]["display_name"], "Felipe Silva")
+        self.assertEqual(assignees[0]["avatar_url"], "https://example.com/avatar.jpg")
+        self.assertEqual(assignees[0]["display_initials"], "FS")
+
+    def test_enrich_comment_resolves_author_id(self):
+        from crm.views.views_tasks._helpers import enrich_comments_for_display
+
+        comments = enrich_comments_for_display([
+            {"id": "c1", "author_id": self.user.id, "content": "Teste"},
+        ])
+        self.assertEqual(comments[0]["display_author"], "Felipe Silva")
+        self.assertEqual(comments[0]["avatar_url"], "https://example.com/avatar.jpg")
+
+    def test_enrich_watcher_keeps_api_username_when_present(self):
+        from crm.views.views_tasks._helpers import enrich_watchers_for_display
+
+        watchers = enrich_watchers_for_display([
+            {"id": "w1", "user_id": self.user.id, "username": "ARC0003"},
+        ])
+        self.assertEqual(watchers[0]["display_name"], "ARC0003")
 
 
 class HomologAcceptanceTests(SimpleTestCase):

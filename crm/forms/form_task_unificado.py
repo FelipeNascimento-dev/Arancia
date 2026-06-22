@@ -346,28 +346,33 @@ class TaskEditForm(forms.Form):
         required=False,
         widget=_TASK_DESCRIPTION_WIDGET,
     )
-    board_id = forms.IntegerField(
+    board_id = forms.ChoiceField(
         label="Board",
+        choices=[("", "---------")],
         widget=forms.Select(attrs={"class": "form-control"}),
     )
-    status_id = forms.IntegerField(
+    status_id = forms.ChoiceField(
         label="Status",
         required=False,
+        choices=[("", "---------")],
         widget=forms.Select(attrs={"class": "form-control"}),
     )
-    priority_id = forms.IntegerField(
+    priority_id = forms.ChoiceField(
         label="Prioridade",
         required=False,
+        choices=[("", "---------")],
         widget=forms.Select(attrs={"class": "form-control"}),
     )
-    project_id = forms.IntegerField(
+    project_id = forms.ChoiceField(
         label="Projeto",
         required=False,
+        choices=[("", "---------")],
         widget=forms.Select(attrs={"class": "form-control"}),
     )
-    customer_gai_id = forms.IntegerField(
+    customer_gai_id = forms.ChoiceField(
         label="Cliente (GAI)",
         required=False,
+        choices=[("", "---------")],
         widget=forms.Select(attrs={"class": "form-control"}),
     )
     scheduled_start_at = forms.DateTimeField(
@@ -421,14 +426,11 @@ class TaskEditForm(forms.Form):
 
     def _set_choices(self, field_name, items, id_key, label_keys):
         extra_id_keys = ("gai_id", "customer_gai_id") if "gai" in field_name else ()
-        choices = build_select_choices(
+        self.fields[field_name].choices = build_select_choices(
             items,
             id_keys=(id_key, *extra_id_keys),
             label_keys=label_keys,
-        )
-        self.fields[field_name].widget = forms.Select(
-            choices=choices,
-            attrs={"class": "form-control"},
+            as_str=True,
         )
         self.fields[field_name].required = field_name == "board_id"
 

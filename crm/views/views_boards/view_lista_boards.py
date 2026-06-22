@@ -29,7 +29,7 @@ def lista_boards(request):
         form = BoardForm(request.POST, lookups=lookups, nome_form="Novo Board")
         if form.is_valid():
             try:
-                boards_service.create_board(client, board_payload(form.cleaned_data))
+                boards_service.create_board(client, board_payload(form.cleaned_data, is_create=True))
                 messages.success(request, "Board criado com sucesso!")
                 return redirect("crm:lista_boards")
             except CrmApiError as exc:

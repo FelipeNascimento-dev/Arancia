@@ -59,7 +59,7 @@ def colunas_board(request, board_id):
     try:
         raw_columns = boards_service.list_columns(client, board_id)
         columns = sorted(
-            [enrich_board_column(c) for c in raw_columns],
+            [enrich_board_column(c, lookups) for c in raw_columns],
             key=lambda c: c.get("position") or 0,
         )
     except CrmApiError as exc:

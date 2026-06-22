@@ -253,8 +253,13 @@ def assignee_payload(cleaned_data):
     return client_payload(cleaned_data)
 
 
-def board_payload(cleaned_data):
-    return client_payload(cleaned_data)
+def board_payload(cleaned_data, *, is_create=False):
+    payload = client_payload(cleaned_data)
+    if is_create and not payload.get("code"):
+        code = _name_slug_code(payload.get("name"))
+        if code:
+            payload["code"] = code
+    return payload
 
 
 def _board_column_code(name, status_task_id=None):
@@ -309,5 +314,10 @@ def service_type_payload(cleaned_data):
     return client_payload(cleaned_data)
 
 
-def settings_item_payload(cleaned_data):
-    return client_payload(cleaned_data)
+def settings_item_payload(cleaned_data, *, is_create=False):
+    payload = client_payload(cleaned_data)
+    if is_create and not payload.get("code"):
+        code = _name_slug_code(payload.get("name"))
+        if code:
+            payload["code"] = code
+    return payload

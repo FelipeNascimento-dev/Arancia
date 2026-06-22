@@ -175,6 +175,34 @@ def enrich_board(board):
     }
 
 
+def enrich_board_access_grant(grant):
+    """Labels seguros para templates — evita cadeias ``|default:`` em chaves ausentes."""
+    if not isinstance(grant, dict):
+        return grant
+    grant = with_id_alias(grant, "id", "access_id")
+    subject = grant.get("subject")
+    label = ""
+    if isinstance(subject, dict):
+        label = entity_key(subject, "name", "nome", "username", "label", default="")
+    if not label and grant.get("user_id") is not None:
+        label = f"Usuário: {grant.get('username') or grant.get('user_id')}"
+    elif not label and grant.get("designation_id") is not None:
+        label = f"Designação: {grant.get('designation_label') or grant.get('designation_id')}"
+    elif not label and (
+        grant.get("subject_type") == "customer_gai" or grant.get("customer_gai_id") is not None
+    ):
+        label = f"GAI: {grant.get('customer_gai_name') or grant.get('customer_gai_id')}"
+    elif not label and grant.get("group_id") is not None:
+        label = f"Grupo: {grant.get('group_name') or grant.get('group_id')}"
+    if not label:
+        label = grant.get("subject_type") or "-"
+    return {
+        **grant,
+        "display_subject": label,
+        "display_access_level": grant.get("access_level") or "-",
+    }
+
+
 def _status_task_label(status_id, lookups=None):
     if status_id in (None, ""):
         return ""
@@ -406,6 +434,48 @@ def service_type_option_label(service_type):
     return nested_label(service_type, "description", "type", "name", "nome")
 
 
+def enrich_priority(priority):
+    """Campos seguros para listagem/edição de prioridades."""
+    if not isinstance(priority, dict):
+        return priority
+    priority = with_id_alias(priority, "id")
+    name = nested_label(priority, "name", "nome") or "-"
+    color = priority.get("color") or "-"
+    active_label = "Ativo" if priority.get("is_active", True) else "Inativo"
+    sort_order = priority.get("sort_order")
+    order_label = sort_order if sort_order is not None else "-"
+    return {
+        **priority,
+        "display_name": name,
+        "display_meta": f"{color} · Ordem {order_label} · {active_label}",
+        "display_color": color,
+    }
+
+
+def enrich_service_type(service_type):
+    """Campos seguros para listagem/edição de tipos de serviço."""
+    if not isinstance(service_type, dict):
+        return service_type
+    service_type = with_id_alias(service_type, "id")
+    label = service_type_option_label(service_type)
+    if not label:
+        label = display_label(service_type.get("id"), default="Sem descrição")
+    direction = service_type.get("direction")
+    direction_labels = {"inbound": "Entrada", "outbound": "Saída"}
+    client = service_type.get("client") if isinstance(service_type.get("client"), dict) else {}
+    client_name = nested_label(client, "nome", "name", "razao_social")
+    if not client_name and service_type.get("client_id") not in (None, ""):
+        client_name = f"GAI {service_type.get('client_id')}"
+    return {
+        **service_type,
+        "display_label": label,
+        "display_type": service_type.get("type") or "-",
+        "display_description": service_type.get("description") or "-",
+        "display_direction": direction_labels.get(direction, direction or "-"),
+        "display_client": client_name or "Global",
+    }
+
+
 def service_type_client_gai_id(service_type):
     if not isinstance(service_type, dict):
         return None
@@ -517,6 +587,10 @@ def enrich_task_lookups(lookups):
     if not isinstance(lookups, dict):
         return lookups or {}
     result = dict(lookups)
+
+    # API CRM expõe o catálogo como ``prioritys`` (typo legado no endpoint).
+    if not result.get("priorities") and result.get("prioritys"):
+        result["priorities"] = result["prioritys"]
 
     for key in ("status_tasks", "priorities", "boards", "column_templates", "projects"):
         items = result.get(key)

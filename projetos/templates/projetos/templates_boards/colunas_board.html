@@ -2,49 +2,59 @@
 {% block content %}
 
 <h2 class="title-skill-ger">
-    <i class="fa-solid fa-grip-vertical"></i> Colunas — {{ board.display_name|default:board.name|default:board.nome|default:"Board" }}
+    <i class="fa-solid fa-grip-vertical"></i> Colunas — {{ board.display_name|default:"Board" }}
 </h2>
 
-<div style="margin: 0 65px 16px;">
+<div class="board-subtoolbar">
     <a href="{% url 'projetos:kanban_board' board_id %}" class="btn btn-secondary btn-sm">
         <i class="fa-solid fa-arrow-left"></i> Voltar ao Kanban
     </a>
+    <a href="{% url 'projetos:edit_board' board_id %}" class="btn btn-secondary btn-sm">
+        <i class="fa-solid fa-pencil"></i> Editar board
+    </a>
     {% if perms.crm.manage_board_columns %}
-    <button class="btn btn-primary btn-sm" onclick="openModal('columnModal')">
+    <button type="button" class="btn btn-primary btn-sm" onclick="openModal('columnModal')">
         <i class="fa-solid fa-plus"></i> Nova coluna
     </button>
     {% endif %}
 </div>
 
-<div class="user-list-container" style="margin-left: 65px;">
+<div class="user-list-container board-subpage-table">
     <div class="table-wrapper">
         <table class="user-table" id="columns-table">
             <thead>
                 <tr>
-                    <th>Ordem</th>
+                    <th style="width:72px;">Ordem</th>
                     <th>Nome</th>
                     <th>Status</th>
-                    <th>Ações</th>
+                    {% if perms.crm.manage_board_columns %}<th style="width:72px;">Mover</th>{% endif %}
                 </tr>
             </thead>
             <tbody id="columns-sortable">
                 {% for col in columns %}
                 <tr data-column-id="{{ col.id }}">
-                    <td>{{ col.position|default:forloop.counter }}</td>
-                    <td>{{ col.name|default:"-" }}</td>
-                    <td>{{ col.display_status|default:col.status_name|default:"-" }}</td>
+                    <td>{{ col.display_position }}</td>
+                    <td>{{ col.display_name }}</td>
+                    <td>{{ col.display_status }}</td>
+                    {% if perms.crm.manage_board_columns %}
                     <td>
-                        {% if perms.crm.manage_board_columns %}
-                        <button type="button" class="action-btn edit-btn drag-handle" title="Arrastar"><i class="fa-solid fa-grip-lines"></i></button>
-                        {% endif %}
+                        <button type="button" class="action-btn edit-btn drag-handle" title="Arrastar para reordenar">
+                            <i class="fa-solid fa-grip-lines"></i>
+                        </button>
                     </td>
+                    {% endif %}
                 </tr>
                 {% empty %}
-                <tr><td colspan="4" class="muted text-center">Nenhuma coluna.</td></tr>
+                <tr><td colspan="{% if perms.crm.manage_board_columns %}4{% else %}3{% endif %}" class="muted text-center">Nenhuma coluna.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    {% if perms.crm.manage_board_columns and columns %}
+    <p class="muted" style="margin-top:8px;font-size:13px;">
+        <i class="fa-solid fa-circle-info"></i> Arraste as linhas para reordenar as colunas no Kanban.
+    </p>
+    {% endif %}
 </div>
 
 {% if perms.crm.manage_board_columns %}
@@ -52,7 +62,18 @@
 <script>
 function openModal(id) { document.getElementById(id).style.display = 'block'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-document.querySelector('#columnModal form').insertAdjacentHTML('afterbegin', '<input type="hidden" name="add_column" value="1">');
+(function () {
+    const modalForm = document.querySelector('#columnModal form');
+    if (!modalForm) return;
+    if (!modalForm.querySelector('[name="add_column"]')) {
+        modalForm.insertAdjacentHTML('afterbegin', '<input type="hidden" name="add_column" value="1">');
+    }
+    const registerField = modalForm.querySelector('[name="register"]');
+    if (registerField) registerField.remove();
+})();
+{% if column_form.errors %}
+document.addEventListener('DOMContentLoaded', function () { openModal('columnModal'); });
+{% endif %}
 
 (function () {
     const tbody = document.getElementById('columns-sortable');
@@ -85,4 +106,18 @@ document.querySelector('#columnModal form').insertAdjacentHTML('afterbegin', '<i
 })();
 </script>
 {% endif %}
+
+<style>
+.board-subtoolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 65px 16px;
+}
+.board-subpage-table {
+    margin-left: 65px;
+    margin-right: 25px;
+}
+tr.dragging { opacity: 0.5; }
+</style>
 {% endblock %}

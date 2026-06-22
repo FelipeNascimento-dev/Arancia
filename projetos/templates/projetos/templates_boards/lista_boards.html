@@ -2,18 +2,18 @@
 {% block content %}
 <div class="user-list-container">
     <div class="user-table-header">
-        <h2 class="user-table-title"><i class="fa-solid fa-columns"></i> Boards CRM</h2>
+        <h2 class="user-table-title"><i class="fa-solid fa-columns"></i> Boards</h2>
         <form method="get" action="" class="form-user-search">
             <i class="fa-solid fa-magnifying-glass search-icon-inside"></i>
-            <input type="text" name="q" placeholder="Pesquisar..." value="{{ q }}">
+            <input type="text" name="q" placeholder="Pesquisar por nome..." value="{{ q }}">
         </form>
         <div class="user-create">
             {% if perms.crm.add_board %}
             <a href="{% url 'projetos:form_board' %}" class="btn btn-primary">
                 <i class="fa-solid fa-plus"></i> Novo Board
             </a>
-            <button class="btn btn-primary" onclick="openModal('registerModal')" style="margin-left: 8px;">
-                <i class="fa-solid fa-plus"></i> Criar rápido
+            <button type="button" class="btn btn-secondary" onclick="openModal('registerModal')" style="margin-left: 8px;">
+                <i class="fa-solid fa-bolt"></i> Criar rápido
             </button>
             {% endif %}
         </div>
@@ -35,7 +35,7 @@
                     <td><strong>{{ item.display_name|default:"-" }}</strong></td>
                     <td>{{ item.description|default:"-"|truncatechars:60 }}</td>
                     <td>{% if item.is_active %}Sim{% else %}Não{% endif %}</td>
-                    <td>
+                    <td class="actions-cell">
                         <a href="{% url 'projetos:kanban_board' item.id %}" class="action-btn edit-btn" title="Kanban">
                             <i class="fa-solid fa-table-columns"></i>
                         </a>
@@ -85,7 +85,18 @@
 <script>
 function openModal(id) { document.getElementById(id).style.display = 'block'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-document.querySelector('#registerModal form').insertAdjacentHTML('afterbegin', '<input type="hidden" name="create_board" value="1">');
+(function () {
+    const modalForm = document.querySelector('#registerModal form');
+    if (!modalForm) return;
+    if (!modalForm.querySelector('[name="create_board"]')) {
+        modalForm.insertAdjacentHTML('afterbegin', '<input type="hidden" name="create_board" value="1">');
+    }
+    const registerField = modalForm.querySelector('[name="register"]');
+    if (registerField) registerField.remove();
+})();
+{% if form.errors %}
+document.addEventListener('DOMContentLoaded', function () { openModal('registerModal'); });
+{% endif %}
 </script>
 {% endif %}
 {% endblock %}

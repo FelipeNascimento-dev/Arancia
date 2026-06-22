@@ -1,84 +1,115 @@
 {% extends 'global/base.html' %}
 {% block content %}
 
-<h2 class="title-skill-ger"><i class="fa-solid fa-tags"></i> {{ resource_label }}</h2>
+<div class="crm-config-page">
+    <h2 class="title-skill-ger"><i class="fa-solid fa-tags"></i> {{ resource_label }}</h2>
 
-<div class="grid-container">
-    <div class="box" id="box-group">
-        <div class="box-header" style="flex-direction: column; align-items: stretch; gap: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3>Itens</h3>
-                {% if perms.crm.manage_service_types %}
-                <button type="button" class="btn btn-primary btn-sm" onclick="openCreateModal()">
-                    <i class="fa-solid fa-plus"></i> Novo
-                </button>
-                {% endif %}
-            </div>
-        </div>
-        <ul>
-            {% for item in items %}
-            <li>
-                <a href="?item_id={{ item.id }}" class="{% if selected_id == item.id|stringformat:'s' %}active{% endif %}">
-                    {{ item.type|default:item.description|default:"Sem descrição" }}
-                </a>
-            </li>
-            {% empty %}
-            <li class="muted">Nenhum item cadastrado.</li>
-            {% endfor %}
-        </ul>
+    <div class="crm-config-toolbar">
+        <a href="{% url 'crm:config_index' %}" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left"></i> Configurações
+        </a>
+        {% if perms.crm.manage_service_types %}
+        <button type="button" class="btn btn-primary btn-sm" onclick="openCreateModal()">
+            <i class="fa-solid fa-plus"></i> Novo tipo
+        </button>
+        {% endif %}
     </div>
 
-    <div class="box" id="box-group2">
-        {% if selected %}
-        <h3>Editar — {{ selected.type|default:selected.description|default:"Tipo de serviço" }}</h3>
-        <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="edit_item" value="1">
-            <input type="hidden" name="item_id" value="{{ selected.id }}">
-            {% for field in form %}
-            <div class="form-group">
-                {{ field.label_tag }}
-                {{ field }}
+    <div class="grid-container crm-config-grid">
+        <div class="box" id="box-group">
+            <div class="box-header">
+                <h3>Catálogo</h3>
+                <span class="crm-config-count">{{ items|length }} item{{ items|length|pluralize:"ns" }}</span>
             </div>
-            {% endfor %}
-            <button type="submit" class="btn btn-primary">Salvar</button>
-        </form>
-        {% if perms.crm.manage_service_types %}
-        <form method="post" style="margin-top: 8px;">
-            {% csrf_token %}
-            <input type="hidden" name="delete_item" value="1">
-            <input type="hidden" name="item_id" value="{{ selected.id }}">
-            <button type="submit" class="btn btn-danger" onclick="return confirm('Excluir?');">Excluir</button>
-        </form>
-        {% endif %}
-        {% else %}
-        <p class="muted">Selecione um item à esquerda ou crie um novo.</p>
-        {% endif %}
+            <ul class="crm-config-list">
+                {% for item in items %}
+                <li>
+                    <a href="?item_id={{ item.id }}"
+                       class="crm-config-list-link {% if selected_id == item.id|stringformat:'s' %}active{% endif %}">
+                        <span class="crm-config-list-title">{{ item.display_label }}</span>
+                        <span class="crm-config-list-meta">
+                            {{ item.display_type }} · {{ item.display_client }}
+                        </span>
+                    </a>
+                </li>
+                {% empty %}
+                <li class="muted crm-config-empty">Nenhum tipo de serviço cadastrado.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="box" id="box-group2">
+            {% if selected %}
+            <div class="box-header">
+                <h3>Editar</h3>
+                <span class="crm-config-badge">{{ selected.display_type }}</span>
+            </div>
+            <p class="crm-config-subtitle">{{ selected.display_label }}</p>
+            <form method="post" class="crm-config-form">
+                {% csrf_token %}
+                <input type="hidden" name="edit_item" value="1">
+                <input type="hidden" name="item_id" value="{{ selected.id }}">
+                <div class="form-grid-2col">
+                    {% for field in form %}
+                    <div class="form-group{% if field.name == 'description' %} form-group-full{% endif %}">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.errors %}<div class="error">{{ field.errors }}</div>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="crm-config-form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar
+                    </button>
+                    {% if perms.crm.manage_service_types %}
+                    <button type="submit"
+                            class="btn btn-danger"
+                            form="delete-service-type-form"
+                            onclick="return confirm('Excluir este tipo de serviço?');">
+                        <i class="fa-solid fa-trash"></i> Excluir
+                    </button>
+                    {% endif %}
+                </div>
+            </form>
+            {% if perms.crm.manage_service_types %}
+            <form method="post" id="delete-service-type-form">
+                {% csrf_token %}
+                <input type="hidden" name="delete_item" value="1">
+                <input type="hidden" name="item_id" value="{{ selected.id }}">
+            </form>
+            {% endif %}
+            {% else %}
+            <div class="crm-config-placeholder">
+                <i class="fa-solid fa-hand-pointer"></i>
+                <p>Selecione um tipo na lista ou crie um novo.</p>
+            </div>
+            {% endif %}
+        </div>
     </div>
 </div>
 
 {% if perms.crm.manage_service_types %}
-<div id="createModal" class="modal" style="display:none;">
-    <div class="modal-content">
-        <span class="close" onclick="closeCreateModal()">&times;</span>
-        <h3>Novo tipo de serviço</h3>
-        <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="create_item" value="1">
-            {% for field in form %}
-            <div class="form-group">{{ field.label_tag }}{{ field }}{% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}</div>
-            {% endfor %}
-            <button type="submit" class="btn btn-primary">Criar</button>
-        </form>
-    </div>
-</div>
+{% include 'global/partials/_modal_2col.html' with modal_id='createModal' modal_title='Novo tipo de serviço' form=create_form %}
 <script>
-function openCreateModal() { document.getElementById('createModal').style.display = 'block'; }
-function closeCreateModal() { document.getElementById('createModal').style.display = 'none'; }
+function openCreateModal() {
+    const el = document.getElementById('createModal');
+    if (el) el.style.display = 'flex';
+}
+(function () {
+    const modalForm = document.querySelector('#createModal form');
+    if (!modalForm) return;
+    if (!modalForm.querySelector('[name="create_item"]')) {
+        modalForm.insertAdjacentHTML('afterbegin', '<input type="hidden" name="create_item" value="1">');
+    }
+    const registerField = modalForm.querySelector('[name="register"]');
+    if (registerField) registerField.remove();
+})();
+{% if create_form.errors %}
+document.addEventListener('DOMContentLoaded', function () { openCreateModal(); });
+{% endif %}
 </script>
 {% endif %}
 
-<div style="margin: 16px 65px;">
-    <a href="{% url 'crm:config_index' %}" class="btn btn-secondary btn-sm">Voltar</a>
-</div>
+{% include 'crm/templates_configuracoes/partials/_config_page_styles.html' %}
 {% endblock %}
