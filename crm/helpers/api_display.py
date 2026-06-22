@@ -8,6 +8,38 @@ _UUID_RE = re.compile(
     r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
     re.IGNORECASE,
 )
+_OPAQUE_ID_MIN_LEN = 12
+
+
+def is_opaque_id(value):
+    """True para UUIDs e identificadores longos que não devem aparecer na UI."""
+    if value in (None, ""):
+        return False
+    s = str(value).strip()
+    if _looks_like_uuid(s):
+        return True
+    if s.isdigit() and len(s) >= _OPAQUE_ID_MIN_LEN:
+        return True
+    return len(s) >= 24 and "-" in s
+
+
+def short_ref(value, length=8):
+    """Prefixo curto de um ID opaco (ex.: primeiros 8 chars de UUID)."""
+    if value in (None, ""):
+        return ""
+    s = str(value).strip()
+    if not is_opaque_id(s):
+        return s
+    return s[:length]
+
+
+def display_label(value, default="-"):
+    """Exibe valor legível ou default quando o identificador é opaco."""
+    if value in (None, ""):
+        return default
+    if is_opaque_id(value):
+        return default
+    return str(value)
 
 
 def entity_key(entity, *keys, default=""):
@@ -139,7 +171,7 @@ def enrich_board(board):
     board = with_label_aliases(board, ("nome", "name"), ("descricao", "description"))
     return {
         **board,
-        "display_name": entity_key(board, "name", "nome", default=str(board.get("id") or "")),
+        "display_name": entity_key(board, "name", "nome", default="-"),
     }
 
 
@@ -313,9 +345,12 @@ def service_types_for_config(service_types):
         item_id = item.get("id")
         if item_id is None:
             continue
+        label = service_type_option_label(item)
+        if not label:
+            label = display_label(item_id, default="Sem descrição")
         options.append({
             "id": item_id,
-            "label": service_type_option_label(item) or str(item_id),
+            "label": label,
             "client_id": service_type_client_gai_id(item),
         })
     return options
@@ -343,7 +378,7 @@ def enrich_project(project):
         project = {**project, "default_board": default_board}
     return {
         **project,
-        "display_name": entity_key(project, "name", "nome", default=str(project.get("id") or "")),
+        "display_name": entity_key(project, "name", "nome", default="-"),
         "display_customer": nested_label(customer, "nome", "name")
         or project.get("customer_gai_name")
         or "",

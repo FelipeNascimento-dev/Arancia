@@ -15,7 +15,6 @@
                 <table class="user-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Tipo</th>
                             <th>Alvo</th>
                             <th>Nível</th>
@@ -25,15 +24,14 @@
                     <tbody>
                         {% for g in grants %}
                         <tr>
-                            <td>{{ g.id }}</td>
                             <td>{{ g.subject_type|default:"-" }}</td>
                             <td>
                                 {% if g.subject %}
-                                {{ g.subject.name|default:g.subject.username|default:g.subject.nome|default:g.subject_id }}
-                                {% elif g.user_id %}Usuário: {{ g.username|default:g.user_id }}
-                                {% elif g.designation_id %}Designação: {{ g.designation_label|default:g.designation_id }}
-                                {% elif g.subject_type == 'customer_gai' %}GAI: {{ g.customer_gai_name|default:g.subject_id }}
-                                {% elif g.group_id %}Grupo: {{ g.group_name|default:g.group_id }}
+                                {{ g.subject.name|default:g.subject.username|default:g.subject.nome|default:"-" }}
+                                {% elif g.user_id %}Usuário: {{ g.username|default:"-" }}
+                                {% elif g.designation_id %}Designação: {{ g.designation_label|default:"-" }}
+                                {% elif g.subject_type == 'customer_gai' %}GAI: {{ g.customer_gai_name|default:"-" }}
+                                {% elif g.group_id %}Grupo: {{ g.group_name|default:"-" }}
                                 {% else %}-{% endif %}
                             </td>
                             <td><span class="tag">{{ g.access_level|default:"-" }}</span></td>
@@ -46,7 +44,7 @@
                                     <div class="crm-comercial-actions">
                                         <button type="button"
                                                 class="action-pill action-pill--danger btn-remove-access"
-                                                data-target-label="acesso #{{ g.id }}"
+                                                data-target-label="{% if g.username %}{{ g.username }}{% elif g.designation_label %}{{ g.designation_label }}{% elif g.customer_gai_name %}{{ g.customer_gai_name }}{% elif g.group_name %}{{ g.group_name }}{% else %}este acesso{% endif %}"
                                                 title="Remover acesso">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
@@ -56,7 +54,7 @@
                             </td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="5" class="muted text-center">Nenhum acesso configurado.</td></tr>
+                        <tr><td colspan="4" class="muted text-center">Nenhum acesso configurado.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>

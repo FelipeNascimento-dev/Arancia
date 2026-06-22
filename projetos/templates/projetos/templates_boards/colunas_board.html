@@ -2,7 +2,7 @@
 {% block content %}
 
 <h2 class="title-skill-ger">
-    <i class="fa-solid fa-grip-vertical"></i> Colunas — {{ board.display_name|default:board_id }}
+    <i class="fa-solid fa-grip-vertical"></i> Colunas — {{ board.display_name|default:board.name|default:board.nome|default:"Board" }}
 </h2>
 
 <div style="margin: 0 65px 16px;">
@@ -32,7 +32,7 @@
                 <tr data-column-id="{{ col.id }}">
                     <td>{{ col.position|default:forloop.counter }}</td>
                     <td>{{ col.name|default:"-" }}</td>
-                    <td>{{ col.status_name|default:col.status_task_id|default:"-" }}</td>
+                    <td>{{ col.display_status|default:col.status_name|default:"-" }}</td>
                     <td>
                         {% if perms.crm.manage_board_columns %}
                         <button type="button" class="action-btn edit-btn drag-handle" title="Arrastar"><i class="fa-solid fa-grip-lines"></i></button>

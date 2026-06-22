@@ -5,7 +5,7 @@
 <div class="kanban-page-header">
     <h2 class="title-skill-ger">
         <i class="fa-solid fa-table-columns"></i>
-        {{ board.display_name|default:board_id }}
+        {{ board.display_name|default:"Board" }}
     </h2>
     <div class="kanban-toolbar">
         <a href="{% url 'crm:lista_boards' %}" class="btn btn-secondary btn-sm">

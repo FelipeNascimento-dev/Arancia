@@ -30,7 +30,16 @@ from crm_api.session_credentials import (
     get_password_from_session,
     store_password_in_session,
 )
-from crm.helpers.api_display import billing_to_json, enrich_billing, enrich_billing_with_lookups
+from crm.helpers.api_display import (
+    billing_to_json,
+    display_label,
+    enrich_billing,
+    enrich_billing_with_lookups,
+    enrich_board,
+    enrich_project,
+    is_opaque_id,
+    short_ref,
+)
 from crm.helpers.date_format import format_date_br, format_datetime_br, format_period_br
 from crm.helpers.dashboard import build_summary_cards
 from crm.views.views_tasks._helpers import can_comment_on_board
@@ -385,6 +394,30 @@ class DateFormatTests(SimpleTestCase):
 
     def test_format_period_br(self):
         self.assertEqual(format_period_br("2026-01-01", "2026-12-31"), "01/01/2026 — 31/12/2026")
+
+
+class OpaqueIdDisplayTests(SimpleTestCase):
+    def test_is_opaque_id_detects_uuid(self):
+        self.assertTrue(is_opaque_id("71054561-6c12-4c3b-b11f-28c1bb5ec790"))
+
+    def test_is_opaque_id_allows_small_numeric_ids(self):
+        self.assertFalse(is_opaque_id(42))
+        self.assertFalse(is_opaque_id("7"))
+
+    def test_short_ref_truncates_uuid(self):
+        self.assertEqual(short_ref("71054561-6c12-4c3b-b11f-28c1bb5ec790"), "71054561")
+
+    def test_display_label_hides_opaque_id(self):
+        self.assertEqual(display_label("71054561-6c12-4c3b-b11f-28c1bb5ec790"), "-")
+        self.assertEqual(display_label("C-123"), "C-123")
+
+    def test_enrich_board_without_name_does_not_expose_uuid(self):
+        board = enrich_board({"id": "71054561-6c12-4c3b-b11f-28c1bb5ec790"})
+        self.assertEqual(board["display_name"], "-")
+
+    def test_enrich_project_without_name_does_not_expose_uuid(self):
+        project = enrich_project({"id": "71054561-6c12-4c3b-b11f-28c1bb5ec790"})
+        self.assertEqual(project["display_name"], "-")
 
 
 class EnrichBillingTests(SimpleTestCase):

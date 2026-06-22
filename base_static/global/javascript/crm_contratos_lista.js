@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
         options.forEach((item) => {
             const opt = document.createElement("option");
             opt.value = String(item.id);
-            opt.textContent = item.label || String(item.id);
+            opt.textContent = item.label || displayId(item.id);
             selectEl.appendChild(opt);
         });
         if (current && options.some((item) => String(item.id) === current)) {
@@ -115,8 +115,16 @@ document.addEventListener("DOMContentLoaded", function () {
         if (el) el.textContent = value || "-";
     }
 
+    function displayId(value) {
+        if (window.CrmIdDisplay) {
+            return CrmIdDisplay.displayLabel(value);
+        }
+        return value || "-";
+    }
+
     function renderViewModal(contract) {
-        setText("viewContractId", contract.id);
+        const idEl = document.getElementById("viewContractId");
+        if (idEl) idEl.value = contract.id || "";
         setText("viewContractNumero", contract.numero);
         setText("viewContractTitulo", contract.titulo);
         setText("viewContractCliente", contract.display_customer);
@@ -172,15 +180,15 @@ document.addEventListener("DOMContentLoaded", function () {
         const row = document.querySelector(`tr[data-contract-id="${contract.id}"]`);
         if (!row) return;
         const cells = row.querySelectorAll("td");
-        if (cells.length >= 9) {
-            cells[1].textContent = contract.numero || "-";
-            cells[2].textContent = contract.titulo || "-";
-            cells[3].textContent = contract.display_customer || "-";
-            cells[4].textContent = contract.display_service_type || "-";
-            cells[5].textContent = contract.display_data_inicio || contract.data_inicio || "-";
-            cells[6].textContent = contract.display_data_fim || contract.data_fim || "-";
-            cells[7].textContent = contract.valor || "-";
-            cells[8].innerHTML = `<span class="tag">${contract.status || "-"}</span>`;
+        if (cells.length >= 8) {
+            cells[0].textContent = contract.numero || "-";
+            cells[1].textContent = contract.titulo || "-";
+            cells[2].textContent = contract.display_customer || "-";
+            cells[3].textContent = contract.display_service_type || "-";
+            cells[4].textContent = contract.display_data_inicio || contract.data_inicio || "-";
+            cells[5].textContent = contract.display_data_fim || contract.data_fim || "-";
+            cells[6].textContent = contract.valor || "-";
+            cells[7].innerHTML = `<span class="tag">${contract.status || "-"}</span>`;
         }
     }
 
@@ -209,7 +217,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     document.getElementById("btnOpenEditContractFromView")?.addEventListener("click", async () => {
-        const contractId = document.getElementById("viewContractId")?.textContent;
+        const contractId = document.getElementById("viewContractId")?.value;
         if (!contractId || contractId === "-") return;
         closeModal("modalViewContract");
         if (!config.perms?.change) return;

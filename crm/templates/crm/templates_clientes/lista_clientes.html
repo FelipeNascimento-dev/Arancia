@@ -180,7 +180,6 @@
         <table class="user-table">
             <thead>
                 <tr>
-                    <th>GAI</th>
                     <th>Nome</th>
                     <th>CNPJ</th>
                     <th>Canal</th>
@@ -191,7 +190,6 @@
             <tbody>
                 {% for item in items %}
                 <tr data-gai-id="{{ item.gai_id }}" data-client-name="{{ item.nome|default:'' }}">
-                    <td><strong>{{ item.gai_id }}</strong></td>
                     <td>{{ item.nome|default:"-" }}</td>
                     <td>{{ item.cnpj|default:"-" }}</td>
                     <td>{{ item.sales_channel|default:"-" }}</td>
@@ -211,7 +209,7 @@
                             {% if perms.crm.delete_client %}
                             <button type="button" class="action-pill action-pill--delete btn-delete-client"
                                     data-gai-id="{{ item.gai_id }}"
-                                    data-client-name="{{ item.nome|default:item.gai_id }}"
+                                    data-client-name="{{ item.nome|default:'este cliente' }}"
                                     title="Desativar">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
@@ -221,7 +219,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="muted text-center">Nenhum cliente encontrado.</td>
+                    <td colspan="5" class="muted text-center">Nenhum cliente encontrado.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -297,11 +295,8 @@
             </div>
 
             <div class="tab-content active" id="tab-view-principal">
+                <input type="hidden" id="viewClientGaiId" value="">
                 <div class="crm-client-view-grid">
-                    <div class="crm-client-view-item">
-                        <span class="label">GAI</span>
-                        <span class="value" id="viewClientGai">-</span>
-                    </div>
                     <div class="crm-client-view-item">
                         <span class="label">Nome</span>
                         <span class="value" id="viewClientNome">-</span>
@@ -440,8 +435,7 @@
         </div>
         <div class="modal-body">
             <p class="crm-modal-note">
-                Deseja desativar o cliente <strong id="deleteClientName">-</strong>
-                (GAI <span id="deleteClientGai">-</span>)?
+                Deseja desativar o cliente <strong id="deleteClientName">-</strong>?
             </p>
             <p class="crm-modal-note">Esta ação não pode ser desfeita nesta tela.</p>
             <div id="deleteClientError" class="crm-modal-alert" hidden></div>

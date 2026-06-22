@@ -19,7 +19,7 @@
             {% for item in items %}
             <li>
                 <a href="?item_id={{ item.id }}" class="{% if selected_id == item.id|stringformat:'s' %}active{% endif %}">
-                    {{ item.type|default:item.description|default:item.id }}
+                    {{ item.type|default:item.description|default:"Sem descrição" }}
                 </a>
             </li>
             {% empty %}
@@ -30,7 +30,7 @@
 
     <div class="box" id="box-group2">
         {% if selected %}
-        <h3>Editar — {{ selected.type|default:selected.id }}</h3>
+        <h3>Editar — {{ selected.type|default:selected.description|default:"Tipo de serviço" }}</h3>
         <form method="post">
             {% csrf_token %}
             <input type="hidden" name="edit_item" value="1">

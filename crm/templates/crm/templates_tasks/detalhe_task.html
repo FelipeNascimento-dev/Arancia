@@ -1,5 +1,5 @@
 {% extends 'global/base.html' %}
-{% load static %}
+{% load static crm_display %}
 {% block content %}
 <link rel="stylesheet" href="{% static 'global/css/crm_task_detail.css' %}">
 
@@ -28,12 +28,12 @@
             <header class="crm-task-detail-header">
                 <div class="crm-task-detail-header-main">
                     <div class="crm-task-detail-badges">
-                        <span class="task-ref">#{{ task_id|slice:":8" }}</span>
+                        <span class="task-ref">{{ task_id|crm_ref }}</span>
                         {% if task.display_board and task.display_board != "-" %}
                         <span class="task-type">{{ task.display_board }}</span>
                         {% endif %}
                     </div>
-                    <h1>{{ task.display_title|default:task_id }}</h1>
+                    <h1>{{ task.display_title|default:"Task sem título" }}</h1>
                 </div>
                 {% if task.display_created_by or task.display_created_at %}
                 <div class="task-created-meta">

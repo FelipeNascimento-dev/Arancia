@@ -114,7 +114,6 @@
         <table class="user-table">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Número</th>
                     <th>Título</th>
                     <th>Cliente</th>
@@ -129,7 +128,6 @@
             <tbody>
                 {% for item in items %}
                 <tr data-contract-id="{{ item.id }}">
-                    <td><strong>{{ item.id }}</strong></td>
                     <td>{{ item.display_numero|default:"-" }}</td>
                     <td>{{ item.display_titulo|default:"-" }}</td>
                     <td>{{ item.display_customer|default:"-" }}</td>
@@ -159,7 +157,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="10" class="muted text-center">Nenhum contrato encontrado.</td>
+                    <td colspan="9" class="muted text-center">Nenhum contrato encontrado.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -229,10 +227,7 @@
         </div>
         <div class="modal-body">
             <div class="crm-contract-view-grid">
-                <div class="crm-contract-view-item">
-                    <span class="label">ID</span>
-                    <span class="value" id="viewContractId">-</span>
-                </div>
+                <input type="hidden" id="viewContractId" value="">
                 <div class="crm-contract-view-item">
                     <span class="label">Número</span>
                     <span class="value" id="viewContractNumero">-</span>
@@ -356,5 +351,6 @@
 <script>document.addEventListener("DOMContentLoaded", function () { openCreateContractModal(); });</script>
 {% endif %}
 
+<script src="{% static 'global/javascript/crm_id_display.js' %}"></script>
 <script src="{% static 'global/javascript/crm_contratos_lista.js' %}"></script>
 {% endblock %}

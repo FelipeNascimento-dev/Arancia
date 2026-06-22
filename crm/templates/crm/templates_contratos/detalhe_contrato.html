@@ -48,7 +48,7 @@
 <div class="container">
     <div class="os-card">
         <div class="os-header">
-            <h2><i class="fa-solid fa-file-contract"></i> Contrato {{ contrato.display_numero|default:contract_id }}</h2>
+            <h2><i class="fa-solid fa-file-contract"></i> Contrato {{ contrato.display_numero|default:contrato.display_titulo|default:"-" }}</h2>
             <span class="tag">{{ contrato.status|default:"-" }}</span>
         </div>
 

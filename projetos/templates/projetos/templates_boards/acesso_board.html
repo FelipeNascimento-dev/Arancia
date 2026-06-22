@@ -2,7 +2,7 @@
 {% block content %}
 
 <h2 class="title-skill-ger">
-    <i class="fa-solid fa-user-shield"></i> Acesso — {{ board.display_name|default:board_id }}
+    <i class="fa-solid fa-user-shield"></i> Acesso — {{ board.display_name|default:"Board" }}
 </h2>
 
 <div style="margin: 0 65px 16px;">
@@ -25,12 +25,12 @@
                 <span>
                     {% if g.subject %}
                     {{ g.subject.name|default:g.subject.username|default:g.subject.nome|default:g.subject_type }}
-                    {% elif g.user_id %}Usuário {{ g.username|default:g.user_id }}
-                    {% elif g.designation_id %}Designação {{ g.designation_label|default:g.designation_id }}
+                    {% elif g.user_id %}Usuário {{ g.username|default:"-" }}
+                    {% elif g.designation_id %}Designação {{ g.designation_label|default:"-" }}
                     {% elif g.subject_type == 'customer_gai' or g.customer_gai_id %}
-                    GAI {{ g.customer_gai_name|default:g.subject_id|default:g.customer_gai_id }}
-                    {% elif g.group_id %}Grupo {{ g.group_name|default:g.group_id }}
-                    {% else %}#{{ g.id }}{% endif %}
+                    GAI {{ g.customer_gai_name|default:"-" }}
+                    {% elif g.group_id %}Grupo {{ g.group_name|default:"-" }}
+                    {% else %}Acesso{% endif %}
                     — {{ g.access_level|default:"-" }}
                 </span>
             </li>
@@ -46,7 +46,6 @@
             <table class="user-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Tipo</th>
                         <th>Alvo</th>
                         <th>Nível</th>
@@ -56,15 +55,14 @@
                 <tbody>
                     {% for g in grants %}
                     <tr>
-                        <td>{{ g.id }}</td>
                         <td>{{ g.subject_type|default:"-" }}</td>
                         <td>
                             {% if g.subject %}
-                            {{ g.subject.name|default:g.subject.username|default:g.subject.nome|default:g.subject_id }}
-                            {% elif g.user_id %}Usuário: {{ g.username|default:g.user_id }}
-                            {% elif g.designation_id %}Designação: {{ g.designation_label|default:g.designation_id }}
-                            {% elif g.subject_type == 'customer_gai' %}GAI: {{ g.customer_gai_name|default:g.subject_id }}
-                            {% elif g.group_id %}Grupo: {{ g.group_name|default:g.group_id }}
+                            {{ g.subject.name|default:g.subject.username|default:g.subject.nome|default:"-" }}
+                            {% elif g.user_id %}Usuário: {{ g.username|default:"-" }}
+                            {% elif g.designation_id %}Designação: {{ g.designation_label|default:"-" }}
+                            {% elif g.subject_type == 'customer_gai' %}GAI: {{ g.customer_gai_name|default:"-" }}
+                            {% elif g.group_id %}Grupo: {{ g.group_name|default:"-" }}
                             {% else %}-{% endif %}
                         </td>
                         <td>{{ g.access_level|default:"-" }}</td>
@@ -82,7 +80,7 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="5" class="muted text-center">Nenhum registro.</td></tr>
+                    <tr><td colspan="4" class="muted text-center">Nenhum registro.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

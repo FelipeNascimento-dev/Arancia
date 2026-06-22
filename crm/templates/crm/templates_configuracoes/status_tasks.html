@@ -19,7 +19,7 @@
             {% for item in items %}
             <li>
                 <a href="?item_id={{ item.id }}" class="{% if selected_id == item.id|stringformat:'s' %}active{% endif %}">
-                    {{ item.name|default:item.id }}
+                    {{ item.name|default:"Sem nome" }}
                 </a>
             </li>
             {% empty %}

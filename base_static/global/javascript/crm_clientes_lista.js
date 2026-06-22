@@ -56,7 +56,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function renderViewModal(client) {
-        setText("viewClientGai", client.gai_id);
+        const gaiIdEl = document.getElementById("viewClientGaiId");
+        if (gaiIdEl) gaiIdEl.value = client.gai_id || "";
         setText("viewClientNome", client.nome);
         setText("viewClientRazao", client.razao_social);
         setText("viewClientCnpj", client.cnpj);
@@ -144,11 +145,11 @@ document.addEventListener("DOMContentLoaded", function () {
         const row = document.querySelector(`tr[data-gai-id="${client.gai_id}"]`);
         if (!row) return;
         const cells = row.querySelectorAll("td");
-        if (cells.length >= 5) {
-            cells[1].textContent = client.nome || "-";
-            cells[2].textContent = client.cnpj || "-";
-            cells[3].textContent = client.sales_channel || "-";
-            cells[4].textContent = client.cod_iata || "-";
+        if (cells.length >= 4) {
+            cells[0].textContent = client.nome || "-";
+            cells[1].textContent = client.cnpj || "-";
+            cells[2].textContent = client.sales_channel || "-";
+            cells[3].textContent = client.cod_iata || "-";
         }
         row.dataset.clientName = client.nome || "";
     }
@@ -180,7 +181,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     document.getElementById("btnOpenEditFromView")?.addEventListener("click", async () => {
-        const gaiId = document.getElementById("viewClientGai")?.textContent;
+        const gaiId = document.getElementById("viewClientGaiId")?.value;
         if (!gaiId || gaiId === "-") return;
         closeModal("modalViewClient");
         if (!config.perms?.change) return;
@@ -231,10 +232,9 @@ document.addEventListener("DOMContentLoaded", function () {
             pendingDelete = {
                 gaiId: btn.dataset.gaiId,
                 row: btn.closest("tr"),
-                name: btn.dataset.clientName || btn.dataset.gaiId,
+                name: btn.dataset.clientName || "este cliente",
             };
             setText("deleteClientName", pendingDelete.name);
-            setText("deleteClientGai", pendingDelete.gaiId);
             document.getElementById("deleteClientError").hidden = true;
             openModal("modalDeleteClient");
         });

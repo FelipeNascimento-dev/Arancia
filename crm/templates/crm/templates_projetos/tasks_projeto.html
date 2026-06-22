@@ -42,7 +42,7 @@
         <div class="romaneio-card">
             <div class="romaneio-card-header">
                 <div class="romaneio-number">
-                    <a href="{% url 'crm:detalhe_task' item.id %}">#{{ item.id }} — {{ item.title|default:"-" }}</a>
+                    <a href="{% url 'crm:detalhe_task' item.id %}">{{ item.title|default:item.display_title|default:"Task" }}</a>
                 </div>
                 <span class="romaneio-status">{{ item.display_status|default:"-" }}</span>
             </div>
