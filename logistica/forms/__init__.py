@@ -21,6 +21,7 @@ from .forms_gerenciamento.forms_gestao_skills import CreateGAIForm
 from .forms_reverse.forms_criar_reversa import ReverseCreateForm
 from .forms_reverse.forms_criar_reversaV2 import ReverseCreateV2Form
 from .forms_reverse.forms_consulta_romaneio import RomaneioConsultaForm
+from .forms_reverse.forms_consulta_etiqueta_reversa import ConsultaEtiquetaReversaForm
 from .forms_fluxo_entrega.forms_insucesso import UnsuccessfulInsertForm
 from .forms_checkin_checkout.forms_checkin_iniciar import ClientSelectForm
 from .forms_checkin_checkout.forms_checkin_registrar import ClientCheckInForm

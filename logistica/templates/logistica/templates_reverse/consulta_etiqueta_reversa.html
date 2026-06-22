@@ -1,0 +1,248 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+    .form-card-2col {
+        margin-top: 65px;
+        margin-bottom: auto;
+        height: auto;
+    }
+
+    .etiqueta-reversa-resultado {
+        margin-top: 28px;
+        padding-top: 24px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .resultado-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+    .resultado-header h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .resultado-header p {
+        margin: 6px 0 0;
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+    .resultado-romaneio {
+        display: inline-block;
+        margin-top: 4px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: #f3f4f6;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #111827;
+        letter-spacing: 0.02em;
+    }
+
+    .btn-todos-volumes {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 16px;
+        border-radius: 8px;
+        background: #0d6efd;
+        color: #fff !important;
+        font-size: 0.88rem;
+        font-weight: 600;
+        text-decoration: none !important;
+        transition: background 0.2s ease;
+        white-space: nowrap;
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.22);
+    }
+
+    .btn-todos-volumes:hover {
+        background: #0b5ed7;
+        color: #fff !important;
+    }
+
+    .volumes-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .volumes-table th,
+    .volumes-table td {
+        padding: 14px 18px;
+        text-align: left;
+        border-bottom: 1px solid #edf0f4;
+        vertical-align: middle;
+    }
+
+    .volumes-table th {
+        background: #f8fafc;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #64748b;
+    }
+
+    .volumes-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .volumes-table tbody tr:hover {
+        background: #fafbfc;
+    }
+
+    .volume-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 48px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #3730a3;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .volume-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .link-etiqueta {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none !important;
+        transition: all 0.2s ease;
+    }
+
+    .link-etiqueta-abrir {
+        background: #ecfdf5;
+        color: #047857 !important;
+        border: 1px solid #a7f3d0;
+    }
+
+    .link-etiqueta-abrir:hover {
+        background: #d1fae5;
+        color: #065f46 !important;
+    }
+
+    .link-etiqueta-imprimir {
+        background: #eff6ff;
+        color: #1d4ed8 !important;
+        border: 1px solid #bfdbfe;
+    }
+
+    .link-etiqueta-imprimir:hover {
+        background: #dbeafe;
+        color: #1e40af !important;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card-2col">
+        <form method="POST" id="etiquetaReversaForm">
+            {% csrf_token %}
+            {% include 'global/partials/_form_2col.html' %}
+        </form>
+
+        {% if volumes %}
+        <div class="etiqueta-reversa-resultado">
+            <div class="resultado-header">
+                <div>
+                    <h3>Etiquetas geradas</h3>
+                    <p>{{ volumes|length }} volume(s) encontrado(s)</p>
+                    <span class="resultado-romaneio">{{ numero_rom }}</span>
+                </div>
+                {% if url_todos %}
+                <a class="btn-todos-volumes" href="{{ url_todos }}" target="_blank" rel="noopener">
+                    Abrir todos os volumes
+                </a>
+                {% endif %}
+            </div>
+
+            <table class="volumes-table">
+                <thead>
+                    <tr>
+                        <th style="width: 120px;">Volume</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in volumes %}
+                    <tr>
+                        <td>
+                            <span class="volume-badge">{{ item.volume }}/{{ volumes|length }}</span>
+                        </td>
+                        <td>
+                            <div class="volume-actions">
+                                <a
+                                    class="link-etiqueta link-etiqueta-abrir"
+                                    href="{{ item.url_abrir }}"
+                                    target="_blank"
+                                    rel="noopener">
+                                    Abrir etiqueta
+                                </a>
+                                <a
+                                    class="link-etiqueta link-etiqueta-imprimir"
+                                    href="{{ item.url_imprimir }}"
+                                    target="_blank"
+                                    rel="noopener">
+                                    Imprimir / salvar PDF
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const romField = document.getElementById("id_numero_rom");
+        const volField = document.getElementById("id_qtde_vol");
+
+        function enableEnterSubmit(field) {
+            if (!field) return;
+
+            field.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    this.form.requestSubmit();
+                }
+            });
+        }
+
+        enableEnterSubmit(romField);
+        enableEnterSubmit(volField);
+
+        if (romField) {
+            romField.focus({ preventScroll: true });
+        }
+    });
+</script>
+
+{% endblock %}
