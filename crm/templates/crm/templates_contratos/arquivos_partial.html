@@ -1,20 +1,172 @@
-<table class="user-table">
-    <thead>
-        <tr>
-            <th>Nome</th>
-            <th>Tipo</th>
-            <th>Enviado em</th>
-            {% if perms.crm.upload_contract_file %}<th>Ações</th>{% endif %}
-        </tr>
-    </thead>
-    <tbody id="contract-files-table">
-        {% for arquivo in arquivos %}
-        <tr data-file-id="{{ arquivo.id }}">
-            <td>{{ arquivo.filename|default:"-" }}</td>
-            <td>{{ arquivo.content_type|default:"-" }}</td>
-            <td>{{ arquivo.display_uploaded_at|default:"-" }}</td>
-            {% if perms.crm.upload_contract_file %}
-            <td>
+<style>
+    .crm-contract-files-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+    }
+
+    .crm-contract-file-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #f8fafc;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .crm-file-preview {
+        background: #0f172a;
+        min-height: 160px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .crm-file-preview--empty {
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        color: #64748b;
+        font-size: 2.2rem;
+    }
+
+    .crm-file-miniplayer {
+        width: 100%;
+        max-height: 220px;
+        display: block;
+        background: #000;
+    }
+
+    .crm-file-miniplayer--audio {
+        padding: 18px 14px;
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    }
+
+    .crm-file-miniplayer--audio audio {
+        width: 100%;
+    }
+
+    .crm-file-preview iframe {
+        width: 100%;
+        height: 220px;
+        border: 0;
+        background: #fff;
+    }
+
+    .crm-file-preview img {
+        width: 100%;
+        max-height: 220px;
+        object-fit: contain;
+        background: #fff;
+    }
+
+    .crm-file-meta {
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex: 1;
+    }
+
+    .crm-file-meta strong {
+        font-size: 0.92rem;
+        color: #0f172a;
+        word-break: break-word;
+    }
+
+    .crm-file-meta .crm-file-sub {
+        font-size: 0.78rem;
+        color: #64748b;
+    }
+
+    .crm-file-meta-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: auto;
+        padding-top: 8px;
+    }
+
+    .crm-file-open-link {
+        font-size: 0.82rem;
+        color: #1d4ed8;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .crm-file-open-link:hover {
+        text-decoration: underline;
+    }
+
+    .crm-contract-files-empty {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 28px 16px;
+        color: #64748b;
+        border: 1px dashed #cbd5e1;
+        border-radius: 10px;
+        background: #f8fafc;
+    }
+
+    .crm-contract-upload-form {
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 12px;
+    }
+
+    .crm-contract-upload-form .form-group {
+        flex: 1;
+        min-width: 220px;
+        margin: 0;
+    }
+</style>
+
+<div class="crm-contract-files-grid" id="contract-files-grid">
+    {% for arquivo in arquivos %}
+    <article class="crm-contract-file-card" data-file-id="{{ arquivo.id }}">
+        <div class="crm-file-preview{% if not arquivo.preview_url %} crm-file-preview--empty{% endif %}">
+            {% if arquivo.preview_url %}
+                {% if arquivo.preview_kind == "audio" %}
+                <div class="crm-file-miniplayer crm-file-miniplayer--audio">
+                    <audio controls preload="metadata" class="crm-file-miniplayer" src="{{ arquivo.preview_url }}">
+                        Seu navegador não suporta áudio embutido.
+                    </audio>
+                </div>
+                {% elif arquivo.preview_kind == "video" %}
+                <video controls preload="metadata" class="crm-file-miniplayer" src="{{ arquivo.preview_url }}">
+                    Seu navegador não suporta vídeo embutido.
+                </video>
+                {% elif arquivo.preview_kind == "image" %}
+                <img src="{{ arquivo.preview_url }}" alt="{{ arquivo.filename|default:'Arquivo' }}">
+                {% elif arquivo.preview_kind == "pdf" %}
+                <iframe src="{{ arquivo.preview_url }}#toolbar=0" title="{{ arquivo.filename|default:'PDF' }}"></iframe>
+                {% else %}
+                <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
+                {% endif %}
+            {% else %}
+            <i class="fa-solid fa-file" aria-hidden="true"></i>
+            {% endif %}
+        </div>
+        <div class="crm-file-meta">
+            <strong>{{ arquivo.filename|default:"Arquivo sem nome" }}</strong>
+            <span class="crm-file-sub">
+                {{ arquivo.display_extension|default:"-" }}
+                {% if arquivo.display_file_size %} · {{ arquivo.display_file_size }}{% endif %}
+                · {{ arquivo.display_uploaded_at|default:"-" }}
+            </span>
+            <div class="crm-file-meta-actions">
+                {% if arquivo.preview_url %}
+                <a href="{{ arquivo.preview_url }}" target="_blank" rel="noopener" class="crm-file-open-link">
+                    <i class="fa-solid fa-up-right-from-square"></i> Abrir
+                </a>
+                {% else %}
+                <span class="crm-file-sub">Sem link de visualização</span>
+                {% endif %}
+                {% if perms.crm.upload_contract_file %}
                 <button type="button"
                         class="action-btn edit-btn btn-delete-contract-file"
                         title="Remover"
@@ -22,55 +174,71 @@
                         data-url="{% url 'crm:ajax_delete_contract_file' contract_id=contract_id file_id=arquivo.id %}">
                     <i class="fa-solid fa-trash"></i>
                 </button>
-            </td>
-            {% endif %}
-        </tr>
-        {% empty %}
-        <tr id="contract-files-empty"><td colspan="4" class="muted text-center">Nenhum arquivo anexado.</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+                {% endif %}
+            </div>
+        </div>
+    </article>
+    {% empty %}
+    <div class="crm-contract-files-empty" id="contract-files-empty">
+        <i class="fa-regular fa-folder-open"></i> Nenhum arquivo anexado.
+    </div>
+    {% endfor %}
+</div>
 
 {% if perms.crm.upload_contract_file %}
-<form method="post" enctype="multipart/form-data" style="margin-top: 16px;">
+<form method="post" enctype="multipart/form-data" class="crm-contract-upload-form">
     {% csrf_token %}
     <input type="hidden" name="upload_file" value="1">
     <div class="form-group">{{ file_form.arquivo.label_tag }}{{ file_form.arquivo }}</div>
-    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-upload"></i> Enviar arquivo</button>
+    <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-upload"></i> Enviar arquivo
+    </button>
 </form>
 
 <script>
-document.querySelectorAll('.btn-delete-contract-file').forEach(btn => {
-    btn.addEventListener('click', async () => {
-        if (!confirm('Remover arquivo?')) return;
-        const csrf = document.querySelector('[name=csrfmiddlewaretoken]');
-        const token = csrf ? csrf.value : '';
+(function () {
+    async function parseJsonResponse(resp) {
+        const text = await resp.text();
         try {
-            const resp = await fetch(btn.dataset.url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': token,
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            });
-            const data = await resp.json();
-            if (data.ok) {
-                const row = btn.closest('tr');
-                row.remove();
-                const tbody = document.getElementById('contract-files-table');
-                if (tbody && !tbody.querySelector('tr[data-file-id]')) {
-                    const empty = document.createElement('tr');
-                    empty.id = 'contract-files-empty';
-                    empty.innerHTML = '<td colspan="4" class="muted text-center">Nenhum arquivo anexado.</td>';
-                    tbody.appendChild(empty);
-                }
-            } else {
-                alert(data.detail || 'Não foi possível remover o arquivo.');
-            }
+            return JSON.parse(text);
         } catch (e) {
-            alert('Erro ao remover arquivo.');
+            throw new Error("Resposta inválida do servidor.");
         }
+    }
+
+    document.querySelectorAll(".btn-delete-contract-file").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            if (!confirm("Remover arquivo?")) return;
+            const csrf = document.querySelector("[name=csrfmiddlewaretoken]");
+            const token = csrf ? csrf.value : "";
+            try {
+                const resp = await fetch(btn.dataset.url, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": token,
+                        "X-Requested-With": "XMLHttpRequest",
+                    },
+                });
+                const data = await parseJsonResponse(resp);
+                if (data.ok) {
+                    const card = btn.closest(".crm-contract-file-card");
+                    if (card) card.remove();
+                    const grid = document.getElementById("contract-files-grid");
+                    if (grid && !grid.querySelector("[data-file-id]") && !document.getElementById("contract-files-empty")) {
+                        const empty = document.createElement("div");
+                        empty.id = "contract-files-empty";
+                        empty.className = "crm-contract-files-empty";
+                        empty.innerHTML = '<i class="fa-regular fa-folder-open"></i> Nenhum arquivo anexado.';
+                        grid.appendChild(empty);
+                    }
+                } else {
+                    alert(data.detail || "Não foi possível remover o arquivo.");
+                }
+            } catch (e) {
+                alert(e.message || "Erro ao remover arquivo.");
+            }
+        });
     });
-});
+})();
 </script>
 {% endif %}

@@ -16,13 +16,17 @@ from crm_api.exceptions import CrmApiError, CrmAuthError
 from crm_api.payloads import (
     board_access_payload,
     board_column_payload,
+    board_payload,
     billing_payload,
     billing_api_payload,
     build_rrule,
     contract_payload,
+    contract_api_payload,
     parse_rrule,
+    project_payload,
     recurrence_payload,
     service_type_payload,
+    settings_item_payload,
     task_payload,
 )
 from crm_api.session_credentials import (
@@ -36,8 +40,10 @@ from crm.helpers.api_display import (
     enrich_billing,
     enrich_billing_with_lookups,
     enrich_board,
+    enrich_board_access_grant,
     enrich_project,
     is_opaque_id,
+    service_types_for_gai,
     short_ref,
 )
 from crm.helpers.date_format import format_date_br, format_datetime_br, format_period_br
@@ -278,6 +284,64 @@ class PayloadTests(SimpleTestCase):
         })
         self.assertEqual(payload["code"], "custom_code")
 
+    def test_project_payload_includes_code_on_create(self):
+        payload = project_payload({
+            "name": "teste criar projeto",
+            "description": "hahahahaha projetei",
+            "customer_gai_id": 29,
+            "is_active": True,
+        }, is_create=True)
+        self.assertEqual(payload["code"], "teste_criar_projeto")
+        self.assertEqual(payload["name"], "teste criar projeto")
+        self.assertEqual(payload["customer_gai_id"], 29)
+
+    def test_project_payload_preserves_explicit_code_on_create(self):
+        payload = project_payload({
+            "name": "Qualquer",
+            "code": "custom_code",
+        }, is_create=True)
+        self.assertEqual(payload["code"], "custom_code")
+
+    def test_project_payload_omits_code_on_update(self):
+        payload = project_payload({
+            "name": "teste criar projeto",
+            "description": "atualizado",
+        })
+        self.assertNotIn("code", payload)
+
+    def test_board_payload_includes_code_on_create(self):
+        payload = board_payload({
+            "name": "new board test",
+            "description": "hahaa testei o board",
+            "is_active": True,
+        }, is_create=True)
+        self.assertEqual(payload["code"], "new_board_test")
+        self.assertEqual(payload["name"], "new board test")
+
+    def test_board_payload_omits_code_on_update(self):
+        payload = board_payload({
+            "name": "new board test",
+            "description": "atualizado",
+        })
+        self.assertNotIn("code", payload)
+
+    def test_settings_item_payload_includes_code_on_create(self):
+        payload = settings_item_payload({
+            "name": "Muitissima altissima",
+            "color": "#ff05hg",
+            "sort_order": 4,
+            "is_active": True,
+        }, is_create=True)
+        self.assertEqual(payload["code"], "muitissima_altissima")
+        self.assertEqual(payload["name"], "Muitissima altissima")
+
+    def test_settings_item_payload_omits_code_on_update(self):
+        payload = settings_item_payload({
+            "name": "Muitissima altissima",
+            "color": "#ff05hg",
+        })
+        self.assertNotIn("code", payload)
+
     def test_column_reorder_payload_maps_ids_to_items(self):
         from crm_api.services.boards import column_reorder_payload
 
@@ -339,6 +403,41 @@ class PayloadTests(SimpleTestCase):
         self.assertEqual(payload["description"], "Observação")
         self.assertNotIn("titulo", payload)
         self.assertNotIn("data_inicio", payload)
+
+    def test_contract_api_payload_embeds_number_and_value_in_description(self):
+        from decimal import Decimal
+
+        payload = contract_api_payload({
+            "client_gai_id": 10,
+            "titulo": "Contrato teste",
+            "numero": "C-2024-001",
+            "valor": Decimal("1500.50"),
+            "descricao": "Observação livre",
+        }, is_create=True)
+        self.assertNotIn("number", payload)
+        self.assertNotIn("value", payload)
+        self.assertNotIn("status", payload)
+        self.assertIn("<!--crm-contract:", payload["description"])
+        self.assertIn("numero=C-2024-001", payload["description"])
+        self.assertIn("valor=1500.50", payload["description"])
+        self.assertIn("Observação livre", payload["description"])
+
+    def test_enrich_contract_reads_embedded_number_and_value(self):
+        from crm.helpers.api_display import enrich_contract
+
+        enriched = enrich_contract({
+            "id": "abc",
+            "title": "Contrato Alpha",
+            "description": (
+                "<!--crm-contract:numero=C-7;valor=2500.00-->\n"
+                "Texto da descrição"
+            ),
+            "customer": {"name": "Cliente"},
+        })
+        self.assertEqual(enriched["display_numero"], "C-7")
+        self.assertEqual(enriched["display_valor"], "R$ 2.500,00")
+        self.assertEqual(enriched["display_descricao"], "Texto da descrição")
+        self.assertEqual(enriched["descricao"], "Texto da descrição")
 
     def test_billing_payload_serializes_dates_and_decimal(self):
         from datetime import date
@@ -415,9 +514,62 @@ class OpaqueIdDisplayTests(SimpleTestCase):
         board = enrich_board({"id": "71054561-6c12-4c3b-b11f-28c1bb5ec790"})
         self.assertEqual(board["display_name"], "-")
 
+    def test_enrich_board_access_grant_builds_display_subject(self):
+        grant = enrich_board_access_grant({
+            "id": "acc-1",
+            "subject_type": "user",
+            "user_id": 7,
+            "username": "ARC0007",
+            "access_level": "editor",
+        })
+        self.assertEqual(grant["display_subject"], "Usuário: ARC0007")
+        self.assertEqual(grant["display_access_level"], "editor")
+
     def test_enrich_project_without_name_does_not_expose_uuid(self):
         project = enrich_project({"id": "71054561-6c12-4c3b-b11f-28c1bb5ec790"})
         self.assertEqual(project["display_name"], "-")
+
+
+class ServiceTypesForGaiTests(SimpleTestCase):
+    def test_without_gai_returns_only_global_types(self):
+        service_types = [
+            {"id": 1, "type": "ENTREGA SIMPLES"},
+            {"id": 2, "type": "ENTREGA SIMPLES", "client_id": 10},
+            {"id": 3, "type": "REVERSA PA/CD"},
+        ]
+        result = service_types_for_gai(service_types, None)
+        self.assertEqual([item["id"] for item in result], [1, 3])
+
+    def test_with_gai_prefers_client_specific_over_global_duplicate(self):
+        service_types = [
+            {"id": 1, "type": "ENTREGA SIMPLES"},
+            {"id": 2, "type": "ENTREGA SIMPLES", "client_id": 10},
+            {"id": 3, "type": "ENTREGA AO DESTINATARIO"},
+            {"id": 4, "type": "ENTREGA AO DESTINATARIO", "client_id": 10},
+            {"id": 5, "type": "REVERSA PA/CD"},
+        ]
+        result = service_types_for_gai(service_types, 10)
+        self.assertEqual([item["id"] for item in result], [2, 4, 5])
+
+
+class EnrichContractFileTests(SimpleTestCase):
+    def test_enrich_contract_file_detects_preview_kind(self):
+        from crm.helpers.api_display import enrich_contract_file
+
+        audio = enrich_contract_file({
+            "filename": "gravacao.mp3",
+            "firebase_url": "https://example.com/a.mp3",
+            "file_size": 2048,
+        })
+        self.assertEqual(audio["preview_kind"], "audio")
+        self.assertEqual(audio["display_file_size"], "2.0 KB")
+
+        pdf = enrich_contract_file({
+            "filename": "contrato.pdf",
+            "content_type": "application/pdf",
+            "firebase_url": "https://example.com/c.pdf",
+        })
+        self.assertEqual(pdf["preview_kind"], "pdf")
 
 
 class EnrichBillingTests(SimpleTestCase):
@@ -638,9 +790,83 @@ class ListaFaturamentoViewTests(TestCase):
         self.assertIn("crm-billing-list-config", content)
         self.assertIn("modalFormBilling", content)
         self.assertIn("openCreateBillingModal", content)
+        self.assertIn('"/{id}/"', content)
+
+    @patch("crm.views.views_faturamento.view_lista_faturamento.billing_service.list_billing")
+    @patch("crm.views.views_faturamento.view_lista_faturamento.billing_service.billing_summary")
+    def test_ajax_get_billing_returns_enriched_payload(
+        self,
+        mock_summary,
+        mock_list,
+    ):
+        from django.urls import reverse
+
+        mock_summary.return_value = {}
+        mock_list.return_value = ([], 0)
+
+        billing_id = "fe8be1d1-bff5-4361-8c6f-0fc6f9abee24"
+        billing_record = {
+            "id": billing_id,
+            "reference": "REF-2026-06",
+            "value": "1500.00",
+            "due_date": "2026-07-15",
+            "customer_gai_id": 10,
+            "contract_id": "contract-1",
+        }
+
+        with patch(
+            "crm.views.views_ajax.view_ajax_billing.billing_service.get_billing",
+            return_value=billing_record,
+        ), patch(
+            "crm.views.views_ajax.view_ajax_billing.get_billing_lookups",
+            return_value={"clients": [], "contracts": []},
+        ):
+            self.client.force_login(self.user)
+            response = self.client.get(
+                reverse("crm:ajax_get_billing", kwargs={"billing_id": billing_id}),
+            )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["billing"]["display_referencia"], "REF-2026-06")
+        self.assertEqual(payload["form"]["referencia"], "REF-2026-06")
 
 
-class ContractOptionLabelTests(SimpleTestCase):
+class GetBillingServiceTests(SimpleTestCase):
+    def test_get_billing_falls_back_to_list_when_detail_get_not_allowed(self):
+        from crm_api.exceptions import CrmApiError
+        from crm_api.services import billing as billing_service
+
+        billing_id = "fe8be1d1-bff5-4361-8c6f-0fc6f9abee24"
+        client = Mock()
+        client.get.side_effect = CrmApiError(
+            "Method Not Allowed",
+            status_code=405,
+            detail="Method Not Allowed",
+        )
+
+        with patch.object(
+            billing_service,
+            "list_billing",
+            return_value=([{"id": billing_id, "reference": "REF-1"}], 1),
+        ) as mock_list:
+            record = billing_service.get_billing(client, billing_id)
+
+        self.assertEqual(record["reference"], "REF-1")
+        mock_list.assert_called_once()
+    def test_contract_to_json_without_value_does_not_raise(self):
+        from crm.helpers.api_display import contract_to_json
+
+        payload = contract_to_json({
+            "id": "abc-123",
+            "title": "Contrato sem valor",
+            "customer": {"gai_id": 10, "name": "Cliente"},
+        })
+        self.assertEqual(payload["titulo"], "Contrato sem valor")
+        self.assertEqual(payload["display_valor"], "")
+        self.assertEqual(payload["valor"], "")
+
     def test_contract_option_label_uses_title_not_uuid(self):
         from crm.views.views_contratos._helpers import contract_option_label
 
@@ -1044,6 +1270,91 @@ class LookupEntitiesTests(SimpleTestCase):
         self.assertEqual(enriched["gais"][0]["nome"], "Cliente A")
         self.assertEqual(enriched["gais"][1]["id"], 11)
 
+    def test_enrich_task_lookups_maps_prioritys_alias(self):
+        from crm.helpers.api_display import enrich_task_lookups
+
+        enriched = enrich_task_lookups({
+            "prioritys": [
+                {"id": 1, "name": "Alta"},
+                {"id": 2, "name": "Baixa"},
+            ],
+        })
+        self.assertEqual(len(enriched["priorities"]), 2)
+        self.assertEqual(enriched["priorities"][0]["name"], "Alta")
+
+    def test_task_edit_initial_resolves_nested_priority_and_project(self):
+        from crm.views.views_tasks.view_edit_task import _task_edit_initial
+
+        initial = _task_edit_initial({
+            "title": "Task teste",
+            "board": {"id": "a2a44d6e-2313-40d6-b7d8-c33718895563", "name": "Board A"},
+            "status": {"id": "0cf4a088-89ca-4e08-b057-9fa74055d80d", "name": "Aberto"},
+            "priority": {"id": "3f8e2a1b-4c5d-6e7f-8a9b-0c1d2e3f4a5b", "name": "Média"},
+            "project": {"id": "71054561-6c12-4c3b-b11f-28c1bb5ec790", "name": "Projeto X"},
+        })
+        self.assertEqual(initial["board_id"], "a2a44d6e-2313-40d6-b7d8-c33718895563")
+        self.assertEqual(initial["status_id"], "0cf4a088-89ca-4e08-b057-9fa74055d80d")
+        self.assertEqual(initial["priority_id"], "3f8e2a1b-4c5d-6e7f-8a9b-0c1d2e3f4a5b")
+        self.assertEqual(
+            initial["project_id"],
+            "71054561-6c12-4c3b-b11f-28c1bb5ec790",
+        )
+
+    def test_task_edit_form_accepts_uuid_selects_on_post(self):
+        from crm.forms import TaskEditForm
+
+        board_id = "a2a44d6e-2313-40d6-b7d8-c33718895563"
+        status_id = "0cf4a088-89ca-4e08-b057-9fa74055d80d"
+        priority_id = "3f8e2a1b-4c5d-6e7f-8a9b-0c1d2e3f4a5b"
+        project_id = "71054561-6c12-4c3b-b11f-28c1bb5ec790"
+        lookups = {
+            "boards": [{"id": board_id, "name": "Board A"}],
+            "status_tasks": [{"id": status_id, "name": "Aberto"}],
+            "priorities": [{"id": priority_id, "name": "Média"}],
+            "projects": [{"id": project_id, "name": "Projeto X"}],
+            "gais": [],
+        }
+        form = TaskEditForm(
+            {
+                "title": "Task teste",
+                "board_id": board_id,
+                "status_id": status_id,
+                "priority_id": priority_id,
+                "project_id": project_id,
+            },
+            lookups=lookups,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_task_edit_form_selects_priority_and_project(self):
+        from crm.forms import TaskEditForm
+
+        board_id = "a2a44d6e-2313-40d6-b7d8-c33718895563"
+        status_id = "0cf4a088-89ca-4e08-b057-9fa74055d80d"
+        priority_id = "3f8e2a1b-4c5d-6e7f-8a9b-0c1d2e3f4a5b"
+        project_id = "71054561-6c12-4c3b-b11f-28c1bb5ec790"
+        lookups = {
+            "boards": [{"id": board_id, "name": "Board A"}],
+            "status_tasks": [{"id": status_id, "name": "Aberto"}],
+            "priorities": [{"id": priority_id, "name": "Média"}],
+            "projects": [{"id": project_id, "name": "Projeto X"}],
+            "gais": [],
+        }
+        form = TaskEditForm(
+            lookups=lookups,
+            initial={
+                "title": "Task teste",
+                "board_id": board_id,
+                "status_id": status_id,
+                "priority_id": priority_id,
+                "project_id": project_id,
+            },
+        )
+        self.assertEqual(form["board_id"].value(), board_id)
+        self.assertEqual(form["status_id"].value(), status_id)
+        self.assertEqual(form["priority_id"].value(), priority_id)
+        self.assertEqual(form["project_id"].value(), project_id)
+
     def test_normalize_lookup_user_accepts_user_id(self):
         from crm.helpers.lookup_entities import normalize_lookup_users
 
@@ -1077,6 +1388,47 @@ class LookupEntitiesTests(SimpleTestCase):
         gai_values = [value for value, _ in form.fields["customer_gai_id"].choices if value]
         self.assertIn("3", user_values)
         self.assertIn("9", gai_values)
+
+
+class UserDisplayTests(TestCase):
+    def setUp(self):
+        from logistica.models import UserProfile
+
+        self.user = User.objects.create_user(
+            username="ARC0003",
+            password="pass",
+            first_name="Felipe",
+            last_name="Silva",
+        )
+        UserProfile.objects.create(
+            user=self.user,
+            avatar="https://example.com/avatar.jpg",
+        )
+
+    def test_enrich_assignee_resolves_django_user_by_id(self):
+        from crm.views.views_tasks._helpers import enrich_assignees_for_display
+
+        assignees = enrich_assignees_for_display([{"id": "a1", "user_id": self.user.id, "is_primary": True}])
+        self.assertEqual(assignees[0]["display_name"], "Felipe Silva")
+        self.assertEqual(assignees[0]["avatar_url"], "https://example.com/avatar.jpg")
+        self.assertEqual(assignees[0]["display_initials"], "FS")
+
+    def test_enrich_comment_resolves_author_id(self):
+        from crm.views.views_tasks._helpers import enrich_comments_for_display
+
+        comments = enrich_comments_for_display([
+            {"id": "c1", "author_id": self.user.id, "content": "Teste"},
+        ])
+        self.assertEqual(comments[0]["display_author"], "Felipe Silva")
+        self.assertEqual(comments[0]["avatar_url"], "https://example.com/avatar.jpg")
+
+    def test_enrich_watcher_keeps_api_username_when_present(self):
+        from crm.views.views_tasks._helpers import enrich_watchers_for_display
+
+        watchers = enrich_watchers_for_display([
+            {"id": "w1", "user_id": self.user.id, "username": "ARC0003"},
+        ])
+        self.assertEqual(watchers[0]["display_name"], "ARC0003")
 
 
 class HomologAcceptanceTests(SimpleTestCase):

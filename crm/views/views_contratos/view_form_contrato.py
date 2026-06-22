@@ -8,7 +8,7 @@ from crm.helpers.api_display import contract_initial
 from crm.views.views_contratos._helpers import contract_lookups
 from crm_api.client import CrmApiClient
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
-from crm_api.payloads import contract_payload
+from crm_api.payloads import contract_api_payload
 from crm_api.services import contracts as contracts_service
 
 
@@ -41,7 +41,10 @@ def form_contrato(request, contract_id=None):
         form = ContractForm(request.POST, lookups=lookups, nome_form=nome_form)
         if form.is_valid():
             try:
-                payload = contract_payload(form.cleaned_data)
+                payload = contract_api_payload(
+                    form.cleaned_data,
+                    is_create=not is_edit,
+                )
                 if is_edit:
                     contracts_service.update_contract(client, contract_id, payload)
                     messages.success(request, "Contrato atualizado com sucesso!")

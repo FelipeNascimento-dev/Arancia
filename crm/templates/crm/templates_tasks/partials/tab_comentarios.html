@@ -1,7 +1,13 @@
 <div class="crm-comment-list">
     {% for c in comments %}
     <article class="crm-comment-item">
-        <div class="crm-comment-avatar">{{ c.display_author|default:"?"|slice:":2" }}</div>
+        {% if c.avatar_url %}
+        <div class="crm-comment-avatar crm-comment-avatar--photo">
+            <img src="{{ c.avatar_url }}" alt="{{ c.display_author }}" loading="lazy">
+        </div>
+        {% else %}
+        <div class="crm-comment-avatar">{{ c.display_initials|default:"?" }}</div>
+        {% endif %}
         <div class="crm-comment-body">
             <header class="crm-comment-header">
                 <strong>{{ c.display_author|default:"Usuário" }}</strong>

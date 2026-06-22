@@ -137,14 +137,20 @@ def lista_faturamento(request):
 
     list_config = {
         "urls": {
-            "get": reverse("crm:ajax_get_billing", kwargs={"billing_id": "{id}"}),
+            "get": reverse(
+                "crm:ajax_get_billing",
+                kwargs={"billing_id": "0"},
+            ).replace("/0/", "/{id}/"),
             "create": reverse("crm:ajax_create_billing"),
-            "update": reverse("crm:ajax_update_billing", kwargs={"billing_id": "{id}"}),
+            "update": reverse(
+                "crm:ajax_update_billing",
+                kwargs={"billing_id": "0"},
+            ).replace("/0/", "/{id}/"),
             "lookups": reverse("crm:ajax_billing_lookups"),
             "contract_detail": reverse(
                 "crm:detalhe_contrato",
-                kwargs={"contract_id": "{id}"},
-            ),
+                kwargs={"contract_id": "0"},
+            ).replace("/0/", "/{id}/"),
         },
     }
 

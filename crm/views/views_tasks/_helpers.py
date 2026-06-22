@@ -288,17 +288,28 @@ def _load_designations(client: CrmApiClient, *, crm_lookups=None):
 
 def _load_task_lookups(client: CrmApiClient):
     if _use_aggregated_endpoints():
-        return _derive_task_lookups_from_board_page(_get_board_page_bundle(client), client)
+        lookups = _derive_task_lookups_from_board_page(
+            _get_board_page_bundle(client), client,
+        )
+    else:
+        crm_lookups = _get_crm_lookups_normalized(client)
+        lookups = enrich_task_lookups(crm_lookups) if crm_lookups else {}
 
-    crm_lookups = _get_crm_lookups_normalized(client)
-    lookups = enrich_task_lookups(crm_lookups) if crm_lookups else {}
+        if not lookups.get("gais"):
+            lookups["gais"] = _load_active_gais(client, crm_lookups=crm_lookups)
+        if not lookups.get("users"):
+            lookups["users"] = _load_system_users(client, crm_lookups=crm_lookups)
+        if not lookups.get("designations"):
+            lookups["designations"] = _load_designations(client, crm_lookups=crm_lookups)
 
-    if not lookups.get("gais"):
-        lookups["gais"] = _load_active_gais(client, crm_lookups=crm_lookups)
-    if not lookups.get("users"):
-        lookups["users"] = _load_system_users(client, crm_lookups=crm_lookups)
-    if not lookups.get("designations"):
-        lookups["designations"] = _load_designations(client, crm_lookups=crm_lookups)
+        lookups = enrich_task_lookups(lookups)
+
+    if not lookups.get("projects"):
+        try:
+            projects, _ = projects_service.list_projects(client, limit=200)
+            lookups["projects"] = projects
+        except CrmApiError:
+            lookups.setdefault("projects", [])
 
     return enrich_task_lookups(lookups)
 
@@ -489,11 +500,42 @@ def enrich_subtask_for_display(subtask):
     }
 
 
-def enrich_move_history_for_display(entry):
+def _enrich_person_entity(entity, *, user_map=None, designation_map=None, label_key="display_name"):
+    from crm.helpers.user_display import resolve_person_display
+
+    if not isinstance(entity, dict):
+        return entity
+    person = resolve_person_display(
+        entity,
+        user_map=user_map,
+        designation_map=designation_map,
+    )
+    display_name = person["display_name"]
+    if display_name == "-" and entity.get("customer_gai_id") not in (None, ""):
+        display_name = (
+            entity.get("customer_gai_name")
+            or entity.get("gai_name")
+            or f"GAI {entity.get('customer_gai_id')}"
+        )
+    return {
+        **entity,
+        label_key: display_name,
+        "avatar_url": person["avatar_url"],
+        "display_initials": person["initials"],
+    }
+
+
+def enrich_move_history_for_display(entry, *, user_map=None, designation_map=None):
     if not isinstance(entry, dict):
         return entry
     from_status = entry.get("from_status") or {}
     to_status = entry.get("to_status") or {}
+    person = _enrich_person_entity(
+        entry,
+        user_map=user_map,
+        designation_map=designation_map,
+        label_key="display_user",
+    )
     return {
         **entry,
         "display_moved_at": format_datetime_br(
@@ -502,58 +544,99 @@ def enrich_move_history_for_display(entry):
         ),
         "display_from_status": nested_label(from_status, "name", "nome") or entry.get("from_status_name") or "-",
         "display_to_status": nested_label(to_status, "name", "nome") or entry.get("to_status_name") or "-",
-        "display_user": (
-            entry.get("user_username")
-            or entry.get("username")
-            or entry.get("user_id")
-            or "-"
-        ),
+        "display_user": person["display_user"],
     }
 
 
-def enrich_assignee_for_display(assignee):
-    if not isinstance(assignee, dict):
-        return assignee
-    return {
-        **assignee,
-        "display_name": (
-            assignee.get("username")
-            or assignee.get("name")
-            or assignee.get("nome")
-            or assignee.get("user_id")
-            or "-"
-        ),
-    }
+def enrich_assignee_for_display(assignee, *, user_map=None, designation_map=None):
+    return _enrich_person_entity(
+        assignee,
+        user_map=user_map,
+        designation_map=designation_map,
+        label_key="display_name",
+    )
 
 
-def enrich_watcher_for_display(watcher):
-    if not isinstance(watcher, dict):
-        return watcher
-    return {
-        **watcher,
-        "display_name": (
-            watcher.get("username")
-            or watcher.get("name")
-            or watcher.get("nome")
-            or watcher.get("user_id")
-            or "-"
-        ),
-    }
+def enrich_watchers_for_display(watchers):
+    from crm.helpers.user_display import build_person_resolver
+
+    resolver = build_person_resolver(watchers)
+    return [
+        enrich_watcher_for_display(
+            watcher,
+            user_map=resolver["users"],
+            designation_map=resolver["designations"],
+        )
+        for watcher in (watchers or [])
+    ]
 
 
-def enrich_comment_for_display(comment):
+def enrich_watcher_for_display(watcher, *, user_map=None, designation_map=None):
+    return _enrich_person_entity(
+        watcher,
+        user_map=user_map,
+        designation_map=designation_map,
+        label_key="display_name",
+    )
+
+
+def enrich_assignees_for_display(assignees):
+    from crm.helpers.user_display import build_person_resolver
+
+    resolver = build_person_resolver(assignees)
+    return [
+        enrich_assignee_for_display(
+            assignee,
+            user_map=resolver["users"],
+            designation_map=resolver["designations"],
+        )
+        for assignee in (assignees or [])
+    ]
+
+
+def enrich_comments_for_display(comments):
+    from crm.helpers.user_display import build_person_resolver
+
+    resolver = build_person_resolver(comments)
+    return [
+        enrich_comment_for_display(
+            comment,
+            user_map=resolver["users"],
+            designation_map=resolver["designations"],
+        )
+        for comment in (comments or [])
+    ]
+
+
+def enrich_comment_for_display(comment, *, user_map=None, designation_map=None):
     if not isinstance(comment, dict):
         return comment
-    return {
-        **comment,
-        "display_author": (
-            comment.get("author_username")
-            or comment.get("username")
-            or comment.get("user_id")
-            or "Usuário"
-        ),
-        "display_body": comment.get("content") or comment.get("body") or comment.get("text") or "",
-    }
+    enriched = _enrich_person_entity(
+        comment,
+        user_map=user_map,
+        designation_map=designation_map,
+        label_key="display_author",
+    )
+    if enriched.get("display_author") == "-":
+        enriched["display_author"] = "Usuário"
+    enriched["display_body"] = (
+        comment.get("content") or comment.get("body") or comment.get("text") or ""
+    )
+    return enriched
+
+
+def enrich_move_history_for_display_list(entries):
+    from crm.helpers.user_display import build_person_resolver
+
+    resolver = build_person_resolver(entries)
+    return [
+        enrich_move_history_for_display(
+            entry,
+            user_map=resolver["users"],
+            designation_map=resolver["designations"],
+        )
+        for entry in (entries or [])
+    ]
 
 
 def enrich_attachment_for_display(attachment):

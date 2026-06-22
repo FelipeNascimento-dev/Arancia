@@ -9,7 +9,7 @@ from crm.helpers.api_display import contract_to_json
 from crm.views.views_contratos._helpers import contract_lookups
 from crm_api.client import CrmApiClient
 from crm_api.exceptions import CrmApiError, crm_error_message_pt
-from crm_api.payloads import contract_payload
+from crm_api.payloads import contract_api_payload
 from crm_api.services import contracts as contracts_service
 
 
@@ -32,7 +32,7 @@ def ajax_get_contract(request, contract_id):
 @require_POST
 def ajax_update_contract(request, contract_id):
     client = CrmApiClient(request)
-    if request.content_type == "application/json":
+    if request.content_type and "application/json" in request.content_type:
         try:
             raw = json.loads(request.body.decode("utf-8") or "{}")
         except json.JSONDecodeError:
@@ -56,7 +56,7 @@ def ajax_update_contract(request, contract_id):
         updated = contracts_service.update_contract(
             client,
             contract_id,
-            contract_payload(form.cleaned_data),
+            contract_api_payload(form.cleaned_data, is_create=False),
         )
         return JsonResponse({
             "ok": True,

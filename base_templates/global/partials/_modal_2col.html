@@ -1,6 +1,5 @@
 <div id="{{ modal_id }}" class="modal">
-  <div class="modal-content">
-
+  <div class="modal-dialog modal-dialog-md">
     <div class="modal-header">
       <h5>{{ modal_title }}</h5>
       <button type="button" class="modal-close" onclick="closeModal('{{ modal_id }}')">&times;</button>
@@ -10,11 +9,11 @@
       {% csrf_token %}
       <input type="hidden" name="register" value="1">
 
-      <div class="modal-body fields-grid">
+      <div class="modal-body fields-grid fields-grid-2col">
         {% block modal_fields %}
           {% for field in form %}
-          <div class="form-group">
-            {{ field.label_tag }}
+          <div class="form-group{% if field.field.widget.attrs.rows %} form-group-full{% elif field.field.widget.input_type == 'checkbox' %} form-group-checkbox{% endif %}">
+            {% if field.field.widget.input_type != 'checkbox' %}{{ field.label_tag }}{% endif %}
 
             {% if field.name == "grupo" %}
               <select name="grupo" id="grupo_{{ modal_id }}" onchange="filtrarAditionalInfos('{{ modal_id }}')">
@@ -35,6 +34,8 @@
             {% else %}
               {{ field }}
             {% endif %}
+            {% if field.field.widget.input_type == 'checkbox' %}{{ field.label_tag }}{% endif %}
+            {% if field.errors %}<div class="error">{{ field.errors }}</div>{% endif %}
           </div>
           {% endfor %}
         {% endblock %}
@@ -49,17 +50,31 @@
 </div>
 
 <script>
+(function () {
+  if (typeof window.openModal !== "function") {
+    window.openModal = function (id) {
+      const el = document.getElementById(id);
+      if (el) el.style.display = "flex";
+    };
+  }
+  if (typeof window.closeModal !== "function") {
+    window.closeModal = function (id) {
+      const el = document.getElementById(id);
+      if (el) el.style.display = "none";
+    };
+  }
+})();
+
 function filtrarAditionalInfos(modalId) {
   const grupoSelect = document.getElementById("grupo_" + modalId);
   const grupoId = grupoSelect.value;
   const aditionalSelect = document.getElementById("aditionalinformation_" + modalId);
 
   [...aditionalSelect.options].forEach(opt => {
-    if (!opt.value) return; // mantém o "Selecione"
+    if (!opt.value) return;
     opt.style.display = (opt.dataset.group === grupoId) ? "block" : "none";
   });
 
-  // Reseta seleção
   aditionalSelect.value = "";
 }
 </script>

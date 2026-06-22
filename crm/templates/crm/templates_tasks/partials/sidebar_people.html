@@ -3,7 +3,13 @@
     <ul class="crm-person-list">
         {% for a in assignees %}
         <li>
-            <span class="crm-person-avatar">{{ a.display_name|default:"?"|slice:":2" }}</span>
+            {% if a.avatar_url %}
+            <span class="crm-person-avatar crm-person-avatar--photo">
+                <img src="{{ a.avatar_url }}" alt="{{ a.display_name }}" loading="lazy">
+            </span>
+            {% else %}
+            <span class="crm-person-avatar">{{ a.display_initials|default:"?" }}</span>
+            {% endif %}
             <span class="person-name">
                 {{ a.display_name|default:"-" }}
                 {% if a.is_primary %}<span class="person-badge">principal</span>{% endif %}
@@ -36,7 +42,13 @@
     <ul class="crm-person-list">
         {% for w in watchers %}
         <li>
-            <span class="crm-person-avatar crm-person-avatar--muted">{{ w.display_name|default:"?"|slice:":2" }}</span>
+            {% if w.avatar_url %}
+            <span class="crm-person-avatar crm-person-avatar--photo crm-person-avatar--muted">
+                <img src="{{ w.avatar_url }}" alt="{{ w.display_name }}" loading="lazy">
+            </span>
+            {% else %}
+            <span class="crm-person-avatar crm-person-avatar--muted">{{ w.display_initials|default:"?" }}</span>
+            {% endif %}
             <span class="person-name">{{ w.display_name|default:"-" }}</span>
             {% if perms.crm.manage_watchers %}
             <form method="post" class="crm-person-action-form">

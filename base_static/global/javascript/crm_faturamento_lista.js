@@ -19,7 +19,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function urlFor(key, id) {
         const pattern = (config.urls || {})[key] || "";
-        return pattern.replace("{id}", String(id));
+        const value = String(id);
+        return pattern
+            .replace(/\{id\}/g, value)
+            .replace(/%7Bid%7D/gi, encodeURIComponent(value));
     }
 
     function openModal(id) {

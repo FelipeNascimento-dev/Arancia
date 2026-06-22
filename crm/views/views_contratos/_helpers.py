@@ -1,4 +1,8 @@
-from crm.helpers.api_display import enrich_contract, service_type_client_gai_id, service_type_option_label
+from crm.helpers.api_display import (
+    enrich_contract,
+    service_type_option_label,
+    service_types_for_gai,
+)
 from crm.helpers.lookup_cache import get_cached_lookup_for_client
 from crm_api.exceptions import CrmApiError
 from crm_api.services import clients as clients_service
@@ -50,18 +54,6 @@ def filter_contracts_for_gai(contracts, gai_id):
     return filtered
 
 
-def filter_service_types_for_gai(service_types, gai_id):
-    if gai_id in (None, ""):
-        return service_types or []
-    gai_key = str(gai_id)
-    filtered = []
-    for item in service_types or []:
-        client_id = service_type_client_gai_id(item)
-        if client_id in (None, "") or str(client_id) == gai_key:
-            filtered.append(item)
-    return filtered
-
-
 def _contract_lookups(client, *, client_gai_id=None):
     lookups = {"clients": [], "service_types": []}
     try:
@@ -73,7 +65,7 @@ def _contract_lookups(client, *, client_gai_id=None):
         crm = get_crm_lookups(client) or {}
         if isinstance(crm, dict):
             service_types = crm.get("service_types") or []
-            lookups["service_types"] = filter_service_types_for_gai(
+            lookups["service_types"] = service_types_for_gai(
                 service_types,
                 client_gai_id,
             )

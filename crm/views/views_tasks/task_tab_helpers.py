@@ -2,12 +2,12 @@ from crm.forms import TaskAssigneeForm, TaskCommentForm, TaskLinkForm, TaskSubta
 from crm_api.exceptions import CrmApiError
 from crm_api.services import tasks as tasks_service
 from crm.views.views_tasks._helpers import (
-    enrich_assignee_for_display,
+    enrich_assignees_for_display,
     enrich_attachment_for_display,
-    enrich_comment_for_display,
-    enrich_move_history_for_display,
+    enrich_comments_for_display,
+    enrich_move_history_for_display_list,
     enrich_subtask_for_display,
-    enrich_watcher_for_display,
+    enrich_watchers_for_display,
     load_task_lookups,
 )
 
@@ -24,17 +24,15 @@ def fetch_task_sidebar_context(client, task_id, *, user=None):
     needs_assignee_lookups = user is None or user.has_perm("crm.assign_task")
     lookups = load_task_lookups(client) if needs_assignee_lookups else {}
     try:
-        assignees = [
-            enrich_assignee_for_display(a)
-            for a in tasks_service.list_assignees(client, task_id)
-        ]
+        assignees = enrich_assignees_for_display(
+            tasks_service.list_assignees(client, task_id),
+        )
     except CrmApiError:
         assignees = []
     try:
-        watchers = [
-            enrich_watcher_for_display(w)
-            for w in tasks_service.list_watchers(client, task_id)
-        ]
+        watchers = enrich_watchers_for_display(
+            tasks_service.list_watchers(client, task_id),
+        )
     except CrmApiError:
         watchers = []
     return {
@@ -81,10 +79,9 @@ def fetch_task_tab_context(client, request, task_id, tab, *, task, board_access,
         })
 
     elif tab == "comentarios":
-        comments = [
-            enrich_comment_for_display(c)
-            for c in (task.get("comments", []) if task else [])
-        ]
+        comments = enrich_comments_for_display(
+            task.get("comments", []) if task else [],
+        )
         ctx.update({
             "comments": comments,
             "comment_form": TaskCommentForm(),
@@ -102,10 +99,9 @@ def fetch_task_tab_context(client, request, task_id, tab, *, task, board_access,
 
     elif tab == "historico":
         try:
-            move_history = [
-                enrich_move_history_for_display(h)
-                for h in tasks_service.get_move_history(client, task_id)
-            ]
+            move_history = enrich_move_history_for_display_list(
+                tasks_service.get_move_history(client, task_id),
+            )
         except CrmApiError:
             move_history = []
         ctx.update({"move_history": move_history})

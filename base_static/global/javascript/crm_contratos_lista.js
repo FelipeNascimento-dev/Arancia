@@ -54,13 +54,42 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    function normalizeServiceTypeLabel(label) {
+        return String(label || "").trim().toLowerCase();
+    }
+
     function serviceTypesForGai(gaiId) {
-        if (!gaiId) return serviceTypes;
+        if (!gaiId) {
+            return serviceTypes.filter((item) => {
+                const clientId = item.client_id;
+                return clientId === null || clientId === undefined || clientId === "";
+            });
+        }
         const gaiKey = String(gaiId);
-        return serviceTypes.filter((item) => {
+        const clientSpecific = [];
+        const globalItems = [];
+        serviceTypes.forEach((item) => {
             const clientId = item.client_id;
-            return clientId === null || clientId === undefined || clientId === "" || String(clientId) === gaiKey;
+            if (clientId === null || clientId === undefined || clientId === "") {
+                globalItems.push(item);
+            } else if (String(clientId) === gaiKey) {
+                clientSpecific.push(item);
+            }
         });
+        const clientLabels = new Set(
+            clientSpecific.map((item) => normalizeServiceTypeLabel(item.label)),
+        );
+        const seenGlobalLabels = new Set();
+        const dedupedGlobals = [];
+        globalItems.forEach((item) => {
+            const labelKey = normalizeServiceTypeLabel(item.label);
+            if (!labelKey || clientLabels.has(labelKey) || seenGlobalLabels.has(labelKey)) {
+                return;
+            }
+            seenGlobalLabels.add(labelKey);
+            dedupedGlobals.push(item);
+        });
+        return clientSpecific.concat(dedupedGlobals);
     }
 
     function refreshServiceTypeSelect(selectEl, gaiId, selectedId) {
@@ -125,15 +154,15 @@ document.addEventListener("DOMContentLoaded", function () {
     function renderViewModal(contract) {
         const idEl = document.getElementById("viewContractId");
         if (idEl) idEl.value = contract.id || "";
-        setText("viewContractNumero", contract.numero);
+        setText("viewContractNumero", contract.display_numero || contract.numero);
         setText("viewContractTitulo", contract.titulo);
         setText("viewContractCliente", contract.display_customer);
         setText("viewContractServiceType", contract.display_service_type);
         setText("viewContractStatus", contract.status);
         setText("viewContractInicio", contract.display_data_inicio || contract.data_inicio);
         setText("viewContractFim", contract.display_data_fim || contract.data_fim);
-        setText("viewContractValor", contract.valor);
-        setText("viewContractDescricao", contract.descricao || "Sem descrição.");
+        setText("viewContractValor", contract.display_valor || contract.valor);
+        setText("viewContractDescricao", contract.display_descricao || contract.descricao || "Sem descrição.");
 
         const detailBtn = document.getElementById("btnOpenDetailFromView");
         if (detailBtn) {
@@ -165,11 +194,22 @@ document.addEventListener("DOMContentLoaded", function () {
         return String(value).slice(0, 10);
     }
 
+    async function parseJsonResponse(resp) {
+        const text = await resp.text();
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            throw new Error(
+                "Resposta inválida do servidor. Atualize a página e tente novamente.",
+            );
+        }
+    }
+
     async function fetchContract(contractId) {
         const resp = await fetch(urlFor("get_contract", contractId), {
             headers: { "X-Requested-With": "XMLHttpRequest" },
         });
-        const data = await resp.json();
+        const data = await parseJsonResponse(resp);
         if (!resp.ok || !data.ok) {
             throw new Error(data.detail || "Não foi possível carregar o contrato.");
         }
@@ -181,13 +221,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!row) return;
         const cells = row.querySelectorAll("td");
         if (cells.length >= 8) {
-            cells[0].textContent = contract.numero || "-";
+            cells[0].textContent = contract.display_numero || contract.numero || "-";
             cells[1].textContent = contract.titulo || "-";
             cells[2].textContent = contract.display_customer || "-";
             cells[3].textContent = contract.display_service_type || "-";
             cells[4].textContent = contract.display_data_inicio || contract.data_inicio || "-";
             cells[5].textContent = contract.display_data_fim || contract.data_fim || "-";
-            cells[6].textContent = contract.valor || "-";
+            cells[6].textContent = contract.display_valor || contract.valor || "-";
             cells[7].innerHTML = `<span class="tag">${contract.status || "-"}</span>`;
         }
     }
@@ -247,7 +287,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 body: JSON.stringify(payload),
             });
-            const data = await resp.json();
+            const data = await parseJsonResponse(resp);
             if (!resp.ok || !data.ok) {
                 errorEl.textContent = data.detail || "Erro ao salvar contrato.";
                 errorEl.hidden = false;
@@ -256,7 +296,7 @@ document.addEventListener("DOMContentLoaded", function () {
             updateTableRow(data.contract);
             closeModal("modalEditContract");
         } catch (err) {
-            errorEl.textContent = "Erro ao salvar contrato.";
+            errorEl.textContent = err.message || "Erro ao salvar contrato.";
             errorEl.hidden = false;
         }
     });

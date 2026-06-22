@@ -175,6 +175,34 @@ def enrich_board(board):
     }
 
 
+def enrich_board_access_grant(grant):
+    """Labels seguros para templates — evita cadeias ``|default:`` em chaves ausentes."""
+    if not isinstance(grant, dict):
+        return grant
+    grant = with_id_alias(grant, "id", "access_id")
+    subject = grant.get("subject")
+    label = ""
+    if isinstance(subject, dict):
+        label = entity_key(subject, "name", "nome", "username", "label", default="")
+    if not label and grant.get("user_id") is not None:
+        label = f"Usuário: {grant.get('username') or grant.get('user_id')}"
+    elif not label and grant.get("designation_id") is not None:
+        label = f"Designação: {grant.get('designation_label') or grant.get('designation_id')}"
+    elif not label and (
+        grant.get("subject_type") == "customer_gai" or grant.get("customer_gai_id") is not None
+    ):
+        label = f"GAI: {grant.get('customer_gai_name') or grant.get('customer_gai_id')}"
+    elif not label and grant.get("group_id") is not None:
+        label = f"Grupo: {grant.get('group_name') or grant.get('group_id')}"
+    if not label:
+        label = grant.get("subject_type") or "-"
+    return {
+        **grant,
+        "display_subject": label,
+        "display_access_level": grant.get("access_level") or "-",
+    }
+
+
 def _status_task_label(status_id, lookups=None):
     if status_id in (None, ""):
         return ""
@@ -266,10 +294,22 @@ def enrich_contract(contract):
         ("data_fim", "end_date"),
         ("valor", "value"),
     )
+    from crm.helpers.contract_meta import (
+        contract_money_display,
+        parse_contract_meta,
+    )
+
+    description_raw = entity_key(contract, "descricao", "description", default="")
+    meta, clean_description = parse_contract_meta(description_raw)
+    api_numero = entity_key(contract, "numero", "number", default="")
+    api_valor = entity_key(contract, "valor", "value", default="")
+    numero = api_numero or meta.get("numero", "")
+    valor_raw = api_valor or meta.get("valor", "")
     customer = contract.get("customer") or {}
     service_type = contract.get("service_type") or {}
     return {
         **contract,
+        "descricao": clean_description,
         "display_customer": nested_label(customer, "nome", "name")
         or contract.get("client_name")
         or "",
@@ -278,7 +318,7 @@ def enrich_contract(contract):
         )
         or contract.get("service_type_name")
         or "",
-        "display_numero": entity_key(contract, "numero", "number", default=""),
+        "display_numero": numero,
         "display_titulo": entity_key(contract, "titulo", "title", default=""),
         "display_data_inicio": format_date_br(
             entity_key(contract, "data_inicio", "start_date", default=""),
@@ -288,8 +328,72 @@ def enrich_contract(contract):
             entity_key(contract, "data_fim", "end_date", default=""),
             default="-",
         ),
-        "display_valor": entity_key(contract, "valor", "value", default=""),
+        "display_valor": contract_money_display(valor_raw),
+        "display_descricao": clean_description or "",
         "display_status": contract.get("status") or "",
+        "valor": valor_raw,
+        "numero": numero,
+    }
+
+
+_AUDIO_EXTENSIONS = frozenset({"mp3", "wav", "ogg", "m4a", "aac", "flac", "webm"})
+_VIDEO_EXTENSIONS = frozenset({"mp4", "webm", "mov", "m4v", "avi", "mkv"})
+_IMAGE_EXTENSIONS = frozenset({"jpg", "jpeg", "png", "gif", "webp", "svg", "bmp"})
+
+
+def _contract_file_extension(arquivo):
+    extension = str(arquivo.get("extension") or "").lower().lstrip(".")
+    if extension:
+        return extension
+    filename = str(arquivo.get("filename") or "")
+    if "." in filename:
+        return filename.rsplit(".", 1)[-1].lower()
+    return ""
+
+
+def _contract_file_preview_kind(arquivo, extension):
+    content_type = str(arquivo.get("content_type") or "").lower()
+    if content_type.startswith("image/") or extension in _IMAGE_EXTENSIONS:
+        return "image"
+    if content_type.startswith("audio/") or extension in _AUDIO_EXTENSIONS:
+        return "audio"
+    if content_type.startswith("video/") or extension in _VIDEO_EXTENSIONS:
+        return "video"
+    if content_type == "application/pdf" or extension == "pdf":
+        return "pdf"
+    return "download"
+
+
+def _format_file_size(size):
+    if size in (None, ""):
+        return ""
+    try:
+        bytes_size = int(size)
+    except (TypeError, ValueError):
+        return str(size)
+    if bytes_size < 1024:
+        return f"{bytes_size} B"
+    if bytes_size < 1024 * 1024:
+        return f"{bytes_size / 1024:.1f} KB"
+    return f"{bytes_size / (1024 * 1024):.1f} MB"
+
+
+def enrich_contract_file(arquivo):
+    if not isinstance(arquivo, dict):
+        return arquivo
+    extension = _contract_file_extension(arquivo)
+    preview_url = (
+        arquivo.get("firebase_url")
+        or arquivo.get("url")
+        or arquivo.get("download_url")
+        or ""
+    )
+    return {
+        **arquivo,
+        "preview_url": preview_url,
+        "preview_kind": _contract_file_preview_kind(arquivo, extension),
+        "display_extension": extension.upper() if extension else "-",
+        "display_file_size": _format_file_size(arquivo.get("file_size")),
     }
 
 
@@ -305,7 +409,8 @@ def contract_to_json(contract):
         or customer.get("gai_id")
         or customer.get("id"),
         "titulo": entity_key(contract, "titulo", "title"),
-        "numero": entity_key(contract, "numero", "number"),
+        "numero": contract.get("display_numero") or entity_key(contract, "numero", "number"),
+        "display_numero": contract.get("display_numero") or "",
         "status": contract.get("status") or "",
         "data_inicio": entity_key(contract, "data_inicio", "start_date"),
         "data_fim": entity_key(contract, "data_fim", "end_date"),
@@ -313,9 +418,11 @@ def contract_to_json(contract):
         or format_date_br(entity_key(contract, "data_inicio", "start_date"), default="-"),
         "display_data_fim": contract.get("display_data_fim")
         or format_date_br(entity_key(contract, "data_fim", "end_date"), default="-"),
-        "valor": entity_key(contract, "valor", "value"),
+        "valor": contract.get("valor") or entity_key(contract, "valor", "value"),
+        "display_valor": contract.get("display_valor") or "",
         "service_type_id": contract.get("service_type_id") or service_type.get("id") or "",
-        "descricao": entity_key(contract, "descricao", "description"),
+        "descricao": contract.get("descricao") or entity_key(contract, "descricao", "description"),
+        "display_descricao": contract.get("display_descricao") or "",
         "display_customer": contract.get("display_customer") or "",
         "display_service_type": contract.get("display_service_type") or "",
     }
@@ -327,6 +434,48 @@ def service_type_option_label(service_type):
     return nested_label(service_type, "description", "type", "name", "nome")
 
 
+def enrich_priority(priority):
+    """Campos seguros para listagem/edição de prioridades."""
+    if not isinstance(priority, dict):
+        return priority
+    priority = with_id_alias(priority, "id")
+    name = nested_label(priority, "name", "nome") or "-"
+    color = priority.get("color") or "-"
+    active_label = "Ativo" if priority.get("is_active", True) else "Inativo"
+    sort_order = priority.get("sort_order")
+    order_label = sort_order if sort_order is not None else "-"
+    return {
+        **priority,
+        "display_name": name,
+        "display_meta": f"{color} · Ordem {order_label} · {active_label}",
+        "display_color": color,
+    }
+
+
+def enrich_service_type(service_type):
+    """Campos seguros para listagem/edição de tipos de serviço."""
+    if not isinstance(service_type, dict):
+        return service_type
+    service_type = with_id_alias(service_type, "id")
+    label = service_type_option_label(service_type)
+    if not label:
+        label = display_label(service_type.get("id"), default="Sem descrição")
+    direction = service_type.get("direction")
+    direction_labels = {"inbound": "Entrada", "outbound": "Saída"}
+    client = service_type.get("client") if isinstance(service_type.get("client"), dict) else {}
+    client_name = nested_label(client, "nome", "name", "razao_social")
+    if not client_name and service_type.get("client_id") not in (None, ""):
+        client_name = f"GAI {service_type.get('client_id')}"
+    return {
+        **service_type,
+        "display_label": label,
+        "display_type": service_type.get("type") or "-",
+        "display_description": service_type.get("description") or "-",
+        "display_direction": direction_labels.get(direction, direction or "-"),
+        "display_client": client_name or "Global",
+    }
+
+
 def service_type_client_gai_id(service_type):
     if not isinstance(service_type, dict):
         return None
@@ -335,6 +484,47 @@ def service_type_client_gai_id(service_type):
         if value not in (None, ""):
             return value
     return None
+
+
+def _service_type_label_key(service_type):
+    return str(service_type_option_label(service_type) or "").strip().casefold()
+
+
+def service_types_for_gai(service_types, gai_id):
+    """Tipos de serviço para um cliente: específicos do GAI + globais sem repetir rótulo."""
+    items = [
+        item
+        for item in (service_types or [])
+        if isinstance(item, dict) and item.get("id") is not None
+    ]
+    if gai_id in (None, ""):
+        return [
+            item
+            for item in items
+            if service_type_client_gai_id(item) in (None, "")
+        ]
+
+    gai_key = str(gai_id)
+    client_specific = []
+    global_items = []
+    for item in items:
+        client_id = service_type_client_gai_id(item)
+        if client_id in (None, ""):
+            global_items.append(item)
+        elif str(client_id) == gai_key:
+            client_specific.append(item)
+
+    client_labels = {_service_type_label_key(item) for item in client_specific}
+    deduped_globals = []
+    seen_global_labels = set()
+    for item in global_items:
+        label_key = _service_type_label_key(item)
+        if not label_key or label_key in client_labels or label_key in seen_global_labels:
+            continue
+        seen_global_labels.add(label_key)
+        deduped_globals.append(item)
+
+    return client_specific + deduped_globals
 
 
 def service_types_for_config(service_types):
@@ -397,6 +587,10 @@ def enrich_task_lookups(lookups):
     if not isinstance(lookups, dict):
         return lookups or {}
     result = dict(lookups)
+
+    # API CRM expõe o catálogo como ``prioritys`` (typo legado no endpoint).
+    if not result.get("priorities") and result.get("prioritys"):
+        result["priorities"] = result["prioritys"]
 
     for key in ("status_tasks", "priorities", "boards", "column_templates", "projects"):
         items = result.get(key)
@@ -690,8 +884,12 @@ def billing_to_json(record, *, already_enriched=False):
 
 
 def contract_initial(data):
+    from crm.helpers.contract_meta import parse_contract_meta
+
     customer = data.get("customer") or {}
     service_type = data.get("service_type") or {}
+    description_raw = data.get("descricao") or data.get("description") or ""
+    meta, clean_description = parse_contract_meta(description_raw)
     return {
         "client_gai_id": data.get("client_gai_id")
         or data.get("customer_gai_id")
@@ -700,12 +898,12 @@ def contract_initial(data):
         "service_type_id": data.get("service_type_id")
         or service_type.get("id"),
         "titulo": data.get("titulo") or data.get("title"),
-        "numero": data.get("numero") or data.get("number"),
+        "numero": data.get("numero") or data.get("number") or meta.get("numero", ""),
         "status": data.get("status"),
         "data_inicio": data.get("data_inicio") or data.get("start_date"),
         "data_fim": data.get("data_fim") or data.get("end_date"),
-        "valor": data.get("valor") or data.get("value"),
-        "descricao": data.get("descricao") or data.get("description"),
+        "valor": data.get("valor") or data.get("value") or meta.get("valor", ""),
+        "descricao": clean_description,
     }
 
 

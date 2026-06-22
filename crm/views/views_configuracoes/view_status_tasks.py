@@ -26,7 +26,7 @@ def status_tasks(request):
         if form.is_valid():
             try:
                 settings_service.create_status_task(
-                    client, settings_item_payload(form.cleaned_data),
+                    client, settings_item_payload(form.cleaned_data, is_create=True),
                 )
                 messages.success(request, "Status criado!")
                 return redirect("crm:status_tasks")
