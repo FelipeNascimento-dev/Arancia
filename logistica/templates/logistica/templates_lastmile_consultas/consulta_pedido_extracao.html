@@ -187,8 +187,9 @@
     </form>
 
     <div class="consulta-pedidos-footer">
-      <form method="POST" action="{% url 'logistica:extracao_pedidos' %}">
+      <form method="POST" action="{% url 'logistica:extracao_pedidos' %}" id="formExtracaoPedidos">
         {% csrf_token %}
+        <input type="hidden" name="sales_channel" id="extracao_sales_channel" value="">
         <button type="submit" class="btn-extrair">Extrair pedidos</button>
       </form>
     </div>
@@ -392,6 +393,19 @@
       });
 
       sortRows();
+    }
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const formExtracao = document.getElementById("formExtracaoPedidos");
+    const canalConsulta = document.getElementById("id_sales_channel");
+    const canalExtracao = document.getElementById("extracao_sales_channel");
+    if (formExtracao && canalConsulta && canalExtracao) {
+      formExtracao.addEventListener("submit", function () {
+        canalExtracao.value = canalConsulta.value;
+      });
     }
   });
 </script>

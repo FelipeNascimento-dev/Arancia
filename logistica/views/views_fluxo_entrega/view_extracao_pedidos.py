@@ -1,29 +1,33 @@
-from django.http import StreamingHttpResponse, HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
 
-from ...models import GroupAditionalInformation
 from ...forms import ExtracaoForm
 from utils.request import RequestClient
-from django.contrib.auth.models import User
 from setup.local_settings import API_URL
+from ..views_lastmile_consultas.view_consulta_pedidos import get_user_sales_channel
 
 
 DEFAULT_CT = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 DEFAULT_CD = 'attachment; filename="order_sumary.xlsx"'
+SESSION_KEY = "extracao_sales_channel"
+TEMPLATE = "logistica/templates_fluxo_entrega/extracao_pedidos.html"
 
 
-def get_user_sales_channel(user: User):
-    # Pega todos os sales_channel dos grupos que o usuário pertence
-    sales_channel = (
-        user.designacao.informacao_adicional.sales_channel
-        if user.designacao and user.designacao.informacao_adicional
-        else None
-    )
-    return sales_channel
+def _sales_channel_choices(user):
+    sales_channels = [sc for sc in get_user_sales_channel(user) if sc]
+    return [(sc, sc) for sc in sales_channels]
+
+
+def _render_form(request, form):
+    return render(request, TEMPLATE, {
+        "form": form,
+        "botao_texto": "Exportar",
+        "site_title": "Extração de Pedidos",
+    })
 
 
 @csrf_protect
@@ -31,18 +35,16 @@ def get_user_sales_channel(user: User):
 @permission_required('logistica.lastmile_b2c', raise_exception=True)
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def extracao_pedidos(request: HttpRequest) -> HttpResponse:
+    choices = _sales_channel_choices(request.user)
+
     if request.method == "GET" and request.GET.get("download") == "1":
-        # sales_channel = request.session.get("sales_channel") or "All"
-        sales_channel = get_user_sales_channel(request.user)
-        form = ExtracaoForm(request.POST)
+        sales_channel = request.session.pop(SESSION_KEY, None)
+        form = ExtracaoForm(sales_channel_choices=choices)
 
         if not sales_channel:
             messages.error(
-                request, 'Usuário não tem nenhum sales_channel atribuído')
-            return render(request, "logistica/templates_fluxo_entrega/extracao_pedidos.html", {
-                "form": form,
-                "botao_texto": "Exportar",
-            })
+                request, 'Selecione um canal de vendas para exportar.')
+            return _render_form(request, form)
 
         url = f"{API_URL}/api/order-sumary/{sales_channel}/xlsx"
         client = RequestClient(
@@ -62,12 +64,7 @@ def extracao_pedidos(request: HttpRequest) -> HttpResponse:
             if not content.startswith(b"PK\x03\x04"):
                 messages.error(
                     request, "O servidor retornou um conteúdo inesperado.")
-                # form = ExtracaoForm(initial={"sales_channel": sales_channel})
-                form = ExtracaoForm()
-                return render(request, "logistica/templates_fluxo_entrega/extracao_pedidos.html", {
-                    "form": form,
-                    "botao_texto": "Exportar",
-                })
+                return _render_form(request, form)
 
             response = HttpResponse(content, content_type=ct)
             response["Content-Disposition"] = cd
@@ -77,31 +74,19 @@ def extracao_pedidos(request: HttpRequest) -> HttpResponse:
             return response
 
         messages.error(request, f"Erro ao baixar (status {status}).")
-        # form = ExtracaoForm(initial={"sales_channel": sales_channel})
-        form = ExtracaoForm()
-        return render(request, "logistica/templates_fluxo_entrega/extracao_pedidos.html", {
-            "form": form,
-            "botao_texto": "Exportar",
-        })
+        return _render_form(request, form)
 
     if request.method == "POST":
-        form = ExtracaoForm(request.POST)
+        form = ExtracaoForm(request.POST, sales_channel_choices=choices)
         if form.is_valid():
-            # sales_channel = form.cleaned_data["sales_channel"]
-            # request.session["sales_channel"] = sales_channel
-            sales_channel = 'all'
+            request.session[SESSION_KEY] = form.cleaned_data["sales_channel"]
             return redirect(f"{reverse('logistica:extracao_pedidos')}?download=1")
-        else:
-            messages.warning(request, "Corrija os erros do formulário.")
-            return render(request, "logistica/extracao_pedidos.html", {
-                "form": form,
-                "botao_texto": "Exportar",
-            })
+        messages.warning(request, "Corrija os erros do formulário.")
+        return _render_form(request, form)
 
-    # form = ExtracaoForm(initial={"sales_channel": request.session.get("sales_channel")})
-    form = ExtracaoForm()
-    return render(request, "logistica/templates_fluxo_entrega/extracao_pedidos.html", {
-        "form": form,
-        "botao_texto": "Exportar",
-        'site_title': 'Extração de Pedidos'
-    })
+    if not choices:
+        messages.info(
+            request, "Nenhum sales_channel disponível para seus grupos.")
+
+    form = ExtracaoForm(sales_channel_choices=choices)
+    return _render_form(request, form)
