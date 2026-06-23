@@ -223,21 +223,15 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const romField = document.getElementById("id_numero_rom");
-        const volField = document.getElementById("id_qtde_vol");
 
-        function enableEnterSubmit(field) {
-            if (!field) return;
-
-            field.addEventListener("keydown", function (e) {
+        if (romField) {
+            romField.addEventListener("keydown", function (e) {
                 if (e.key === "Enter") {
                     e.preventDefault();
                     this.form.requestSubmit();
                 }
             });
         }
-
-        enableEnterSubmit(romField);
-        enableEnterSubmit(volField);
 
         if (romField) {
             romField.focus({ preventScroll: true });

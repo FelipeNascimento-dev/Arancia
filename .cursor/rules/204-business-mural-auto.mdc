@@ -37,22 +37,25 @@ alwaysApply: false
 
 **Severidades:** `informational`, `moderate`, `important`, `critical`.
 
-**Targeting (`target_type` + `ids`):**
+**Targeting (criação v2):**
 
-| `target_type` | `ids` |
-|---------------|-------|
-| `all` | `[]` |
-| `users` | IDs de usuários |
-| `groups` | IDs de grupos Django |
-| `gais` | IDs de GAI |
+| `target_type` | Payload |
+|---------------|---------|
+| `all` | Sem `targets` nem `ids` no root |
+| `custom` | `targets`: array de `{target_type, ids}` com `target_type` ∈ `users` \| `groups` \| `gais` |
 
-Pickers de audiência (gerenciamento): usuários `ARC*`, grupos `arancia_*`, GAIs com `group__name__startswith="arancia_"` — catálogo global Arancia.
+- **Create:** `POST /v2/items/create-item/` — helper `mural.helpers.create_item_payload.build_create_item_v2_payload`.
+- **Leitura:** continua `GET /v1/items/by-user/` (feed) e `by-created-by` (gerenciamento).
+- Item `custom` visível se o usuário corresponder a **qualquer** bloco em `targets` (OR).
+
+Pickers de audiência (gerenciamento e feed): usuários `ARC*`, grupos `arancia_*`, GAIs com `group__name__startswith="arancia_"` — catálogo global Arancia. UI v2: select raiz `all` \| `custom` + blocos dinâmicos serializados em `targets_json`.
 
 ## Regras de escrita
 
 - Item **`critical`:** duração máxima **7 dias** — validar no Django (`validate_critical_duration`) antes de chamar API.
 - Datetimes: converter BR (`America/Sao_Paulo`) → UTC ISO para API; parse reverso ao ler.
 - Desabilitar: `DELETE /v1/items/disable-item/{id}` (soft-disable).
+- Criação: `POST /v2/items/create-item/` (targeting v2).
 - Leitura manual: `POST /v1/item-reads/?manualconfirmation=true`.
 
 ## Ao alterar ou criar telas

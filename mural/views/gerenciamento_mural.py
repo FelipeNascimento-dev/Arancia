@@ -7,6 +7,7 @@ import json
 import math
 from pathlib import Path
 from setup.local_settings import MURAL_API_URL, TRANSP_API_URL
+from mural.helpers.create_item_payload import build_create_item_v2_payload
 from utils import request
 from utils.request import RequestClient
 
@@ -416,18 +417,7 @@ def gerenciar_mural(request):
                 request, "Você não possui permissão para criar itens no mural.")
             return redirect("mural:mural_gerenciamento")
 
-        title = request.POST.get("title")
-        summary = request.POST.get("summary")
-        content = request.POST.get("content")
-        item_type = request.POST.get("item_type")
         severity = request.POST.get("severity")
-        target_type = request.POST.get("target_type")
-
-        is_active = request.POST.get("is_active") == "on"
-        is_pinned = request.POST.get("is_pinned") == "on"
-        is_indefinite = request.POST.get("is_indefinite") == "on"
-        until_read = request.POST.get("until_read") == "on"
-
         starts_at_raw = request.POST.get("starts_at")
         ends_at_raw = request.POST.get("ends_at")
 
@@ -440,11 +430,6 @@ def gerenciar_mural(request):
         if not is_valid_critical:
             messages.error(request, critical_error)
             return redirect("mural:mural_gerenciamento")
-
-        starts_at = format_datetime_to_api(starts_at_raw)
-        ends_at = format_datetime_to_api(ends_at_raw)
-
-        external_link = request.POST.get("external_link") or None
 
         attachment_files = request.FILES.getlist("attachment_files")
         attachment_descriptions = request.POST.getlist(
@@ -472,39 +457,19 @@ def gerenciar_mural(request):
             )
             return redirect("mural:mural_gerenciamento")
 
-        target_ids = request.POST.getlist("target_id")
+        payload, target_error = build_create_item_v2_payload(
+            post_data=request.POST,
+            user_id=request.user.id,
+            attachments=attachments,
+            image_url=image_url,
+        )
 
-        if target_type == "all":
-            ids = []
-        else:
-            ids = [
-                int(target_id)
-                for target_id in target_ids
-                if str(target_id).strip().isdigit()
-            ]
-
-        payload = {
-            "title": title,
-            "summary": summary,
-            "content": content,
-            "item_type": item_type,
-            "severity": severity,
-            "target_type": target_type,
-            "is_active": is_active,
-            "is_pinned": is_pinned,
-            "is_indefinite": is_indefinite,
-            "until_read": until_read,
-            "starts_at": starts_at,
-            "ends_at": ends_at,
-            "external_link": external_link,
-            "attachments": attachments,
-            "image_url": image_url,
-            "created_by_id": request.user.id,
-            "ids": ids,
-        }
+        if target_error:
+            messages.error(request, target_error)
+            return redirect("mural:mural_gerenciamento")
 
         try:
-            create_url = f"{MURAL_API_URL}/v1/items/create-item/"
+            create_url = f"{MURAL_API_URL}/v2/items/create-item/"
 
             create_client = RequestClient(
                 url=create_url,

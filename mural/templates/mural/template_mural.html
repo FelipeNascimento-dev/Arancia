@@ -46,6 +46,31 @@
         overflow: hidden;
     }
 
+    .mural-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        min-height: 280px;
+        padding: 48px 24px;
+        color: var(--muted);
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .mural-loading i {
+        font-size: 28px;
+        color: var(--primary-dark);
+    }
+
+    .mural-loading-error {
+        color: var(--danger);
+        text-align: center;
+        max-width: 420px;
+        line-height: 1.5;
+    }
+
     .mural-topbar {
         padding: 28px 30px 22px;
         background:
@@ -1121,6 +1146,39 @@
         font-size: 12px;
         margin-left: auto;
         white-space: nowrap;
+    }
+
+    .target-block {
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 12px;
+        background: #fafbfc;
+    }
+
+    .target-block-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+    }
+
+    .target-block-header .form-select {
+        flex: 1;
+        min-width: 140px;
+    }
+
+    .target-block-remove {
+        margin-left: auto;
+    }
+
+    #customTargetsSection {
+        display: none;
+    }
+
+    #addTargetBlockBtn {
+        margin-top: 4px;
     }
 
     .target-empty {
@@ -2373,7 +2431,12 @@
         </div>
 
         <section class="mural-body">
-            <section id="criticalSection">
+            <div class="mural-loading" id="muralLoading">
+                <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+                <span>Carregando itens do mural...</span>
+            </div>
+
+            <section id="criticalSection" class="hidden">
                 <div class="section-header">
                     <h2 class="section-title">
                         <i class="fa-solid fa-triangle-exclamation" style="color: var(--danger);"></i>
@@ -2385,7 +2448,7 @@
                 <div class="critical-stack" id="criticalList"></div>
             </section>
 
-            <section id="pinnedSection">
+            <section id="pinnedSection" class="hidden">
                 <div class="section-header">
                     <h2 class="section-title">
                         <i class="fa-solid fa-thumbtack" style="color: var(--warning);"></i>
@@ -2396,7 +2459,7 @@
                 <div class="card-grid" id="pinnedList"></div>
             </section>
 
-            <section id="materialsSection">
+            <section id="materialsSection" class="hidden">
                 <div class="section-header">
                     <h2 class="section-title">
                         <i class="fa-regular fa-folder-open" style="color: var(--primary-dark);"></i>
@@ -2424,15 +2487,71 @@
 </div>
 
 {{ mural_data|json_script:"mural-data" }}
+<script id="mural-items-feed-url" type="application/json">"{% url 'mural:mural_items_feed' %}"</script>
 
 <script>
     const muralPayload = JSON.parse(document.getElementById('mural-data').textContent);
-    const muralItems = muralPayload.items || [];
+    let muralItems = muralPayload.items || [];
+    const muralItemsFeedUrl = JSON.parse(
+        document.getElementById('mural-items-feed-url').textContent
+    );
 
-    console.log('ITENS RECEBIDOS DO BACKEND:', muralItems);
-    console.log('ITENS CRÍTICOS:', muralItems.filter(item => item.severity === 'critical'));
-    console.log('ITENS LIDOS:', muralItems.filter(item => item.is_read));
+    const muralLoadingEl = document.getElementById('muralLoading');
 
+    function setMuralLoading(isLoading, errorMessage = '') {
+        if (!muralLoadingEl) return;
+
+        if (isLoading) {
+            muralLoadingEl.classList.remove('hidden');
+            muralLoadingEl.innerHTML = `
+                <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+                <span>Carregando itens do mural...</span>
+            `;
+            return;
+        }
+
+        if (errorMessage) {
+            muralLoadingEl.classList.remove('hidden');
+            muralLoadingEl.innerHTML = `
+                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                <span class="mural-loading-error">${errorMessage}</span>
+            `;
+            return;
+        }
+
+        muralLoadingEl.classList.add('hidden');
+    }
+
+    async function loadMuralItems() {
+        const readsParam = new URLSearchParams(window.location.search).get('reads') || 'false';
+        const feedUrl = `${muralItemsFeedUrl}?reads=${encodeURIComponent(readsParam)}`;
+
+        setMuralLoading(true);
+
+        try {
+            const response = await fetch(feedUrl, {
+                headers: {
+                    Accept: 'application/json',
+                },
+                credentials: 'same-origin',
+            });
+
+            const payload = await response.json();
+            muralItems = payload.items || [];
+
+            if (!response.ok) {
+                throw new Error(payload.error || 'Não foi possível carregar os itens do mural.');
+            }
+
+            setMuralLoading(false);
+            renderMural();
+        } catch (error) {
+            setMuralLoading(
+                false,
+                error.message || 'Não foi possível carregar os itens do mural.'
+            );
+        }
+    }
     const searchInput = document.getElementById('searchInput');
     const filterButtons = document.querySelectorAll('.filter-btn[data-filter]');
     const criticalList = document.getElementById('criticalList');
@@ -2955,7 +3074,7 @@
         }, 250);
     });
 
-    renderMural();
+    loadMuralItems();
 </script>
 
 
@@ -3010,13 +3129,26 @@
                     <label class="form-label">Público Alvo</label>
                     <select name="target_type" id="targetTypeSelect" class="form-select" required>
                         <option value="all">Todos</option>
-                        <option value="users">Usuários</option>
-                        <option value="groups">Grupos</option>
-                        <option value="gais">GAIs</option>
+                        <option value="custom">Personalizado</option>
                     </select>
                 </div>
 
-                <div class="form-group" id="targetObjectsGroup" style="display: none;">
+                <div class="form-group full" id="customTargetsSection">
+                    <label class="form-label">Público personalizado</label>
+                    <input type="hidden" name="targets_json" id="targetsJsonInput" value="">
+
+                    <div id="customTargetsBlocks"></div>
+
+                    <button type="button" class="mini-btn" id="addTargetBlockBtn">
+                        + Adicionar tipo
+                    </button>
+
+                    <small style="color: var(--muted); font-size: 12px; display: block; margin-top: 8px;">
+                        Combine tipos de público (ex.: GAIs e usuários). Basta corresponder a um deles.
+                    </small>
+                </div>
+
+                <div class="form-group" id="targetObjectsGroup" style="display: none;" hidden>
                     <label class="form-label" id="targetObjectsLabel">Usuários/Grupos</label>
 
                     <div id="targetGaiGroupFilter" style="display: none; margin-bottom: 10px;">
@@ -4368,7 +4500,7 @@
     }
 </script>
 
-<!-- SELECT DE PUBLICO ALVO -->
+<!-- SELECT DE PUBLICO ALVO — manter em sync com gerenciamento_mural.html -->
 {{ target_users|json_script:"target-users-data" }}
 {{ target_gais|json_script:"target-gais-data" }}
 {{ target_groups|json_script:"target-groups-data" }}
@@ -4380,19 +4512,23 @@
         const targetGroups = JSON.parse(document.getElementById('target-groups-data').textContent);
 
         const targetTypeSelect = document.getElementById('targetTypeSelect');
-        const targetObjectsGroup = document.getElementById('targetObjectsGroup');
-        const targetObjectsLabel = document.getElementById('targetObjectsLabel');
-        const targetObjectsList = document.getElementById('targetObjectsList');
-        const targetSearchInput = document.getElementById('targetSearchInput');
-        const selectAllTargetsBtn = document.getElementById('selectAllTargetsBtn');
-        const clearTargetsBtn = document.getElementById('clearTargetsBtn');
+        const customTargetsSection = document.getElementById('customTargetsSection');
+        const customTargetsBlocks = document.getElementById('customTargetsBlocks');
+        const addTargetBlockBtn = document.getElementById('addTargetBlockBtn');
+        const targetsJsonInput = document.getElementById('targetsJsonInput');
+        const createForm = document.querySelector('#createModal form');
 
-        const targetGaiGroupFilter = document.getElementById('targetGaiGroupFilter');
-        const targetGaiGroupSelect = document.getElementById('targetGaiGroupSelect');
+        const BLOCK_TYPES = ['gais', 'users', 'groups'];
+        const TYPE_LABELS = {
+            users: 'Usuários',
+            groups: 'Grupos',
+            gais: 'GAIs'
+        };
 
-        let currentTargets = [];
+        const blockState = new Map();
+        let blockCounter = 0;
 
-        if (!targetTypeSelect || !targetObjectsGroup || !targetObjectsList) {
+        if (!targetTypeSelect || !customTargetsSection || !customTargetsBlocks) {
             console.warn('Campos de público-alvo não encontrados no template.');
             return;
         }
@@ -4405,32 +4541,28 @@
         }
 
         function getSelectedTypeLabel(type) {
-            if (type === 'users') return 'Usuários';
-            if (type === 'groups') return 'Grupos';
-            if (type === 'gais') return 'GAIs';
-            return 'Público';
+            return TYPE_LABELS[type] || 'Público';
         }
 
-        function populateGaiGroupSelect() {
-            if (!targetGaiGroupSelect) return;
-
-            targetGaiGroupSelect.innerHTML = `
-                <option value="">Selecione um grupo para visualizar os GAIs</option>
-            `;
-
-            targetGroups.forEach(group => {
-                const option = document.createElement('option');
-                option.value = group.id;
-                option.textContent = group.name || group.nome || `Grupo ${group.id}`;
-                targetGaiGroupSelect.appendChild(option);
+        function getUsedBlockTypes(excludeBlockId) {
+            const used = new Set();
+            blockState.forEach((state, blockId) => {
+                if (blockId !== excludeBlockId && state.type) {
+                    used.add(state.type);
+                }
             });
+            return used;
         }
 
-        function buildTargetsByType(type) {
+        function getFirstAvailableType(excludeBlockId) {
+            const used = getUsedBlockTypes(excludeBlockId);
+            return BLOCK_TYPES.find(type => !used.has(type)) || 'gais';
+        }
+
+        function buildTargetsByType(type, gaiGroupId) {
             if (type === 'users') {
                 return targetUsers.map(user => {
                     const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
-
                     const label = fullName
                         ? `${user.username} - ${fullName}`
                         : user.username;
@@ -4444,14 +4576,12 @@
             }
 
             if (type === 'gais') {
-                const selectedGroupId = targetGaiGroupSelect ? targetGaiGroupSelect.value : '';
-
-                if (!selectedGroupId) {
+                if (!gaiGroupId) {
                     return [];
                 }
 
                 return targetGais
-                    .filter(gai => String(gai.group_id) === String(selectedGroupId))
+                    .filter(gai => String(gai.group_id) === String(gaiGroupId))
                     .map(gai => ({
                         id: gai.id,
                         label: gai.nome,
@@ -4470,20 +4600,55 @@
             return [];
         }
 
-        function renderTargetList() {
-            const search = normalizeText(targetSearchInput.value);
+        function populateGaiGroupSelect(selectElement) {
+            if (!selectElement) return;
 
-            const filteredTargets = currentTargets.filter(item => {
+            selectElement.innerHTML = `
+                <option value="">Selecione um grupo para visualizar os GAIs</option>
+            `;
+
+            targetGroups.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group.id;
+                option.textContent = group.name || group.nome || `Grupo ${group.id}`;
+                selectElement.appendChild(option);
+            });
+        }
+
+        function renderBlockTypeOptions(blockId, selectedType) {
+            const state = blockState.get(blockId);
+            if (!state || !state.typeSelect) return;
+
+            const used = getUsedBlockTypes(blockId);
+            state.typeSelect.innerHTML = '';
+
+            BLOCK_TYPES.forEach(type => {
+                if (used.has(type) && type !== selectedType) {
+                    return;
+                }
+
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = getSelectedTypeLabel(type);
+                option.selected = type === selectedType;
+                state.typeSelect.appendChild(option);
+            });
+        }
+
+        function renderBlockList(blockId) {
+            const state = blockState.get(blockId);
+            if (!state) return;
+
+            const search = normalizeText(state.searchInput.value);
+            const filteredTargets = state.currentTargets.filter(item => {
                 return normalizeText(item.label).includes(search);
             });
 
-            targetObjectsList.innerHTML = '';
+            state.listElement.innerHTML = '';
 
             if (!filteredTargets.length) {
-                const selectedType = targetTypeSelect.value;
-
-                if (selectedType === 'gais' && targetGaiGroupSelect && !targetGaiGroupSelect.value) {
-                    targetObjectsList.innerHTML = `
+                if (state.type === 'gais' && !state.gaiGroupSelect.value) {
+                    state.listElement.innerHTML = `
                         <div class="target-empty">
                             Selecione um grupo para listar os GAIs disponíveis.
                         </div>
@@ -4491,7 +4656,7 @@
                     return;
                 }
 
-                targetObjectsList.innerHTML = `
+                state.listElement.innerHTML = `
                     <div class="target-empty">
                         Nenhum resultado encontrado.
                     </div>
@@ -4504,9 +4669,10 @@
                 row.className = 'target-option';
 
                 row.innerHTML = `
-                    <input 
-                        type="checkbox" 
-                        name="target_id" 
+                    <input
+                        type="checkbox"
+                        class="target-block-checkbox"
+                        data-block-id="${blockId}"
                         value="${item.id}"
                         data-label="${item.label}"
                     >
@@ -4514,80 +4680,307 @@
                     <span class="target-option-muted">${item.extra}</span>
                 `;
 
-                targetObjectsList.appendChild(row);
+                state.listElement.appendChild(row);
             });
         }
 
-        function renderTargetOptions() {
-            const selectedType = targetTypeSelect.value;
+        function refreshBlockTargets(blockId) {
+            const state = blockState.get(blockId);
+            if (!state) return;
 
-            targetObjectsList.innerHTML = '';
-            targetSearchInput.value = '';
+            const gaiGroupId = state.type === 'gais' ? state.gaiGroupSelect.value : '';
+            state.currentTargets = buildTargetsByType(state.type, gaiGroupId);
+            renderBlockList(blockId);
+        }
 
-            if (targetGaiGroupFilter) {
-                targetGaiGroupFilter.style.display = 'none';
+        function updateAddButtonState() {
+            if (!addTargetBlockBtn) return;
+            addTargetBlockBtn.disabled = getUsedBlockTypes(null).size >= BLOCK_TYPES.length;
+        }
+
+        function updateRemoveButtonsState() {
+            const canRemove = blockState.size > 1;
+            blockState.forEach(state => {
+                if (state.removeBtn) {
+                    state.removeBtn.disabled = !canRemove;
+                }
+            });
+        }
+
+        function removeTargetBlock(blockId) {
+            const state = blockState.get(blockId);
+            if (!state) return;
+
+            state.element.remove();
+            blockState.delete(blockId);
+            updateAddButtonState();
+            updateRemoveButtonsState();
+        }
+
+        function createTargetBlock(preferredType) {
+            const blockId = blockCounter++;
+            const blockType = preferredType || getFirstAvailableType(null);
+
+            const blockElement = document.createElement('div');
+            blockElement.className = 'target-block';
+            blockElement.dataset.blockId = String(blockId);
+
+            blockElement.innerHTML = `
+                <div class="target-block-header">
+                    <select class="form-select target-block-type-select" id="target-block-${blockId}-type"></select>
+                    <button type="button" class="mini-btn target-block-remove" id="target-block-${blockId}-remove">
+                        Remover
+                    </button>
+                </div>
+
+                <div class="target-gai-group-filter" id="target-block-${blockId}-gai-filter" style="display: none; margin-bottom: 10px;">
+                    <select class="form-select" id="target-block-${blockId}-gai-group">
+                        <option value="">Selecione um grupo para visualizar os GAIs</option>
+                    </select>
+                    <small style="color: var(--muted); font-size: 12px;">
+                        Os GAIs serão filtrados de acordo com o grupo selecionado.
+                    </small>
+                </div>
+
+                <div class="target-picker">
+                    <div class="target-picker-search">
+                        <input
+                            type="text"
+                            id="target-block-${blockId}-search"
+                            placeholder="Pesquisar..."
+                        >
+                    </div>
+
+                    <div class="target-picker-actions">
+                        <button type="button" class="mini-btn" id="target-block-${blockId}-select-all">
+                            Selecionar todos
+                        </button>
+                        <button type="button" class="mini-btn" id="target-block-${blockId}-clear">
+                            Limpar
+                        </button>
+                    </div>
+
+                    <div class="target-picker-list" id="target-block-${blockId}-list"></div>
+                </div>
+            `;
+
+            customTargetsBlocks.appendChild(blockElement);
+
+            const state = {
+                id: blockId,
+                type: blockType,
+                element: blockElement,
+                typeSelect: blockElement.querySelector(`#target-block-${blockId}-type`),
+                removeBtn: blockElement.querySelector(`#target-block-${blockId}-remove`),
+                gaiFilter: blockElement.querySelector(`#target-block-${blockId}-gai-filter`),
+                gaiGroupSelect: blockElement.querySelector(`#target-block-${blockId}-gai-group`),
+                searchInput: blockElement.querySelector(`#target-block-${blockId}-search`),
+                listElement: blockElement.querySelector(`#target-block-${blockId}-list`),
+                currentTargets: []
+            };
+
+            blockState.set(blockId, state);
+
+            populateGaiGroupSelect(state.gaiGroupSelect);
+            renderBlockTypeOptions(blockId, blockType);
+            state.typeSelect.value = blockType;
+
+            if (blockType === 'gais') {
+                state.gaiFilter.style.display = 'block';
             }
 
+            state.typeSelect.addEventListener('change', function () {
+                const previousType = state.type;
+                state.type = state.typeSelect.value;
+
+                blockState.forEach((otherState, otherId) => {
+                    if (otherId !== blockId) {
+                        renderBlockTypeOptions(otherId, otherState.type);
+                    }
+                });
+
+                state.searchInput.value = '';
+                state.gaiFilter.style.display = state.type === 'gais' ? 'block' : 'none';
+
+                if (state.type === 'gais') {
+                    state.gaiGroupSelect.value = '';
+                }
+
+                if (previousType !== state.type) {
+                    refreshBlockTargets(blockId);
+                }
+
+                updateAddButtonState();
+            });
+
+            state.removeBtn.addEventListener('click', function () {
+                removeTargetBlock(blockId);
+                blockState.forEach((otherState, otherId) => {
+                    renderBlockTypeOptions(otherId, otherState.type);
+                });
+                updateAddButtonState();
+            });
+
+            state.gaiGroupSelect.addEventListener('change', function () {
+                state.searchInput.value = '';
+                refreshBlockTargets(blockId);
+            });
+
+            state.searchInput.addEventListener('input', function () {
+                renderBlockList(blockId);
+            });
+
+            blockElement.querySelector(`#target-block-${blockId}-select-all`).addEventListener('click', function () {
+                state.listElement
+                    .querySelectorAll('.target-block-checkbox')
+                    .forEach(checkbox => {
+                        checkbox.checked = true;
+                    });
+            });
+
+            blockElement.querySelector(`#target-block-${blockId}-clear`).addEventListener('click', function () {
+                state.listElement
+                    .querySelectorAll('.target-block-checkbox')
+                    .forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+            });
+
+            refreshBlockTargets(blockId);
+            updateAddButtonState();
+            updateRemoveButtonsState();
+        }
+
+        function clearTargetBlocks() {
+            blockState.forEach((state, blockId) => {
+                state.element.remove();
+                blockState.delete(blockId);
+            });
+            blockCounter = 0;
+            if (targetsJsonInput) {
+                targetsJsonInput.value = '';
+            }
+            updateAddButtonState();
+        }
+
+        function collectTargetsFromBlocks() {
+            const targets = [];
+
+            blockState.forEach((state, blockId) => {
+                const checked = state.listElement.querySelectorAll(
+                    `.target-block-checkbox[data-block-id="${blockId}"]:checked`
+                );
+
+                const ids = Array.from(checked)
+                    .map(checkbox => parseInt(checkbox.value, 10))
+                    .filter(id => !Number.isNaN(id));
+
+                if (ids.length) {
+                    targets.push({
+                        target_type: state.type,
+                        ids: ids
+                    });
+                }
+            });
+
+            return targets;
+        }
+
+        function validateTargetsOnSubmit() {
+            const rootType = targetTypeSelect.value;
+
+            if (rootType === 'all') {
+                if (targetsJsonInput) {
+                    targetsJsonInput.value = '';
+                }
+                return { valid: true, message: '' };
+            }
+
+            if (rootType !== 'custom') {
+                return {
+                    valid: false,
+                    message: 'Selecione um público alvo válido.'
+                };
+            }
+
+            if (!blockState.size) {
+                return {
+                    valid: false,
+                    message: 'Adicione ao menos um tipo de público personalizado.'
+                };
+            }
+
+            const targets = collectTargetsFromBlocks();
+
+            if (!targets.length) {
+                return {
+                    valid: false,
+                    message: 'Selecione ao menos um item no público personalizado.'
+                };
+            }
+
+            const seenTypes = new Set();
+            for (const block of targets) {
+                if (seenTypes.has(block.target_type)) {
+                    return {
+                        valid: false,
+                        message: 'Não é permitido repetir o mesmo tipo de público em blocos diferentes.'
+                    };
+                }
+                seenTypes.add(block.target_type);
+
+                if (!block.ids.length) {
+                    return {
+                        valid: false,
+                        message: 'Cada bloco de público precisa ter ao menos um item selecionado.'
+                    };
+                }
+            }
+
+            if (targetsJsonInput) {
+                targetsJsonInput.value = JSON.stringify(targets);
+            }
+
+            return { valid: true, message: '' };
+        }
+
+        function renderRootTargetMode() {
+            const selectedType = targetTypeSelect.value;
+
             if (selectedType === 'all') {
-                targetObjectsGroup.style.display = 'none';
-                currentTargets = [];
+                customTargetsSection.style.display = 'none';
+                clearTargetBlocks();
                 return;
             }
 
-            targetObjectsGroup.style.display = 'grid';
-            targetObjectsLabel.textContent = getSelectedTypeLabel(selectedType);
+            customTargetsSection.style.display = 'grid';
 
-            if (selectedType === 'gais') {
-                if (targetGaiGroupFilter) {
-                    targetGaiGroupFilter.style.display = 'block';
-                }
-
-                if (targetGaiGroupSelect) {
-                    targetGaiGroupSelect.value = '';
-                }
+            if (!blockState.size) {
+                createTargetBlock('gais');
             }
-
-            currentTargets = buildTargetsByType(selectedType);
-            renderTargetList();
         }
 
-        function refreshGaiTargetsByGroup() {
-            if (targetTypeSelect.value !== 'gais') return;
-
-            targetSearchInput.value = '';
-            currentTargets = buildTargetsByType('gais');
-            renderTargetList();
-        }
-
-        function getVisibleCheckboxes() {
-            return targetObjectsList.querySelectorAll('input[type="checkbox"][name="target_id"]');
-        }
-
-        populateGaiGroupSelect();
-
-        targetTypeSelect.addEventListener('change', renderTargetOptions);
-
-        if (targetGaiGroupSelect) {
-            targetGaiGroupSelect.addEventListener('change', refreshGaiTargetsByGroup);
-        }
-
-        targetSearchInput.addEventListener('input', renderTargetList);
-
-        selectAllTargetsBtn.addEventListener('click', function () {
-            getVisibleCheckboxes().forEach(checkbox => {
-                checkbox.checked = true;
+        if (addTargetBlockBtn) {
+            addTargetBlockBtn.addEventListener('click', function () {
+                const nextType = getFirstAvailableType(null);
+                if (!nextType) return;
+                createTargetBlock(nextType);
             });
-        });
+        }
 
-        clearTargetsBtn.addEventListener('click', function () {
-            targetObjectsList
-                .querySelectorAll('input[type="checkbox"][name="target_id"]')
-                .forEach(checkbox => {
-                    checkbox.checked = false;
-                });
-        });
+        targetTypeSelect.addEventListener('change', renderRootTargetMode);
 
-        renderTargetOptions();
+        if (createForm) {
+            createForm.addEventListener('submit', function (event) {
+                const validation = validateTargetsOnSubmit();
+                if (!validation.valid) {
+                    event.preventDefault();
+                    alert(validation.message);
+                }
+            });
+        }
+
+        renderRootTargetMode();
     });
 </script>
 
