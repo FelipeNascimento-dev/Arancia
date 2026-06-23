@@ -1,95 +1,116 @@
 {% extends 'global/base.html' %}
 {% block content %}
 
+
+
 <style>
   .form-card-2col {
     height: auto;
-    margin-top: 65px;
+    margin-top: 75px;
   }
 
-  .form-card-2col {
-    height: auto;
-  }
-
-  .cards-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 16px;
+  .consulta-pedidos-resultado.user-list-container {
     margin-top: 20px;
-    align-items: start;
+    margin-bottom: 32px;
   }
 
-  .card {
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+  .consulta-pedidos-resultado .table-wrapper {
+    overflow-x: visible;
   }
 
-  .card--not-today {
-    border: 2px solid #e53935 !important;
+  .consulta-pedidos-table {
+    table-layout: fixed;
   }
 
-  .card--not-today time.js-dt,
-  .date--not-today {
-    color: #e53935;
-    font-weight: 600;
-  }
-
-  .card-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    justify-content: flex-start;
-    padding: 12px 14px;
-    background: #f7f7f7;
-  }
-
-  .badge-num {
-    background: #4caf50;
-    color: #fff;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
+  .consulta-pedidos-table th,
+  .consulta-pedidos-table td {
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    text-align: left;
+    padding: 10px 12px;
     font-size: 0.9rem;
-    flex: 0 0 28px;
+    line-height: 1.4;
+    vertical-align: middle;
   }
 
-  .card-title {
-    margin: 0;
-    font-size: 1rem;
-    color: #333;
+  .consulta-pedidos-table thead th {
+    text-align: center;
+    font-size: 0.85rem;
+    vertical-align: middle;
+  }
+
+  .consulta-pedidos-table .col-pedido,
+  .consulta-pedidos-table .col-data,
+  .consulta-pedidos-table .col-canal,
+  .consulta-pedidos-table .col-estado,
+  .consulta-pedidos-table .col-cep {
+    text-align: center;
+  }
+
+  .consulta-pedidos-table .col-tracking,
+  .consulta-pedidos-table .col-transportadora,
+  .consulta-pedidos-table .col-cliente {
+    text-align: left;
+  }
+
+  .consulta-pedidos-table .col-data,
+  .consulta-pedidos-table .col-cep {
     white-space: nowrap;
+    word-break: keep-all;
+    overflow-wrap: normal;
+  }
+
+  .consulta-pedidos-table .col-cep {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  .consulta-pedidos-table .col-canal .tag,
+  .consulta-pedidos-table .col-estado .tag {
+    white-space: nowrap;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-
-  .card-body {
-    padding: 12px 14px;
-  }
-
-  .card-body p {
-    margin: 6px 0;
-    color: #555;
-    font-size: 0.92rem;
-  }
-
-  .card-body strong {
-    color: #222;
+    vertical-align: middle;
   }
 
   .pedido-link {
-    color: #000000;
+    color: #0077b6;
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .pedido-link:hover {
-    text-decoration: none;
+    text-decoration: underline;
+  }
+
+  .pedido-link.clicked {
+    color: #888;
+    text-decoration: line-through;
+  }
+
+  .date--not-today {
+    color: #e74c3c;
+    font-weight: 600;
+  }
+
+  .cliente-araujo {
+    color: #1e88e5;
+    font-weight: 700;
+  }
+
+  .row--araujo td:first-child {
+    box-shadow: inset 3px 0 0 #1e88e5;
+  }
+
+  .consulta-pedidos-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
   }
 
   .btn-extrair {
@@ -97,205 +118,188 @@
     color: #fff;
     border: 0;
     border-radius: 6px;
-    padding: 8px 12px;
+    padding: 10px 24px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    transition: background 0.3s ease;
+    min-width: 160px;
   }
 
   .btn-extrair:hover {
     filter: brightness(0.95);
   }
 
-  .pedido-link.clicked {
-    color: gray;
-    text-decoration: line-through;
+  .resultado-meta {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.92rem;
   }
 
-  .card--araujo {
-    border: 3px solid #1e88e5;
-    animation: pulseAraujo 1.5s infinite;
-    box-shadow: 0 0 10px rgba(30,136,229,0.6);
+  .consulta-pedidos-table .status-error {
+    color: #e74c3c;
+    font-weight: 700;
   }
 
-  @keyframes pulseAraujo {
-    0% {
-      transform: scale(1);
-      box-shadow: 0 0 5px rgba(30,136,229,0.4);
-    }
+  .consulta-pedidos-table .th-sort-btn {
+    border: none;
+    background: transparent;
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    text-align: center;
+    line-height: inherit;
+  }
 
-    50% {
-      transform: scale(1.03);
-      box-shadow: 0 0 20px rgba(30,136,229,0.9);
-    }
+  .consulta-pedidos-table .th-sort-btn:hover {
+    color: #e8f6fc;
+  }
 
-    100% {
-      transform: scale(1);
-      box-shadow: 0 0 5px rgba(30,136,229,0.4);
-    }
+  .consulta-pedidos-table .th-sort-btn:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.85);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .consulta-pedidos-table .th-sort-btn .sort-icon-i {
+    font-size: 0.7rem;
+    opacity: 0.85;
+    flex-shrink: 0;
+  }
+
+  .consulta-pedidos-table .th-sort-btn.is-active .sort-icon-i {
+    opacity: 1;
   }
 </style>
 
 <div class="form-container">
   <div class="form-card-2col">
     <form method="POST" action="{% url 'logistica:consulta_pedidos' %}">
-      {% csrf_token %} {% include 'global/partials/_form_2colV2.html' %}
+      {% csrf_token %}
+      {% include 'global/partials/_form_2colV2.html' %}
     </form>
 
-    <form method="POST" action="{% url 'logistica:extracao_pedidos' %}">
-      {% csrf_token %}
-      <button type="submit" class="btn-extrair">Extrair pedidos</button>
-    </form>
+    <div class="consulta-pedidos-footer">
+      <form method="POST" action="{% url 'logistica:extracao_pedidos' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-extrair">Extrair pedidos</button>
+      </form>
+    </div>
   </div>
 </div>
 
 {% if tabela_dados %}
-<div class="cards-container">
-  {% for item in tabela_dados|dictsort:"created_at" %}
-  <div class="card {% if item.client_name|slice:':20' == 'Drogaria Araujo L400' %}card--araujo{% endif %}">
-    <div class="card-header">
-      <span class="badge-num">{{ forloop.counter }}</span>
-      <h3 class="card-title">
-        <a
-          href="{% url 'logistica:detalhe_pedido' item.order_number %}"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="pedido-link"
-          data-id="{{ item.order_number }}"
-        >
-          {{ item.order_number }}
-        </a>
-      </h3>
-    </div>
-
-    <!-- {% if item.volume_state != "CANCELLED" %} -->
-    <div class="card-body">
-      <p>
-        <strong>Ultima Tracking:</strong> <br />
-        {% if item.ultima_tracking == "TROCA DE CUSTODIA PENDENTE" %}
-        <span style="color: #e53935; font-weight: 700">
-          {{ item.ultima_tracking }}
-        </span>
-        {% else %} {{ item.ultima_tracking }} {% endif %}
-      </p>
-      <p>
-        <strong>Data de Criação:</strong> <br />
-        <time class="js-dt" datetime="{{ item.created_at }}">
-          {{ item.created_at}}
-        </time>
-      </p>
-      <p>
-        <strong>Canal de Vendas:</strong> <br />
-        {{ item.sales_channel }}
-      </p>
-      <p>
-        <strong>Estado do Volume:</strong> <br />
-        {{ item.volume_state }}
-      </p>
-      <p>
-        <strong>Transportadora:</strong> <br /> 
-        {{ item.logistic_provider_name }}
-      </p>
-      <p>
-        <strong>Cliente:</strong> <br />
-        {% if item.client_name|slice:":20" == "Drogaria Araujo L400" %}
-          <span style="color: #1e88e5; font-weight: 700">
-            {{ item.client_name }}
-          </span>
-        {% else %}
-          {{ item.client_name }}
-        {% endif %}
-      </p>
-      <p>
-        <strong>CEP:</strong> <br />
-        {{ item.client_CEP }}
-      </p>
-    </div>
-    <!-- {% endif %} -->
+<div class="user-list-container consulta-pedidos-resultado">
+  <div class="user-table-header">
+    <h2 class="user-table-title">
+      <i class="fa-solid fa-box"></i> Pedidos consultados
+    </h2>
+    <p class="resultado-meta">{{ tabela_dados|length }} registro{{ tabela_dados|length|pluralize }}</p>
   </div>
-  {% endfor %}
+
+  <div class="table-wrapper">
+    <table class="user-table consulta-pedidos-table" id="consultaPedidosTable">
+      <colgroup>
+        <col style="width: 12%">
+        <col style="width: 17%">
+        <col style="width: 13%">
+        <col style="width: 9%">
+        <col style="width: 12%">
+        <col style="width: 11%">
+        <col style="width: 16%">
+        <col style="width: 10%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th class="col-pedido">Pedido</th>
+          <th class="col-tracking">Última Tracking</th>
+          <th class="col-data">
+            <button
+              type="button"
+              class="th-sort-btn is-active"
+              id="sortCreatedAtBtn"
+              title="Clique para ordenar por data"
+              aria-label="Ordenar por data de criação"
+            >
+              Data de Criação
+              <i class="fa-solid fa-arrow-up sort-icon-i" aria-hidden="true"></i>
+            </button>
+          </th>
+          <th class="col-canal">Canal</th>
+          <th class="col-estado">Estado</th>
+          <th class="col-transportadora">Transportadora</th>
+          <th class="col-cliente">Cliente</th>
+          <th class="col-cep">CEP</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in tabela_dados|dictsort:"created_at" %}
+        <tr
+          class="{% if item.client_name|slice:':20' == 'Drogaria Araujo L400' %}row--araujo{% endif %}"
+          data-created-at="{{ item.created_at }}"
+        >
+          <td class="col-pedido">
+            <a
+              href="{% url 'logistica:detalhe_pedido' item.order_number %}"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="pedido-link"
+              data-id="{{ item.order_number }}"
+            >
+              {{ item.order_number }}
+            </a>
+          </td>
+          <td class="{% if item.ultima_tracking == 'TROCA DE CUSTODIA PENDENTE' %}status-error{% endif %} col-tracking">
+            {{ item.ultima_tracking }}
+          </td>
+          <td class="col-data">
+            <time class="js-dt" datetime="{{ item.created_at }}">
+              {{ item.created_at }}
+            </time>
+          </td>
+          <td class="col-canal">
+            {% if item.sales_channel %}
+            <span class="tag">{{ item.sales_channel }}</span>
+            {% else %}
+            <span class="muted">-</span>
+            {% endif %}
+          </td>
+          <td class="col-estado">
+            {% if item.volume_state %}
+            <span class="tag">{{ item.volume_state }}</span>
+            {% else %}
+            <span class="muted">-</span>
+            {% endif %}
+          </td>
+          <td class="col-transportadora">{{ item.logistic_provider_name|default:"-" }}</td>
+          <td class="col-cliente">
+            {% if item.client_name|slice:":20" == "Drogaria Araujo L400" %}
+            <span class="cliente-araujo">{{ item.client_name }}</span>
+            {% else %}
+            {{ item.client_name|default:"-" }}
+            {% endif %}
+          </td>
+          <td class="col-cep">{{ item.client_CEP|default:"-" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <form action="{% url 'logistica:consulta_pedidos' %}" method="POST" style="margin-top: 16px">
+    {% csrf_token %}
+    <input type="hidden" name="id" value="{{ form.id.value }}" />
+    <button class="btn-voltar" type="submit">Voltar</button>
+  </form>
 </div>
-
-<form
-  action="{% url 'logistica:consulta_pedidos' %}"
-  method="POST"
-  style="margin-top: 16px"
->
-  {% csrf_token %}
-  <input type="hidden" name="id" value="{{ form.id.value }}" />
-  <button class="btn-voltar" type="submit">Voltar</button>
-</form>
 {% endif %}
-
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const cards = Array.from(document.querySelectorAll(".card"));
-
-    function closeAll(except = null) {
-      cards.forEach((c) => {
-        if (c !== except) {
-          c.classList.remove("open");
-          const btn = c.querySelector(".toggle-btn");
-          if (btn) {
-            btn.textContent = "+";
-            btn.setAttribute("aria-expanded", "false");
-          }
-        }
-      });
-    }
-
-    cards.forEach((card) => {
-      const btn = card.querySelector(".toggle-btn");
-      if (!btn) return;
-
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const isOpen = card.classList.contains("open");
-        closeAll();
-        if (!isOpen) {
-          card.classList.add("open");
-          btn.textContent = "−";
-          btn.setAttribute("aria-expanded", "true");
-
-          const fly = card.querySelector(".card-flyout");
-          if (fly) {
-            const rect = fly.getBoundingClientRect();
-            const overflowRight = rect.right - window.innerWidth + 8;
-            if (overflowRight > 0) {
-              fly.style.left = `${8 - overflowRight}px`;
-              fly.style.right = `8px`;
-            } else {
-              fly.style.left = "8px";
-              fly.style.right = "8px";
-            }
-          }
-        }
-      });
-    });
-
-    document.addEventListener("click", () => closeAll());
-  });
-
-  document.addEventListener("DOMContentLoaded", () => {
-    const fmt = new Intl.DateTimeFormat("pt-BR", {
-      dateStyle: "short",
-      timeStyle: "medium",
-      timeZone: "America/Sao_Paulo",
-    });
-
-    document.querySelectorAll("time.js-dt").forEach((el) => {
-      let raw = el.getAttribute("datetime") || el.textContent.trim();
-      if (!raw) return;
-
-      raw = raw.replace(/(\.\d{3})\d+/, "$1");
-      if (/^\d{4}-\d{2}-\d{2}\s+\d/.test(raw)) raw = raw.replace(" ", "T");
-      if (!/[zZ]|[+-]\d{2}:\d{2}$/.test(raw)) raw += "Z";
-
-      const d = new Date(raw);
-      if (!isNaN(d)) el.textContent = fmt.format(d);
-    });
-  });
-</script>
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
@@ -334,11 +338,61 @@
 
       const createdYMD = ymdInTZ(d, TZ);
       if (createdYMD !== todayYMD) {
-        const card = el.closest(".card");
-        if (card) card.classList.add("card--not-today");
         el.classList.add("date--not-today");
       }
     });
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("consultaPedidosTable");
+    const sortBtn = document.getElementById("sortCreatedAtBtn");
+
+    if (table && sortBtn) {
+      const tbody = table.querySelector("tbody");
+      const sortIcon = sortBtn.querySelector(".sort-icon-i");
+      let sortDirection = "asc";
+
+      function updateSortIcon() {
+        if (!sortIcon) return;
+        sortIcon.classList.remove("fa-arrow-up", "fa-arrow-down");
+        sortIcon.classList.add(sortDirection === "asc" ? "fa-arrow-up" : "fa-arrow-down");
+      }
+
+      function parseCreatedAt(value) {
+        if (!value) return 0;
+
+        let raw = String(value).trim();
+        raw = raw.replace(/(\.\d{3})\d+/, "$1");
+        if (/^\d{4}-\d{2}-\d{2}\s+\d/.test(raw)) raw = raw.replace(" ", "T");
+        if (!/[zZ]|[+-]\d{2}:\d{2}$/.test(raw)) raw += "Z";
+
+        const parsed = Date.parse(raw);
+        return Number.isNaN(parsed) ? 0 : parsed;
+      }
+
+      function sortRows() {
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+
+        rows.sort((rowA, rowB) => {
+          const valueA = parseCreatedAt(rowA.dataset.createdAt);
+          const valueB = parseCreatedAt(rowB.dataset.createdAt);
+          const result = valueA - valueB;
+          return sortDirection === "asc" ? result : -result;
+        });
+
+        rows.forEach((row) => tbody.appendChild(row));
+        updateSortIcon();
+      }
+
+      sortBtn.addEventListener("click", () => {
+        sortDirection = sortDirection === "asc" ? "desc" : "asc";
+        sortRows();
+      });
+
+      sortRows();
+    }
   });
 </script>
 

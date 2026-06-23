@@ -48,7 +48,6 @@ def consulta_etiqueta_reversa(request):
         form = ConsultaEtiquetaReversaForm(request.POST, nome_form=titulo)
         if form.is_valid():
             numero_rom = form.cleaned_data["numero_rom"]
-            qtde_vol = form.cleaned_data["qtde_vol"]
             location_id = _location_id_from_user(request.user)
 
             try:
@@ -61,24 +60,20 @@ def consulta_etiqueta_reversa(request):
                 detail = (romaneio_data or {}).get("detail", "Romaneio não encontrado.")
                 messages.error(request, detail)
             else:
-                volumes_api = _volumes_api(romaneio_data)
-                if volumes_api and volumes_api != qtde_vol:
-                    messages.warning(
+                qtde_vol = _volumes_api(romaneio_data)
+                if not qtde_vol:
+                    messages.error(
                         request,
-                        (
-                            f"O romaneio possui {volumes_api} volume(s) na API, "
-                            f"mas foram informados {qtde_vol}. "
-                            "Os links abaixo seguem a quantidade informada."
-                        ),
+                        "O romaneio não possui volumes cadastrados.",
                     )
-
-                volumes = _montar_linhas_volumes(request, numero_rom, qtde_vol)
-                if qtde_vol > 1:
-                    url_base = reverse(
-                        "logistica:print_etiqueta_reversa",
-                        args=[numero_rom, 1],
-                    )
-                    url_todos = f"{url_base}?todos=1"
+                else:
+                    volumes = _montar_linhas_volumes(request, numero_rom, qtde_vol)
+                    if qtde_vol > 1:
+                        url_base = reverse(
+                            "logistica:print_etiqueta_reversa",
+                            args=[numero_rom, 1],
+                        )
+                        url_todos = f"{url_base}?todos=1"
     else:
         form = ConsultaEtiquetaReversaForm(nome_form=titulo)
 

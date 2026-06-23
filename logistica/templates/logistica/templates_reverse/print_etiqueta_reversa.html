@@ -5,10 +5,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Etiqueta Reversa</title>
+    <title>
+        {% if etiquetas|length > 1 %}
+        Etiquetas Reversa — {{ etiquetas|length }} volumes
+        {% else %}
+        Etiqueta Reversa
+        {% endif %}
+    </title>
     <style>
         @page {
-            size: 100mm 150mm portrait;
+            size: A4 portrait;
             margin: 0;
         }
 
@@ -18,34 +24,49 @@
 
         html,
         body {
-            width: 100mm;
-            height: 150mm;
             margin: 0;
             padding: 0;
-            background: #fff;
             color: #000;
             font-family: Arial, Helvetica, sans-serif;
         }
 
+        body {
+            background: #e5e7eb;
+        }
+
+        .screen-hint {
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            background: #1f2937;
+            color: #fff;
+            font-size: 12px;
+            padding: 10px 14px;
+            line-height: 1.45;
+            text-align: center;
+        }
+
         .label-page {
-            width: 100mm;
-            height: 150mm;
-            margin: 0;
+            width: 210mm;
+            min-height: 297mm;
+            height: 297mm;
+            margin: 0 auto 12px;
             padding: 0;
-            page-break-after: always;
             overflow: hidden;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
         }
 
         .label-page:last-child {
-            page-break-after: auto;
+            margin-bottom: 0;
         }
 
         .label-sheet {
-            width: 100mm;
-            height: 150mm;
-            border: 0.35mm solid #000;
+            width: 100%;
+            height: 100%;
+            border: 0.5mm solid #000;
             display: grid;
-            grid-template-rows: 15mm 24mm 79mm 22mm 6mm;
+            grid-template-rows: 22mm 82mm minmax(0, 1fr) 36mm 9mm;
             overflow: hidden;
         }
 
@@ -55,25 +76,26 @@
         .barcode-band,
         .footer-band {
             min-width: 0;
+            min-height: 0;
             overflow: hidden;
         }
 
         .top-band {
             display: grid;
-            grid-template-columns: 1fr 26mm;
-            border-bottom: 0.25mm solid #000;
+            grid-template-columns: 1fr 32mm;
+            border-bottom: 0.5mm solid #000;
         }
 
         .top-left {
             display: flex;
             align-items: center;
-            gap: 2mm;
-            padding: 1.5mm 2mm;
-            border-right: 0.25mm solid #000;
+            gap: 4mm;
+            padding: 2mm 3mm;
+            border-right: 0.5mm solid #000;
         }
 
         .service-type {
-            font-size: 6.5pt;
+            font-size: 16pt;
             font-weight: 900;
             letter-spacing: 0.06em;
             text-transform: uppercase;
@@ -82,9 +104,11 @@
 
         .brand-row img {
             display: block;
-            width: 14mm;
+            width: 22mm;
+            max-height: 16mm;
             height: auto;
             flex-shrink: 0;
+            object-fit: contain;
         }
 
         .top-right {
@@ -96,14 +120,14 @@
         }
 
         .volume-display {
-            font-size: 20pt;
+            font-size: 26pt;
             font-weight: 900;
             line-height: 1;
         }
 
         .volume-caption {
-            margin-top: 0.5mm;
-            font-size: 5.5pt;
+            margin-top: 1mm;
+            font-size: 9pt;
             font-weight: 800;
             letter-spacing: 0.08em;
             text-transform: uppercase;
@@ -111,55 +135,47 @@
 
         .scan-band {
             display: grid;
-            grid-template-columns: 24mm 1fr;
-            border-bottom: 0.25mm solid #000;
+            grid-template-columns: 82mm 1fr;
+            border-bottom: 0.5mm solid #000;
         }
 
         .qr-cell {
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 1mm;
-            border-right: 0.25mm solid #000;
+            padding: 3mm;
+            border-right: 0.5mm solid #000;
+            overflow: hidden;
         }
 
         .qr-image {
             display: block;
-            width: 18mm;
-            height: 18mm;
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: crisp-edges;
+            width: 100%;
+            height: 100%;
+            max-width: 72mm;
+            max-height: 72mm;
+            object-fit: contain;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
-        }
-
-        .qr-hint {
-            margin-top: 0.5mm;
-            font-size: 5pt;
-            font-weight: 800;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            text-align: center;
         }
 
         .romaneio-cell {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 1.5mm 2mm;
+            padding: 4mm 5mm;
         }
 
         .romaneio-label {
-            font-size: 6pt;
+            font-size: 12pt;
             font-weight: 800;
             letter-spacing: 0.08em;
             text-transform: uppercase;
         }
 
         .romaneio-value {
-            margin-top: 0.8mm;
-            font-size: 11pt;
+            margin-top: 2mm;
+            font-size: 26pt;
             font-weight: 900;
             font-family: "Courier New", Courier, monospace;
             letter-spacing: 0.03em;
@@ -170,13 +186,14 @@
         .address-stack {
             display: grid;
             grid-template-rows: 1fr 1fr;
-            border-bottom: 0.25mm solid #000;
+            min-height: 0;
+            border-bottom: 0.5mm solid #000;
         }
 
         .address-block {
-            padding: 1.5mm 2mm;
+            padding: 4mm 5mm;
             overflow: hidden;
-            border-bottom: 0.25mm solid #000;
+            border-bottom: 0.5mm solid #000;
         }
 
         .address-block:last-child {
@@ -184,56 +201,62 @@
         }
 
         .address-head {
-            font-size: 6pt;
+            font-size: 12pt;
             font-weight: 900;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            margin-bottom: 0.6mm;
+            margin-bottom: 2mm;
         }
 
         .address-name {
-            font-size: 8pt;
+            font-size: 16pt;
             font-weight: 900;
             line-height: 1.15;
-            margin-bottom: 0.8mm;
+            margin-bottom: 2mm;
             word-break: break-word;
         }
 
         .address-lines {
             display: flex;
             flex-direction: column;
-            gap: 0.5mm;
+            gap: 1.2mm;
         }
 
         .address-line {
-            font-size: 6.5pt;
+            font-size: 13pt;
             font-weight: 700;
-            line-height: 1.25;
+            line-height: 1.3;
             word-break: break-word;
         }
 
         .barcode-band {
-            border-top: 0.5mm solid #000;
-            padding: 1.5mm 2mm 1mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3mm 5mm 2mm;
         }
 
         .barcode-wrap {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 12mm;
+            width: 100%;
+            height: 28mm;
+            overflow: hidden;
         }
 
         .barcode-wrap svg {
-            width: 94mm;
-            height: 12mm;
+            display: block;
+            height: 28mm !important;
+            width: auto !important;
+            max-width: 196mm;
             shape-rendering: crispEdges;
         }
 
         .barcode-number {
-            margin-top: 0.8mm;
+            margin-top: 2mm;
             text-align: center;
-            font-size: 9pt;
+            font-size: 16pt;
             font-weight: 900;
             letter-spacing: 0.1em;
             font-family: "Courier New", Courier, monospace;
@@ -243,35 +266,20 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 0.25mm solid #000;
-            padding: 0 2mm;
-            font-size: 6pt;
+            border-top: 0.5mm solid #000;
+            padding: 0 4mm;
+            font-size: 10pt;
             font-weight: 800;
             letter-spacing: 0.05em;
             text-transform: uppercase;
         }
 
-        .screen-hint {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 9999;
-            background: #1f2937;
-            color: #fff;
-            font-size: 12px;
-            padding: 10px 14px;
-            line-height: 1.4;
-        }
-
         @media print {
             html,
             body {
-                width: 100mm;
-                height: 150mm;
                 margin: 0 !important;
                 padding: 0 !important;
-                overflow: hidden;
+                background: #fff !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -281,27 +289,57 @@
             }
 
             .label-page {
-                width: 100mm;
-                height: 150mm;
+                width: 210mm;
+                min-height: 297mm;
+                height: 297mm;
                 margin: 0 !important;
                 padding: 0 !important;
+                box-shadow: none !important;
+                page-break-after: always;
+                break-after: page;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            .label-page:last-child {
+                page-break-after: auto;
+                break-after: auto;
             }
 
             .label-sheet {
-                width: 100mm;
-                height: 150mm;
-                border-width: 0.4mm;
+                border-width: 0.5mm;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            .top-band,
+            .scan-band,
+            .address-stack,
+            .address-block,
+            .barcode-band,
+            .footer-band,
+            .top-left,
+            .qr-cell {
+                border-color: #000 !important;
+            }
+
+            .qr-image {
+                width: 88% !important;
+                height: 88% !important;
+                max-width: 72mm !important;
+                max-height: 72mm !important;
+            }
+
+            .barcode-wrap svg {
+                height: 28mm !important;
+                width: auto !important;
             }
 
             .service-type,
             .volume-caption,
-            .qr-hint,
             .romaneio-label,
             .address-head,
-            .footer-band {
-                font-weight: 900;
-            }
-
+            .footer-band,
             .address-line,
             .address-name,
             .romaneio-value,
@@ -313,6 +351,12 @@
 </head>
 
 <body>
+    {% if etiquetas|length > 1 %}
+    <div class="screen-hint">
+        {{ etiquetas|length }} etiqueta(s) — use Imprimir (Ctrl+P). Cada volume será impresso em uma página A4.
+    </div>
+    {% endif %}
+
     {% for etiqueta in etiquetas %}
     <div class="label-page">
         <div class="label-sheet">
@@ -335,9 +379,8 @@
                     <img
                         class="qr-image"
                         src="data:image/png;base64,{{ etiqueta.qr_image_base64 }}"
-                        alt="QR Code seriais volume {{ etiqueta.volume_atual }}">
+                        alt="QR Code volume {{ etiqueta.volume_atual }}">
                     {% endif %}
-                    <div class="qr-hint">QR Seriais</div>
                 </div>
                 <div class="romaneio-cell">
                     <div class="romaneio-label">Nº Romaneio</div>
@@ -399,10 +442,10 @@
                     JsBarcode(element, String(value), {
                         format: "CODE128",
                         lineColor: "#000000",
-                        width: 2,
-                        height: 48,
+                        width: 3,
+                        height: 106,
                         displayValue: false,
-                        margin: 0,
+                        margin: 10,
                         background: "#ffffff",
                     });
                 } catch (error) {

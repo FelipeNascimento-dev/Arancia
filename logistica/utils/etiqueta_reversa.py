@@ -3,7 +3,7 @@ import io
 from typing import Any, Dict, List, Optional
 
 import qrcode
-from qrcode.constants import ERROR_CORRECT_M
+from qrcode.constants import ERROR_CORRECT_L, ERROR_CORRECT_M
 
 
 def _primeiro_valor(*valores: Any) -> str:
@@ -237,10 +237,39 @@ def montar_endereco_etiqueta(
     }
 
 
+def _numero_volume(volume: Dict[str, Any]) -> int:
+    valor = volume.get("volum_number")
+    if valor in (None, "", "None"):
+        valor = volume.get("volume_number")
+    try:
+        return int(valor or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _serial_do_kit(kit: Dict[str, Any]) -> str:
+    for chave in ("serial", "serial_number", "serge"):
+        valor = kit.get(chave)
+        if valor not in (None, "", "None"):
+            return str(valor).strip().upper()
+    return ""
+
+
 def extrair_seriais_volume(volume: Dict[str, Any]) -> List[str]:
+    kits = volume.get("kits") or volume.get("items") or []
+    if not isinstance(kits, list):
+        return []
+
+    kits_ordenados = sorted(
+        kits,
+        key=lambda kit: int(kit.get("kit_number") or 0),
+    )
+
     seriais = []
-    for kit in volume.get("kits") or []:
-        serial = str(kit.get("serial") or "").strip().upper()
+    for kit in kits_ordenados:
+        if not isinstance(kit, dict):
+            continue
+        serial = _serial_do_kit(kit)
         if serial:
             seriais.append(serial)
     return seriais
@@ -253,30 +282,23 @@ def montar_conteudo_qr(
     seriais: List[str],
 ) -> str:
     linhas = [
-        "ROMANEIO REVERSA",
-        "================",
-        "",
-        f"Romaneio: {numero_romaneio}",
-        f"Volume:   {volume_atual} de {volume_total}",
-        f"Kits:     {len(seriais)}",
-        "",
-        "SERIAIS",
-        "-------",
+        numero_romaneio,
+        f"VOL {volume_atual}/{volume_total}",
     ]
-
-    largura_num = len(str(len(seriais))) if seriais else 1
-    for indice, serial in enumerate(seriais, start=1):
-        linhas.append(f"{indice:0{largura_num}d}. {serial}")
-
+    linhas.extend(seriais)
     return "\n".join(linhas)
 
 
 def gerar_qr_base64(conteudo: str) -> str:
+    if not conteudo.strip():
+        conteudo = "SEM_DADOS"
+
+    error_correction = ERROR_CORRECT_L if len(conteudo) > 180 else ERROR_CORRECT_M
     qr = qrcode.QRCode(
         version=None,
-        error_correction=ERROR_CORRECT_M,
-        box_size=10,
-        border=2,
+        error_correction=error_correction,
+        box_size=24,
+        border=4,
     )
     qr.add_data(conteudo)
     qr.make(fit=True)
@@ -312,7 +334,7 @@ def montar_etiqueta_reversa(
 
     volume = None
     for item in volums:
-        if int(item.get("volum_number") or 0) == int(volume_number):
+        if _numero_volume(item) == int(volume_number):
             volume = item
             break
 
@@ -361,11 +383,17 @@ def montar_etiquetas_todos_volumes(
     romaneio_data: Dict[str, Any],
     romaneio_fallback: str = "",
 ) -> List[Dict[str, Any]]:
+    volums = romaneio_data.get("volums") or []
+    volume_numbers = sorted(
+        {
+            _numero_volume(volume)
+            for volume in volums
+            if _numero_volume(volume)
+        }
+    )
+
     etiquetas = []
-    for volume in romaneio_data.get("volums") or []:
-        volume_number = int(volume.get("volum_number") or 0)
-        if not volume_number:
-            continue
+    for volume_number in volume_numbers:
         etiqueta = montar_etiqueta_reversa(
             romaneio_data,
             volume_number,
