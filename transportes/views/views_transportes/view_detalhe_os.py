@@ -13,6 +13,8 @@ from django.http import JsonResponse
 from django.utils.timezone import localtime
 from datetime import timezone as dt_timezone
 
+from .view_lista_viagens import buscar_travels_list_resume, formatar_data
+
 
 def _get_items_from_response(response):
     if isinstance(response, dict):
@@ -208,9 +210,22 @@ def detalhe_os_transp(request, order_number):
             resp["service_order"]["created_at"]
         )
 
+    travels_enriquecidos = buscar_travels_list_resume(order_number=order_number)
+
     for travel in resp.get("travels", []):
         if travel.get("created_at"):
             travel["created_at"] = convert_utc_to_local(travel["created_at"])
+
+        travel_id_val = travel.get("id")
+        extra = {}
+        if travel_id_val is not None:
+            extra = travels_enriquecidos.get(int(travel_id_val), {})
+
+        limite = travel.get("data_limite_entrega") or extra.get(
+            "data_limite_entrega")
+        if limite:
+            travel["data_limite_entrega"] = limite
+        travel["data_limite_entrega_formatada"] = formatar_data(limite)
 
         for ev in travel.get("travel_events", []):
             if ev.get("created_at"):

@@ -1271,7 +1271,7 @@
 
     .custom-table {
         width: 100%;
-        min-width: 1180px;
+        min-width: 1220px;
         border-collapse: separate;
         border-spacing: 0;
         font-size: .82rem;
@@ -1299,7 +1299,27 @@
     }
 
     .custom-table tbody tr:hover {
-        background: #f8fafc;
+        background: #f1f5f9;
+    }
+
+    .custom-table tbody tr:nth-child(even) {
+        background: #fafbfc;
+    }
+
+    .custom-table tbody tr:nth-child(even):hover {
+        background: #f1f5f9;
+    }
+
+    .custom-table tbody tr.row--late {
+        background: #fff7ed;
+    }
+
+    .custom-table tbody tr.row--late:hover {
+        background: #ffedd5;
+    }
+
+    .custom-table tbody tr.row--late td:first-child {
+        box-shadow: inset 3px 0 0 #f97316;
     }
 
     .col-check {
@@ -1324,7 +1344,8 @@
     }
 
     .col-prazos {
-        width: 150px;
+        width: 195px;
+        min-width: 195px;
     }
 
     .col-acoes {
@@ -1452,6 +1473,43 @@
         color: #334155;
         font-size: .74rem;
         font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .date-pill--deadline {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+    }
+
+    .date-pill--deadline.is-late {
+        background: #fff7ed;
+        color: #c2410c;
+        border-color: #fdba74;
+    }
+
+    .prazos-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 5px;
+    }
+
+    .card-deadline {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 8px;
+        border-radius: 8px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        font-weight: 700;
+        font-size: .88rem;
+    }
+
+    .card-deadline.is-late {
+        background: #fff7ed;
+        color: #c2410c;
+        border: 1px solid #fdba74;
     }
 
     .table-header-group {
@@ -1903,6 +1961,11 @@
                             {{ form.sem_motorista }}
                         </div>
 
+                        <div class="field-wrap">
+                            <label for="{{ form.data_limite_entrega.id_for_label }}">{{ form.data_limite_entrega.label }}</label>
+                            {{ form.data_limite_entrega }}
+                        </div>
+
                         <div class="field-wrap" style="position: relative;">
                             <label for="{{ form.driver_nome.id_for_label }}">{{ form.driver_nome.label }}</label>
                             {{ form.driver_nome }}
@@ -2041,6 +2104,13 @@
                         <p><strong>Início:</strong><br>{{ item.travel.start_date_formatada|default:"-" }}</p>
                         <p><strong>Fim:</strong><br>{{ item.travel.end_date_formatada|default:"Em andamento" }}</p>
                         <p><strong>Prazo:</strong><br>{{ item.travel.quote.estimated_deadline|default:"-" }} Dias</p>
+                        <p>
+                            <strong>Limite entrega:</strong><br>
+                            <span class="card-deadline{% if item.travel.atrasado %} is-late{% endif %}">
+                                <i class="fa-regular fa-calendar-xmark"></i>
+                                {{ item.travel.data_limite_entrega_formatada|default:"-" }}
+                            </span>
+                        </p>
                     </div>
                     
                     {% if response_mode == "detailed" and item.travel_events %}
@@ -2167,6 +2237,10 @@
                                         <button type="button" class="sort-btn" data-sort-key="prazo" data-sort-type="number">
                                             Prazo <span class="sort-icon">↕</span><span class="sort-priority"></span>
                                         </button>
+
+                                        <button type="button" class="sort-btn" data-sort-key="limite_entrega" data-sort-type="date">
+                                            Limite <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
                                     </div>
                                 </div>
                             </th>
@@ -2192,6 +2266,8 @@
                             data-sort-inicio="{{ item.travel.start_date|default:'' }}"
                             data-sort-fim="{{ item.travel.end_date|default:'' }}"
                             data-sort-prazo="{{ item.travel.quote.estimated_deadline|default:'' }}"
+                            data-sort-limite_entrega="{{ item.travel.data_limite_entrega|default:'' }}"
+                            {% if item.travel.atrasado %}class="row--late"{% endif %}
                         >
                             <td class="col-check">
                                 <input type="checkbox"
@@ -2299,7 +2375,7 @@
                             </td>
 
                             <td class="col-prazos">
-                                <div class="info-stack">
+                                <div class="prazos-grid">
                                     <div class="info-row">
                                         <span class="info-label">Início</span>
                                         <span class="date-pill">
@@ -2321,6 +2397,14 @@
                                         <span class="date-pill">
                                             <i class="fa-regular fa-clock"></i>
                                             {{ item.travel.quote.estimated_deadline|default:"-" }} dias
+                                        </span>
+                                    </div>
+
+                                    <div class="info-row">
+                                        <span class="info-label">Limite entrega</span>
+                                        <span class="date-pill date-pill--deadline{% if item.travel.atrasado %} is-late{% endif %}">
+                                            <i class="fa-regular fa-calendar-xmark"></i>
+                                            {{ item.travel.data_limite_entrega_formatada|default:"-" }}
                                         </span>
                                     </div>
                                 </div>

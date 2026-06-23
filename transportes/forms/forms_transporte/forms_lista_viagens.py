@@ -110,6 +110,12 @@ class ListaViagensForm(forms.Form):
         widget=forms.DateInput(attrs={"type": "date"})
     )
 
+    data_limite_entrega = forms.DateField(
+        label="Data limite entrega",
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"})
+    )
+
     atrasado = forms.ChoiceField(
         label="Atrasadas",
         required=False,

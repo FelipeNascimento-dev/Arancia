@@ -35,6 +35,44 @@ def formatar_data(data_str, com_hora=True):
         return data_str
 
 
+def buscar_travels_list_resume(travel_id=None, order_number=None):
+    params = {"Response": "resume"}
+
+    if travel_id not in [None, ""]:
+        params["travel_id"] = travel_id
+    elif order_number not in [None, ""]:
+        params["IN"] = order_number
+    else:
+        return {}
+
+    url_travel = (
+        f"{TRANSP_API_URL}/v2/order_travel/list/general?"
+        f"{urlencode(params, safe=',')}"
+    )
+
+    client = RequestClient(
+        method="get",
+        url=url_travel,
+        headers={
+            "accept": "application/json",
+            "Content-Type": "application/json",
+        },
+    )
+    resp_travel = client.send_api_request()
+
+    if not isinstance(resp_travel, list):
+        return {}
+
+    resultado = {}
+    for item in resp_travel:
+        travel = item.get("travel") or {}
+        travel_id_val = travel.get("id")
+        if travel_id_val is not None:
+            resultado[int(travel_id_val)] = travel
+
+    return resultado
+
+
 HARDCODE_PENDING_STATUS = {
     "id": "PENDING",
     "type": "PENDING",
@@ -134,6 +172,7 @@ def lista_viagens(request):
         "offset",
         "limit",
         "created_at",
+        "data_limite_entrega",
         "designation_id",
         "atrasado",
         "Response",
@@ -487,6 +526,8 @@ def lista_viagens(request):
                     travel_data.get("end_date"))
                 travel_data["created_at_formatada"] = formatar_data(
                     travel_data.get("created_at"))
+                travel_data["data_limite_entrega_formatada"] = formatar_data(
+                    travel_data.get("data_limite_entrega"))
 
                 eventos = t.get("travel_events", []) or []
 
@@ -540,6 +581,7 @@ def lista_viagens(request):
         "cep_origin": "CEP origem",
         "cep_destin": "CEP destino",
         "created_at": "Data criação",
+        "data_limite_entrega": "Data limite entrega",
         "designation_id": "Designation",
         "atrasado": "Atrasadas",
         "Response": "Response",
@@ -588,6 +630,12 @@ def lista_viagens(request):
         elif campo in ["sem_motorista", "atrasado"]:
             valor_exibicao = "Sim" if str(valor).lower() in [
                 "true", "1", "on"] else "Não"
+        elif campo in ["created_at", "data_limite_entrega"]:
+            try:
+                dt = datetime.strptime(str(valor)[:10], "%Y-%m-%d")
+                valor_exibicao = dt.strftime("%d/%m/%Y")
+            except (ValueError, TypeError):
+                valor_exibicao = formatar_data(valor, com_hora=False) or valor
         elif campo == "Response":
             valor_exibicao = "Detalhado" if str(
                 valor).lower() == "detailed" else "Resumido"
@@ -668,6 +716,10 @@ def lista_viagens(request):
             cep_destin = filtros.get("cep_destin")
             if cep_destin not in [None, "", [], ()]:
                 extract_params["cep_destin"] = cep_destin
+
+            data_limite_entrega = filtros.get("data_limite_entrega")
+            if data_limite_entrega not in [None, "", [], ()]:
+                extract_params["data_limite_entrega"] = data_limite_entrega
 
             extract_params["Response"] = filtros.get("Response") or "resume"
 
