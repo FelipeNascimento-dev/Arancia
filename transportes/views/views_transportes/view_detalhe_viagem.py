@@ -11,6 +11,8 @@ import json
 import requests
 from django.http import JsonResponse
 
+from .view_lista_viagens import buscar_travels_list_resume, formatar_data
+
 UPLOAD_API_URL = f"http://192.168.0.216/RetencaoAPI/api/v3/upload/upload/Firebase/"
 
 
@@ -181,6 +183,22 @@ def detalhe_viagem(request, id_viagem):
         else:
             messages.success(request, "Evento criado com sucesso!")
             return redirect('transportes:detalhe_viagem', id_viagem=id_viagem)
+
+    if isinstance(resp, dict):
+        travel = resp.get("travel")
+        if isinstance(travel, dict):
+            travel_id_val = travel.get("id")
+            extra = {}
+            if travel_id_val is not None:
+                extra = buscar_travels_list_resume(
+                    travel_id=travel_id_val).get(int(travel_id_val), {})
+
+            limite = travel.get("data_limite_entrega") or extra.get(
+                "data_limite_entrega")
+            if limite:
+                travel["data_limite_entrega"] = limite
+            travel["data_limite_entrega_formatada"] = formatar_data(limite)
+            resp["travel"] = travel
 
     return render(request, 'transportes/transportes/detalhe_viagem.html', {
         'id_viagem': id_viagem,

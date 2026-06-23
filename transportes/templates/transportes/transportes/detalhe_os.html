@@ -2010,6 +2010,9 @@
                             </div>
                             <div class="travel-sub">
                                 Criada em {{ travel.created_at|slice:":19" }}
+                                {% if travel.data_limite_entrega_formatada %}
+                                    • Limite entrega: {{ travel.data_limite_entrega_formatada }}
+                                {% endif %}
                             </div>
                         </div>
 
@@ -2050,7 +2053,7 @@
                     </div>
 
                     <div class="travel-body">
-                        <div class="travel-info-grid" style="grid-template-columns: repeat(4, 1fr) auto; align-items: end; margin-bottom: 20px;">
+                        <div class="travel-info-grid" style="grid-template-columns: repeat(5, 1fr) auto; align-items: end; margin-bottom: 20px;">
                             <div>
                                 <div class="info-label">Motorista</div>
                                 <div class="info-value">{{ travel.driver.name }}</div>
@@ -2067,6 +2070,12 @@
                                 <div class="info-label">Valor</div>
                                 <div class="info-value">
                                     R$ {{ travel.price_charged }}
+                                </div>
+                            </div>
+                            <div>
+                                <div class="info-label">Limite de entrega</div>
+                                <div class="info-value">
+                                    {{ travel.data_limite_entrega_formatada|default:"-" }}
                                 </div>
                             </div>
 
@@ -3544,6 +3553,10 @@ if (modalEditarCotacao) {
                                 <br>
                                 {% if travel.created_at %}
                                     Criada em: {{ travel.created_at|date:"d/m/Y H:i" }}
+                                {% endif %}
+                                {% if travel.data_limite_entrega_formatada %}
+                                    <br>
+                                    Limite entrega: {{ travel.data_limite_entrega_formatada }}
                                 {% endif %}
                             </div>
                         </div>
