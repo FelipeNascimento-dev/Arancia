@@ -14,6 +14,8 @@ from .views.views_transportes.view_lista_viagens_actions import (
     lista_viagens_preparar_eventos,
 )
 from .views.views_transportes.api_listas_transportes import (
+    api_consulta_os_list,
+    api_lista_viagens_list,
     api_order_travels,
     api_travel_events,
 )
@@ -75,6 +77,16 @@ urlpatterns = [
         "consulta-os-transp/api/order-travels/",
         api_order_travels,
         name="api_order_travels",
+    ),
+    path(
+        "consulta-os-transp/api/list/",
+        api_consulta_os_list,
+        name="api_consulta_os_list",
+    ),
+    path(
+        "lista-viagens/api/list/",
+        api_lista_viagens_list,
+        name="api_lista_viagens_list",
     ),
     path("lista-viagens/imprimir-os/", imprimir_os_viagens, name="imprimir_os_viagens"),
     path("detalhe-viagem/<int:id_viagem>/",

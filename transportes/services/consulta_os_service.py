@@ -343,6 +343,66 @@ def append_view_mode_to_qs(base_qs: str, view_mode: str) -> str:
     return "view_mode=table"
 
 
+def load_orders_page(
+    data,
+    page,
+    status_by_id,
+    order_type_by_id,
+    clientes_status,
+    view_mode="cards",
+):
+    """Monta params, consulta API e retorna estado da página de listagem."""
+    try:
+        page = int(page)
+    except (TypeError, ValueError):
+        page = 1
+    page = max(page, 1)
+    offset = (page - 1) * PAGE_SIZE
+
+    params, filtros_exibicao, errors = build_list_params(
+        data, status_by_id, order_type_by_id, clientes_status
+    )
+    if errors:
+        return {
+            "orders": [],
+            "total": 0,
+            "pagination": build_pagination_state(page, 0, 0),
+            "filtros_exibicao": filtros_exibicao,
+            "errors": errors,
+        }
+
+    params["limit"] = PAGE_SIZE
+    params["offset"] = offset
+
+    resultado_api, _, _ = fetch_orders(params)
+    orders, total, detail = parse_orders_response(resultado_api)
+    if detail:
+        return {
+            "orders": [],
+            "total": 0,
+            "pagination": build_pagination_state(page, 0, 0),
+            "filtros_exibicao": filtros_exibicao,
+            "errors": [detail],
+        }
+
+    enrich_orders(orders)
+
+    qs = data.copy()
+    qs.pop("page", None)
+    base_qs_no_view = qs.urlencode()
+    pagination = build_pagination_state(page, total, len(orders))
+    pagination["base_qs"] = append_view_mode_to_qs(base_qs_no_view, view_mode)
+
+    return {
+        "orders": orders,
+        "total": total,
+        "pagination": pagination,
+        "filtros_exibicao": filtros_exibicao,
+        "errors": [],
+        "base_qs_no_view": base_qs_no_view,
+    }
+
+
 def fetch_order_travels(order_number):
     """Viagens de uma OS para lazy-load do modal."""
     url = f"{TRANSP_API_URL}/service_orders/{order_number}"

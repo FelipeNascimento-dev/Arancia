@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 from django.conf import settings
 
@@ -67,6 +67,12 @@ def fetch_auth_token(*, username: str, password: str) -> str:
     raise AranciaMessageAuthError("Token não retornado pela API de autenticação.")
 
 
+def resolve_arancia_message_ui_base(request=None) -> str:
+    """URL base da UI NinaBot. request reservado para escolha por ambiente no futuro."""
+    del request
+    return (getattr(settings, 'ARANCIA_MESSAGE_UI_URL', '') or '').rstrip('/')
+
+
 def build_arancia_message_iframe_url(request) -> str:
     user = request.user
     if not user or not user.is_authenticated:
@@ -78,7 +84,7 @@ def build_arancia_message_iframe_url(request) -> str:
             "Senha não encontrada na sessão — faça logout e login novamente para acessar o Arancia Message."
         )
 
-    ui_base = (getattr(settings, "ARANCIA_MESSAGE_UI_URL", "") or "").rstrip("/")
+    ui_base = resolve_arancia_message_ui_base(request)
     if not ui_base:
         raise AranciaMessageAuthError("URL do Arancia Message não configurada.")
 
@@ -86,15 +92,28 @@ def build_arancia_message_iframe_url(request) -> str:
     return f"{ui_base}?{urlencode({'token': token})}"
 
 
+def _origin_matches_frame_ancestor(current: str, allowed: str) -> bool:
+    current = current.rstrip('/')
+    allowed = allowed.rstrip('/')
+    if current == allowed:
+        return True
+
+    cur = urlparse(current)
+    alw = urlparse(allowed)
+    if cur.scheme != alw.scheme or cur.hostname != alw.hostname:
+        return False
+    if alw.port is None:
+        return True
+    return cur.port == alw.port
+
+
 def can_embed_arancia_message(request) -> bool:
     """
-    O NinaBot só permite iframe de origens listadas em frame-ancestors (CSP).
-    Homolog em IP interno precisa ser liberado no servidor do NinaBot.
+    Verifica se a origem do Arancia está na lista alinhada ao frame-ancestors do NinaBot.
     """
     allowed = getattr(settings, "ARANCIA_MESSAGE_FRAME_ANCESTORS", None)
     if not allowed:
         return True
 
     current = f"{request.scheme}://{request.get_host()}".rstrip("/")
-    normalized = {origin.rstrip("/") for origin in allowed}
-    return current in normalized
+    return any(_origin_matches_frame_ancestor(current, origin) for origin in allowed)

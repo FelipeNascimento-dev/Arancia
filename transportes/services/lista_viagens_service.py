@@ -381,6 +381,58 @@ def build_extract_params(filtros, tipo_api_map, status_api_map):
     return extract_params
 
 
+def load_travels_page(
+    filtros,
+    page,
+    maps_ctx,
+    request,
+    response_mode="resume",
+    view_mode="cards",
+):
+    """Monta params, consulta API e retorna estado da página de listagem."""
+    try:
+        page = int(page)
+    except (TypeError, ValueError):
+        page = 1
+    page = max(page, 1)
+    offset = (page - 1) * PAGE_SIZE
+
+    params = build_api_params(
+        filtros,
+        offset,
+        PAGE_SIZE,
+        maps_ctx["tipo_api_map"],
+        maps_ctx["status_api_map"],
+    )
+    resp_travel, _, _ = fetch_travels(params, request)
+    travels, total, detail = parse_travels_response(resp_travel)
+    if detail:
+        return {
+            "travels": [],
+            "total": 0,
+            "pagination": build_pagination_state(page, 0, 0),
+            "errors": [detail],
+        }
+
+    include_events = response_mode == "detailed"
+    enrich_travels(travels, include_events=include_events)
+
+    base_qs_no_view = filtros_para_querystring(filtros, FILTRO_CAMPOS_LISTA_VIAGENS)
+    pagination = build_pagination_state(page, total, len(travels))
+    pagination["base_qs"] = append_view_mode_to_qs(base_qs_no_view, view_mode)
+
+    return {
+        "travels": travels,
+        "total": total,
+        "pagination": pagination,
+        "errors": [],
+        "show_origin_column": show_origin_column(travels),
+        "response_mode": response_mode,
+        "filtros": filtros,
+        "base_qs_no_view": base_qs_no_view,
+    }
+
+
 def fetch_travel_events(travel_id):
     """Busca eventos de uma viagem (lazy-load do modal)."""
     params = {"Response": "detailed", "travel_id": travel_id, "limit": 1}

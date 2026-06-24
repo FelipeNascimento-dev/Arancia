@@ -7,18 +7,13 @@ from transportes.forms import ListaViagensForm
 from transportes.instrumentation import TranspApiCallTimer
 from transportes.models import FiltroFavoritoUsuario, FiltroPadraoTela
 from transportes.services.lista_viagens_service import (
-    PAGE_SIZE,
     SESSION_KEY_LISTA_VIAGENS_FILTROS,
     append_view_mode_to_qs,
-    build_api_params,
     build_filtros_exibicao,
     build_pagination_state,
-    enrich_travels,
-    fetch_travels,
     filtros_para_querystring,
     formatar_data,
     montar_filtros_lista_viagens,
-    parse_travels_response,
     show_origin_column,
 )
 from transportes.services.transportes_metadata_service import (
@@ -111,18 +106,21 @@ def lista_viagens(request):
             if filtro_padrao and filtro_padrao.filtros:
                 filtros = filtro_padrao.filtros
                 filtros["Response"] = filtros.get("Response") or "resume"
+                request.session[SESSION_KEY_LISTA_VIAGENS_FILTROS] = filtros
                 messages.success(request, "Filtro padrão aplicado.")
             else:
-                filtros = {"Response": "resume"}
                 messages.warning(
                     request, "Nenhum filtro padrão cadastrado para esta tela."
                 )
-        elif "enviar_evento" in request.POST:
-            filtros = filtros_post
-            request.session[SESSION_KEY_LISTA_VIAGENS_FILTROS] = filtros
-        else:
-            filtros = obter_filtros_tela(request.user, chave_tela) or {}
-            filtros["Response"] = filtros.get("Response") or "resume"
+            return redirect(f"{request.path}?page=1")
+
+        if "enviar_evento" in request.POST:
+            request.session[SESSION_KEY_LISTA_VIAGENS_FILTROS] = filtros_post
+            messages.success(request, "Consulta realizada com sucesso!")
+            return redirect(f"{request.path}?page=1")
+
+        filtros = obter_filtros_tela(request.user, chave_tela) or {}
+        filtros["Response"] = filtros.get("Response") or "resume"
     else:
         limpou_tela = request.GET.get("limpo") == "1"
         if limpou_tela:
@@ -235,44 +233,14 @@ def lista_viagens(request):
     except (TypeError, ValueError):
         page = 1
     page = max(page, 1)
-    offset = (page - 1) * PAGE_SIZE
 
     travels = []
     total = 0
     consultando = bool(filtros_ativos or response_mode)
+    async_list_load = consultando
 
     if consultando:
-        try:
-            params = build_api_params(
-                filtros,
-                offset,
-                PAGE_SIZE,
-                maps_ctx["tipo_api_map"],
-                maps_ctx["status_api_map"],
-            )
-            with TranspApiCallTimer(
-                request,
-                phase="order_travel_list",
-                url="order_travel/list",
-            ) as travel_timer:
-                resp_travel, url_travel, payload_size = fetch_travels(params, request)
-                travel_timer.url = url_travel
-                travel_timer.payload_size = payload_size
-
-            travels, total, detail = parse_travels_response(resp_travel)
-            if detail:
-                messages.error(request, detail)
-                travels = []
-                total = 0
-            elif request.method == "POST" and "enviar_evento" in request.POST:
-                messages.success(request, "Consulta realizada com sucesso!")
-
-            include_events = response_mode == "detailed"
-            enrich_travels(travels, include_events=include_events)
-            request.session[SESSION_KEY_LISTA_VIAGENS_FILTROS] = filtros
-        except Exception:
-            travels = []
-            total = 0
+        request.session[SESSION_KEY_LISTA_VIAGENS_FILTROS] = filtros
 
     base_qs_no_view = filtros_para_querystring(filtros, FILTRO_CAMPOS_LISTA_VIAGENS)
     pagination = build_pagination_state(page, total, len(travels))
@@ -305,9 +273,11 @@ def lista_viagens(request):
             "show_origin_column": show_origin_column(travels),
             "view_mode": view_mode,
             "consultando": consultando,
+            "async_list_load": async_list_load,
             "base_qs_no_view": base_qs_no_view,
             "lista_viagens_js_config": {
                 "filtros_ativos": filtros_ativos,
+                "async_list_load": async_list_load,
                 "pode_escolher_transportadora": contexto_atribuir.get(
                     "pode_escolher_transportadora", False
                 ),
@@ -315,6 +285,7 @@ def lista_viagens(request):
                 "urls": {
                     "buscar_motoristas": reverse("transportes:buscar_motoristas_travels"),
                     "imprimir_os": reverse("transportes:imprimir_os_viagens"),
+                    "list_results": reverse("transportes:api_lista_viagens_list"),
                     "travel_events_template": reverse(
                         "transportes:api_travel_events", kwargs={"travel_id": 0}
                     ),

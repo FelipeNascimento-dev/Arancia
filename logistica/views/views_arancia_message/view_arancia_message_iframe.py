@@ -1,10 +1,12 @@
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render
 
+from urllib.parse import urlparse
+
 from logistica.services.arancia_message_service import (
     AranciaMessageAuthError,
     build_arancia_message_iframe_url,
-    can_embed_arancia_message,
+    resolve_arancia_message_ui_base,
 )
 
 
@@ -14,13 +16,13 @@ def arancia_message_iframe(request):
     context = {
         'arancia_message_url': None,
         'arancia_message_error': None,
-        'arancia_message_embed_allowed': False,
-        'arancia_message_origin': f"{request.scheme}://{request.get_host()}",
+        'arancia_message_ui_host': '',
     }
 
     try:
         context['arancia_message_url'] = build_arancia_message_iframe_url(request)
-        context['arancia_message_embed_allowed'] = can_embed_arancia_message(request)
+        ui_base = resolve_arancia_message_ui_base(request)
+        context['arancia_message_ui_host'] = urlparse(ui_base).netloc or ui_base
     except AranciaMessageAuthError as exc:
         context['arancia_message_error'] = str(exc)
 
