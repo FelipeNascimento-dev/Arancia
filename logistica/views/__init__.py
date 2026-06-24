@@ -24,6 +24,7 @@ from .views_fluxo_entrega.view_button_desn import button_desn
 from .views_fluxo_retirada.view_conferir_retirada import order_return_check
 from .views_gerenciamento.view_gestao_usuarios import user_ger
 from .views_gerenciamento.view_gestao_skills import skill_ger
+from .views_gerenciamento.view_dev_infra_tools import dev_infra_tools
 from .views_reverse.view_criar_reversa import reverse_create, delete_btn, cancel_btn
 from .views_reverse.view_consulta_romaneio import consult_rom
 from .views_reverse.view_print_etiqueta_reversa import print_etiqueta_reversa
@@ -50,3 +51,4 @@ from .views_checkin_checkout.view_pre_recebimento import pre_recebimento_checkin
 from .views_checkin_checkout.view_checkin_bag_tec import checkin_bag_tec
 from .views_checkin_checkout.view_atrelar_motoboy import atrelar_motoboy
 from .views_checkin_checkout.view_solicitacao_coleta import solicitacao_coleta_checkin
+from .views_arancia_message.view_arancia_message_iframe import arancia_message_iframe

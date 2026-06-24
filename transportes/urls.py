@@ -7,6 +7,16 @@ from transportes.views.view_panel_technical import registrar_tratamento_view
 from .views import extrair_enderecos_view, gerar_etiquetas_view, criar_user_view, ver_usuario_view, mover_rota_view, ordenar_rota_view
 from .views import consulta_os_pend, lista_tecnicos, consulta_os, detalhe_os, consulta_os_transp, detalhe_os_transp, buscar_motoristas, buscar_motoristas_travels, buscar_veiculos
 from .views import lista_viagens, detalhe_viagem, criar_os_transp, buscar_locais, skill_customer, skill_transport, driver_ger, vehicle_ger, atribuir_motorista_viagens_manual, imprimir_os_viagens
+from .views.views_transportes.view_lista_viagens_actions import (
+    lista_viagens_atrelar_motorista,
+    lista_viagens_criar_evento_lote,
+    lista_viagens_export,
+    lista_viagens_preparar_eventos,
+)
+from .views.views_transportes.api_listas_transportes import (
+    api_order_travels,
+    api_travel_events,
+)
 from .views.dashboard_view import dashboard_view
 app_name = 'transportes'
 
@@ -40,6 +50,32 @@ urlpatterns = [
     path("criar-os/", criar_os_transp, name="criar_os_transp"),
     path("buscar-locais/", buscar_locais, name="buscar_locais"),
     path("lista-viagens/", lista_viagens, name="lista_viagens"),
+    path("lista-viagens/exportar/", lista_viagens_export, name="lista_viagens_export"),
+    path(
+        "lista-viagens/preparar-eventos/",
+        lista_viagens_preparar_eventos,
+        name="lista_viagens_preparar_eventos",
+    ),
+    path(
+        "lista-viagens/atrelar-motorista/",
+        lista_viagens_atrelar_motorista,
+        name="lista_viagens_atrelar_motorista",
+    ),
+    path(
+        "lista-viagens/criar-evento-lote/",
+        lista_viagens_criar_evento_lote,
+        name="lista_viagens_criar_evento_lote",
+    ),
+    path(
+        "lista-viagens/api/travel-events/<int:travel_id>/",
+        api_travel_events,
+        name="api_travel_events",
+    ),
+    path(
+        "consulta-os-transp/api/order-travels/",
+        api_order_travels,
+        name="api_order_travels",
+    ),
     path("lista-viagens/imprimir-os/", imprimir_os_viagens, name="imprimir_os_viagens"),
     path("detalhe-viagem/<int:id_viagem>/",
          detalhe_viagem, name="detalhe_viagem"),
