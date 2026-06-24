@@ -3,9 +3,13 @@ from urllib.parse import urlencode
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.http import JsonResponse
 from setup.local_settings import TRANSP_API_URL
 from utils.request import RequestClient
+from transportes.utils.atribuir_motorista import (
+    montar_url_atualizar_motorista,
+    obter_contexto_atribuir_motorista,
+    validar_pa_atribuir_motorista,
+)
 
 
 # @login_required(login_url='logistica:login')
@@ -137,20 +141,26 @@ def atribuir_motorista_viagens_manual(request):
     else:
         carriers = []
 
+    contexto_atribuir = obter_contexto_atribuir_motorista(request.user)
+
     if request.method == "POST":
         ids_texto = (request.POST.get("travels_ids_texto") or "").strip()
         carrier_id = (request.POST.get("carrier_id") or "").strip()
         motorista_id = (request.POST.get("motorista_id") or "").strip()
         motorista_nome = (request.POST.get("motorista_nome") or "").strip()
-        observacao = (request.POST.get("motorista_observacao") or "").strip()
+        pa_id = request.POST.get("pa_selecionada")
 
         if not ids_texto:
             messages.error(request, "Informe pelo menos um ID de viagem.")
             return redirect("transportes:atribuir_motorista_viagens_manual")
 
-        if not carrier_id:
-            messages.error(request, "Selecione uma transportadora.")
+        ok_pa, erro_pa, pa_id = validar_pa_atribuir_motorista(request.user, pa_id)
+        if not ok_pa:
+            messages.error(request, erro_pa)
             return redirect("transportes:atribuir_motorista_viagens_manual")
+
+        if not contexto_atribuir["pode_escolher_transportadora"]:
+            carrier_id = ""
 
         if not motorista_id:
             messages.error(request, "Selecione um motorista válido.")
@@ -195,9 +205,8 @@ def atribuir_motorista_viagens_manual(request):
 
             created_by = request.user.username
 
-            update_driver_url = (
-                f"{TRANSP_API_URL}/v2/order_travel/driver/updated"
-                f"?created_by={created_by}&carrier_id={carrier_id}"
+            update_driver_url = montar_url_atualizar_motorista(
+                created_by, carrier_id
             )
 
             update_driver_client = RequestClient(
@@ -237,4 +246,5 @@ def atribuir_motorista_viagens_manual(request):
         "current_parent_menu": "transportes",
         "current_menu": "atribuir_motorista",
         "carriers": carriers,
+        **contexto_atribuir,
     })

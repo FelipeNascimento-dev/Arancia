@@ -99,18 +99,36 @@ def montar_filtros_lista_viagens(post_data, filtro_campos):
     return filtros
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
+@permission_required('transportes.ver_transportes', raise_exception=True)
 def buscar_motoristas_travels(request):
+    from transportes.utils.atribuir_motorista import validar_gai_id_busca_motorista
+
     nome = request.GET.get("nome", "").strip()
     carrier_id = request.GET.get("carrier_id", "").strip()
+    gai_id = request.GET.get("gai_id", "").strip()
 
-    if not nome or not carrier_id:
+    if len(nome) < 2:
+        return JsonResponse({"items": []})
+
+    if gai_id:
+        ok, gai_id, detail = validar_gai_id_busca_motorista(request.user, gai_id)
+        if not ok:
+            return JsonResponse({"items": [], "detail": detail}, status=400)
+
+    if not carrier_id and not gai_id:
         return JsonResponse({"items": []})
 
     params = {
         "Nome": nome,
-        "carrier_id": carrier_id,
         "limit": 10,
     }
+
+    if carrier_id:
+        params["carrier_id"] = carrier_id
+    if gai_id:
+        params["gai_id"] = gai_id
 
     url = f"{TRANSP_API_URL}/Carriers/driver/list?{urlencode(params)}"
 
@@ -820,21 +838,33 @@ def lista_viagens(request):
                 messages.error(request, f"Erro ao consultar eventos: {e}")
 
     if request.method == "POST" and "atrelar_motorista_lote" in request.POST:
+        from transportes.utils.atribuir_motorista import (
+            montar_url_atualizar_motorista,
+            obter_contexto_atribuir_motorista,
+            validar_pa_atribuir_motorista,
+        )
+
         selected_travel_ids = request.POST.getlist("travels_selecionadas")
 
         carrier_id = (request.POST.get("carrier_id") or "").strip()
         motorista_id = (request.POST.get("motorista_id") or "").strip()
         motorista_nome = (request.POST.get("motorista_nome") or "").strip()
+        pa_id = request.POST.get("pa_selecionada")
 
         created_by = request.user.username
+        ctx_atribuir = obter_contexto_atribuir_motorista(request.user)
 
         if not selected_travel_ids:
             messages.error(request, "Selecione pelo menos uma viagem.")
             return redirect("transportes:lista_viagens")
 
-        if not carrier_id:
-            messages.error(request, "Selecione uma transportadora.")
+        ok_pa, erro_pa, pa_id = validar_pa_atribuir_motorista(request.user, pa_id)
+        if not ok_pa:
+            messages.error(request, erro_pa)
             return redirect("transportes:lista_viagens")
+
+        if not ctx_atribuir["pode_escolher_transportadora"]:
+            carrier_id = ""
 
         if not motorista_id:
             messages.error(request, "Selecione um motorista válido.")
@@ -859,9 +889,8 @@ def lista_viagens(request):
                 }
             ]
 
-            update_driver_url = (
-                f"{TRANSP_API_URL}/v2/order_travel/driver/updated"
-                f"?created_by={created_by}&carrier_id={carrier_id}"
+            update_driver_url = montar_url_atualizar_motorista(
+                created_by, carrier_id
             )
 
             update_driver_client = RequestClient(
@@ -979,6 +1008,10 @@ def lista_viagens(request):
         except Exception as e:
             messages.error(request, f"Erro ao criar evento: {e}")
 
+    from transportes.utils.atribuir_motorista import obter_contexto_atribuir_motorista
+
+    contexto_atribuir = obter_contexto_atribuir_motorista(request.user)
+
     return render(request, 'transportes/transportes/lista_viagens.html', {
         "botao_texto": "Consultar",
         "current_parent_menu": "transportes",
@@ -998,4 +1031,5 @@ def lista_viagens(request):
         "response_mode": response_mode,
         "carriers": carriers,
         "show_origin_column": show_origin_column,
+        **contexto_atribuir,
     })

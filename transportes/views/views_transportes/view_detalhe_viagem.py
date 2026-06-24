@@ -12,6 +12,7 @@ import requests
 from django.http import JsonResponse
 
 from .view_lista_viagens import buscar_travels_list_resume, formatar_data
+from transportes.utils.imprimir_os import enriquecer_itens_viagem
 
 UPLOAD_API_URL = f"http://192.168.0.216/RetencaoAPI/api/v3/upload/upload/Firebase/"
 
@@ -199,6 +200,8 @@ def detalhe_viagem(request, id_viagem):
                 travel["data_limite_entrega"] = limite
             travel["data_limite_entrega_formatada"] = formatar_data(limite)
             resp["travel"] = travel
+
+        resp["items"] = enriquecer_itens_viagem(resp.get("items"))
 
     return render(request, 'transportes/transportes/detalhe_viagem.html', {
         'id_viagem': id_viagem,

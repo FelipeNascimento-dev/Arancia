@@ -12,6 +12,7 @@ import requests
 from django.http import JsonResponse
 from django.utils.timezone import localtime
 from datetime import timezone as dt_timezone
+from urllib.parse import urlencode
 
 from .view_lista_viagens import buscar_travels_list_resume, formatar_data
 
@@ -85,14 +86,27 @@ def _filtrar_quotes_por_status(quotes):
     }
 
 
+@login_required(login_url='logistica:login')
+@permission_required('logistica.acesso_arancia', raise_exception=True)
+@permission_required('transportes.ver_transportes', raise_exception=True)
 def buscar_motoristas(request):
-    nome = request.GET.get("nome", "").strip()
-    carrier_id = request.GET.get("carrier_id")
+    from transportes.utils.atribuir_motorista import validar_gai_id_busca_motorista
 
-    if not nome:
+    nome = request.GET.get("nome", "").strip()
+    carrier_id = (request.GET.get("carrier_id") or "").strip()
+    gai_id = (request.GET.get("gai_id") or "").strip()
+
+    if len(nome) < 2:
         return JsonResponse({"items": []})
 
-    url = f"{TRANSP_API_URL}/Carriers/driver/list?Nome={nome}&carrier_id={carrier_id}"
+    if gai_id:
+        ok, gai_id, detail = validar_gai_id_busca_motorista(request.user, gai_id)
+        if not ok:
+            return JsonResponse({"items": [], "detail": detail}, status=400)
+
+    if not carrier_id and not gai_id:
+        return JsonResponse({"items": []})
+
     headers = {
         "accept": "application/json",
         "Content-Type": "application/json",
@@ -105,6 +119,10 @@ def buscar_motoristas(request):
 
     if carrier_id:
         params["carrier_id"] = carrier_id
+    if gai_id:
+        params["gai_id"] = gai_id
+
+    url = f"{TRANSP_API_URL}/Carriers/driver/list?{urlencode(params)}"
 
     client = RequestClient(
         method="get",
@@ -914,11 +932,31 @@ def detalhe_os_transp(request, order_number):
                 messages.error(request, f"Erro ao atualizar viagem: {e}")
 
         if "atrelar_motorista_viagens" in request.POST:
+            from transportes.utils.atribuir_motorista import (
+                montar_url_atualizar_motorista,
+                obter_contexto_atribuir_motorista,
+                validar_pa_atribuir_motorista,
+            )
+
             driver_id = request.POST.get("driver_id")
-            carrier_id = request.POST.get("carrier_id")
+            carrier_id = (request.POST.get("carrier_id") or "").strip()
             travel_ids = request.POST.getlist("travel_ids")
+            pa_id = request.POST.get("pa_selecionada")
 
             created_by = request.user.username
+            ctx_atribuir = obter_contexto_atribuir_motorista(request.user)
+
+            ok_pa, erro_pa, pa_id = validar_pa_atribuir_motorista(request.user, pa_id)
+            if not ok_pa:
+                messages.error(request, erro_pa)
+                return redirect("transportes:detalhe_os_transp", order_number=order_number)
+
+            if not ctx_atribuir["pode_escolher_transportadora"]:
+                carrier_id = ""
+
+            if not driver_id:
+                messages.error(request, "Selecione um motorista válido.")
+                return redirect("transportes:detalhe_os_transp", order_number=order_number)
 
             update_driver_payload = [
                 {
@@ -928,7 +966,9 @@ def detalhe_os_transp(request, order_number):
             ]
 
             try:
-                update_driver_url = f"{TRANSP_API_URL}/v2/order_travel/driver/updated?created_by={created_by}"
+                update_driver_url = montar_url_atualizar_motorista(
+                    created_by, carrier_id
+                )
 
                 update_driver_client = RequestClient(
                     method="POST",
@@ -1206,6 +1246,10 @@ def detalhe_os_transp(request, order_number):
     if request.method == "POST":
         selected_travel_ids = request.POST.getlist("travel_ids")
 
+    from transportes.utils.atribuir_motorista import obter_contexto_atribuir_motorista
+
+    contexto_atribuir = obter_contexto_atribuir_motorista(request.user)
+
     return render(request, 'transportes/transportes/detalhe_os.html', {
         "order_number": order_number,
         "payload": resp,
@@ -1226,4 +1270,5 @@ def detalhe_os_transp(request, order_number):
         "current_parent_menu": "transportes",
         "current_menu": "lista_os",
         "selected_travel_ids": selected_travel_ids,
+        **contexto_atribuir,
     })

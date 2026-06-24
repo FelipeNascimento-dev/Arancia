@@ -3500,21 +3500,41 @@ if (modalEditarCotacao) {
 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Transportadora</label>
-                        <select name="carrier_id" id="carrierSelectAtrelarMotorista" required>
+                        <label for="paSelectAtrelarMotorista">PA</label>
+                        {% if pa_travada %}
+                        <select id="paSelectAtrelarMotorista" disabled>
+                            <option value="{{ pa_padrao_id }}" selected>{{ pa_padrao_nome }}</option>
+                        </select>
+                        <input type="hidden" name="pa_selecionada" id="paHiddenAtrelarMotorista" value="{{ pa_padrao_id }}">
+                        {% else %}
+                        <select name="pa_selecionada" id="paSelectAtrelarMotorista" required>
+                            <option value="">Selecione uma PA...</option>
+                            {% for pa_id, pa_nome in pa_opcoes %}
+                            <option value="{{ pa_id }}">{{ pa_nome }}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                    </div>
+
+                    {% if pode_escolher_transportadora %}
+                    <div class="form-group">
+                        <label>Transportadora <span style="font-weight:400;color:#64748b;">(opcional)</span></label>
+                        <select name="carrier_id" id="carrierSelectAtrelarMotorista">
                             <option value="">Selecione uma transportadora...</option>
                             {% for carrier in carriers %}
                             <option value="{{ carrier.id }}">{{ carrier.nome }}</option>
                             {% endfor %}
                         </select>
                     </div>
+                    {% endif %}
 
                     <div class="form-group">
                         <label>Motorista</label>
                         <input type="text"
                                id="driverSearchAtrelar"
-                               placeholder="Digite o nome do motorista..."
-                               autocomplete="off">
+                               placeholder="Selecione a PA primeiro..."
+                               autocomplete="off"
+                               disabled>
                         <input type="hidden" name="driver_id" id="driverIdAtrelar">
                         <div id="driverResultsAtrelar" class="driver-dropdown"></div>
                     </div>
@@ -3612,24 +3632,80 @@ document.addEventListener("DOMContentLoaded", function () {
     const resultsBox = document.getElementById("driverResultsAtrelar");
     const hiddenId = document.getElementById("driverIdAtrelar");
     const carrierSelect = document.getElementById("carrierSelectAtrelarMotorista");
+    const paSelect = document.getElementById("paSelectAtrelarMotorista");
+    const paHidden = document.getElementById("paHiddenAtrelarMotorista");
+    const podeEscolherTransportadora = {{ pode_escolher_transportadora|yesno:"true,false" }};
+    const paTravada = {{ pa_travada|yesno:"true,false" }};
 
-    if (!input || !resultsBox || !hiddenId || !carrierSelect) return;
+    if (!input || !resultsBox || !hiddenId) return;
 
     let timeout = null;
 
+    function getPaId() {
+        if (paHidden && paHidden.value) {
+            return paHidden.value;
+        }
+        return paSelect ? paSelect.value : "";
+    }
+
+    function podeBuscarMotorista() {
+        return Boolean(getPaId());
+    }
+
+    function atualizarCampoMotorista() {
+        if (podeBuscarMotorista()) {
+            input.disabled = false;
+            input.placeholder = "Digite o nome do motorista...";
+        } else {
+            input.disabled = true;
+            input.placeholder = "Selecione a PA primeiro...";
+        }
+    }
+
+    if (carrierSelect) {
+        carrierSelect.addEventListener("change", function () {
+            hiddenId.value = "";
+            input.value = "";
+            resultsBox.style.display = "none";
+            atualizarCampoMotorista();
+        });
+    }
+
+    if (paSelect && !paTravada) {
+        paSelect.addEventListener("change", function () {
+            hiddenId.value = "";
+            input.value = "";
+            resultsBox.style.display = "none";
+            atualizarCampoMotorista();
+        });
+    }
+
+    if (paTravada) {
+        atualizarCampoMotorista();
+    }
+
     input.addEventListener("keyup", function () {
         const query = this.value.trim();
-        const carrierId = carrierSelect.value;
+        const carrierId = carrierSelect ? carrierSelect.value : "";
 
         clearTimeout(timeout);
 
-        if (query.length < 2 || !carrierId) {
+        if (!podeBuscarMotorista() || query.length < 2) {
             resultsBox.style.display = "none";
             return;
         }
 
         timeout = setTimeout(() => {
-            fetch("{% url 'transportes:buscar_motoristas' %}?nome=" + encodeURIComponent(query) + "&carrier_id=" + carrierId)
+            let url = "{% url 'transportes:buscar_motoristas' %}?nome=" +
+                encodeURIComponent(query) +
+                "&gai_id=" +
+                encodeURIComponent(getPaId());
+
+            if (podeEscolherTransportadora && carrierId) {
+                url += "&carrier_id=" + encodeURIComponent(carrierId);
+            }
+
+            fetch(url)
                 .then(res => res.json())
                 .then(data => {
                     resultsBox.innerHTML = "";
