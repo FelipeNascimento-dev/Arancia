@@ -39,16 +39,37 @@
 
 .arancia-message-iframe-toolbar {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     padding: 10px 14px;
     border-bottom: 1px solid #e8ebf0;
     background: #fff;
     flex-shrink: 0;
+    flex-wrap: wrap;
 }
 
-.arancia-message-open-link {
+.arancia-message-iframe-hint {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #7a5b00;
+    background: #fff8e6;
+    border: 1px solid #f0d48a;
+    border-radius: 8px;
+    padding: 8px 12px;
+    max-width: min(720px, 100%);
+}
+
+.arancia-message-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.arancia-message-open-link,
+.arancia-message-copy-link {
     text-decoration: none;
     background: #222;
     color: #fff;
@@ -56,11 +77,24 @@
     border-radius: 8px;
     font-size: 14px;
     white-space: nowrap;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.arancia-message-copy-link {
+    background: #fff;
+    color: #222;
+    border: 1px solid #d1d5db;
 }
 
 .arancia-message-open-link:hover {
     background: #444;
     color: #fff;
+}
+
+.arancia-message-copy-link:hover {
+    background: #f8fafc;
 }
 
 .arancia-message-iframe-body {
@@ -75,8 +109,7 @@
     display: block;
 }
 
-.arancia-message-iframe-error,
-.arancia-message-iframe-fallback {
+.arancia-message-iframe-error {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -87,67 +120,29 @@
     color: #2c3e50;
 }
 
-.arancia-message-iframe-error h2,
-.arancia-message-iframe-fallback h2 {
+.arancia-message-iframe-error h2 {
     margin: 0 0 12px;
     font-size: 22px;
 }
 
-.arancia-message-iframe-error p,
-.arancia-message-iframe-fallback p {
-    margin: 0 0 18px;
+.arancia-message-iframe-error p {
+    margin: 0;
     max-width: 560px;
     line-height: 1.6;
     color: #5f6b7a;
-}
-
-.arancia-message-fallback-actions {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    flex-wrap: wrap;
 }
 </style>
 
 <div class="arancia-message-iframe-page">
     {% if arancia_message_url %}
-        <div class="arancia-message-iframe-toolbar">
-            <a href="{{ arancia_message_url }}" target="_blank" rel="noopener noreferrer" class="arancia-message-open-link">
-                <i class="fa-solid fa-up-right-from-square"></i>
-                Abrir em nova aba
-            </a>
-        </div>
-
         <div class="arancia-message-iframe-body">
-            {% if arancia_message_embed_allowed %}
-                <iframe
-                    src="{{ arancia_message_url }}"
-                    title="Arancia Message"
-                    frameborder="0"
-                    allowfullscreen
-                    loading="lazy">
-                </iframe>
-            {% else %}
-                <div class="arancia-message-iframe-fallback">
-                    <div>
-                        <h2>Arancia Message</h2>
-                        <p>
-                            O painel não pode ser exibido em iframe neste endereço
-                            (<strong>{{ arancia_message_origin }}</strong>).
-                            O servidor do NinaBot precisa liberar este domínio em
-                            <code>Content-Security-Policy: frame-ancestors</code>.
-                        </p>
-                        <div class="arancia-message-fallback-actions">
-                            <a href="{{ arancia_message_url }}" target="_blank" rel="noopener noreferrer" class="arancia-message-open-link">
-                                Abrir em nova aba
-                            </a>
-                            <a href="{{ arancia_message_url }}" target="_top" rel="noopener noreferrer" class="arancia-message-open-link">
-                                Abrir nesta aba
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
+            <iframe
+                src="{{ arancia_message_url }}"
+                title="Arancia Message"
+                frameborder="0"
+                allowfullscreen
+                loading="lazy">
+            </iframe>
         </div>
     {% else %}
         <div class="arancia-message-iframe-error">
@@ -158,5 +153,26 @@
         </div>
     {% endif %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('copyAranciaMessageUrl');
+    if (!btn) return;
+
+    btn.addEventListener('click', async function () {
+        const url = btn.dataset.url || '';
+        if (!url) return;
+
+        try {
+            await navigator.clipboard.writeText(url);
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Copiado';
+            setTimeout(function () { btn.innerHTML = original; }, 1800);
+        } catch (err) {
+            window.prompt('Copie a URL:', url);
+        }
+    });
+});
+</script>
 
 {% endblock %}

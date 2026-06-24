@@ -10,15 +10,11 @@ from transportes.forms import ConsultaOStranspForm
 from transportes.instrumentation import TranspApiCallTimer
 from transportes.models import FiltroFavoritoUsuario, FiltroPadraoTela
 from transportes.services.consulta_os_service import (
-    PAGE_SIZE,
     append_view_mode_to_qs,
     build_export_params,
     build_list_params,
     build_pagination_state,
-    enrich_orders,
-    fetch_orders,
     montar_filtros_consulta_os,
-    parse_orders_response,
 )
 from transportes.services.transportes_metadata_service import (
     build_status_and_order_type_maps,
@@ -154,7 +150,6 @@ def consulta_os_transp(request):
     except ValueError:
         page = 1
     page = max(page, 1)
-    offset = (page - 1) * PAGE_SIZE
 
     qs = data.copy()
     qs.pop("page", None)
@@ -165,34 +160,19 @@ def consulta_os_transp(request):
     resultado_api = []
     total = 0
     filtros_exibicao = []
-    consultando = should_query
+    async_list_load = False
+    consultando = False
 
     if should_query:
-        params, filtros_exibicao, errors = build_list_params(
+        _, filtros_exibicao, errors = build_list_params(
             data, status_by_id, order_type_by_id, resp if isinstance(resp, list) else []
         )
         for err in errors:
             messages.error(request, err)
 
-        params["limit"] = PAGE_SIZE
-        params["offset"] = offset
-
-        with TranspApiCallTimer(
-            request,
-            phase="service_order_list",
-            url="v2/service_order/list",
-        ) as list_timer:
-            resultado_api, url_lista, payload_size = fetch_orders(params)
-            list_timer.url = url_lista
-            list_timer.payload_size = payload_size
-
-        resultado_api, total, detail = parse_orders_response(resultado_api)
-        if detail:
-            messages.error(request, detail)
-            resultado_api = []
-            total = 0
-
-        enrich_orders(resultado_api)
+        if not errors:
+            async_list_load = True
+            consultando = True
 
     pagination = build_pagination_state(page, total, len(resultado_api))
     pagination["base_qs"] = base_qs
@@ -220,11 +200,14 @@ def consulta_os_transp(request):
             "pagination": pagination,
             "view_mode": view_mode,
             "consultando": consultando,
+            "async_list_load": async_list_load,
             "base_qs_no_view": base_qs_no_view,
             "consulta_os_js_config": {
                 "filtros_ativos": filtros_ativos,
+                "async_list_load": async_list_load,
                 "urls": {
                     "order_travels": reverse("transportes:api_order_travels"),
+                    "list_results": reverse("transportes:api_consulta_os_list"),
                 },
             },
         },

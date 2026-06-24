@@ -176,190 +176,23 @@
     </aside>
 
     <main class="results-area">
-        <div class="results-loading-overlay{% if consultando and not orders %} is-active{% endif %}" id="resultsLoadingOverlay">
+        <div class="results-loading-overlay{% if async_list_load %} is-active{% endif %}" id="resultsLoadingOverlay">
             <div class="results-loading">
                 <div class="spinner"></div>
                 <span>Consultando ordens de serviço...</span>
             </div>
         </div>
-        {% if orders %}
-            {% if view_mode != "table" %}
-            <div class="cards-container" id="cardsContainer">
-                {% for item in orders %}
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="badge-num">{{ forloop.counter }}</span>
-                            <a class="card-title" href="{% url 'transportes:detalhe_os_transp' item.order_number %}" target="_blank">
-                                {{ item.order_number }}
-                            </a>
-                        </div>
-
-                        <div class="card-body">
-                            <p>
-                                <strong>Nº Externo:</strong><br>
-                                {{ item.external_order_number|default:"-" }}
-                            </p>
-
-                            <p>
-                                <strong>Cliente:</strong><br>
-                                {{ item.client.nome|default:"-" }}
-                            </p>
-
-                            <p>
-                                <strong>Tipo de OS:</strong><br>
-                                {{ item.order_type.type|default:"-" }}
-                            </p>
-
-                            <p>
-                                <strong>Total de viagens:</strong><br>
-                                <button
-                                    type="button"
-                                    class="travel-info-btn open-travel-modal"
-                                    data-order-number="{{ item.order_number }}"
-                                >
-                                    {{ item.total_travels }}
-                                </button>
-                            </p>
-
-                            <p>
-                                <strong>Status:</strong><br>
-                                {% if item.order_state.type == "COLLECTED" %}
-                                    <span class="status-finished">{{ item.order_state.type }}</span>
-                                {% elif item.order_state.type == "PENDING" %}
-                                    <span class="status-pending">{{ item.order_state.type }}</span>
-                                {% elif item.order_state.type == "AWAITING QUOTE" %}
-                                    <span class="status-awaiting">{{ item.order_state.type }}</span>
-                                {% else %}
-                                    <span class="status-unknown">{{ item.order_state.type|default:"-" }}</span>
-                                {% endif %}
-                            </p>
-
-                            <p>
-                                <strong>Origem:</strong><br>
-                                {{ item.origin.nome|default:"-" }}
-                            </p>
-
-                            <p>
-                                <strong>Destino:</strong><br>
-                                {{ item.destination.nome|default:"-" }}
-                            </p>
-
-                            <p>
-                                <strong>Criado por:</strong><br>
-                                {{ item.created_by|default:"-" }}
-                            </p>
-
-                            <p>
-                                <strong>Data de Criação:</strong><br>
-                                {{ item.created_at_fmt|default:"-" }}
-                            </p>
-                        </div>
-                    </div>
-                {% endfor %}
+        <div id="resultsContent">
+        {% if async_list_load %}
+            <div class="skeleton-results">
+                <div class="skeleton-card"></div>
+                <div class="skeleton-card"></div>
+                <div class="skeleton-card"></div>
             </div>
-            {% endif %}
-
-            {% if view_mode == "table" %}
-            <div class="table-container" id="tableContainer">
-                <table class="custom-table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>OS</th>
-                            <th>Nº Externo</th>
-                            <th>Cliente</th>
-                            <th>Tipo</th>
-                            <th>Viagens</th>
-                            <th>Status</th>
-                            <th>Origem / Destino</th>
-                            <th>Data Criação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in orders %}
-                        <tr>
-                            <td><strong>{{ forloop.counter }}</strong></td>
-                            <td>
-                                <a href="{% url 'transportes:detalhe_os_transp' item.order_number %}" target="_blank" style="font-weight:700; text-decoration:none; color:#2563eb;">
-                                    {{ item.order_number }}
-                                </a>
-                            </td>
-                            <td>{{ item.external_order_number|default:"-" }}</td>
-                            <td>{{ item.client.nome|default:"-" }}</td>
-                            <td>{{ item.order_type.type|default:"-" }}</td>
-                            <td>
-                                <button type="button" class="travel-info-btn open-travel-modal" 
-                                        data-order-number="{{ item.order_number }}">
-                                    {{ item.total_travels }}
-                                </button>
-                            </td>
-                            <td>
-                                {% if item.order_state.type == "COLLECTED" %}
-                                    <span class="status-finished">{{ item.order_state.type }}</span>
-                                {% elif item.order_state.type == "PENDING" %}
-                                    <span class="status-pending">{{ item.order_state.type }}</span>
-                                {% elif item.order_state.type == "AWAITING QUOTE" %}
-                                    <span class="status-awaiting">{{ item.order_state.type }}</span>
-                                {% else %}
-                                    <span class="status-unknown">{{ item.order_state.type|default:"-" }}</span>
-                                {% endif %}
-                            </td>
-                            <td style="font-size: 0.8rem;">
-                                <strong>O:</strong> {{ item.origin.nome|default:"-" }}<br>
-                                <strong>D:</strong> {{ item.destination.nome|default:"-" }}
-                            </td>
-                            <td>{{ item.created_at_fmt|default:"-" }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% endif %}
-
-            {% if pagination.has_prev or pagination.has_next %}
-            <div class="pagination-bar">
-                {% with qs=pagination.base_qs %}
-                    <div class="pagination-row">
-                        {% if pagination.has_prev %}
-                            <a class="pagination-btn pagination-btn--prev"
-                            href="?{% if qs %}{{ qs }}&{% endif %}page={{ pagination.prev_page }}">
-                            ◀ Anterior
-                            </a>
-                        {% else %}
-                            <span class="pagination-btn pagination-btn--prev pagination-btn--disabled">◀ Anterior</span>
-                        {% endif %}
-
-                        <div class="pagination-pages">
-                            {% for p in pagination.pages %}
-                                {% if p == pagination.page %}
-                                    <span class="pagination-btn pagination-btn--page pagination-btn--active">{{ p }}</span>
-                                {% else %}
-                                    <a class="pagination-btn pagination-btn--page"
-                                    href="?{% if qs %}{{ qs }}&{% endif %}page={{ p }}">
-                                        {{ p }}
-                                    </a>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-
-                        {% if pagination.has_next %}
-                            <a class="pagination-btn pagination-btn--next"
-                            href="?{% if qs %}{{ qs }}&{% endif %}page={{ pagination.next_page }}">
-                                Próxima ▶
-                            </a>
-                        {% else %}
-                            <span class="pagination-btn pagination-btn--next pagination-btn--disabled">Próxima ▶</span>
-                        {% endif %}
-                    </div>
-                {% endwith %}
-            </div>
-            {% endif %}
-
         {% else %}
-            <div class="empty-state">
-                Nenhuma OS encontrada para os filtros informados.
-            </div>
+            {% include "transportes/transportes/partials/_consulta_os_results.html" %}
         {% endif %}
+        </div>
     </main>
 </div>
 

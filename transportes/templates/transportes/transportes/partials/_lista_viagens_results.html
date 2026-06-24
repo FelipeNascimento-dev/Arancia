@@ -1,0 +1,436 @@
+        {% if travels %}
+        <form method="POST" id="bulkEventForm">
+            {% csrf_token %}
+            <input type="hidden" name="cliente" value="{{ filtros.cliente|default:'' }}">
+            <input type="hidden" name="tipo_servico" value="{{ filtros.tipo_servico|default:'' }}">
+
+            <div class="bulk-actions-bar" id="bulkActionsBar">
+                <div class="bulk-actions-info">
+                    <i class="fa-solid fa-check-double"></i>
+                    <span>Selecionados</span>
+                    <span class="bulk-actions-count" id="selectedCardsCount">0</span>
+                </div>
+
+                <div class="bulk-actions-buttons">
+                    <button type="submit" formaction="{% url 'transportes:lista_viagens_preparar_eventos' %}" class="btn-bulk btn-bulk--primary">
+                        <i class="fa-solid fa-calendar-plus"></i>
+                        Criar eventos
+                    </button>
+
+                    <button type="button" id="openDriverModalBtn" class="btn-bulk btn-bulk--primary">
+                        <i class="fa-solid fa-id-card"></i>
+                        Atrelar motorista
+                    </button>
+
+                    <button type="button" id="printOsBtn" class="btn-bulk btn-bulk--primary">
+                        <i class="fa-solid fa-print"></i>
+                        Imprimir OS
+                    </button>
+
+                    <button type="button" id="clearCardSelection" class="btn-bulk btn-bulk--ghost">
+                        <i class="fa-solid fa-xmark"></i>
+                        Limpar seleção
+                    </button>
+                </div>
+            </div>
+
+            {% if view_mode != "table" %}
+            <div class="cards-container" id="cardsContainer">
+                {% for item in travels %}
+                <div class="card" data-card-id="{{ item.travel.id }}">
+                    <div class="card-header">
+                        {% if perms.transportes.ver_transportes %}
+                        <div class="card-select-wrap">
+                            <input type="checkbox" class="card-select-checkbox" 
+                                id="travel_card_{{ item.travel.id }}" 
+                                name="travels_selecionadas" 
+                                value="{{ item.travel.id }}">
+                            <label class="card-select-label" for="travel_card_{{ item.travel.id }}"></label>
+                        </div>
+                        {% endif %}
+
+                        <a class="card-title" href="{% url 'transportes:detalhe_viagem' item.travel.id %}" target="_blank">
+                            {{ item.travel.id }}
+                        </a>
+
+                        <span class="status-tag status-{{ item.travel.status.type }}">
+                            {{ item.travel.status.type }}
+                        </span>
+                    </div>
+
+                    <div class="card-body">
+                        <p><strong>Número da OS:</strong><br>{{ item.service_order.order_number }}</p>
+                        <p><strong>OS Externa:</strong><br>{{ item.service_order.external_order_number|default:"-" }}</p>
+                        <p><strong>Cliente:</strong><br>{{ item.service_order.client.nome }}</p>
+                        <p><strong>Transportadora:</strong><br>{{ item.travel.carrier.nome }}</p>
+                        <p><strong>Motorista:</strong><br>{{item.travel.driver.name|default:"-"}}</p>
+                        {% if item.service_order.order_type.direction|lower == "normal" %}
+                            <p>
+                                <strong>Origem:</strong><br>
+                                CEP: {{ item.service_order.origin.CEP|default:"-" }}<br>
+                                <small>{{ item.service_order.origin.endereco|default:"Endereço não informado" }}</small>
+                            </p>
+                        {% endif %}
+                        <p><strong>Destino:</strong><br>CEP: {{ item.service_order.destination.CEP }}<br><small>{{ item.service_order.destination.endereco }}</small></p>
+                        <p><strong>Início:</strong><br>{{ item.travel.start_date_formatada|default:"-" }}</p>
+                        <p><strong>Fim:</strong><br>{{ item.travel.end_date_formatada|default:"Em andamento" }}</p>
+                        <p><strong>Prazo:</strong><br>{{ item.travel.quote.estimated_deadline|default:"-" }} Dias</p>
+                        <p>
+                            <strong>Limite entrega:</strong><br>
+                            <span class="card-deadline{% if item.travel.atrasado %} is-late{% endif %}">
+                                <i class="fa-regular fa-calendar-xmark"></i>
+                                {{ item.travel.data_limite_entrega_formatada|default:"-" }}
+                            </span>
+                        </p>
+                    </div>
+                    
+                    {% if response_mode == "detailed" and item.travel_events_count %}
+                    <div class="card-footer-actions">
+                        <button type="button" class="btn-open-events-modal btn-events-minimal" 
+                                data-travel-id="{{ item.travel.id }}">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <span>Ocorrências</span>
+                            <span class="btn-events-count">{{ item.travel_events_count }}</span>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if view_mode == "table" %}
+            <div class="table-container" id="tableContainer">
+                <div class="table-sort-help">
+                    <span>
+                        Clique nos títulos para ordenar. A ordenação é acumulativa.
+                    </span>
+
+                    <button type="button" class="btn-clear-sort" id="clearTableSort">
+                        Limpar ordenação
+                    </button>
+                </div>
+
+                <table class="custom-table" id="travelsSortableTable">
+                    <thead>
+                        <tr>
+                            <th class="col-check">
+                                <i class="fa-solid fa-check-square"></i>
+                            </th>
+
+                            <th class="col-viagem">
+                                <div class="table-header-group">
+                                    <div class="table-header-title">Viagem</div>
+                                    <div class="table-header-sorts">
+                                        <button type="button" class="sort-btn" data-sort-key="id" data-sort-type="number">
+                                            ID <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+
+                                        <button type="button" class="sort-btn" data-sort-key="status" data-sort-type="text">
+                                            Status <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </th>
+
+                            <th class="col-os">
+                                <div class="table-header-group">
+                                    <div class="table-header-title">OS</div>
+                                    <div class="table-header-sorts">
+                                        <button type="button" class="sort-btn" data-sort-key="os" data-sort-type="text">
+                                            Interna <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+
+                                        <button type="button" class="sort-btn" data-sort-key="os_externa" data-sort-type="text">
+                                            Externa <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </th>
+
+                            <th class="col-envolvidos">
+                                <div class="table-header-group">
+                                    <div class="table-header-title">Envolvidos</div>
+                                    <div class="table-header-sorts">
+                                        <button type="button" class="sort-btn" data-sort-key="cliente" data-sort-type="text">
+                                            Cliente <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+
+                                        <button type="button" class="sort-btn" data-sort-key="transportadora" data-sort-type="text">
+                                            Transp. <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+
+                                        <button type="button" class="sort-btn" data-sort-key="motorista" data-sort-type="text">
+                                            Motorista <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </th>
+
+                            {% if show_origin_column %}
+                            <th class="col-local">
+                                <div class="table-header-group">
+                                    <div class="table-header-title">Origem</div>
+                                    <div class="table-header-sorts">
+                                        <button type="button" class="sort-btn" data-sort-key="origem" data-sort-type="text">
+                                            Ordenar <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </th>
+                            {% endif %}
+
+                            <th class="col-local">
+                                <div class="table-header-group">
+                                    <div class="table-header-title">Destino</div>
+                                    <div class="table-header-sorts">
+                                        <button type="button" class="sort-btn" data-sort-key="destino" data-sort-type="text">
+                                            Ordenar <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </th>
+
+                            <th class="col-prazos">
+                                <div class="table-header-group">
+                                    <div class="table-header-title">Prazos</div>
+                                    <div class="table-header-sorts">
+                                        <button type="button" class="sort-btn" data-sort-key="inicio" data-sort-type="date">
+                                            Início <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+
+                                        <button type="button" class="sort-btn" data-sort-key="fim" data-sort-type="date">
+                                            Fim <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+
+                                        <button type="button" class="sort-btn" data-sort-key="prazo" data-sort-type="number">
+                                            Prazo <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+
+                                        <button type="button" class="sort-btn" data-sort-key="limite_entrega" data-sort-type="date">
+                                            Limite <span class="sort-icon">↕</span><span class="sort-priority"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </th>
+
+                            <th class="col-acoes">Ações</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in travels %}
+                        <tr
+                            data-sort-id="{{ item.travel.id|default:'' }}"
+                            data-sort-status="{{ item.travel.status.type|default:'' }}"
+                            data-sort-os="{{ item.service_order.order_number|default:'' }}"
+                            data-sort-os_externa="{{ item.service_order.external_order_number|default:'' }}"
+                            data-sort-cliente="{{ item.service_order.client.nome|default:'' }}"
+                            data-sort-transportadora="{{ item.travel.carrier.nome|default:'' }}"
+                            data-sort-motorista="{{ item.travel.driver.name|default:'' }}"
+                            {% if show_origin_column %}
+                            data-sort-origem="{% if item.service_order.order_type.direction|lower == 'normal' %}{{ item.service_order.origin.CEP|default:'' }} {{ item.service_order.origin.endereco|default:'' }}{% endif %}"
+                            {% endif %}
+                            data-sort-destino="{{ item.service_order.destination.CEP|default:'' }} {{ item.service_order.destination.endereco|default:'' }}"
+                            data-sort-inicio="{{ item.travel.start_date|default:'' }}"
+                            data-sort-fim="{{ item.travel.end_date|default:'' }}"
+                            data-sort-prazo="{{ item.travel.quote.estimated_deadline|default:'' }}"
+                            data-sort-limite_entrega="{{ item.travel.data_limite_entrega|default:'' }}"
+                            {% if item.travel.atrasado %}class="row--late"{% endif %}
+                        >
+                            <td class="col-check">
+                                <input type="checkbox"
+                                    class="card-select-checkbox"
+                                    name="travels_selecionadas"
+                                    value="{{ item.travel.id }}"
+                                    id="table_check_{{ item.travel.id }}">
+                            </td>
+
+                            <td class="col-viagem">
+                                <div class="info-stack">
+                                    <a href="{% url 'transportes:detalhe_viagem' item.travel.id %}"
+                                    target="_blank"
+                                    class="table-main-link">
+                                        #{{ item.travel.id }}
+                                    </a>
+
+                                    <span class="status-tag status-{{ item.travel.status.type }}">
+                                        {{ item.travel.status.type|default:"-" }}
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td class="col-os">
+                                <div class="info-stack">
+                                    <div class="info-row">
+                                        <span class="info-label">OS interna</span>
+                                        <span class="info-value">
+                                            {{ item.service_order.order_number|default:"-" }}
+                                        </span>
+                                    </div>
+
+                                    <div class="info-row">
+                                        <span class="info-label">OS externa</span>
+                                        <span class="info-value-muted">
+                                            {{ item.service_order.external_order_number|default:"-" }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="col-envolvidos">
+                                <div class="info-stack">
+                                    <div class="info-row">
+                                        <span class="info-label">Cliente</span>
+                                        <span class="info-value">
+                                            {{ item.service_order.client.nome|default:"-" }}
+                                        </span>
+                                    </div>
+
+                                    <div class="info-row">
+                                        <span class="info-label">Transportadora</span>
+                                        <span class="info-value-muted">
+                                            {{ item.travel.carrier.nome|default:"-" }}
+                                        </span>
+                                    </div>
+
+                                    <div class="info-row">
+                                        <span class="info-label">Motorista</span>
+                                        <span class="info-value-muted">
+                                            {{ item.travel.driver.name|default:"Sem motorista" }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            {% if show_origin_column %}
+                            <td class="col-local">
+                                {% if item.service_order.order_type.direction|lower == "normal" %}
+                                    <div class="local-box local-box--origin">
+                                        <div class="local-title">
+                                            <i class="fa-solid fa-location-dot"></i>
+                                            Origem
+                                        </div>
+
+                                        <div class="local-cep">
+                                            CEP: {{ item.service_order.origin.CEP|default:"-" }}
+                                        </div>
+
+                                        <div class="local-address">
+                                            {{ item.service_order.origin.endereco|default:"Endereço não informado" }}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="info-value-muted">-</span>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+
+                            <td class="col-local">
+                                <div class="local-box local-box--destination">
+                                    <div class="local-title">
+                                        <i class="fa-solid fa-flag-checkered"></i>
+                                        Destino
+                                    </div>
+
+                                    <div class="local-cep">
+                                        CEP: {{ item.service_order.destination.CEP|default:"-" }}
+                                    </div>
+
+                                    <div class="local-address">
+                                        {{ item.service_order.destination.endereco|default:"Endereço não informado" }}
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="col-prazos">
+                                <div class="prazos-grid">
+                                    <div class="info-row">
+                                        <span class="info-label">Início</span>
+                                        <span class="date-pill">
+                                            <i class="fa-regular fa-calendar"></i>
+                                            {{ item.travel.start_date_formatada|default:"-" }}
+                                        </span>
+                                    </div>
+
+                                    <div class="info-row">
+                                        <span class="info-label">Fim</span>
+                                        <span class="date-pill">
+                                            <i class="fa-regular fa-calendar-check"></i>
+                                            {{ item.travel.end_date_formatada|default:"Em andamento" }}
+                                        </span>
+                                    </div>
+
+                                    <div class="info-row">
+                                        <span class="info-label">Prazo</span>
+                                        <span class="date-pill">
+                                            <i class="fa-regular fa-clock"></i>
+                                            {{ item.travel.quote.estimated_deadline|default:"-" }} dias
+                                        </span>
+                                    </div>
+
+                                    <div class="info-row">
+                                        <span class="info-label">Limite entrega</span>
+                                        <span class="date-pill date-pill--deadline{% if item.travel.atrasado %} is-late{% endif %}">
+                                            <i class="fa-regular fa-calendar-xmark"></i>
+                                            {{ item.travel.data_limite_entrega_formatada|default:"-" }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="col-acoes">
+                                {% if response_mode == "detailed" and item.travel_events_count %}
+                                    <button type="button"
+                                            class="btn-open-events-modal btn-events-minimal"
+                                            data-travel-id="{{ item.travel.id }}">
+                                        <i class="fa-solid fa-clock-rotate-left"></i>
+                                        <span class="btn-events-count">{{ item.travel_events_count }}</span>
+                                    </button>
+                                {% else %}
+                                    <span class="info-value-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </form>
+
+{% else %}
+    <div class="empty-state">
+        Nenhuma viagem encontrada para os filtros informados.
+    </div>
+{% endif %}
+
+{% if pagination.has_prev or pagination.has_next %}
+        <div class="pagination-bar">
+            {% with qs=pagination.base_qs %}
+            <div class="pagination-row">
+                {% if pagination.has_prev %}
+                    <a class="pagination-btn" href="?{% if qs %}{{ qs }}&{% endif %}page={{ pagination.prev_page }}">◀ Anterior</a>
+                {% else %}
+                    <span class="pagination-btn pagination-btn--disabled">◀ Anterior</span>
+                {% endif %}
+
+                <div class="pagination-pages">
+                    {% for p in pagination.pages %}
+                        {% if p == pagination.page %}
+                            <span class="pagination-btn pagination-btn--active">{{ p }}</span>
+                        {% else %}
+                            <a class="pagination-btn" href="?{% if qs %}{{ qs }}&{% endif %}page={{ p }}">{{ p }}</a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                {% if pagination.has_next %}
+                    <a class="pagination-btn" href="?{% if qs %}{{ qs }}&{% endif %}page={{ pagination.next_page }}">Próxima ▶</a>
+                {% else %}
+                    <span class="pagination-btn pagination-btn--disabled">Próxima ▶</span>
+                {% endif %}
+            </div>
+            {% endwith %}
+        </div>
+        {% endif %}

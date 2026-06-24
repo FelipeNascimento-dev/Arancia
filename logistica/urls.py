@@ -30,7 +30,7 @@ urls_User = [
          name='gestao_contas_privilegiadas'),
     path("monitoramento/<slug:slug>/", acompanhamento_iframe,
          name="acompanhamento_iframe"),
-    path('arancia-message/', arancia_message_iframe,
+    path('message/', arancia_message_iframe,
          name='arancia_message_iframe'),
 ]
 
