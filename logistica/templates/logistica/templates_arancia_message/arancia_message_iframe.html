@@ -1,0 +1,162 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+.forma:has(.arancia-message-iframe-page) {
+    justify-content: flex-start;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+.forma:has(.arancia-message-iframe-page) > .container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.arancia-message-iframe-page {
+    --arancia-top-offset: 50px;
+    --arancia-sidebar-width: 70px;
+
+    position: fixed;
+    top: var(--arancia-top-offset);
+    left: var(--arancia-sidebar-width);
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    background: #fff;
+    transition: left 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar:not(.colapsada) ~ .forma .arancia-message-iframe-page {
+    --arancia-sidebar-width: 270px;
+}
+
+.arancia-message-iframe-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #e8ebf0;
+    background: #fff;
+    flex-shrink: 0;
+}
+
+.arancia-message-open-link {
+    text-decoration: none;
+    background: #222;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.arancia-message-open-link:hover {
+    background: #444;
+    color: #fff;
+}
+
+.arancia-message-iframe-body {
+    flex: 1;
+    min-height: 0;
+}
+
+.arancia-message-iframe-body iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+.arancia-message-iframe-error,
+.arancia-message-iframe-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 32px;
+    box-sizing: border-box;
+    text-align: center;
+    color: #2c3e50;
+}
+
+.arancia-message-iframe-error h2,
+.arancia-message-iframe-fallback h2 {
+    margin: 0 0 12px;
+    font-size: 22px;
+}
+
+.arancia-message-iframe-error p,
+.arancia-message-iframe-fallback p {
+    margin: 0 0 18px;
+    max-width: 560px;
+    line-height: 1.6;
+    color: #5f6b7a;
+}
+
+.arancia-message-fallback-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+</style>
+
+<div class="arancia-message-iframe-page">
+    {% if arancia_message_url %}
+        <div class="arancia-message-iframe-toolbar">
+            <a href="{{ arancia_message_url }}" target="_blank" rel="noopener noreferrer" class="arancia-message-open-link">
+                <i class="fa-solid fa-up-right-from-square"></i>
+                Abrir em nova aba
+            </a>
+        </div>
+
+        <div class="arancia-message-iframe-body">
+            {% if arancia_message_embed_allowed %}
+                <iframe
+                    src="{{ arancia_message_url }}"
+                    title="Arancia Message"
+                    frameborder="0"
+                    allowfullscreen
+                    loading="lazy">
+                </iframe>
+            {% else %}
+                <div class="arancia-message-iframe-fallback">
+                    <div>
+                        <h2>Arancia Message</h2>
+                        <p>
+                            O painel não pode ser exibido em iframe neste endereço
+                            (<strong>{{ arancia_message_origin }}</strong>).
+                            O servidor do NinaBot precisa liberar este domínio em
+                            <code>Content-Security-Policy: frame-ancestors</code>.
+                        </p>
+                        <div class="arancia-message-fallback-actions">
+                            <a href="{{ arancia_message_url }}" target="_blank" rel="noopener noreferrer" class="arancia-message-open-link">
+                                Abrir em nova aba
+                            </a>
+                            <a href="{{ arancia_message_url }}" target="_top" rel="noopener noreferrer" class="arancia-message-open-link">
+                                Abrir nesta aba
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="arancia-message-iframe-error">
+            <div>
+                <h2>Não foi possível abrir o Arancia Message</h2>
+                <p>{{ arancia_message_error|default:"Erro desconhecido ao autenticar." }}</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

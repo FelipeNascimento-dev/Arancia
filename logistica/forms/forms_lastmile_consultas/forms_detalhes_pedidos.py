@@ -75,6 +75,10 @@ class OrderDetailForm(forms.Form):
                 if field_name in self.fields:
                     self.fields[field_name].initial = value
 
+            volume_state_localized = (dados.get("volume_state_localized") or "").strip()
+            if volume_state_localized:
+                self.fields["volume_state"].initial = volume_state_localized
+
         tipo = (dados or {}).get("shipment_order_type", "")
         tipo = (tipo or "").strip().upper()
 

@@ -177,6 +177,56 @@
   .consulta-pedidos-table .th-sort-btn.is-active .sort-icon-i {
     opacity: 1;
   }
+
+  .consulta-pedidos-pagination {
+    margin-top: 20px;
+  }
+
+  .consulta-pedidos-pagination .pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 0;
+  }
+
+  .consulta-pedidos-pagination .pagination-btn,
+  .consulta-pedidos-pagination .pagination-link,
+  .consulta-pedidos-pagination .pagination-disabled {
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #374151;
+    font-size: 0.9rem;
+    line-height: 1.2;
+  }
+
+  .consulta-pedidos-pagination .pagination-btn {
+    cursor: pointer;
+  }
+
+  .consulta-pedidos-pagination .pagination-btn:hover {
+    background: #f3f4f6;
+  }
+
+  .consulta-pedidos-pagination .pagination-link.active {
+    background: #2563eb;
+    color: #fff;
+    border-color: #2563eb;
+    font-weight: 600;
+  }
+
+  .consulta-pedidos-pagination .pagination-disabled {
+    background: #f9fafb;
+    color: #9ca3af;
+    border-color: #e5e7eb;
+  }
+
+  .hidden-pagination-form {
+    display: none;
+  }
 </style>
 
 <div class="form-container">
@@ -202,7 +252,16 @@
     <h2 class="user-table-title">
       <i class="fa-solid fa-box"></i> Pedidos consultados
     </h2>
-    <p class="resultado-meta">{{ tabela_dados|length }} registro{{ tabela_dados|length|pluralize }}</p>
+    <p class="resultado-meta">
+      {% if paginacao %}
+        {{ paginacao.total }} registro{{ paginacao.total|pluralize }}
+        {% if paginacao.total_pages > 1 %}
+          — página {{ paginacao.page }} de {{ paginacao.total_pages }}
+        {% endif %}
+      {% else %}
+        {{ tabela_dados|length }} registro{{ tabela_dados|length|pluralize }}
+      {% endif %}
+    </p>
   </div>
 
   <div class="table-wrapper">
@@ -274,7 +333,7 @@
           </td>
           <td class="col-estado">
             {% if item.volume_state %}
-            <span class="tag">{{ item.volume_state }}</span>
+            <span class="tag">{{ item.volume_state_localized }}</span>
             {% else %}
             <span class="muted">-</span>
             {% endif %}
@@ -293,6 +352,53 @@
       </tbody>
     </table>
   </div>
+
+  {% if paginacao and paginacao.total_pages > 1 %}
+  <nav class="consulta-pedidos-pagination" aria-label="Paginação de pedidos">
+    <form method="POST" id="paginationForm" class="hidden-pagination-form">
+      {% csrf_token %}
+      <input type="hidden" name="sales_channel" value="{{ form.sales_channel.value }}">
+      <input type="hidden" name="page_size" value="{{ paginacao.page_size }}">
+      <input type="hidden" name="page" id="pageInput" value="{{ paginacao.page }}">
+    </form>
+
+    <div class="pagination-wrapper">
+      {% if paginacao.has_previous %}
+        <button type="submit" form="paginationForm" class="pagination-btn" onclick="document.getElementById('pageInput').value='1'">
+          Primeira
+        </button>
+        <button type="submit" form="paginationForm" class="pagination-btn" onclick="document.getElementById('pageInput').value='{{ paginacao.previous_page }}'">
+          Anterior
+        </button>
+      {% else %}
+        <span class="pagination-disabled">Primeira</span>
+        <span class="pagination-disabled">Anterior</span>
+      {% endif %}
+
+      {% for num in paginacao.page_range %}
+        {% if num == paginacao.page %}
+          <span class="pagination-link active">{{ num }}</span>
+        {% else %}
+          <button type="submit" form="paginationForm" class="pagination-btn" onclick="document.getElementById('pageInput').value='{{ num }}'">
+            {{ num }}
+          </button>
+        {% endif %}
+      {% endfor %}
+
+      {% if paginacao.has_next %}
+        <button type="submit" form="paginationForm" class="pagination-btn" onclick="document.getElementById('pageInput').value='{{ paginacao.next_page }}'">
+          Próxima
+        </button>
+        <button type="submit" form="paginationForm" class="pagination-btn" onclick="document.getElementById('pageInput').value='{{ paginacao.total_pages }}'">
+          Última
+        </button>
+      {% else %}
+        <span class="pagination-disabled">Próxima</span>
+        <span class="pagination-disabled">Última</span>
+      {% endif %}
+    </div>
+  </nav>
+  {% endif %}
 
   <form action="{% url 'logistica:consulta_pedidos' %}" method="POST" style="margin-top: 16px">
     {% csrf_token %}

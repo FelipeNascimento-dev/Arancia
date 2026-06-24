@@ -1,4 +1,4 @@
-{% load static %}
+{% load static logistica_groups %}
 
 <div class="sidebar colapsada">
     <div class="scroll-area">
@@ -499,13 +499,14 @@
         {% endif %}
         {% endif %}
         <!-- Gerenciamento -->
-        {% if perms.logistica.gerenciamento %}
+        {% if perms.logistica.gerenciamento or request.user|has_group:'arancia_DEV' %}
         <div class="dropdown {% if current_parent_menu == 'gerenciamento' %}active{% endif %}">
             <button type="button" class="dropbtn itens-sidebar">
                 <i class="fa-solid fa-users"></i>
                 <span class="texto-item">&nbsp; Gerenciamento</span>
             </button>
             <div class="dropdown-content">
+                {% if perms.logistica.gerenciamento %}
                 <a href="{% url 'logistica:user_ger' %}"
                 class="{% if current_menu == 'gestao_user' %}active{% endif %}">
                     Gestão de Usuários</a>
@@ -513,6 +514,12 @@
                 class="{% if current_menu == 'gestao_gai' %}active{% endif %}">
                     Gestão de GAI
                 </a>
+                {% endif %}
+                {% if request.user|has_group:'arancia_DEV' %}
+                <a href="{% url 'logistica:dev_infra_tools' %}"
+                class="{% if current_menu == 'dev_infra_tools' %}active{% endif %}">
+                    Ferramentas de Infraestrutura</a>
+                {% endif %}
             </div>
         </div>
         {% endif %}

@@ -30,6 +30,8 @@ urls_User = [
          name='gestao_contas_privilegiadas'),
     path("monitoramento/<slug:slug>/", acompanhamento_iframe,
          name="acompanhamento_iframe"),
+    path('arancia-message/', arancia_message_iframe,
+         name='arancia_message_iframe'),
 ]
 
 urls_LastmileB2C = [
@@ -104,6 +106,7 @@ urls_LastmileB2C = [
 urls_Gerenciamento = [
     path('user-ger/', user_ger, name='user_ger'),
     path('skill-ger/', skill_ger, name='skill_ger'),
+    path('gerenciamento/infra-dev/', dev_infra_tools, name='dev_infra_tools'),
 ]
 
 urls_Checkin = [

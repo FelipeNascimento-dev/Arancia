@@ -1,0 +1,528 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+
+<style>
+.dev-infra-page {
+    --bg: #eef2f6;
+    --surface: #ffffff;
+    --border: #d9e2ec;
+    --text: #0f172a;
+    --muted: #64748b;
+    --primary: #22c55e;
+    --primary-dark: #16a34a;
+    --primary-soft: #ecfdf3;
+    --shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+
+    width: min(1480px, calc(100vw - 96px));
+    margin: 72px 0 40px 72px;
+    padding: 0 20px 28px;
+    box-sizing: border-box;
+    font-family: "Roboto", "Inter", sans-serif;
+}
+
+.dev-infra-shell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.dev-infra-hero {
+    padding: 28px 30px 24px;
+    background:
+        radial-gradient(circle at top right, rgba(34, 197, 94, 0.14), transparent 30%),
+        linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+    border-bottom: 1px solid var(--border);
+}
+
+.dev-infra-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+}
+
+.dev-infra-hero-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.dev-infra-hero h2 {
+    margin: 0;
+    font-size: 32px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+
+.dev-infra-hero p {
+    margin: 10px 0 0;
+    max-width: 720px;
+    color: var(--muted);
+    line-height: 1.65;
+    font-size: 15px;
+}
+
+.dev-infra-stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.dev-infra-stat {
+    min-width: 120px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+.dev-infra-stat strong {
+    display: block;
+    font-size: 24px;
+    color: var(--text);
+    line-height: 1;
+}
+
+.dev-infra-stat span {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.dev-infra-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 30px;
+    border-bottom: 1px solid var(--border);
+    background: #fbfcfe;
+}
+
+.dev-infra-search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 240px;
+    max-width: 420px;
+}
+
+.dev-infra-search-wrap i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.dev-infra-search {
+    width: 100%;
+    padding: 11px 14px 11px 40px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fff;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dev-infra-search:focus {
+    border-color: #86efac;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+.dev-infra-toolbar-hint {
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.dev-infra-body {
+    padding: 24px 30px 30px;
+    background: linear-gradient(180deg, #fbfcfe 0%, #f8fafc 100%);
+}
+
+.dev-infra-section {
+    margin-bottom: 28px;
+}
+
+.dev-infra-section:last-child {
+    margin-bottom: 0;
+}
+
+.dev-infra-section-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.dev-infra-section-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    font-size: 15px;
+}
+
+.dev-infra-section-head h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--text);
+}
+
+.dev-infra-section-count {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 10px;
+}
+
+.dev-infra-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.dev-infra-card {
+    --card-accent: #22c55e;
+    display: flex;
+    flex-direction: column;
+    min-height: 220px;
+    padding: 0;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+    text-decoration: none;
+    color: inherit;
+    overflow: hidden;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.dev-infra-card:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--card-accent) 40%, #fff);
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+}
+
+.dev-infra-card-accent {
+    height: 4px;
+    background: linear-gradient(90deg, var(--card-accent), color-mix(in srgb, var(--card-accent) 55%, #fff));
+}
+
+.dev-infra-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px 18px 16px;
+    flex: 1;
+}
+
+.dev-infra-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.dev-infra-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    background: color-mix(in srgb, var(--card-accent) 12%, #fff);
+    color: var(--card-accent);
+    border: 1px solid color-mix(in srgb, var(--card-accent) 18%, #fff);
+}
+
+.dev-infra-card-title-wrap {
+    flex: 1;
+    min-width: 0;
+}
+
+.dev-infra-card h4 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--text);
+    line-height: 1.2;
+}
+
+.dev-infra-card-tag {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 6px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--card-accent);
+    background: color-mix(in srgb, var(--card-accent) 10%, #fff);
+    border: 1px solid color-mix(in srgb, var(--card-accent) 16%, #fff);
+}
+
+.dev-infra-card-purpose {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+    line-height: 1.5;
+}
+
+.dev-infra-card-notes {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #edf2f7;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+    flex: 1;
+}
+
+.dev-infra-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 18px 14px;
+    border-top: 1px solid #edf2f7;
+    background: #fcfdfd;
+}
+
+.dev-infra-card-url {
+    font-size: 12px;
+    color: #0f766e;
+    word-break: break-all;
+    line-height: 1.4;
+}
+
+.dev-infra-card-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    white-space: nowrap;
+}
+
+.dev-infra-empty {
+    display: none;
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--muted);
+}
+
+.dev-infra-empty.show {
+    display: block;
+}
+
+.dev-infra-card.is-hidden,
+.dev-infra-section.is-hidden {
+    display: none !important;
+}
+
+.dev-infra-empty i {
+    font-size: 28px;
+    color: #94a3b8;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 900px) {
+    .dev-infra-page {
+        width: 100%;
+        margin: 68px 0 24px;
+        padding: 0 12px 20px;
+    }
+
+    .dev-infra-hero,
+    .dev-infra-toolbar,
+    .dev-infra-body {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .dev-infra-hero h2 {
+        font-size: 26px;
+    }
+
+    .dev-infra-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dev-infra-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dev-infra-search-wrap {
+        max-width: none;
+    }
+}
+</style>
+
+<div class="dev-infra-page">
+    <div class="dev-infra-shell">
+        <section class="dev-infra-hero">
+            <div class="dev-infra-kicker">
+                <i class="fa-solid fa-code"></i>
+                arancia_DEV
+            </div>
+            <div class="dev-infra-hero-row">
+                <div>
+                    <h2>Ferramentas de Infraestrutura</h2>
+                    <p>
+                        Central de atalhos para observabilidade, backends, containers e operações internas.
+                        Links abrem em nova aba na rede corporativa.
+                    </p>
+                </div>
+                <div class="dev-infra-stats">
+                    <div class="dev-infra-stat">
+                        <strong>{{ dev_infra_total }}</strong>
+                        <span>ferramentas</span>
+                    </div>
+                    <div class="dev-infra-stat">
+                        <strong>{{ dev_infra_categories|length }}</strong>
+                        <span>categorias</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="dev-infra-toolbar">
+            <div class="dev-infra-search-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input
+                    type="search"
+                    id="devInfraSearch"
+                    class="dev-infra-search"
+                    placeholder="Buscar por nome, função ou URL..."
+                    autocomplete="off">
+            </div>
+            <p class="dev-infra-toolbar-hint">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                Clique no card para abrir
+            </p>
+        </div>
+
+        <div class="dev-infra-body" id="devInfraBody">
+            {% for section in dev_infra_categories %}
+            <section class="dev-infra-section" data-section>
+                <div class="dev-infra-section-head">
+                    <span class="dev-infra-section-icon">
+                        <i class="{{ section.icon }}"></i>
+                    </span>
+                    <h3>{{ section.name }}</h3>
+                    <span class="dev-infra-section-count">{{ section.apps|length }} apps</span>
+                </div>
+
+                <div class="dev-infra-grid">
+                    {% for app in section.apps %}
+                    <a
+                        href="{{ app.url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="dev-infra-card"
+                        style="--card-accent: {{ app.accent }};"
+                        data-search="{{ app.name|lower }} {{ app.purpose|lower }} {{ app.notes|lower }} {{ app.url|lower }} {{ app.tag|lower }}">
+                        <div class="dev-infra-card-accent"></div>
+                        <div class="dev-infra-card-body">
+                            <div class="dev-infra-card-top">
+                                <span class="dev-infra-card-icon">
+                                    <i class="{{ app.icon }}"></i>
+                                </span>
+                                <div class="dev-infra-card-title-wrap">
+                                    <h4>{{ app.name }}</h4>
+                                    <span class="dev-infra-card-tag">{{ app.tag }}</span>
+                                </div>
+                            </div>
+                            <p class="dev-infra-card-purpose">{{ app.purpose }}</p>
+                            <p class="dev-infra-card-notes">{{ app.notes }}</p>
+                        </div>
+                        <div class="dev-infra-card-footer">
+                            <span class="dev-infra-card-url">{{ app.url }}</span>
+                            <span class="dev-infra-card-action">
+                                Abrir
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endfor %}
+
+            <div class="dev-infra-empty" id="devInfraEmpty">
+                <div>
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <p>Nenhuma ferramenta encontrada para essa busca.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const input = document.getElementById('devInfraSearch');
+    const cards = Array.from(document.querySelectorAll('.dev-infra-card'));
+    const sections = Array.from(document.querySelectorAll('[data-section]'));
+    const empty = document.getElementById('devInfraEmpty');
+
+    if (!input) return;
+
+    input.addEventListener('input', function () {
+        const query = (input.value || '').trim().toLowerCase();
+        let visibleCount = 0;
+
+        cards.forEach(function (card) {
+            const haystack = card.dataset.search || '';
+            const visible = !query || haystack.includes(query);
+            card.classList.toggle('is-hidden', !visible);
+            if (visible) visibleCount += 1;
+        });
+
+        sections.forEach(function (section) {
+            const hasVisible = section.querySelector('.dev-infra-card:not(.is-hidden)');
+            section.classList.toggle('is-hidden', !hasVisible);
+        });
+
+        if (empty) {
+            empty.classList.toggle('show', visibleCount === 0);
+        }
+    });
+});
+</script>
+
+{% endblock %}

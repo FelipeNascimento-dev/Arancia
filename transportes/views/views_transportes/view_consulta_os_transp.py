@@ -1,162 +1,76 @@
-from django.contrib.auth.decorators import login_required, permission_required
-from django.shortcuts import render, redirect
-from django.contrib import messages
-import math
-from django.db.models import Q
-from logistica.models import GroupAditionalInformation, Group
-from ...forms import ConsultaOStranspForm
-from setup.local_settings import TRANSP_API_URL
-from utils.request import RequestClient
-from datetime import datetime
 from urllib.parse import urlencode
-from django.http import JsonResponse
 
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required, permission_required
+from django.shortcuts import redirect, render
+from django.urls import reverse
+
+from setup.local_settings import TRANSP_API_URL
+from transportes.forms import ConsultaOStranspForm
+from transportes.instrumentation import TranspApiCallTimer
 from transportes.models import FiltroFavoritoUsuario, FiltroPadraoTela
+from transportes.services.consulta_os_service import (
+    PAGE_SIZE,
+    append_view_mode_to_qs,
+    build_export_params,
+    build_list_params,
+    build_pagination_state,
+    enrich_orders,
+    fetch_orders,
+    montar_filtros_consulta_os,
+    parse_orders_response,
+)
+from transportes.services.transportes_metadata_service import (
+    build_status_and_order_type_maps,
+    build_status_por_tipo_os,
+    build_tipos_por_cliente_os,
+    enrich_clientes_status,
+    fetch_metadata,
+)
+from transportes.utils.baseline import _payload_metrics
 from transportes.utils.filtros import (
+    limpar_filtro_favorito,
     obter_filtros_tela,
     salvar_filtro_favorito,
-    limpar_filtro_favorito,
+)
+from transportes.utils.metadata_api import get_clientes_status
+
+# Re-export para compatibilidade com urls/__init__
+__all__ = ["buscar_locais", "consulta_os_transp"]
+
+from transportes.views.views_transportes.view_consulta_os_transp_legacy import (  # noqa: E402
+    buscar_locais,
 )
 
 
-def add_filtro_exibicao(lista, campo, valor, field, value=None):
-    if valor in [None, ""]:
-        return
-
-    lista.append({
-        "campo": campo,
-        "valor": valor,
-        "field": field,
-        "value": str(value) if value is not None else "",
-    })
+def _resolve_view_mode(request):
+    mode = (request.GET.get("view_mode") or "cards").strip().lower()
+    return "table" if mode == "table" else "cards"
 
 
-def buscar_locais(request):
-    termo = request.GET.get("q", "").strip()
-
-    if len(termo) < 2:
-        return JsonResponse({"items": []})
-
-    grupos_base = Group.objects.filter(
-        Q(name="arancia_PA") |
-        Q(name="arancia_CD") |
-        Q(name="arancia_CUSTOMER")
-    )
-
-    locais = (
-        GroupAditionalInformation.objects
-        .filter(group__in=grupos_base, nome__icontains=termo)
-        .select_related("group")
-        .order_by("nome")[:10]
-    )
-
-    data = []
-
-    for l in locais:
-        prefix = ""
-
-        if l.group.name == "arancia_PA":
-            prefix = "[PA]"
-        elif l.group.name == "arancia_CD":
-            prefix = "[CD]"
-        elif l.group.name == "arancia_CUSTOMER":
-            prefix = "[CUSTOMER]"
-
-        data.append({
-            "id": l.id,
-            "label": f"{prefix} {l.nome}"
-        })
-
-    return JsonResponse({"items": data})
-
-
-def aplicar_filtro_data(data_source, params):
-    created_at = (data_source.get("created_at") or "").strip()
-    data_inicial = (data_source.get("data_inicial") or "").strip()
-    data_final = (data_source.get("data_final") or "").strip()
-
-    if data_inicial and data_final:
-        params["data_inicial"] = data_inicial
-        params["data_final"] = data_final
-    elif data_inicial:
-        params["created_at"] = data_inicial
-    elif data_final:
-        params["created_at"] = data_final
-    elif created_at:
-        params["created_at"] = created_at
-
-
-def montar_filtros_consulta_os(post_data):
-    return {
-        "numero_os": (post_data.get("numero_os") or "").strip(),
-        "tipo_os": (post_data.get("tipo_os") or "").strip(),
-        "client": (post_data.get("client") or "").strip(),
-        "pa_selecionada": (post_data.get("pa_selecionada") or "").strip(),
-        "origem": (post_data.get("origem") or "").strip(),
-        "destino": (post_data.get("destino") or "").strip(),
-        "data_inicial": (post_data.get("data_inicial") or "").strip(),
-        "data_final": (post_data.get("data_final") or "").strip(),
-        "created_at": (post_data.get("created_at") or "").strip(),
-        "status": [v.strip() for v in post_data.getlist("status") if v.strip()],
-        "order_type": [v.strip() for v in post_data.getlist("order_type") if v.strip()],
-        "enviar_evento": "1",
-    }
-
-
-@login_required(login_url='logistica:login')
-@permission_required('logistica.acesso_arancia', raise_exception=True)
-@permission_required('transportes.ver_transportes', raise_exception=True)
+@login_required(login_url="logistica:login")
+@permission_required("logistica.acesso_arancia", raise_exception=True)
+@permission_required("transportes.ver_transportes", raise_exception=True)
 def consulta_os_transp(request):
     titulo = "Consulta OS"
     chave_tela = FiltroFavoritoUsuario.TELA_CONSULTA_OS
-    resultado_api = []
+    view_mode = _resolve_view_mode(request)
 
-    url_status = f"{TRANSP_API_URL}/gai/clientes/status?cliente=arancia_client"
-    client = RequestClient(
-        method="get",
-        url=url_status,
-        headers={"accept": "application/json",
-                 "Content-Type": "application/json"},
-    )
-    resp = client.send_api_request()
-
-    if isinstance(resp, list):
-        for item in resp:
-            status_base = item.get("status_base")
-
-            for order_type in item.get("OrderType", []):
-                statuses = order_type.get("status", []) or []
-
-                if status_base:
-                    status_base_type = (status_base.get(
-                        "type") or "").strip().lower()
-                    ja_existe = any(
-                        (s.get("type") or "").strip().lower() == status_base_type
-                        for s in statuses
-                    )
-                    if status_base_type and not ja_existe:
-                        statuses.append(status_base)
-
-                status_filtrados = []
-                vistos = set()
-
-                for st in statuses:
-                    stype = (st.get("type") or "").strip()
-                    if not stype:
-                        continue
-
-                    chave = stype.lower()
-                    if chave in vistos:
-                        continue
-
-                    vistos.add(chave)
-                    status_filtrados.append(st)
-
-                order_type["status"] = status_filtrados
+    with TranspApiCallTimer(
+        request,
+        phase="clientes_status",
+        url="gai/clientes/status",
+    ) as status_timer:
+        resp = enrich_clientes_status(get_clientes_status())
+        status_timer.payload_size, _ = _payload_metrics(resp)
 
     if isinstance(resp, dict) and resp.get("detail"):
         messages.error(request, resp["detail"])
         resp = []
+
+    status_by_id, order_type_by_id = build_status_and_order_type_maps(
+        resp if isinstance(resp, list) else []
+    )
 
     if request.method == "POST":
         filtros_post = montar_filtros_consulta_os(request.POST)
@@ -180,101 +94,58 @@ def consulta_os_transp(request):
 
         if "usar_padrao" in request.POST:
             filtro_padrao = FiltroPadraoTela.objects.filter(
-                chave_tela=chave_tela,
-                ativo=True
+                chave_tela=chave_tela, ativo=True
             ).first()
-
             if filtro_padrao and filtro_padrao.filtros:
                 messages.success(request, "Filtro padrão aplicado.")
-                return redirect(f"{request.path}?{urlencode(filtro_padrao.filtros, doseq=True)}")
-
+                return redirect(
+                    f"{request.path}?{urlencode(filtro_padrao.filtros, doseq=True)}"
+                )
             messages.warning(
-                request, "Nenhum filtro padrão cadastrado para esta tela.")
+                request, "Nenhum filtro padrão cadastrado para esta tela."
+            )
             return redirect(request.path)
 
         if "extrair_os" in request.POST:
             data = request.POST.copy()
             data.pop("csrfmiddlewaretoken", None)
-
-            extract_params = {}
-
-            aplicar_filtro_data(data, extract_params)
-
             tipo_os = (data.get("tipo_os") or "").strip().upper()
             numero_os = (data.get("numero_os") or "").strip()
-
             if numero_os and not tipo_os:
                 messages.error(
-                    request, "Selecione o tipo da OS (IN/EX) para pesquisar pelo número.")
-                return redirect(f"{request.path}?{urlencode(filtros_post, doseq=True)}")
-
-            elif tipo_os and not numero_os:
-                messages.error(
-                    request, "Informe o número da OS para pesquisar.")
-                return redirect(f"{request.path}?{urlencode(filtros_post, doseq=True)}")
-
-            if numero_os:
-                if tipo_os == "IN":
-                    extract_params["IN"] = numero_os
-                elif tipo_os == "EX":
-                    extract_params["EX"] = numero_os
-
-            cliente_id = (data.get("client") or "").strip()
-            if cliente_id:
-                cliente_obj = next((c for c in resp if str(
-                    c.get("id")) == str(cliente_id)), None)
-                if cliente_obj and cliente_obj.get("nome"):
-                    extract_params["cliente"] = cliente_obj["nome"]
-
-            pa_id = (data.get("pa_selecionada") or "").strip()
-            if pa_id:
-                extract_params["designation_id"] = pa_id
-
-            origem_id = (data.get("origem") or "").strip()
-            if origem_id:
-                extract_params["origin_id"] = origem_id
-
-            destino_id = (data.get("destino") or "").strip()
-            if destino_id:
-                extract_params["destin_id"] = destino_id
-
-            status_ids = [s.strip()
-                          for s in data.getlist("status") if s.strip()]
-            if status_ids:
-                status_textos = []
-                for cliente in resp:
-                    for order_type_item in cliente.get("OrderType", []):
-                        for status_item in order_type_item.get("status", []):
-                            if str(status_item.get("id")) in status_ids:
-                                valor = status_item.get("type")
-                                if valor and valor not in status_textos:
-                                    status_textos.append(valor)
-
-                if status_textos:
-                    extract_params["status"] = ",".join(status_textos)
-
-            order_type_ids = [ot.strip()
-                              for ot in data.getlist("order_type") if ot.strip()]
-            if order_type_ids:
-                extract_params["order_type"] = ",".join(order_type_ids)
-
-            url_extract = f"{TRANSP_API_URL}/service_orders/export/excel?{urlencode(extract_params)}"
+                    request,
+                    "Selecione o tipo da OS (IN/EX) para pesquisar pelo número.",
+                )
+                return redirect(
+                    f"{request.path}?{urlencode(filtros_post, doseq=True)}"
+                )
+            if tipo_os and not numero_os:
+                messages.error(request, "Informe o número da OS para pesquisar.")
+                return redirect(
+                    f"{request.path}?{urlencode(filtros_post, doseq=True)}"
+                )
+            extract_params = build_export_params(
+                data, status_by_id, resp if isinstance(resp, list) else []
+            )
+            url_extract = (
+                f"{TRANSP_API_URL}/service_orders/export/excel?"
+                f"{urlencode(extract_params)}"
+            )
             return redirect(url_extract)
 
         return redirect(f"{request.path}?{urlencode(filtros_post, doseq=True)}")
 
     data = request.GET.copy()
-
     limpou_tela = data.get("limpo") == "1"
-
     if limpou_tela:
         data = data.copy()
         data.pop("limpo", None)
-
     elif not data:
         filtros_iniciais = obter_filtros_tela(request.user, chave_tela)
         if filtros_iniciais:
-            return redirect(f"{request.path}?{urlencode(filtros_iniciais, doseq=True)}")
+            return redirect(
+                f"{request.path}?{urlencode(filtros_iniciais, doseq=True)}"
+            )
 
     form = ConsultaOStranspForm(data or None, payload=resp)
 
@@ -283,233 +154,54 @@ def consulta_os_transp(request):
     except ValueError:
         page = 1
     page = max(page, 1)
-
-    limit = 250
-    offset = (page - 1) * limit
+    offset = (page - 1) * PAGE_SIZE
 
     qs = data.copy()
     qs.pop("page", None)
-    base_qs = qs.urlencode()
+    base_qs_no_view = qs.urlencode()
+    base_qs = append_view_mode_to_qs(base_qs_no_view, view_mode)
 
     should_query = data.get("enviar_evento") == "1"
-
+    resultado_api = []
     total = 0
-    total_pages = 1
-    pages = [page]
-    has_prev = page > 1
-    has_next = False
-
     filtros_exibicao = []
+    consultando = should_query
 
     if should_query:
-        params = {}
+        params, filtros_exibicao, errors = build_list_params(
+            data, status_by_id, order_type_by_id, resp if isinstance(resp, list) else []
+        )
+        for err in errors:
+            messages.error(request, err)
 
-        aplicar_filtro_data(data, params)
-
-        tipo_os = (data.get("tipo_os") or "").strip().upper()
-        numero_os = (data.get("numero_os") or "").strip()
-
-        if numero_os and not tipo_os:
-            messages.error(
-                request, "Selecione o tipo da OS (IN/EX) para pesquisar pelo número.")
-            numero_os = ""
-        elif tipo_os and not numero_os:
-            messages.error(request, "Informe o número da OS para pesquisar.")
-            tipo_os = ""
-
-        if numero_os:
-            if tipo_os == "IN":
-                params["IN"] = numero_os
-            elif tipo_os == "EX":
-                params["EX"] = numero_os
-            else:
-                messages.error(request, "Tipo de OS inválido. Use IN ou EX.")
-                params.pop("IN", None)
-                params.pop("EX", None)
-
-        cliente_id = (data.get("client") or "").strip()
-        if cliente_id:
-            cliente_obj = next((c for c in resp if str(
-                c.get("id")) == str(cliente_id)), None)
-            if cliente_obj and cliente_obj.get("nome"):
-                params["cliente"] = cliente_obj["nome"]
-                add_filtro_exibicao(
-                    filtros_exibicao,
-                    campo="Cliente",
-                    valor=cliente_obj["nome"],
-                    field="client",
-                    value=cliente_id,
-                )
-
-        pa_id = (data.get("pa_selecionada") or "").strip()
-        if pa_id:
-            params["designation_id"] = pa_id
-            add_filtro_exibicao(
-                filtros_exibicao,
-                campo="PA",
-                valor=pa_id,
-                field="pa_selecionada",
-                value=pa_id,
-            )
-
-        origem_id = (data.get("origem") or "").strip()
-        if origem_id:
-            params["origin_id"] = origem_id
-            add_filtro_exibicao(
-                filtros_exibicao,
-                campo="Origem",
-                valor=origem_id,
-                field="origem",
-                value=origem_id,
-            )
-
-        destino_id = (data.get("destino") or "").strip()
-        if destino_id:
-            params["destin_id"] = destino_id
-            add_filtro_exibicao(
-                filtros_exibicao,
-                campo="Destino",
-                valor=destino_id,
-                field="destino",
-                value=destino_id,
-            )
-
-        status_ids = [s.strip() for s in data.getlist("status") if s.strip()]
-        if status_ids:
-            status_textos = []
-
-            for cliente in resp:
-                for order_type_item in cliente.get("OrderType", []):
-                    for status_item in order_type_item.get("status", []):
-                        if str(status_item.get("id")) in status_ids:
-                            valor = status_item.get("type")
-                            if valor and valor not in status_textos:
-                                status_textos.append(valor)
-
-            if status_textos:
-                params["status"] = ",".join(status_textos)
-
-                for status_id in status_ids:
-                    for cliente in resp:
-                        for order_type_item in cliente.get("OrderType", []):
-                            for status_item in order_type_item.get("status", []):
-                                if str(status_item.get("id")) == str(status_id):
-                                    add_filtro_exibicao(
-                                        filtros_exibicao,
-                                        campo="Status",
-                                        valor=status_item.get("type"),
-                                        field="status",
-                                        value=status_id,
-                                    )
-
-        order_type_ids = [ot.strip()
-                          for ot in data.getlist("order_type") if ot.strip()]
-        if order_type_ids:
-            params["order_type"] = ",".join(order_type_ids)
-
-            for cliente in resp:
-                for order_type_item in cliente.get("OrderType", []):
-                    if str(order_type_item.get("id")) in order_type_ids:
-                        add_filtro_exibicao(
-                            filtros_exibicao,
-                            campo="Tipo de OS",
-                            valor=order_type_item.get("type") or str(
-                                order_type_item.get("id")),
-                            field="order_type",
-                            value=order_type_item.get("id"),
-                        )
-
-        if numero_os:
-            add_filtro_exibicao(
-                filtros_exibicao,
-                campo="Número OS",
-                valor=numero_os,
-                field="numero_os",
-            )
-        if tipo_os:
-            add_filtro_exibicao(
-                filtros_exibicao,
-                campo="Tipo",
-                valor=tipo_os,
-                field="tipo_os",
-            )
-        if data.get("data_inicial"):
-            add_filtro_exibicao(
-                filtros_exibicao,
-                campo="Data inicial",
-                valor=data.get("data_inicial"),
-                field="data_inicial",
-            )
-
-        if data.get("data_final"):
-            add_filtro_exibicao(
-                filtros_exibicao,
-                campo="Data final",
-                valor=data.get("data_final"),
-                field="data_final",
-            )
-
-        params["limit"] = limit
+        params["limit"] = PAGE_SIZE
         params["offset"] = offset
 
-        url_lista = f"{TRANSP_API_URL}/v2/service_order/list"
-        lista_request = RequestClient(
-            method="get",
-            url=url_lista,
-            headers={"accept": "application/json"},
-            request_data=params,
-        )
-        resultado_api = lista_request.send_api_request()
+        with TranspApiCallTimer(
+            request,
+            phase="service_order_list",
+            url="v2/service_order/list",
+        ) as list_timer:
+            resultado_api, url_lista, payload_size = fetch_orders(params)
+            list_timer.url = url_lista
+            list_timer.payload_size = payload_size
 
-        if isinstance(resultado_api, dict) and resultado_api.get("detail"):
-            messages.error(request, resultado_api["detail"])
+        resultado_api, total, detail = parse_orders_response(resultado_api)
+        if detail:
+            messages.error(request, detail)
             resultado_api = []
-        else:
-            if isinstance(resultado_api, dict):
-                items = (
-                    resultado_api.get("items")
-                    or resultado_api.get("results")
-                    or resultado_api.get("data")
-                    or []
-                )
-                total = (
-                    resultado_api.get("total")
-                    or resultado_api.get("count")
-                    or resultado_api.get("total_count")
-                    or 0
-                )
-                resultado_api = items if isinstance(items, list) else []
+            total = 0
 
-            elif isinstance(resultado_api, list):
-                total = 0
-            else:
-                resultado_api = []
-                total = 0
+        enrich_orders(resultado_api)
 
-            if total:
-                total_pages = max(1, math.ceil(total / limit))
-                has_next = page < total_pages
-            else:
-                has_next = len(resultado_api) == limit
-                total_pages = page + (1 if has_next else 0)
-
-            start = max(1, page - 2)
-            end = min(total_pages, page + 2)
-            pages = list(range(start, end + 1))
-
-    for item in resultado_api:
-        created = item.get("created_at")
-        if created:
-            try:
-                dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
-                item["created_at_fmt"] = dt.strftime("%d/%m/%Y %H:%M")
-            except Exception:
-                item["created_at_fmt"] = created
+    pagination = build_pagination_state(page, total, len(resultado_api))
+    pagination["base_qs"] = base_qs
 
     filtros_ativos = len(filtros_exibicao)
-
     form.errors.pop("origem", None)
     form.errors.pop("destino", None)
+
+    clientes_list = resp if isinstance(resp, list) else []
 
     return render(
         request,
@@ -520,35 +212,20 @@ def consulta_os_transp(request):
             "botao_texto": "Consultar",
             "current_parent_menu": "transportes",
             "current_menu": "lista_os",
-            "orders": resultado_api if isinstance(resultado_api, list) else [],
+            "orders": resultado_api,
             "filtros_exibicao": filtros_exibicao,
             "filtros_ativos": filtros_ativos,
-            "tipos_por_cliente": {
-                str(c.get("id")): [
-                    {"id": str(ot.get("id")), "type": ot.get("type", "")}
-                    for ot in c.get("OrderType", []) or []
-                ]
-                for c in resp
-            },
-            "status_por_tipo": {
-                str(ot.get("id")): [
-                    {"id": str(st.get("id")), "type": st.get("type", "")}
-                    for st in (ot.get("status", []) or [])
-                ]
-                for c in resp
-                for ot in c.get("OrderType", []) or []
-            },
-            "pagination": {
-                "page": page,
-                "limit": limit,
-                "total": total,
-                "total_pages": total_pages,
-                "has_prev": page > 1,
-                "has_next": has_next,
-                "prev_page": page - 1,
-                "next_page": page + 1,
-                "pages": pages,
-                "base_qs": base_qs,
+            "tipos_por_cliente": build_tipos_por_cliente_os(clientes_list),
+            "status_por_tipo": build_status_por_tipo_os(clientes_list),
+            "pagination": pagination,
+            "view_mode": view_mode,
+            "consultando": consultando,
+            "base_qs_no_view": base_qs_no_view,
+            "consulta_os_js_config": {
+                "filtros_ativos": filtros_ativos,
+                "urls": {
+                    "order_travels": reverse("transportes:api_order_travels"),
+                },
             },
         },
     )

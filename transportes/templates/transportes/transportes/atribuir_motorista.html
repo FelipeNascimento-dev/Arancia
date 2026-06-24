@@ -262,7 +262,10 @@
         <div class="assign-card-header">
             <h2>Atribuir motorista às viagens</h2>
             <p>
-                Informe uma lista de IDs de viagens, selecione a transportadora e escolha o motorista responsável.
+                Informe uma lista de IDs de viagens, selecione a PA e escolha o motorista responsável.
+                {% if pode_escolher_transportadora %}
+                A transportadora é opcional e pode ser usada como filtro adicional na busca.
+                {% endif %}
             </p>
         </div>
 
@@ -293,9 +296,27 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="carrier_id">Transportadora</label>
+                        <label for="pa_selecionada">PA</label>
+                        {% if pa_travada %}
+                        <select id="pa_selecionada" disabled>
+                            <option value="{{ pa_padrao_id }}" selected>{{ pa_padrao_nome }}</option>
+                        </select>
+                        <input type="hidden" name="pa_selecionada" id="pa_hidden" value="{{ pa_padrao_id }}">
+                        {% else %}
+                        <select name="pa_selecionada" id="pa_selecionada" required>
+                            <option value="">Selecione uma PA...</option>
+                            {% for pa_id, pa_nome in pa_opcoes %}
+                                <option value="{{ pa_id }}">{{ pa_nome }}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                    </div>
 
-                        <select name="carrier_id" id="carrier_id" required>
+                    {% if pode_escolher_transportadora %}
+                    <div class="form-group">
+                        <label for="carrier_id">Transportadora <span style="font-weight:400;color:#64748b;">(opcional)</span></label>
+
+                        <select name="carrier_id" id="carrier_id">
                             <option value="">Selecione uma transportadora...</option>
 
                             {% for carrier in carriers %}
@@ -305,6 +326,7 @@
                             {% endfor %}
                         </select>
                     </div>
+                    {% endif %}
 
                     <div class="form-group" style="position: relative;">
                         <label for="motorista_nome">Motorista</label>
@@ -313,7 +335,7 @@
                             type="text"
                             name="motorista_nome"
                             id="motorista_nome"
-                            placeholder="Selecione a transportadora primeiro..."
+                            placeholder="Selecione a PA primeiro..."
                             autocomplete="off"
                             disabled
                             required
@@ -372,11 +394,16 @@ document.addEventListener("DOMContentLoaded", function () {
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const carrierSelect = document.getElementById("carrier_id");
+    const paSelect = document.getElementById("pa_selecionada");
+    const paHidden = document.getElementById("pa_hidden");
     const input = document.getElementById("motorista_nome");
     const resultsBox = document.getElementById("driverResults");
     const hiddenId = document.getElementById("motorista_id");
+    const podeEscolherTransportadora = {{ pode_escolher_transportadora|yesno:"true,false" }};
+    const paTravada = {{ pa_travada|yesno:"true,false" }};
 
-    if (!carrierSelect || !input || !resultsBox || !hiddenId) return;
+    if (!input || !resultsBox || !hiddenId) return;
+    if (podeEscolherTransportadora && !carrierSelect) return;
 
     let timeout = null;
 
@@ -385,32 +412,64 @@ document.addEventListener("DOMContentLoaded", function () {
         resultsBox.style.display = "none";
     }
 
+    function getPaId() {
+        if (paHidden && paHidden.value) {
+            return paHidden.value;
+        }
+        return paSelect ? paSelect.value : "";
+    }
+
+    function podeBuscarMotorista() {
+        return Boolean(getPaId());
+    }
+
+    function atualizarCampoMotorista() {
+        if (podeBuscarMotorista()) {
+            input.disabled = false;
+            input.placeholder = "Digite o nome do motorista...";
+        } else {
+            input.disabled = true;
+            input.placeholder = "Selecione a PA primeiro...";
+        }
+    }
+
     function limparMotorista() {
         input.value = "";
         hiddenId.value = "";
         limparResultados();
     }
 
-    carrierSelect.addEventListener("change", function () {
-        limparMotorista();
+    if (carrierSelect) {
+        carrierSelect.addEventListener("change", function () {
+            limparMotorista();
+            atualizarCampoMotorista();
+            if (podeBuscarMotorista()) {
+                input.focus();
+            }
+        });
+    }
 
-        if (this.value) {
-            input.disabled = false;
-            input.placeholder = "Digite o nome do motorista...";
-            input.focus();
-        } else {
-            input.disabled = true;
-            input.placeholder = "Selecione a transportadora primeiro...";
-        }
-    });
+    if (paSelect && !paTravada) {
+        paSelect.addEventListener("change", function () {
+            limparMotorista();
+            atualizarCampoMotorista();
+            if (podeBuscarMotorista()) {
+                input.focus();
+            }
+        });
+    }
+
+    if (paTravada) {
+        atualizarCampoMotorista();
+    }
 
     input.addEventListener("keyup", function () {
         const query = this.value.trim();
-        const carrierId = carrierSelect.value;
+        const carrierId = carrierSelect ? carrierSelect.value : "";
 
         clearTimeout(timeout);
 
-        if (!carrierId) {
+        if (!podeBuscarMotorista()) {
             hiddenId.value = "";
             limparResultados();
             return;
@@ -423,10 +482,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         timeout = setTimeout(() => {
-            const url = "{% url 'transportes:buscar_motoristas_travels' %}?nome=" +
+            let url = "{% url 'transportes:buscar_motoristas_travels' %}?nome=" +
                 encodeURIComponent(query) +
-                "&carrier_id=" +
-                encodeURIComponent(carrierId);
+                "&gai_id=" +
+                encodeURIComponent(getPaId());
+
+            if (podeEscolherTransportadora && carrierId) {
+                url += "&carrier_id=" + encodeURIComponent(carrierId);
+            }
 
             fetch(url)
                 .then(async res => {

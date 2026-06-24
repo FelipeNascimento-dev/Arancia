@@ -1222,12 +1222,14 @@
                     <thead>
                         <tr>
                             <th>ID</th>
+                            <th>Patrimônio</th>
                             <th>Serial</th>
                             <th>Modelo</th>
                             <th>Tipo</th>
                             <th>Peso</th>
                             <th>Dimensões</th>
                             <th>Criado por</th>
+                            <th>Informações Extras</th>
                             <th>Sub-itens</th>
                         </tr>
                     </thead>
@@ -1235,6 +1237,7 @@
                         {% for item in payload.items %}
                         <tr>
                             <td>{{ item.id }}</td>
+                            <td>{{ item.nr_chamado|default:"-" }}</td>
                             <td>{{ item.serial_number|default:"-" }}</td>
                             <td>{{ item.product_model|default:"-" }}</td>
                             <td>
@@ -1253,6 +1256,17 @@
                                 {{ item.height }}x{{ item.width }}x{{ item.length }}
                             </td>
                             <td>{{ item.created_by }}</td>
+
+                            <td>
+                                {% if item.extra_information %}
+                                    <button class="btn-subitens"
+                                            onclick="abrirModalInfoExtra({{ item.id }})">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
                         
                             <td>
                                 {% if item.sub_itens %}
@@ -1292,10 +1306,7 @@
                             {{ event.description }}
                             
                             <div class="timeline-meta">
-                                {{ event.created_at|slice:"8:10" }}/
-                                {{ event.created_at|slice:"5:7" }}/
-                                {{ event.created_at|slice:"0:4" }}
-                                {{ event.created_at|slice:"11:16" }}
+                                {{ event.created_at|slice:"8:10" }}/{{ event.created_at|slice:"5:7" }}/{{ event.created_at|slice:"0:4" }} {{ event.created_at|slice:"11:16" }}
                                 • por {{ event.created_by }}
                             </div>
 
@@ -1389,8 +1400,8 @@
                     {% for item in payload.items %}
                     <label class="checkbox-item">
                         <input type="checkbox" name="items" value="{{ item.id }}">
-                        {{ item.product_model }}
-                        <span>({{ item.serial_number }})</span>
+                        {{ item.product_model|default:"Item" }}
+                        <span>({{ item.nr_chamado|default:"-" }} / {{ item.serial_number }})</span>
                     </label>
                     {% endfor %}
                 </div>
@@ -1463,6 +1474,23 @@
     </div>
 </div>
 
+<div class="os-modal-overlay" id="modalExtraInfo">
+    <div class="os-modal" style="width:500px;">
+        <div class="os-modal-header">
+            <div class="os-modal-title">
+                Informações Extras
+            </div>
+            <div class="os-modal-close"
+                 onclick="fecharModalExtraInfo()">
+                ✕
+            </div>
+        </div>
+        <div class="os-modal-body"
+             id="modalExtraInfoBody">
+        </div>
+    </div>
+</div>
+
 
 <script>
 
@@ -1487,6 +1515,67 @@ const filhosData = {
 {% endfor %}
 
 };
+
+</script>
+
+<script>
+
+const extraInfoData = {
+
+{% for item in payload.items %}
+    {% if item.extra_information %}
+        "{{ item.id }}": {{ item.extra_information|safe }},
+    {% endif %}
+{% endfor %}
+
+};
+
+const modalExtraInfo = document.getElementById("modalExtraInfo");
+const modalExtraInfoBody = document.getElementById("modalExtraInfoBody");
+
+window.abrirModalInfoExtra = function(itemId) {
+    const data = extraInfoData[itemId];
+
+    if (!data) {
+        modalExtraInfoBody.innerHTML = "<div>Nenhuma informação extra</div>";
+        modalExtraInfo.classList.add("show");
+        return;
+    }
+
+    let html = `
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="background:#0e76bd;color:white;">
+                    <th style="padding:8px;">Chave</th>
+                    <th style="padding:8px;">Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    for (const key in data) {
+        html += `
+            <tr style="border-bottom:1px solid #eee;">
+                <td style="padding:8px;">${key}</td>
+                <td style="padding:8px;">${data[key]}</td>
+            </tr>
+        `;
+    }
+
+    html += "</tbody></table>";
+    modalExtraInfoBody.innerHTML = html;
+    modalExtraInfo.classList.add("show");
+};
+
+window.fecharModalExtraInfo = function() {
+    modalExtraInfo.classList.remove("show");
+};
+
+modalExtraInfo.addEventListener("click", function(e) {
+    if (e.target === modalExtraInfo) {
+        fecharModalExtraInfo();
+    }
+});
 
 </script>
 

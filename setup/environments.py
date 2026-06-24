@@ -43,6 +43,13 @@ ENVIRONMENT_PROFILES = {
         'api_base': 'http://192.168.0.216/RetencaoAPI/api',
         'api_base_bko': 'http://192.168.0.214/hg-api-equipamentos/api/',
         'crm_api_base_url': 'http://192.168.0.214/hg-api-crm',
+        'arancia_message_auth_token_url': 'http://192.168.0.216/api-auth/api/v1/auth-user/auth/token',
+        'arancia_message_ui_url': 'https://ninabot-ninabot.jk5mhc.easypanel.host/ui',
+        # Origens liberadas hoje no CSP do NinaBot (frame-ancestors).
+        # Para iframe no homolog por IP, pedir inclusão de http://192.168.0.216 no NinaBot.
+        'arancia_message_frame_ancestors': [
+            'https://www.centralretencao.com.br',
+        ],
         'order_origin_ids': _ORDER_ORIGIN_IDS_HOMOLOG,
     },
     'prod': {
@@ -56,6 +63,11 @@ ENVIRONMENT_PROFILES = {
         'api_base': 'http://192.168.0.216/RetencaoAPI/api',
         'api_base_bko': 'http://192.168.0.214/api-equipamentos/api/',
         'crm_api_base_url': 'http://192.168.0.214/api-crm',
+        'arancia_message_auth_token_url': 'http://192.168.0.216/api-auth/api/v1/auth-user/auth/token',
+        'arancia_message_ui_url': 'https://ninabot-ninabot.jk5mhc.easypanel.host/ui',
+        'arancia_message_frame_ancestors': [
+            'https://www.centralretencao.com.br',
+        ],
         'order_origin_ids': _ORDER_ORIGIN_IDS_PROD,
     },
 }
@@ -100,6 +112,9 @@ def apply_environment(environment, namespace):
     namespace['API_BASE_BKO'] = profile['api_base_bko']
     namespace['CRM_API_BASE_URL'] = profile['crm_api_base_url']
     namespace['CRM_API_V1_STR'] = '/api/v1'
+    namespace['ARANCIA_MESSAGE_AUTH_TOKEN_URL'] = profile.get('arancia_message_auth_token_url', '')
+    namespace['ARANCIA_MESSAGE_UI_URL'] = profile.get('arancia_message_ui_url', '')
+    namespace['ARANCIA_MESSAGE_FRAME_ANCESTORS'] = profile.get('arancia_message_frame_ancestors', [])
 
     for key, origin_id in profile.get('order_origin_ids', {}).items():
         namespace[f'ORDER_ORIGIN_{key}'] = origin_id

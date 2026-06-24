@@ -9,6 +9,10 @@ from django.conf import settings
 from django.db import connection
 
 from crm_api.instrumentation import get_request_stats, init_request_stats
+from transportes.instrumentation import (
+    get_request_stats as get_transp_request_stats,
+    init_request_stats as init_transp_request_stats,
+)
 
 logger = logging.getLogger("arancia.performance")
 
@@ -22,6 +26,7 @@ class RequestTimingMiddleware:
             return self.get_response(request)
 
         init_request_stats(request)
+        init_transp_request_stats(request)
         sql_count = {"n": 0}
         start = time.perf_counter()
 
@@ -34,19 +39,25 @@ class RequestTimingMiddleware:
 
         total_ms = (time.perf_counter() - start) * 1000
         crm_stats = get_request_stats(request)
+        transp_stats = get_transp_request_stats(request)
 
         logger.info(
-            "PERF %s %s | total=%.1fms sql=%d crm_http=%d crm_latency=%.1fms",
+            "PERF %s %s | total=%.1fms sql=%d crm_http=%d crm_latency=%.1fms "
+            "transp_http=%d transp_latency=%.1fms",
             request.method,
             request.path,
             total_ms,
             sql_count["n"],
             crm_stats["count"],
             crm_stats["total_ms"],
+            transp_stats["count"],
+            transp_stats["total_ms"],
         )
 
         response["X-Request-Time-Ms"] = f"{total_ms:.1f}"
         response["X-SQL-Queries"] = str(sql_count["n"])
         response["X-CRM-HTTP-Calls"] = str(crm_stats["count"])
         response["X-CRM-HTTP-Time-Ms"] = f"{crm_stats['total_ms']:.1f}"
+        response["X-Transp-HTTP-Calls"] = str(transp_stats["count"])
+        response["X-Transp-HTTP-Time-Ms"] = f"{transp_stats['total_ms']:.1f}"
         return response
