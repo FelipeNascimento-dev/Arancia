@@ -523,6 +523,14 @@
             </div>
         </div>
         {% endif %}
+
+        {% if perms.logistica.ti_interno %}
+        <a href="{% url 'logistica:arancia_message_iframe' %}" class="itens-sidebar {% if current_menu == 'arancia_message_iframe' %}active{% endif %}">
+            <i class="fa-solid fa-comment"></i>
+            <span class="texto-item">Messages</span>
+        </a>
+        {% endif %}
+
         <!-- Sistemas -->
         <div class="dropdown">
             <button type="button" class="dropbtn itens-sidebar">

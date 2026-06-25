@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 
 
 @login_required(login_url='logistica:login')
-@permission_required("logistica.gestao_total", raise_exception=True)
+@permission_required("logistica.gerenciamento", raise_exception=True)
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def skill_ger(request):
     gai_q = request.GET.get("gai_q")
