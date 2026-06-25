@@ -219,7 +219,7 @@ def saida_campo(request, tp_reg: str):
 
                     url = (
                         f"{STOCK_API_URL}/v1/items/delivery/{posted_serial}"
-                        f"?client=cielo&location_id={location_id}"
+                        f"?client=cielo&location_id={location_id}&origin=gtec"
                     )
                     api_client = RequestClient(
                         url=url,

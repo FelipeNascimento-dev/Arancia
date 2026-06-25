@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 /* Produção usa arancia-core.bundle.css (ver _head.html). Regenerar o bundle após editar estes arquivos. */
+@import url(layout-tokens.css);
 @import url(navbar.css);
 @import url(login.css);
 @import url(logout.css);
@@ -23,7 +24,13 @@
 @import url(campo.css);
 @import url(crm_task_detail.css);
 @import url(ferramentas.css);
-/* @import url(detalhe_os.css); */
+@import url(mural.css);
+@import url(mural_gerenciamento.css);
+@import url(detalhe_os.css);
+@import url(detalhe_os_chamados.css);
+@import url(detalhe_viagem.css);
+@import url(arancia_message_iframe.css);
+@import url(acompanhamento_iframe.css);
 
 :root {
   --background-formularios: #fff;
@@ -62,6 +69,12 @@ body {
   background-color: #fff;
 }
 
+.forma > .container {
+  width: 100%;
+  max-width: calc(100vw - var(--content-gutter));
+  box-sizing: border-box;
+}
+
 .forma::before {
   content: "";
   position: absolute;
@@ -93,13 +106,12 @@ body {
   border: 1px solid #e2e8f0;
   padding: 24px;
   border-radius: 14px;
-  margin: 20px 0;
+  margin: calc(var(--topbar-height) + 20px) var(--content-gutter) 20px var(--content-offset-wide);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
   color: #1f2937;
   animation: fadeIn .5s ease;
-  margin-left: 90px;
-  margin-top: 70px;
-  margin-right: 20px;
+  max-width: calc(100vw - var(--content-offset-wide) - var(--content-gutter) * 2);
+  box-sizing: border-box;
 }
 
 .welcome-banner h2 {

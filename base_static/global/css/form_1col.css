@@ -10,8 +10,11 @@
     padding: 2rem;
     border-radius: 10px;
     box-shadow: var(--box-shadow-formularios);
-    width: 1300px;
-    margin-left: 65px;
+    width: min(var(--form-max-width), 100%);
+    max-width: 100%;
+    margin-top: calc(var(--topbar-height) + 15px);
+    margin-left: var(--content-offset);
+    box-sizing: border-box;
 }
 
 .form-title {
@@ -37,12 +40,13 @@
 .form-group-1col input,
 .form-group-1col select,
 .form-group-1col textarea {
-    padding: 0.5rem;
+    width: 100%;
     padding: 10px;
     background: var(--form-input-color);
     border: 1px solid var(--form-input-border);
     border-radius: 10px;
     font-size: 15px;
+    box-sizing: border-box;
 }
 
 .submit-button-right {

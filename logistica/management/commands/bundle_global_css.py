@@ -8,6 +8,7 @@ from django.core.management.base import BaseCommand
 CSS_DIR = Path(settings.BASE_DIR) / "base_static" / "global" / "css"
 
 PARTIALS = [
+    "layout-tokens.css",
     "navbar.css",
     "login.css",
     "logout.css",
@@ -29,7 +30,15 @@ PARTIALS = [
     "dinamic_table.css",
     "responsividade.css",
     "campo.css",
+    "crm_task_detail.css",
     "ferramentas.css",
+    "mural.css",
+    "mural_gerenciamento.css",
+    "detalhe_os.css",
+    "detalhe_os_chamados.css",
+    "detalhe_viagem.css",
+    "arancia_message_iframe.css",
+    "acompanhamento_iframe.css",
 ]
 
 
