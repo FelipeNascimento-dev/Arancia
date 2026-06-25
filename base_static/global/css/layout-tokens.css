@@ -1,0 +1,39 @@
+/**
+ * Design tokens de layout — Arancia responsividade (desktop-first).
+ * Valores default preservam o visual em 1920×1080 e 1366×768.
+ * Fase 0 do plano de responsividade.
+ */
+:root {
+  --sidebar-width-expanded: 270px;
+  --sidebar-width-collapsed: 70px;
+  --topbar-height: 50px;
+  --content-gutter: 16px;
+  /* sidebar colapsada (70px) + respiro — equivale ao margin-left: 65px legado */
+  --content-offset: 65px;
+  /* offset quando breadcrumb/home usa margin-left: 90px legado */
+  --content-offset-wide: 90px;
+  --form-max-width: 1300px;
+  --form-max-width-narrow: 1150px;
+}
+
+@media screen and (max-width: 1439px) {
+  :root {
+    --content-offset: 60px;
+    --content-offset-wide: 80px;
+  }
+}
+
+@media screen and (max-width: 1023px) {
+  :root {
+    --content-offset: 55px;
+    --content-offset-wide: 70px;
+  }
+}
+
+@media screen and (orientation: portrait) {
+  :root {
+    --content-offset: 55px;
+    --content-offset-wide: 70px;
+    --content-gutter: 12px;
+  }
+}

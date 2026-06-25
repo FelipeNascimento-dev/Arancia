@@ -1,11 +1,13 @@
 .user-list-container {
-    width: 1300px;
-    margin-left: 65px;
-    margin-top: 65px;
+    width: min(var(--form-max-width), 100%);
+    max-width: 100%;
+    margin-left: var(--content-offset);
+    margin-top: calc(var(--topbar-height) + 15px);
     padding: 20px;
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-sizing: border-box;
 }
 
 .user-table-header {
@@ -57,8 +59,11 @@
     color: #333;
 }
 
-.table-wrapper {
+.table-wrapper,
+.table-responsive {
+    width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .user-table {
@@ -312,4 +317,34 @@
 .form-group {
     display: flex;
     flex-direction: column;
+}
+
+@media screen and (max-width: 1439px) and (min-width: 1024px) {
+    .user-list-container {
+        width: min(var(--form-max-width-narrow), 100%);
+    }
+
+    .form-user-search input[type="text"] {
+        width: min(400px, 35vw);
+    }
+}
+
+@media screen and (max-width: 1023px) {
+    .user-list-container {
+        width: 100%;
+    }
+
+    .user-table-header {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .form-user-search {
+        flex: 1 1 100%;
+        order: 3;
+    }
+
+    .form-user-search input[type="text"] {
+        width: 100%;
+    }
 }

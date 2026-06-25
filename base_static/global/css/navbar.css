@@ -14,7 +14,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 270px;
+  width: var(--sidebar-width-expanded);
   height: 100vh;
   background: var(--sidebar-bg);
   border-right: 4px solid var(--sidebar-border);
@@ -75,7 +75,7 @@
 }
 
 .sidebar.colapsada {
-  width: 70px;
+  width: var(--sidebar-width-collapsed);
 }
 
 .divider-horizontal-reduzida {
@@ -429,4 +429,23 @@
   font-weight: 600;
   color: var(--muted-color);
   cursor: default;
+}
+
+/* Shell responsivo — Fase 1 */
+@media screen and (max-width: 1439px) {
+  .sidebar:not(.colapsada) {
+    max-width: min(var(--sidebar-width-expanded), calc(100vw - var(--content-gutter) * 2));
+  }
+}
+
+@media screen and (orientation: portrait) {
+  .dropdown-content,
+  .submenu {
+    max-width: calc(100vw - var(--sidebar-width-collapsed) - var(--content-gutter));
+    overflow-x: auto;
+  }
+
+  .submenu {
+    margin-left: min(185px, calc(100vw - var(--sidebar-width-collapsed) - 48px));
+  }
 }

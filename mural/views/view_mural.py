@@ -252,6 +252,23 @@ def build_attachments_from_files(uploaded_files, descriptions=None):
     return attachments
 
 
+SUMMARY_MAX_CHARS = 500
+
+
+def validate_summary_length(summary):
+    if not summary:
+        return True, None
+
+    char_count = len(summary)
+    if char_count > SUMMARY_MAX_CHARS:
+        return False, (
+            f"O resumo não pode ter mais de {SUMMARY_MAX_CHARS} caracteres "
+            f"(atual: {char_count})."
+        )
+
+    return True, None
+
+
 def validate_critical_duration(severity, starts_at_raw, ends_at_raw):
     if severity != "critical":
         return True, None
@@ -457,9 +474,15 @@ def mural(request):
             view_read_results = []
 
     if "create_mural_item" in request.POST:
+        summary = request.POST.get("summary")
         severity = request.POST.get("severity")
         starts_at_raw = request.POST.get("starts_at")
         ends_at_raw = request.POST.get("ends_at")
+
+        is_valid_summary, summary_error = validate_summary_length(summary)
+        if not is_valid_summary:
+            messages.error(request, summary_error)
+            return redirect('mural:mural')
 
         is_valid_critical, critical_error = validate_critical_duration(
             severity=severity,
@@ -616,6 +639,11 @@ def mural(request):
 
         edit_starts_at_raw = request.POST.get("starts_at")
         edit_ends_at_raw = request.POST.get("ends_at")
+
+        is_valid_summary, summary_error = validate_summary_length(edit_summary)
+        if not is_valid_summary:
+            messages.error(request, summary_error)
+            return redirect('mural:mural')
 
         is_valid_critical, critical_error = validate_critical_duration(
             severity=edit_severity,

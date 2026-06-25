@@ -268,30 +268,45 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener("DOMContentLoaded", function () {
   const toggleBtn = document.getElementById("toggle-sidebar");
   const sidebar = document.querySelector(".sidebar");
+  if (!toggleBtn || !sidebar) return;
+
+  const setCollapsed = (collapsed) => {
+    sidebar.classList.toggle("colapsada", collapsed);
+    const isLeft = toggleBtn.classList.contains("fa-angles-left");
+    if (collapsed && isLeft) {
+      toggleBtn.classList.replace("fa-angles-left", "fa-angles-right");
+    } else if (!collapsed && toggleBtn.classList.contains("fa-angles-right")) {
+      toggleBtn.classList.replace("fa-angles-right", "fa-angles-left");
+    }
+  };
 
   toggleBtn.addEventListener("click", function (e) {
     e.stopPropagation();
-    sidebar.classList.toggle("colapsada");
-
-    if (sidebar.classList.contains("colapsada")) {
-      toggleBtn.classList.replace("fa-angles-left", "fa-angles-right");
-    } else {
-      toggleBtn.classList.replace("fa-angles-right", "fa-angles-left");
-    }
+    setCollapsed(!sidebar.classList.contains("colapsada"));
   });
+
   document.addEventListener("click", function (e) {
     if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
       if (!sidebar.classList.contains("colapsada")) {
-        sidebar.classList.add("colapsada");
-        toggleBtn.classList.replace("fa-angles-left", "fa-angles-right");
+        setCollapsed(true);
       }
     }
   });
+
+  const narrowViewportMq = window.matchMedia("(max-width: 1439px)");
+  const syncSidebarToViewport = () => {
+    if (narrowViewportMq.matches && !sidebar.classList.contains("colapsada")) {
+      setCollapsed(true);
+    }
+  };
+  syncSidebarToViewport();
+  narrowViewportMq.addEventListener("change", syncSidebarToViewport);
 });
 
 document.addEventListener("DOMContentLoaded", () => {
   const sidebar = document.querySelector(".sidebar");
   const toggleBtn = document.getElementById("toggle-sidebar");
+  if (!sidebar || !toggleBtn) return;
 
   document.querySelectorAll(".dropbtn").forEach((btn) => {
     btn.addEventListener("click", () => {

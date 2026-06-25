@@ -1,3 +1,10 @@
+/* Wrapper global para tabelas largas — scroll horizontal em viewports estreitos */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .tabela-dinamica-container {
     width: 100%;
     margin-top: 20px;
@@ -5,7 +12,6 @@
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    overflow-x: auto;
 }
 
 .tabela-dinamica {

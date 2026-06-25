@@ -33,8 +33,8 @@
     font-size: 1.8rem;
     font-weight: 600;
     color: #2c3e50;
-    margin-left: 65px;
-    margin-top: 65px;
+    margin-left: var(--content-offset);
+    margin-top: calc(var(--topbar-height) + 15px);
     margin-bottom: 25px;
 }
 
@@ -42,8 +42,9 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 25px;
-    width: 1300px;
-    margin-left: 65px;
+    width: min(var(--form-max-width), 100%);
+    max-width: 100%;
+    margin-left: var(--content-offset);
 }
 
 .box {

@@ -223,3 +223,35 @@ body {
     text-decoration: none;
     transform: scale(1.05);
 }
+
+/* Painel duplo — empilha em portrait / telas estreitas */
+@media screen and (max-width: 1023px),
+       screen and (orientation: portrait) {
+    body {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .left-panel {
+        flex: none;
+        padding: 40px 24px;
+        min-height: auto;
+    }
+
+    .right-panel {
+        flex: 1;
+        border-radius: 24px 24px 0 0;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+        padding: 24px 16px;
+    }
+
+    .login-box {
+        max-width: 100%;
+        padding: 24px;
+    }
+
+    .services {
+        grid-template-columns: 1fr;
+    }
+}

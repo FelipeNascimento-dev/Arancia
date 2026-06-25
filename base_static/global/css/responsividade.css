@@ -1,365 +1,219 @@
-@media screen and (max-width: 1280px) {
-    .user-list-container {
-        max-width: 1150px;
-    }
+/**
+ * Responsividade global — Arancia (desktop-first).
+ * Formulários base em form_1/2/3col.css; aqui só ajustes por breakpoint.
+ */
 
-    .grid-container {
-        width: 1150px;
-    }
+/* ---- Desktop estreito (1024px–1439px) ---- */
+@media screen and (max-width: 1439px) and (min-width: 1024px) {
+  :root {
+    --form-max-width: var(--form-max-width-narrow);
+  }
 
-    .etapas-container {
-        width: 100% !important;
-        background-color: #ffffff;
-        box-sizing: border-box;
-        margin-top: 50px;
-        margin-bottom: 15px;
-        margin-left: 14px;
-    }
+  .user-list-container {
+    width: min(var(--form-max-width-narrow), 100%);
+    max-width: 100%;
+  }
 
-    .etapa {
-        position: relative;
-        background-color: var(--sidebar-bg);
-        color: #000;
-        padding: 10px 25px;
-        font-weight: bold;
-        font-size: 13.7px;
-        min-width: 158px;
-        text-align: center;
-        z-index: 1;
-        transition: background-color 0.3s ease;
-        clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%, 15px 50%);
-        margin-right: -13px;
-    }
+  .grid-container {
+    width: min(var(--form-max-width-narrow), 100%);
+    max-width: 100%;
+  }
 
-    .etapas-container::after {
-        content: '';
-        position: fixed;
-        top: calc(50px + 36px);
-        left: 0;
-        width: 100vw;
-        height: 1px;
-        background-color: #ccc;
-    }
+  .etapas-container {
+    width: 100% !important;
+    background-color: #ffffff;
+    box-sizing: border-box;
+    margin-top: 50px;
+    margin-bottom: 15px;
+    margin-left: 14px;
+  }
 
-    .form-card-2col {
-        width: 1150px;
-        max-width: 1150px;
-        padding: 32px;
-    }
+  .etapa {
+    position: relative;
+    background-color: var(--sidebar-bg);
+    color: #000;
+    padding: 10px 25px;
+    font-weight: bold;
+    font-size: 13.7px;
+    min-width: 142px;
+    text-align: center;
+    z-index: 1;
+    transition: background-color 0.3s ease;
+    clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%, 15px 50%);
+    margin-right: -13px;
+  }
 
-    .form-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 60px;
-    }
+  .etapas-container::after {
+    content: '';
+    position: fixed;
+    top: calc(50px + 36px);
+    left: 0;
+    width: 100vw;
+    height: 1px;
+    background-color: #ccc;
+  }
 
-    .form-card-2col input,
-    .form-card-2col select,
-    .form-card-2col textarea {
-        width: 530px;
-        font-size: 16px;
-        padding: 12px;
-    }
+  .form-card,
+  .form-card-2col,
+  .form-1col,
+  .card-2col {
+    padding: 32px;
+  }
 
-    .form-card-2col h2 {
-        font-size: 24px;
-    }
+  .form-card h2,
+  .form-card-2col h2,
+  .form-1col .form-title,
+  .form-group-1col h2 {
+    font-size: 24px;
+  }
 
-    label {
-        font-size: 16px;
-    }
+  .form-card label,
+  .form-grid-2col label,
+  .form-group-1col label {
+    font-size: 16px;
+  }
 
-    .submit-button-right {
-        font-size: 17px;
-        padding: 12px 28px;
-        min-width: 200px;
-    }
+  .form-3col input,
+  .form-3col select,
+  .form-3col textarea,
+  .form-group-1col input,
+  .form-group-1col select,
+  .form-group-1col textarea {
+    font-size: 16px;
+    padding: 12px;
+  }
 
-    .form-card {
-        width: 1150px;
-        max-width: 1150px;
-        padding: 32px;
-    }
+  .submit-button-right {
+    font-size: 17px;
+    padding: 12px 28px;
+    min-width: 180px;
+  }
 
-    .form-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 60px;
-    }
-
-    .form-3col input,
-    .form-3col select,
-    .form-3col textarea {
-        width: 322px;
-        font-size: 16px;
-        padding: 12px;
-    }
-
-    .form-card h2 {
-        font-size: 24px;
-    }
-
-    label {
-        font-size: 16px;
-    }
-
-    .submit-button-right {
-        font-size: 17px;
-        padding: 12px 28px;
-        min-width: 180px;
-    }
-
-    .form-card {
-        width: 900px;
-        max-width: 900px;
-        padding: 32px;
-    }
-
-    .form-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 60px;
-    }
-
-    .form-3col input,
-    .form-3col select,
-    .form-3col textarea {
-        width: 300px;
-        font-size: 16px;
-        padding: 12px;
-    }
-
-    .form-card h2 {
-        font-size: 24px;
-    }
-
-    label {
-        font-size: 16px;
-    }
-
-    .submit-button-right {
-        font-size: 17px;
-        padding: 12px 28px;
-        min-width: 180px;
-    }
-
-    .chips-wrap {
-        justify-content: left;
-        width: 1067px;
-        margin-top: 12px;
-    }
+  .chips-wrap {
+    justify-content: left;
+    width: min(1067px, 100%);
+    margin-top: 12px;
+  }
 }
 
-@media screen and (max-width: 1336px) {
-    .user-list-container {
-        max-width: 1150px;
-    }
-
-    .grid-container {
-        width: 1150px;
-    }
-
-    .etapas-container {
-        width: 100% !important;
-        background-color: #ffffff;
-        /* padding: 0 0 20px; */
-        box-sizing: border-box;
-        margin-top: 50px;
-        margin-bottom: 15px;
-        margin-left: 14px;
-    }
-
-    .etapa {
-        position: relative;
-        background-color: var(--sidebar-bg);
-        color: #000;
-        padding: 10px 25px;
-        font-weight: bold;
-        font-size: 13.7px;
-        min-width: 142px;
-        text-align: center;
-        z-index: 1;
-        transition: background-color 0.3s ease;
-        clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%, 15px 50%);
-        margin-right: -13px;
-    }
-
-    .etapas-container::after {
-        content: '';
-        position: fixed;
-        top: calc(50px + 36px);
-        left: 0;
-        width: 100vw;
-        height: 1px;
-        background-color: #ccc;
-    }
-
-    .form-card-2col {
-        width: 1150px;
-        max-width: 1150px;
-        padding: 32px;
-    }
-
-    .form-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 60px;
-    }
-
-    .form-card-2col input,
-    .form-card-2col select,
-    .form-card-2col textarea {
-        width: 530px;
-        font-size: 16px;
-        padding: 12px;
-    }
-
-    .form-card-2col h2 {
-        font-size: 24px;
-    }
-
-    label {
-        font-size: 16px;
-    }
-
-    .submit-button-right {
-        font-size: 17px;
-        padding: 12px 28px;
-        min-width: 200px;
-    }
-
-    .form-card {
-        width: 1150px;
-        max-width: 1150px;
-        padding: 32px;
-    }
-
-    .form-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 60px;
-    }
-
-    .form-3col input,
-    .form-3col select,
-    .form-3col textarea {
-        width: 322px;
-        font-size: 16px;
-        padding: 12px;
-    }
-
-    .form-card h2 {
-        font-size: 24px;
-    }
-
-    label {
-        font-size: 16px;
-    }
-
-    .submit-button-right {
-        font-size: 17px;
-        padding: 12px 28px;
-        min-width: 180px;
-    }
-
-    .form-card {
-        width: 1150px;
-        max-width: 1150px;
-        padding: 32px;
-    }
-
-    .form-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 60px;
-    }
-
-    .form-3col input,
-    .form-3col select,
-    .form-3col textarea {
-        width: 320px;
-        font-size: 16px;
-        padding: 12px;
-    }
-
-    .form-card h2 {
-        font-size: 24px;
-    }
-
-    label {
-        font-size: 16px;
-    }
-
-    .submit-button-right {
-        font-size: 17px;
-        padding: 12px 28px;
-        min-width: 180px;
-    }
-
-    .chips-wrap {
-        justify-content: left;
-        width: 1067px;
-        margin-top: 12px;
-    }
+/* 3 colunas → 2 entre 1024px e 1279px */
+@media screen and (max-width: 1279px) and (min-width: 1024px) {
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+  }
 }
 
-@media screen and (max-width: 1440px) {
-    .form-1col {
-        width: 1150px;
-        max-width: 1150px;
-        padding: 32px;
-    }
-
-    .form-group-1col input,
-    .form-group-1col select,
-    .form-group-1col textarea {
-        width: 1085px;
-        font-size: 16px;
-        padding: 12px;
-    }
-
-    .form-group-1col h2 {
-        font-size: 24px;
-    }
-
-    label {
-        font-size: 16px;
-    }
-
-    .submit-button-right {
-        font-size: 17px;
-        padding: 12px 28px;
-        min-width: 180px;
-    }
+@media screen and (max-width: 1280px) and (min-width: 1024px) {
+  .etapa {
+    min-width: 158px;
+  }
 }
 
+/* ---- Abaixo de 1024px ---- */
+@media screen and (max-width: 1023px) {
+  .form-grid,
+  .form-grid-2col {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 
+  .grid-container {
+    width: 100%;
+    max-width: 100%;
+  }
+}
 
-@media (max-width: 992px) {
+/* ---- Monitores verticais (portrait) ---- */
+@media screen and (orientation: portrait) {
+  :root {
+    --form-max-width: min(1300px, calc(100vw - var(--content-offset) - 32px));
+  }
+
+  .form-grid,
+  .form-grid-2col {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .welcome-banner {
+    margin-left: var(--content-offset);
+    margin-right: var(--content-gutter);
+  }
+
+  .form-actions {
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: stretch;
+  }
+
+  .form-actions .submit-button-right,
+  .form-card form > div[style*="text-align: right"] .submit-button-right {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Cards de transportes / campo */
+  #card-location,
+  #card-destination {
+    min-width: min(625px, 100%);
+  }
+
+  .setcontainer table {
+    min-width: min(1100px, 100%);
+  }
+}
+
+/* ---- Monitores grandes (≥ 1920px) ---- */
+@media screen and (min-width: 1920px) {
+  .forma::before {
+    clip-path: polygon(0 0, 45% 0, 75% 100%, 0% 200%);
+  }
+
+  .form-card,
+  .form-card-2col,
+  .form-1col {
+    max-width: min(var(--form-max-width), calc(100vw - var(--content-offset) - var(--content-gutter) * 2));
+  }
+}
+
+/* ---- Cards de campo / fichas ---- */
+@media screen and (max-width: 992px) {
   .card-box {
-    flex: 1 1 calc(50% - 15px); /* 2 por linha */
+    flex: 1 1 calc(50% - 15px);
   }
-  .tec-ficha, .ordem-ficha {
-    grid-template-columns: 2fr; /* ficha em uma coluna só */
+
+  .tec-ficha,
+  .ordem-ficha {
+    grid-template-columns: 2fr;
   }
 }
 
-/* celulares */
-@media (max-width: 576px) {
+@media screen and (max-width: 576px) {
   .setcontainer {
     padding: 10px;
     margin-top: 20px;
   }
+
   .card-box {
-    flex: 1 1 100%; /* um card por linha */
+    flex: 1 1 100%;
   }
+
   .card-box strong {
     font-size: 16px;
   }
+
   .card-box .icon {
     font-size: 24px;
   }
+
   .linha {
     flex-direction: column;
     align-items: first baseline;
   }
+
   .linha .valor {
     text-align: left;
     margin-top: 4px;
   }
 }
-
