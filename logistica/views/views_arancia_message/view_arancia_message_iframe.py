@@ -17,6 +17,8 @@ def arancia_message_iframe(request):
         'arancia_message_url': None,
         'arancia_message_error': None,
         'arancia_message_ui_host': '',
+        "current_menu": "arancia_message_iframe",
+        "site_title": "Messages"
     }
 
     try:
@@ -29,5 +31,5 @@ def arancia_message_iframe(request):
     return render(
         request,
         'logistica/templates_arancia_message/arancia_message_iframe.html',
-        context,
+        context
     )
