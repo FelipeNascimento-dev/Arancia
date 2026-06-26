@@ -344,12 +344,12 @@
         margin-bottom: 20px;
     }
 
-    .tabs {
+    .tabs-wrapper .tabs {
         display: flex;
         gap: 10px;
     }
 
-    .tab {
+    .tabs-wrapper .tab {
         padding: 8px 14px;
         border-radius: 8px;
         font-size: 14px;
@@ -359,16 +359,16 @@
         transition: 0.2s;
     }
 
-    .tab.active {
+    .tabs-wrapper .tab.active {
         background: #0e76bd;
         color: white;
     }
 
-    .tab-pane {
+    .tabs-wrapper .tab-pane {
         display: none;
     }
 
-    .tab-pane.active {
+    .tabs-wrapper .tab-pane.active {
         display: block;
     }
 
