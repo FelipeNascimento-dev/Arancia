@@ -13,6 +13,7 @@ from transportes.services.lista_viagens_service import (
     build_pagination_state,
     filtros_para_querystring,
     formatar_data,
+    load_travels_page,
     montar_filtros_lista_viagens,
     show_origin_column,
 )
@@ -127,7 +128,10 @@ def lista_viagens(request):
             filtros = {"Response": "resume"}
             request.session.pop(SESSION_KEY_LISTA_VIAGENS_FILTROS, None)
         elif (
-            "page" in request.GET
+            (
+                "page" in request.GET
+                or "view_mode" in request.GET
+            )
             and SESSION_KEY_LISTA_VIAGENS_FILTROS in request.session
         ):
             filtros = dict(request.session[SESSION_KEY_LISTA_VIAGENS_FILTROS])
@@ -237,14 +241,34 @@ def lista_viagens(request):
     travels = []
     total = 0
     consultando = bool(filtros_ativos or response_mode)
-    async_list_load = consultando
+    async_list_load = False
+    base_qs_no_view = filtros_para_querystring(filtros, FILTRO_CAMPOS_LISTA_VIAGENS)
 
     if consultando:
         request.session[SESSION_KEY_LISTA_VIAGENS_FILTROS] = filtros
-
-    base_qs_no_view = filtros_para_querystring(filtros, FILTRO_CAMPOS_LISTA_VIAGENS)
-    pagination = build_pagination_state(page, total, len(travels))
-    pagination["base_qs"] = append_view_mode_to_qs(base_qs_no_view, view_mode)
+        page_result = load_travels_page(
+            filtros,
+            page,
+            maps_ctx,
+            request,
+            response_mode=response_mode,
+            view_mode=view_mode,
+        )
+        for err in page_result.get("errors") or []:
+            messages.error(request, err)
+        travels = page_result.get("travels") or []
+        total = page_result.get("total") or 0
+        pagination = page_result.get("pagination") or build_pagination_state(
+            page, total, len(travels)
+        )
+        show_origin = page_result.get(
+            "show_origin_column", show_origin_column(travels)
+        )
+        base_qs_no_view = page_result.get("base_qs_no_view") or base_qs_no_view
+    else:
+        pagination = build_pagination_state(page, total, len(travels))
+        pagination["base_qs"] = append_view_mode_to_qs(base_qs_no_view, view_mode)
+        show_origin = show_origin_column(travels)
 
     filtros_exibicao = build_filtros_exibicao(filtros, maps_ctx)
     contexto_atribuir = obter_contexto_atribuir_motorista(request.user)
@@ -270,7 +294,7 @@ def lista_viagens(request):
             "travel_event_types": travel_event_types,
             "response_mode": response_mode,
             "carriers": resp_transportadora,
-            "show_origin_column": show_origin_column(travels),
+            "show_origin_column": show_origin,
             "view_mode": view_mode,
             "consultando": consultando,
             "async_list_load": async_list_load,

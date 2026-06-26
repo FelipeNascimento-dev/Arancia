@@ -14,6 +14,7 @@ from transportes.services.consulta_os_service import (
     build_export_params,
     build_list_params,
     build_pagination_state,
+    load_orders_page,
     montar_filtros_consulta_os,
 )
 from transportes.services.transportes_metadata_service import (
@@ -162,6 +163,8 @@ def consulta_os_transp(request):
     filtros_exibicao = []
     async_list_load = False
     consultando = False
+    pagination = build_pagination_state(page, total, len(resultado_api))
+    pagination["base_qs"] = base_qs
 
     if should_query:
         _, filtros_exibicao, errors = build_list_params(
@@ -171,11 +174,24 @@ def consulta_os_transp(request):
             messages.error(request, err)
 
         if not errors:
-            async_list_load = True
             consultando = True
-
-    pagination = build_pagination_state(page, total, len(resultado_api))
-    pagination["base_qs"] = base_qs
+            page_result = load_orders_page(
+                data,
+                page,
+                status_by_id,
+                order_type_by_id,
+                resp if isinstance(resp, list) else [],
+                view_mode=view_mode,
+            )
+            for err in page_result.get("errors") or []:
+                messages.error(request, err)
+            resultado_api = page_result.get("orders") or []
+            total = page_result.get("total") or 0
+            pagination = page_result.get("pagination") or build_pagination_state(
+                page, total, len(resultado_api)
+            )
+            pagination["base_qs"] = base_qs
+            filtros_exibicao = page_result.get("filtros_exibicao") or filtros_exibicao
 
     filtros_ativos = len(filtros_exibicao)
     form.errors.pop("origem", None)
