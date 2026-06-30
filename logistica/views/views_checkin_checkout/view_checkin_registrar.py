@@ -178,8 +178,15 @@ def client_checkin(request):
         }
 
         try:
+            url_provisional = f"{STOCK_API_URL}/v1/item/provisional/"
+            print(f"[checkin_registrar] POST {url_provisional}")
+            print(
+                f"[checkin_registrar] payload: "
+                f"{json.dumps(payload, ensure_ascii=False, indent=2)}"
+            )
+
             res = RequestClient(
-                url=f"{STOCK_API_URL}/v1/item/provisional/",
+                url=url_provisional,
                 method="POST",
                 headers={
                     "Accept": "application/json",
@@ -311,8 +318,15 @@ def client_checkin(request):
                     "created_by": request.user.username.upper(),
                 }
 
+                url_movements = f"{STOCK_API_URL}/v1/movements/"
+                print(f"[checkin_registrar] POST {url_movements}")
+                print(
+                    f"[checkin_registrar] payload: "
+                    f"{json.dumps(payload, ensure_ascii=False, indent=2)}"
+                )
+
                 res = RequestClient(
-                    url=f"{STOCK_API_URL}/v1/movements/",
+                    url=url_movements,
                     method="POST",
                     headers={
                         "Accept": "application/json",
