@@ -11,8 +11,8 @@
     align-items: center;
     justify-content: space-between;
     margin-top: 40px;
-    margin-left: 90px;
-    margin-right: 25px;
+    margin-left: var(--content-offset-wide);
+    margin-right: var(--content-gutter);
     margin-bottom: 40px;
   }
 
@@ -200,8 +200,8 @@
     .section-header {
       flex-direction: column;
       align-items: flex-start;
-      margin-left: 20px;
-      margin-right: 20px;
+      margin-left: var(--content-gutter);
+      margin-right: var(--content-gutter);
     }
 
     .btn-create {
@@ -490,7 +490,7 @@
   </button>
   {% endif %}
 </div>
-<p style="margin-left: 90px; color: #555; font-size: 1rem;">
+<p class="app-page-actions" style="color: #555; font-size: 1rem;">
   Nenhum produto encontrado.
 </p>
 {% endif %}

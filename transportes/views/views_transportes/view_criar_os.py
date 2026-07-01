@@ -116,8 +116,6 @@ def criar_os_transp(request):
                 if extra_information:
                     payload["extra_information"] = extra_information
 
-                print(payload)
-
                 url = f"{TRANSP_API_URL}/service_orders/Abertura"
                 client = RequestClient(
                     url=url,

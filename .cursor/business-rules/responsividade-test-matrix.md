@@ -1,44 +1,77 @@
 # Matriz de testes — responsividade Arancia
 
-Checklist obrigatório em cada PR das fases de responsividade (Fase 0+).
+Checklist obrigatório em cada PR de responsividade. Validar por **faixa de largura contínua**, não por resoluções isoladas.
 
-## Viewports
+## Faixas de largura (redimensionar o navegador de ponta a ponta)
 
-| Viewport | Uso | Baseline |
-|----------|-----|----------|
-| 1920×1080 | Desktop grande | **Não pode mudar** em relação ao visual atual |
-| 1366×768 | Notebook comum | Sem scroll horizontal na home e forms principais |
-| 1280×1024 | Desktop estreito | Shell e conteúdo cabem sem overflow lateral |
-| 1080×1920 | Monitor vertical (portrait) | Sidebar colapsada; conteúdo legível |
-| 2560×1440 | Monitor grande | Sem regressão; uso opcional de largura extra |
+| Faixa | Largura aproximada | O que verificar |
+|-------|-------------------|-----------------|
+| Estreito | 320px – 767px | Sem scroll horizontal no `body`; formulários empilham |
+| Médio | 768px – 1279px | Shell usa tokens; tabelas com scroll interno se necessário |
+| Largo | 1280px – 1919px | Conteúdo preenche faixa útil (`app-page--fluid`) |
+| Ultrawide | ≥ 1920px | Sem faixa morta à direita; cap só via `min(token, --content-max-width-fluid)` |
+
+## Critérios de aceite (todas as faixas)
+
+1. `horizontalOverflow === false` — `document.documentElement.scrollWidth <= window.innerWidth + 1`
+2. Wrapper principal usa tokens (`--content-offset`, `--content-gutter`, `--content-max-width-*`), não `65px`/`1300px` soltos
+3. Telas wide (`app-page--fluid`, mural feed): conteúdo preenche faixa útil com tolerância de padding (~60px)
+4. Formulários (`app-page--form`): cap de leitura sem espaço morto quando viewport é menor que o cap
+5. Tabelas largas: `overflow-x: auto` no container, não no `body`
+
+## Script de auditoria
+
+Carregar ou colar no console (arquivo: `base_static/global/js/audit-layout.js`):
+
+```javascript
+// Uma tela
+auditLayout('.app-page--fluid');
+
+// Várias telas comuns
+auditLayoutAll();
+```
+
+Retorno esperado para telas fluidas em viewport largo:
+
+```javascript
+{
+  fillsSpace: true,
+  horizontalOverflow: false,
+  ok: true
+}
+```
+
+### Bookmarklet (opcional)
+
+```javascript
+javascript:(function(){var s=document.createElement('script');s.src='/static/global/js/audit-layout.js';s.onload=function(){console.table(auditLayoutAll().results);alert(JSON.stringify(auditLayoutAll(),null,2));};document.head.appendChild(s);})();
+```
+
+Ajuste o caminho `/static/` se o deploy usar prefixo diferente.
 
 ## Checklist por módulo
 
-Marcar ✅ após validação visual e funcional em cada viewport relevante.
+Marcar após validação visual + `auditLayoutAll()` em estreito, médio, largo e ultrawide.
 
-| Módulo | Tela de teste | 1920 | 1366 | 1280 | portrait | 2560 |
-|--------|---------------|------|------|------|----------|------|
-| Shell | Home (`base.html` welcome-banner) | | | | | |
-| Forms | 1 formulário 2 colunas | | | | | |
-| Forms | 1 formulário 3 colunas | | | | | |
-| Admin | Gestão usuários (tabela) | | | | | |
-| Logística | Consulta pedidos | | | | | |
-| Transportes | Detalhe OS | | | | | |
-| Mural | Feed principal | | | | | |
-| Iframe | Acompanhamento / Arancia Message | | | | | |
-| Auth | Login | | | | | |
+| Módulo | Tela de teste | Estreito | Médio | Largo | Ultrawide |
+|--------|---------------|----------|-------|-------|-----------|
+| Shell | Home (`welcome-banner`) | | | | |
+| Forms | Formulário 2 colunas | | | | |
+| Admin | Gestão usuários | | | | |
+| Logística | Consulta produtos | | | | |
+| Transportes | Lista viagens / detalhe OS | | | | |
+| Mural | Feed principal | | | | |
+| CRM | Lista tasks / dashboard | | | | |
+| Backoffice | Importação | | | | |
+| Iframe | Acompanhamento | | | | |
 
-## Critérios de aceite (Fases 0–1)
+## Após editar CSS globais
 
-- Tokens carregam (`layout-tokens.css` antes dos forms em `style.css`).
-- Em 1920×1080 o layout permanece idêntico ao baseline.
-- Em 1280×1024 e 1080×1920 a home não apresenta scroll horizontal causado pelo shell.
-- Sidebar: ≥1440px toggle manual; 1024–1439px e &lt;1024px colapsada por default; dropdowns expandem sidebar ao clicar.
-- Top bar: breadcrumb truncado; busca com largura fluida.
+```powershell
+python manage.py bundle_global_css
+```
 
-## Como testar
+## Tokens e shell
 
-1. DevTools → modo responsivo → definir dimensões da tabela acima.
-2. Navegar logado com usuário operacional (GAI configurado).
-3. Verificar scroll horizontal (`document.documentElement.scrollWidth > innerWidth`).
-4. Após editar CSS globais: `python manage.py bundle_global_css`.
+- `base_static/global/css/layout-tokens.css` — `--content-max-width-fluid`, `--content-max-width-form`
+- `base_static/global/css/content-shell.css` — `.app-page`, `.app-page--fluid`, `.app-page--form`

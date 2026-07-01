@@ -9,6 +9,12 @@ import json
 from pathlib import Path
 from setup.local_settings import MURAL_API_URL, TRANSP_API_URL
 from mural.helpers.create_item_payload import build_create_item_v2_payload
+from mural.helpers.form_draft import extract_create_form_draft, extract_created_item_id
+from mural.helpers.mural_api import (
+    fetch_mural_items_for_user_raw,
+    merge_author_items_missing_from_feed,
+    merge_pending_item_for_creator,
+)
 from mural.helpers.target_catalogs import empty_target_catalogs, get_mural_target_catalogs
 from utils import request
 from utils.request import RequestClient
@@ -300,43 +306,29 @@ def _normalize_reads_param(raw_value):
     return reads_param
 
 
-def fetch_mural_items_for_user(user_id, gai_id, reads_param="false"):
+def fetch_mural_items_for_user(
+    user_id,
+    gai_id,
+    reads_param="false",
+    *,
+    pending_item_id=None,
+    include_author_orphans=False,
+):
     """Busca itens do feed consumidor na API do mural."""
-    params = {
-        "user_id": user_id,
-        "gai_id": gai_id,
-        "offset": 0,
-        "limit": 100,
-        "reads": reads_param,
-    }
-
-    url = f"{MURAL_API_URL}/v1/items/by-user/?{urlencode(params)}"
-
-    client = RequestClient(
-        url=url,
-        method="GET",
-        headers={
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        },
+    items = fetch_mural_items_for_user_raw(
+        user_id=user_id,
+        gai_id=gai_id,
+        reads_param=reads_param,
     )
 
-    resp = client.send_api_request()
+    items = merge_pending_item_for_creator(
+        items,
+        pending_item_id=pending_item_id,
+        user_id=user_id,
+    )
 
-    if isinstance(resp, dict) and "detail" in resp:
-        raise ValueError(resp.get("detail") or "Erro ao carregar itens do mural.")
-
-    if isinstance(resp, list):
-        items = resp
-    elif isinstance(resp, dict):
-        items = (
-            resp.get("items")
-            or resp.get("results")
-            or resp.get("data")
-            or []
-        )
-    else:
-        items = []
+    if include_author_orphans:
+        items = merge_author_items_missing_from_feed(items, user_id=user_id)
 
     return [normalize_item(item) for item in items]
 
@@ -346,12 +338,17 @@ def fetch_mural_items_for_user(user_id, gai_id, reads_param="false"):
 def mural_items_feed(request):
     """JSON do feed — carregado pelo browser após o shell da página."""
     reads_param = _normalize_reads_param(request.GET.get("reads"))
+    pending_item_id = request.GET.get("pending_id") or request.session.get(
+        "mural_pending_item_id"
+    )
 
     try:
         items = fetch_mural_items_for_user(
             user_id=request.user.id,
             gai_id=request.user.designacao.informacao_adicional_id,
             reads_param=reads_param,
+            pending_item_id=pending_item_id,
+            include_author_orphans=request.user.has_perm("mural.ger_mural"),
         )
     except Exception as exc:
         return JsonResponse(
@@ -387,6 +384,8 @@ def mural(request):
 
     reads_param = _normalize_reads_param(request.GET.get("reads"))
     show_reads = reads_param == "true"
+    create_form_draft = None
+    mural_pending_item_id = request.session.pop("mural_pending_item_id", None)
 
     if "view_reads" in request.POST:
         view_read_search_done = True
@@ -474,6 +473,16 @@ def mural(request):
             view_read_results = []
 
     if "create_mural_item" in request.POST:
+        def _store_create_draft_on_error(message):
+            nonlocal create_form_draft
+            messages.error(request, message)
+            create_form_draft = extract_create_form_draft(request.POST)
+            if request.FILES.getlist("attachment_files") or request.FILES.get("image_file"):
+                messages.warning(
+                    request,
+                    "Os arquivos selecionados precisam ser anexados novamente.",
+                )
+
         summary = request.POST.get("summary")
         severity = request.POST.get("severity")
         starts_at_raw = request.POST.get("starts_at")
@@ -481,80 +490,110 @@ def mural(request):
 
         is_valid_summary, summary_error = validate_summary_length(summary)
         if not is_valid_summary:
-            messages.error(request, summary_error)
-            return redirect('mural:mural')
-
-        is_valid_critical, critical_error = validate_critical_duration(
-            severity=severity,
-            starts_at_raw=starts_at_raw,
-            ends_at_raw=ends_at_raw
-        )
-
-        if not is_valid_critical:
-            messages.error(request, critical_error)
-            return redirect('mural:mural')
-
-        attachment_files = request.FILES.getlist("attachment_files")
-        attachment_descriptions = request.POST.getlist(
-            "attachment_descriptions")
-
-        image_file = request.FILES.get("image_file")
-
-        attachments = []
-        image_url = None
-
-        try:
-            if attachment_files:
-                attachments = build_attachments_from_files(
-                    uploaded_files=attachment_files,
-                    descriptions=attachment_descriptions
-                )
-
-            if image_file:
-                image_url = upload_file_to_firebase(image_file)
-
-        except Exception as e:
-            messages.error(
-                request, f"Erro ao enviar arquivo/imagem para o Firebase. Erro: {e}"
-            )
-            return redirect('mural:mural')
-
-        payload, target_error = build_create_item_v2_payload(
-            post_data=request.POST,
-            user_id=request.user.id,
-            attachments=attachments,
-            image_url=image_url,
-        )
-
-        if target_error:
-            messages.error(request, target_error)
-            return redirect('mural:mural')
-
-        try:
-            create_url = (
-                f"{MURAL_API_URL}/v2/items/create-item/"
+            _store_create_draft_on_error(summary_error)
+        else:
+            is_valid_critical, critical_error = validate_critical_duration(
+                severity=severity,
+                starts_at_raw=starts_at_raw,
+                ends_at_raw=ends_at_raw
             )
 
-            create_client = RequestClient(
-                url=create_url,
-                method="POST",
-                headers={
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                },
-                request_data=payload
-            )
-
-            create_resp = create_client.send_api_request()
-
-            if 'detail' in create_resp:
-                messages.error(request, create_resp.get('detail'))
+            if not is_valid_critical:
+                _store_create_draft_on_error(critical_error)
             else:
-                messages.success(request, "Item criado com sucesso!")
-                return redirect('mural:mural')
+                attachment_files = request.FILES.getlist("attachment_files")
+                attachment_descriptions = request.POST.getlist(
+                    "attachment_descriptions")
 
-        except Exception as e:
-            messages.error(request, f"Erro ao criar item no mural. Erro: {e}")
+                image_file = request.FILES.get("image_file")
+
+                attachments = []
+                image_url = None
+
+                try:
+                    if attachment_files:
+                        attachments = build_attachments_from_files(
+                            uploaded_files=attachment_files,
+                            descriptions=attachment_descriptions
+                        )
+
+                    if image_file:
+                        image_url = upload_file_to_firebase(image_file)
+
+                except Exception as e:
+                    _store_create_draft_on_error(
+                        f"Erro ao enviar arquivo/imagem para o Firebase. Erro: {e}"
+                    )
+                else:
+                    payload, target_error = build_create_item_v2_payload(
+                        post_data=request.POST,
+                        user_id=request.user.id,
+                        attachments=attachments,
+                        image_url=image_url,
+                    )
+
+                    if target_error:
+                        _store_create_draft_on_error(target_error)
+                    else:
+                        try:
+                            create_url = (
+                                f"{MURAL_API_URL}/v2/items/create-item/"
+                            )
+
+                            create_client = RequestClient(
+                                url=create_url,
+                                method="POST",
+                                headers={
+                                    "Content-Type": "application/json",
+                                    "Accept": "application/json",
+                                },
+                                request_data=payload
+                            )
+
+                            create_resp = create_client.send_api_request()
+
+                            if isinstance(create_resp, dict) and 'detail' in create_resp:
+                                _store_create_draft_on_error(create_resp.get('detail'))
+                            else:
+                                created_id = extract_created_item_id(create_resp)
+                                if created_id is not None:
+                                    request.session["mural_pending_item_id"] = created_id
+                                    try:
+                                        visible_items = fetch_mural_items_for_user(
+                                            user_id=request.user.id,
+                                            gai_id=request.user.designacao.informacao_adicional_id,
+                                            reads_param="false",
+                                        )
+                                        visible_ids = {
+                                            str(item.get("id"))
+                                            for item in visible_items
+                                        }
+                                        if str(created_id) not in visible_ids:
+                                            target_type = payload.get("target_type")
+                                            if target_type == "custom":
+                                                messages.warning(
+                                                    request,
+                                                    "Item criado, mas ainda não está visível no "
+                                                    "seu feed. Verifique se o público "
+                                                    "personalizado inclui seu usuário, grupo ou "
+                                                    "GAI. Você pode ajustar o item em "
+                                                    "Gerenciamento do mural.",
+                                                )
+                                            else:
+                                                messages.warning(
+                                                    request,
+                                                    "Item criado, mas ainda não apareceu no feed. "
+                                                    "Aguarde alguns segundos e atualize a página.",
+                                                )
+                                    except Exception:
+                                        pass
+                                messages.success(request, "Item criado com sucesso!")
+                                return redirect('mural:mural')
+
+                        except Exception as e:
+                            _store_create_draft_on_error(
+                                f"Erro ao criar item no mural. Erro: {e}"
+                            )
 
     if "disable_item" in request.POST:
         item_id = request.POST.get("disable_item_id")
@@ -766,4 +805,6 @@ def mural(request):
         'view_read_selected_item_id': view_read_selected_item_id,
         'view_read_filters': view_read_filters,
         'show_reads': show_reads,
+        'create_form_draft': create_form_draft,
+        'mural_pending_item_id': mural_pending_item_id,
     })

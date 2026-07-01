@@ -3,8 +3,8 @@
     .os-container {
         margin-left: var(--content-offset);
         margin-top: calc(var(--topbar-height) + 12px);
-        width: min(1400px, calc(100vw - var(--content-offset) - var(--content-gutter) * 2));
-        max-width: 100%;
+        width: 100%;
+        max-width: var(--content-max-width-fluid);
         height: auto;
         box-sizing: border-box;
     }

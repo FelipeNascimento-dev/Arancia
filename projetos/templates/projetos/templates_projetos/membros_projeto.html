@@ -5,7 +5,7 @@
     <i class="fa-solid fa-users"></i> Membros — {{ projeto.display_name|default:projeto.name|default:projeto.nome|default:"Projeto" }}
 </h2>
 
-<div style="margin: 0 65px 16px;">
+<div class="app-page-breadcrumb-bar">
     <a href="{% url 'projetos:detalhe_projeto' project_id %}" class="btn btn-secondary btn-sm">
         <i class="fa-solid fa-arrow-left"></i> Voltar ao projeto
     </a>
@@ -16,7 +16,7 @@
     {% endif %}
 </div>
 
-<div class="user-list-container" style="margin-left: 65px;">
+<div class="user-list-container">
     <div class="table-wrapper">
         <table class="user-table">
             <thead>

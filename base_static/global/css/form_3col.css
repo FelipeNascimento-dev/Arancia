@@ -3,8 +3,7 @@
   padding: 24px;
   border-radius: 10px;
   box-shadow: var(--box-shadow-formularios);
-  width: min(var(--form-max-width), 100%);
-  max-width: 100%;
+  width: var(--content-max-width-form);
   border: 1px solid var(--borda-formularios);
   margin-top: calc(var(--topbar-height) + 15px);
   margin-left: var(--content-offset);

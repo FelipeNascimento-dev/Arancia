@@ -35,8 +35,6 @@ def consulta_os(request):
 
             resp = client.send_api_request()
 
-            print(resp)
-
             if 'detail' in resp:
                 messages.error(request, resp.get(
                     "detail", "Chamado não encontrado!"))

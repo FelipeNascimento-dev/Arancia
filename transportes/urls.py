@@ -17,6 +17,7 @@ from .views.views_transportes.api_listas_transportes import (
     api_consulta_os_list,
     api_lista_viagens_list,
     api_order_travels,
+    api_travel_event_types,
     api_travel_events,
 )
 from .views.dashboard_view import dashboard_view
@@ -44,6 +45,11 @@ urlpatterns = [
     path("chamados/detalhe-os/<path:os>/", detalhe_os, name="detalhe_os"),
     path("chamados/lista-tecnicos/", lista_tecnicos, name="lista_tecnicos"),
 
+    path(
+        "detalhe-os/api/travel-event-types/",
+        api_travel_event_types,
+        name="api_travel_event_types",
+    ),
     path("detalhe-os/<path:order_number>/",
          detalhe_os_transp, name="detalhe_os_transp"),
     path("buscar-motoristas/", buscar_motoristas, name="buscar_motoristas"),

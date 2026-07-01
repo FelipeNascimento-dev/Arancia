@@ -467,3 +467,35 @@ def fetch_travel_events(travel_id):
 
     eventos.sort(key=lambda x: x.get("created_at") or "")
     return eventos, None
+
+
+def fetch_travel_event_types(cliente_nome, order_type_id):
+    """Tipos de evento para o modal de tracking (lazy-load)."""
+    cliente_nome = str(cliente_nome or "").strip()
+    order_type_id = str(order_type_id or "").strip()
+    if not cliente_nome or not order_type_id:
+        return [], "Cliente ou tipo de OS não informado."
+
+    query = urlencode({
+        "status": "true",
+        "cliente": cliente_nome,
+        "order_type": order_type_id,
+    })
+    url = f"{TRANSP_API_URL}/order_events_types/list?{query}"
+    client = RequestClient(
+        method="GET",
+        url=url,
+        headers={
+            "accept": "application/json",
+            "Content-Type": "application/json",
+        },
+        timeout=LIST_API_TIMEOUT,
+    )
+    resp = client.send_api_request()
+    if isinstance(resp, dict) and resp.get("detail"):
+        return [], resp["detail"]
+    if not isinstance(resp, list):
+        return [], "A API não retornou tipos de evento em formato esperado."
+
+    tipos = [ev for ev in resp if ev.get("active") is True]
+    return tipos, None

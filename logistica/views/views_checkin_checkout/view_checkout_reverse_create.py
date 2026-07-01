@@ -186,8 +186,6 @@ def checkout_reverse_create(request, rom):
             request_data=payload_finish
         )
 
-        print(payload_finish)
-
         result_finish = client_finish.send_api_request()
 
         if isinstance(result_finish, dict) and "detail" not in result_finish:

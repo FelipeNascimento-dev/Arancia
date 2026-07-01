@@ -14,9 +14,10 @@
     --primary-soft: #ecfdf3;
     --shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 
-    width: min(1480px, calc(100vw - 96px));
-    margin: 72px 0 40px 72px;
-    padding: 0 20px 28px;
+    width: min(1480px, calc(100vw - var(--content-offset) - var(--content-gutter) * 2));
+    max-width: 100%;
+    margin: calc(var(--topbar-height) + 22px) auto 40px;
+    padding: 0 var(--content-gutter) 28px;
     box-sizing: border-box;
     font-family: "Roboto", "Inter", sans-serif;
 }
@@ -362,7 +363,7 @@
 @media (max-width: 900px) {
     .dev-infra-page {
         width: 100%;
-        margin: 68px 0 24px;
+        margin: calc(var(--topbar-height) + 18px) auto 24px;
         padding: 0 12px 20px;
     }
 

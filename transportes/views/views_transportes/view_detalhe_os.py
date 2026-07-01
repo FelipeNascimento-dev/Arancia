@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, permission_required
+from django.urls import reverse
 from setup.local_settings import TRANSP_API_URL, URL_LABEL_INTELIPOST, API_KEY_INTELIPOST
 from utils.request import RequestClient
 from django.contrib import messages
@@ -188,13 +189,10 @@ def buscar_veiculos(request):
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 @permission_required('transportes.ver_transportes', raise_exception=True)
 def detalhe_os_transp(request, order_number):
-    modal_travel_events = False
     modal_confirmacao = False
     confirmation_text = ""
     confirmation_action = ""
     confirmation_id = None
-    travel_event_types = []
-    travel_items = []
 
     url = f"{TRANSP_API_URL}/service_orders/{order_number}"
     headers = {
@@ -213,7 +211,7 @@ def detalhe_os_transp(request, order_number):
     quotes_data = resp.get("quotes", []) or []
     quotes_filtradas = _filtrar_quotes_por_status(quotes_data)
 
-    print(resp)
+    # print(resp)
 
     def convert_utc_to_local(date_str):
         if not date_str:
@@ -548,92 +546,6 @@ def detalhe_os_transp(request, order_number):
 
             except Exception as e:
                 messages.error(request, f"Erro ao criar viagem: {e}")
-
-        if "travel_events" in request.POST:
-            modal_travel_events = True
-
-            travel_id = request.POST.get("travel_id")
-
-            travel_items = []
-
-            if travel_id:
-                travel_items = [
-                    item for item in resp.get("items", [])
-                    if str(item.get("travel_order_id")) == str(travel_id)
-                ]
-
-                client_id = resp.get("client", {}).get("nome")
-                order_type = resp.get("service_order", {}).get(
-                    "order_type", {}).get("id")
-            try:
-                url = f"{TRANSP_API_URL}/order_events_types/list?status=true&cliente={client_id}&order_type={order_type}"
-
-                client = RequestClient(
-                    method="GET",
-                    url=url,
-                    headers={
-                        "accept": "application/json",
-                        "Content-Type": "application/json",
-                    },
-                )
-
-                response_travel = client.send_api_request()
-
-                if isinstance(response_travel, list):
-                    travel_event_types = [
-                        ev for ev in response_travel
-                        if ev.get("active") is True
-                    ]
-
-                elif isinstance(response_travel, dict) and "detail" in response_travel:
-                    messages.error(request, response_travel["detail"])
-
-            except Exception as e:
-                messages.error(request, f"Erro ao consultar eventos: {e}")
-
-        if "travel_events_bulk" in request.POST:
-            modal_travel_events = True
-
-            travel_ids = request.POST.getlist("travel_ids")
-            travel_ids = [str(i) for i in travel_ids if str(i).strip()]
-
-            travel_items = []
-
-            if travel_ids:
-                travel_items = [
-                    item for item in resp.get("items", [])
-                    if str(item.get("travel_order_id")) in travel_ids
-                ]
-
-            client_id = resp.get("client", {}).get("nome")
-            order_type = resp.get("service_order", {}).get(
-                "order_type", {}).get("id")
-
-            try:
-                url = f"{TRANSP_API_URL}/order_events_types/list?status=true&cliente={client_id}&order_type={order_type}"
-
-                client = RequestClient(
-                    method="GET",
-                    url=url,
-                    headers={
-                        "accept": "application/json",
-                        "Content-Type": "application/json",
-                    },
-                )
-
-                response_travel = client.send_api_request()
-
-                if isinstance(response_travel, list):
-                    travel_event_types = [
-                        ev for ev in response_travel
-                        if ev.get("active") is True
-                    ]
-
-                elif isinstance(response_travel, dict) and "detail" in response_travel:
-                    messages.error(request, response_travel["detail"])
-
-            except Exception as e:
-                messages.error(request, f"Erro ao consultar eventos: {e}")
 
         UPLOAD_API_URL = f"{TRANSP_API_URL}/v2/firebase/upload/Firebase/"
 
@@ -980,7 +892,7 @@ def detalhe_os_transp(request, order_number):
                     request_data=update_driver_payload
                 )
 
-                print(update_driver_payload)
+                # print(update_driver_payload)
 
                 update_driver_response = update_driver_client.send_api_request()
 
@@ -1028,7 +940,7 @@ def detalhe_os_transp(request, order_number):
                 "status": status,
             }
 
-            print(payload_update_quote)
+            # print(payload_update_quote)
 
             try:
                 url_update_quote = f"{TRANSP_API_URL}/quotes/update/cotacao?id={quote_id}"
@@ -1242,10 +1154,6 @@ def detalhe_os_transp(request, order_number):
         messages.warning(
             request, f"Não foi possível carregar itens livres: {e}")
 
-    selected_travel_ids = []
-    if request.method == "POST":
-        selected_travel_ids = request.POST.getlist("travel_ids")
-
     from transportes.utils.atribuir_motorista import obter_contexto_atribuir_motorista
 
     contexto_atribuir = obter_contexto_atribuir_motorista(request.user)
@@ -1255,11 +1163,8 @@ def detalhe_os_transp(request, order_number):
         "payload": resp,
         "carriers": carriers,
         "grupos": grupos,
-        "modal_travel_events": modal_travel_events,
-        "travel_event_types": travel_event_types,
         "modal_confirmacao": modal_confirmacao,
         "confirmation_text": confirmation_text,
-        "travel_items": travel_items,
         "itens_sem_viagem": itens_sem_viagem,
         "quotes_rejeitadas": quotes_filtradas["quotes_rejeitadas"],
         "quotes_aprovadas_unicas": quotes_filtradas["quotes_aprovadas_unicas"],
@@ -1269,6 +1174,12 @@ def detalhe_os_transp(request, order_number):
         "site_title": "Detalhe da OS",
         "current_parent_menu": "transportes",
         "current_menu": "lista_os",
-        "selected_travel_ids": selected_travel_ids,
+        "detalhe_os_js_config": {
+            "cliente": resp.get("client", {}).get("nome", ""),
+            "order_type_id": resp.get("service_order", {}).get("order_type", {}).get("id"),
+            "urls": {
+                "travel_event_types": reverse("transportes:api_travel_event_types"),
+            },
+        },
         **contexto_atribuir,
     })
