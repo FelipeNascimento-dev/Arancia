@@ -1,7 +1,7 @@
 {% extends 'global/base.html' %}
 {% block content %}
 <style>
-    .page { max-width: 1550px; margin-top: 50px; margin-left: 65px; padding: 28px; }
+    .app-page.crm-tasks-page { padding: clamp(16px, 2vw, 28px); }
     .mural-shell { background: #fff; border: 1px solid #d9e2ec; border-radius: 18px; box-shadow: 0 6px 18px rgba(15,23,42,.06); overflow: hidden; }
     .mural-topbar { padding: 28px 30px 22px; border-bottom: 1px solid #d9e2ec; }
     .mural-title { margin: 0; font-size: 28px; font-weight: 800; }
@@ -14,7 +14,7 @@
     .tag.overdue { background: #fef2f2; color: #b91c1c; }
 </style>
 
-<div class="page">
+<div class="app-page app-page--fluid crm-tasks-page">
     <section class="mural-shell">
         <header class="mural-topbar">
             <h1 class="mural-title"><i class="fa-solid fa-user-check"></i> Minhas Tasks</h1>

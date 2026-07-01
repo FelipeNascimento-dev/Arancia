@@ -1,7 +1,8 @@
 .user-list-container {
-    width: min(var(--form-max-width), 100%);
+    width: var(--content-max-width-form);
     max-width: 100%;
-    margin-left: var(--content-offset);
+    margin-left: auto;
+    margin-right: auto;
     margin-top: calc(var(--topbar-height) + 15px);
     padding: 20px;
     background: #fff;

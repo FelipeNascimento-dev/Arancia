@@ -11,6 +11,7 @@ from transportes.services.consulta_os_service import (
 )
 from transportes.services.lista_viagens_service import (
     SESSION_KEY_LISTA_VIAGENS_FILTROS,
+    fetch_travel_event_types,
     fetch_travel_events,
     load_travels_page,
 )
@@ -31,6 +32,18 @@ from transportes.models import FiltroFavoritoUsuario
 def _resolve_view_mode(request):
     mode = (request.GET.get("view_mode") or "cards").strip().lower()
     return "table" if mode == "table" else "cards"
+
+
+@login_required(login_url="logistica:login")
+@permission_required("logistica.acesso_arancia", raise_exception=True)
+@permission_required("transportes.ver_transportes", raise_exception=True)
+def api_travel_event_types(request):
+    cliente = (request.GET.get("cliente") or "").strip()
+    order_type = (request.GET.get("order_type") or "").strip()
+    tipos, detail = fetch_travel_event_types(cliente, order_type)
+    if detail:
+        return JsonResponse({"detail": detail}, status=502)
+    return JsonResponse({"event_types": tipos})
 
 
 @login_required(login_url="logistica:login")

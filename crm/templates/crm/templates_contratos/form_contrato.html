@@ -9,10 +9,6 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-top: 40px;
-        margin-left: 90px;
-        margin-right: 25px;
-        margin-bottom: 40px;
     }
     .section-title {
         font-size: 1.4rem;
@@ -23,7 +19,7 @@
     }
 </style>
 
-<div class="section-header">
+<div class="section-header app-section-header">
     <h2 class="section-title"><i class="fa-solid fa-file-contract"></i> {{ form.nome_formulario }}</h2>
 </div>
 
@@ -36,7 +32,7 @@
     </div>
 </div>
 
-<div style="margin: 20px 90px;">
+<div class="app-page-actions">
     <a href="{% if is_edit %}{% url 'crm:detalhe_contrato' contract_id %}{% else %}{% url 'crm:lista_contratos' %}{% endif %}" class="btn btn-secondary">
         <i class="fa-solid fa-arrow-left"></i> Voltar
     </a>

@@ -2,7 +2,7 @@
 {% block content %}
 
 
-<div class="page">
+<div class="page mural-feed-page">
     <section class="mural-shell">
         <header class="mural-topbar">
             <div class="mural-head">
@@ -143,6 +143,8 @@
 </div>
 
 {{ mural_data|json_script:"mural-data" }}
+{% if create_form_draft %}{{ create_form_draft|json_script:"mural-create-form-draft" }}{% endif %}
+{% if mural_pending_item_id %}{{ mural_pending_item_id|json_script:"mural-pending-item-id" }}{% endif %}
 <script id="mural-items-feed-url" type="application/json">"{% url 'mural:mural_items_feed' %}"</script>
 
 <script>
@@ -151,6 +153,10 @@
     const muralItemsFeedUrl = JSON.parse(
         document.getElementById('mural-items-feed-url').textContent
     );
+    const muralPendingItemIdEl = document.getElementById('mural-pending-item-id');
+    const muralPendingItemId = muralPendingItemIdEl
+        ? JSON.parse(muralPendingItemIdEl.textContent)
+        : null;
 
     const muralLoadingEl = document.getElementById('muralLoading');
 
@@ -178,9 +184,16 @@
         muralLoadingEl.classList.add('hidden');
     }
 
-    async function loadMuralItems() {
+    async function loadMuralItems(options = {}) {
+        const expectItemId = options.expectItemId ?? null;
+        const retryAttempt = options.retryAttempt ?? 0;
+        const maxRetries = expectItemId ? 6 : 0;
+
         const readsParam = new URLSearchParams(window.location.search).get('reads') || 'false';
-        const feedUrl = `${muralItemsFeedUrl}?reads=${encodeURIComponent(readsParam)}`;
+        const pendingParam = expectItemId
+            ? `&pending_id=${encodeURIComponent(expectItemId)}`
+            : '';
+        const feedUrl = `${muralItemsFeedUrl}?reads=${encodeURIComponent(readsParam)}${pendingParam}&_=${Date.now()}`;
 
         setMuralLoading(true);
 
@@ -190,6 +203,7 @@
                     Accept: 'application/json',
                 },
                 credentials: 'same-origin',
+                cache: 'no-store',
             });
 
             const payload = await response.json();
@@ -197,6 +211,16 @@
 
             if (!response.ok) {
                 throw new Error(payload.error || 'Não foi possível carregar os itens do mural.');
+            }
+
+            const itemFound = !expectItemId || muralItems.some(
+                item => String(item.id) === String(expectItemId)
+            );
+
+            if (!itemFound && retryAttempt < maxRetries) {
+                const delayMs = 800 + (retryAttempt * 700);
+                await new Promise(resolve => setTimeout(resolve, delayMs));
+                return loadMuralItems({ expectItemId, retryAttempt: retryAttempt + 1 });
             }
 
             setMuralLoading(false);
@@ -327,7 +351,7 @@
 
                 <h3>${item.title}</h3>
 
-                <p>${truncateText(item.summary, 100)}</p>
+                <p>${item.summary || ''}</p>
 
                 <div class="card-meta" style="color: var(--muted); margin-top: 14px;">
                     <span>
@@ -447,14 +471,17 @@
       `;
     }
 
-    function getCardsPerSlide() {
-        const width = window.innerWidth;
-
-        if (width <= 620) return 1;
-        if (width <= 900) return 2;
-        if (width <= 1280) return 3;
-
-        return 4;
+    function getCardsPerSlide(container) {
+        const minCardWidth = 280;
+        const gap = 12;
+        const page = document.querySelector('.mural-feed-page');
+        const root = getComputedStyle(document.documentElement);
+        const offset = parseFloat(root.getPropertyValue('--content-offset')) || 65;
+        const gutter = parseFloat(root.getPropertyValue('--content-gutter')) || 16;
+        const width = container?.offsetWidth
+            || page?.offsetWidth
+            || (window.innerWidth - offset - gutter * 2);
+        return Math.max(1, Math.floor((width + gap) / (minCardWidth + gap)));
     }
 
     function chunkArray(array, size) {
@@ -468,7 +495,7 @@
     }
 
     function renderCarousel(container, items, cardRenderer, carouselId) {
-        const cardsPerSlide = getCardsPerSlide();
+        const cardsPerSlide = getCardsPerSlide(container);
         const slides = chunkArray(items, cardsPerSlide);
 
         if (items.length <= cardsPerSlide) {
@@ -730,7 +757,7 @@
         }, 250);
     });
 
-    loadMuralItems();
+    loadMuralItems({ expectItemId: muralPendingItemId });
 </script>
 
 
@@ -985,14 +1012,6 @@
 
     if (cancelCreateModalBtn) {
         cancelCreateModalBtn.addEventListener('click', closeCreateModal);
-    }
-
-    if (createModal) {
-        createModal.addEventListener('click', (event) => {
-            if (event.target === createModal) {
-                closeCreateModal();
-            }
-        });
     }
 </script>
 
@@ -2161,14 +2180,6 @@
     if (cancelEditItemModalBtn) {
         cancelEditItemModalBtn.addEventListener('click', closeEditItemModal);
     }
-
-    if (editItemModal) {
-        editItemModal.addEventListener('click', function (event) {
-            if (event.target === editItemModal) {
-                closeEditItemModal();
-            }
-        });
-    }
 </script>
 
 <!-- SELECT DE PUBLICO ALVO — manter em sync com gerenciamento_mural.html -->
@@ -2615,6 +2626,8 @@
             return { valid: true, message: '' };
         }
 
+        window.validateTargetsOnSubmit = validateTargetsOnSubmit;
+
         function renderRootTargetMode() {
             const selectedType = targetTypeSelect.value;
 
@@ -2643,7 +2656,10 @@
 
         if (createForm) {
             createForm.addEventListener('submit', function (event) {
-                const validation = validateTargetsOnSubmit();
+                const validation = window.validateTargetsOnSubmit
+                    ? window.validateTargetsOnSubmit()
+                    : { valid: true, message: '' };
+
                 if (!validation.valid) {
                     event.preventDefault();
                     alert(validation.message);
@@ -2652,6 +2668,57 @@
         }
 
         renderRootTargetMode();
+
+        window.restoreMuralCreateTargets = function (targets) {
+            if (!Array.isArray(targets) || !targets.length) {
+                return;
+            }
+
+            clearTargetBlocks();
+
+            targets.forEach(block => {
+                if (!block || !block.target_type) {
+                    return;
+                }
+
+                createTargetBlock(block.target_type);
+
+                const blockIds = Array.from(blockState.keys());
+                const blockId = blockIds[blockIds.length - 1];
+                const state = blockState.get(blockId);
+
+                if (!state) {
+                    return;
+                }
+
+                const selectedIds = Array.isArray(block.ids) ? block.ids : [];
+
+                if (block.target_type === 'gais' && selectedIds.length) {
+                    const firstGai = targetGais.find(
+                        gai => String(gai.id) === String(selectedIds[0])
+                    );
+
+                    if (firstGai && firstGai.group_id) {
+                        state.gaiGroupSelect.value = String(firstGai.group_id);
+                        refreshBlockTargets(blockId);
+                    }
+                }
+
+                selectedIds.forEach(id => {
+                    const checkbox = state.listElement.querySelector(
+                        `.target-block-checkbox[value="${id}"]`
+                    );
+
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                });
+            });
+
+            if (targetsJsonInput) {
+                targetsJsonInput.value = JSON.stringify(targets);
+            }
+        };
     });
 </script>
 
@@ -2997,7 +3064,16 @@
         const createForm = document.querySelector('#createModal form');
 
         if (createForm) {
-            createForm.addEventListener('submit', function () {
+            createForm.addEventListener('submit', function (event) {
+                if (typeof window.validateTargetsOnSubmit === 'function') {
+                    const targetValidation = window.validateTargetsOnSubmit();
+                    if (!targetValidation.valid) {
+                        event.preventDefault();
+                        alert(targetValidation.message);
+                        return;
+                    }
+                }
+
                 if (window.createContentEditor) {
                     createContent.value = window.createContentEditor.getData();
                 }
@@ -3012,6 +3088,90 @@
                     editContent.value = window.editContentEditor.getData();
                 }
             });
+        }
+
+        const draftEl = document.getElementById('mural-create-form-draft');
+
+        function restoreCreateFormDraft(draft) {
+            if (!draft || draft.form !== 'create') {
+                return;
+            }
+
+            const form = document.querySelector('#createModal form');
+            const createModalEl = document.getElementById('createModal');
+
+            if (!form || !createModalEl) {
+                return;
+            }
+
+            const setField = (name, value) => {
+                const field = form.elements[name];
+
+                if (!field) {
+                    return;
+                }
+
+                if (field.type === 'checkbox') {
+                    field.checked = !!value;
+                    return;
+                }
+
+                field.value = value ?? '';
+            };
+
+            setField('title', draft.title);
+            setField('summary', draft.summary);
+            setField('item_type', draft.item_type);
+            setField('severity', draft.severity);
+            setField('target_type', draft.target_type);
+            setField('starts_at', draft.starts_at);
+            setField('ends_at', draft.ends_at);
+            setField('external_link', draft.external_link);
+            setField('is_active', draft.is_active);
+            setField('is_pinned', draft.is_pinned);
+            setField('is_indefinite', draft.is_indefinite);
+            setField('until_read', draft.until_read);
+
+            const targetTypeSelect = document.getElementById('targetTypeSelect');
+
+            if (targetTypeSelect) {
+                targetTypeSelect.value = draft.target_type || 'all';
+                targetTypeSelect.dispatchEvent(new Event('change'));
+            }
+
+            if (
+                draft.target_type === 'custom'
+                && typeof window.restoreMuralCreateTargets === 'function'
+            ) {
+                window.restoreMuralCreateTargets(draft.targets || []);
+            }
+
+            if (window.createContentEditor) {
+                window.createContentEditor.setData(draft.content || '');
+            } else if (createContent) {
+                createContent.value = draft.content || '';
+            }
+
+            if (typeof window.refreshSummaryLengthUi === 'function') {
+                window.refreshSummaryLengthUi('create');
+            }
+
+            createModalEl.classList.add('show');
+        }
+
+        if (draftEl) {
+            const draft = JSON.parse(draftEl.textContent);
+
+            const tryRestoreDraft = () => {
+                if (window.createContentEditor || !createContent) {
+                    restoreCreateFormDraft(draft);
+                    return;
+                }
+
+                setTimeout(tryRestoreDraft, 100);
+            };
+
+            setTimeout(tryRestoreDraft, 0);
         }
     });
 

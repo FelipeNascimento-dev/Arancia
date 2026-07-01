@@ -9,6 +9,7 @@ CSS_DIR = Path(settings.BASE_DIR) / "base_static" / "global" / "css"
 
 PARTIALS = [
     "layout-tokens.css",
+    "content-shell.css",
     "navbar.css",
     "login.css",
     "logout.css",

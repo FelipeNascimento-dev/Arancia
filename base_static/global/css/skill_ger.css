@@ -42,8 +42,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 25px;
-    width: min(var(--form-max-width), 100%);
-    max-width: 100%;
+    width: var(--content-max-width-form);
     margin-left: var(--content-offset);
 }
 

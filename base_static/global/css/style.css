@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 /* Produção usa arancia-core.bundle.css (ver _head.html). Regenerar o bundle após editar estes arquivos. */
 @import url(layout-tokens.css);
+@import url(content-shell.css);
 @import url(navbar.css);
 @import url(login.css);
 @import url(logout.css);
@@ -73,6 +74,8 @@ body {
   width: 100%;
   max-width: calc(100vw - var(--content-gutter));
   box-sizing: border-box;
+  margin-left: 85px;
+  margin-right: 20px;
 }
 
 .forma::before {
@@ -335,7 +338,7 @@ body {
 }
 
 .kanban-empty-msg {
-  margin-left: 90px;
+  margin-left: var(--content-offset-wide);
   color: #64748b;
 }
 
@@ -350,7 +353,7 @@ body {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin: 70px 20px 20px 65px;
+  margin: calc(var(--topbar-height) + 20px) var(--content-gutter) 20px var(--content-offset);
   padding: 18px 22px;
   background: #fff;
   border: 1px solid #e2e8f0;

@@ -5,7 +5,7 @@
     <i class="fa-solid fa-user-shield"></i> Acesso — {{ board.display_name|default:board.name|default:board.nome|default:"Board" }}
 </h2>
 
-<div style="margin: 0 65px 16px;">
+<div class="app-page-breadcrumb-bar">
     <a href="{% url 'crm:kanban_board' board_id %}" class="btn btn-secondary btn-sm">
         <i class="fa-solid fa-arrow-left"></i> Voltar ao Kanban
     </a>

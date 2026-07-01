@@ -1,0 +1,49 @@
+/**
+ * Shell reutilizável de página — Arancia responsividade.
+ * Usar em vez de margin-left/width fixos em px.
+ */
+.app-page {
+  margin-top: calc(var(--topbar-height) + 12px);
+  margin-left: var(--content-offset);
+  margin-right: var(--content-gutter);
+  box-sizing: border-box;
+}
+
+.app-page--fluid {
+  width: 100%;
+  max-width: var(--content-max-width-fluid);
+}
+
+.app-page--form {
+  width: 100%;
+  max-width: var(--content-max-width-form);
+}
+
+.app-page--wide-offset {
+  margin-left: var(--content-offset-wide);
+}
+
+.app-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 40px;
+  margin-left: var(--content-offset-wide);
+  margin-right: var(--content-gutter);
+  margin-bottom: 40px;
+}
+
+.app-page-actions {
+  margin: 20px var(--content-gutter) 20px var(--content-offset-wide);
+}
+
+.app-page-breadcrumb-bar {
+  margin: 0 var(--content-gutter) 16px var(--content-offset);
+}
+
+.app-romaneios-wrapper {
+  margin-top: 30px;
+  margin-left: var(--content-offset);
+  margin-right: var(--content-gutter);
+  box-sizing: border-box;
+}

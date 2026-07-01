@@ -2,13 +2,13 @@
     .main-content,
     .container,
     .page-content {
-        max-width: 1350px !important;
+        max-width: var(--content-max-width-fluid) !important;
         width: 100% !important;
         margin-bottom: 150px;
     }
 
     .toolbar {
-        margin-top: 65px;
+        margin-top: calc(var(--topbar-height) + 15px);
         display: flex;
         gap: 12px;
         align-items: center;
@@ -473,7 +473,7 @@
         position: sticky;
         top: 78px;
         z-index: 40;
-        margin-left: 65px;
+        margin-left: var(--content-offset);
         display: none;
         align-items: center;
         justify-content: space-between;

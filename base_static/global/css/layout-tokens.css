@@ -14,6 +14,8 @@
   --content-offset-wide: 90px;
   --form-max-width: 1300px;
   --form-max-width-narrow: 1150px;
+  --content-max-width-fluid: calc(100vw - var(--content-offset) - var(--content-gutter) * 2);
+  --content-max-width-form: min(var(--form-max-width), var(--content-max-width-fluid));
 }
 
 @media screen and (max-width: 1439px) {

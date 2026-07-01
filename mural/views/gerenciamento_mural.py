@@ -8,6 +8,7 @@ import math
 from pathlib import Path
 from setup.local_settings import MURAL_API_URL, TRANSP_API_URL
 from mural.helpers.create_item_payload import build_create_item_v2_payload
+from mural.helpers.form_draft import extract_create_form_draft, extract_created_item_id
 from utils import request
 from utils.request import RequestClient
 
@@ -325,6 +326,8 @@ def gerenciar_mural(request):
     from mural.helpers.target_catalogs import get_mural_target_catalogs
 
     target_users, target_groups, target_gais = get_mural_target_catalogs()
+    create_form_draft = None
+    mural_pending_item_id = request.session.pop("mural_pending_item_id", None)
 
     if "view_reads" in request.POST:
         view_read_search_done = True
@@ -417,6 +420,16 @@ def gerenciar_mural(request):
                 request, "Você não possui permissão para criar itens no mural.")
             return redirect("mural:mural_gerenciamento")
 
+        def _store_create_draft_on_error(message):
+            nonlocal create_form_draft
+            messages.error(request, message)
+            create_form_draft = extract_create_form_draft(request.POST)
+            if request.FILES.getlist("attachment_files") or request.FILES.get("image_file"):
+                messages.warning(
+                    request,
+                    "Os arquivos selecionados precisam ser anexados novamente.",
+                )
+
         severity = request.POST.get("severity")
         starts_at_raw = request.POST.get("starts_at")
         ends_at_raw = request.POST.get("ends_at")
@@ -428,69 +441,70 @@ def gerenciar_mural(request):
         )
 
         if not is_valid_critical:
-            messages.error(request, critical_error)
-            return redirect("mural:mural_gerenciamento")
+            _store_create_draft_on_error(critical_error)
+        else:
+            attachment_files = request.FILES.getlist("attachment_files")
+            attachment_descriptions = request.POST.getlist(
+                "attachment_descriptions")
 
-        attachment_files = request.FILES.getlist("attachment_files")
-        attachment_descriptions = request.POST.getlist(
-            "attachment_descriptions")
+            image_file = request.FILES.get("image_file")
 
-        image_file = request.FILES.get("image_file")
+            attachments = []
+            image_url = None
 
-        attachments = []
-        image_url = None
+            try:
+                if attachment_files:
+                    attachments = build_attachments_from_files(
+                        uploaded_files=attachment_files,
+                        descriptions=attachment_descriptions
+                    )
 
-        try:
-            if attachment_files:
-                attachments = build_attachments_from_files(
-                    uploaded_files=attachment_files,
-                    descriptions=attachment_descriptions
+                if image_file:
+                    image_url = upload_file_to_firebase(image_file)
+
+            except Exception as e:
+                _store_create_draft_on_error(
+                    f"Erro ao enviar arquivo/imagem para o Firebase. Erro: {e}"
+                )
+            else:
+                payload, target_error = build_create_item_v2_payload(
+                    post_data=request.POST,
+                    user_id=request.user.id,
+                    attachments=attachments,
+                    image_url=image_url,
                 )
 
-            if image_file:
-                image_url = upload_file_to_firebase(image_file)
+                if target_error:
+                    _store_create_draft_on_error(target_error)
+                else:
+                    try:
+                        create_url = f"{MURAL_API_URL}/v2/items/create-item/"
 
-        except Exception as e:
-            messages.error(
-                request,
-                f"Erro ao enviar arquivo/imagem para o Firebase. Erro: {e}"
-            )
-            return redirect("mural:mural_gerenciamento")
+                        create_client = RequestClient(
+                            url=create_url,
+                            method="POST",
+                            headers={
+                                "Content-Type": "application/json",
+                                "Accept": "application/json",
+                            },
+                            request_data=payload
+                        )
 
-        payload, target_error = build_create_item_v2_payload(
-            post_data=request.POST,
-            user_id=request.user.id,
-            attachments=attachments,
-            image_url=image_url,
-        )
+                        create_resp = create_client.send_api_request()
 
-        if target_error:
-            messages.error(request, target_error)
-            return redirect("mural:mural_gerenciamento")
+                        if isinstance(create_resp, dict) and "detail" in create_resp:
+                            _store_create_draft_on_error(create_resp.get("detail"))
+                        else:
+                            created_id = extract_created_item_id(create_resp)
+                            if created_id is not None:
+                                request.session["mural_pending_item_id"] = created_id
+                            messages.success(request, "Item criado com sucesso!")
+                            return redirect("mural:mural_gerenciamento")
 
-        try:
-            create_url = f"{MURAL_API_URL}/v2/items/create-item/"
-
-            create_client = RequestClient(
-                url=create_url,
-                method="POST",
-                headers={
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                },
-                request_data=payload
-            )
-
-            create_resp = create_client.send_api_request()
-
-            if isinstance(create_resp, dict) and "detail" in create_resp:
-                messages.error(request, create_resp.get("detail"))
-            else:
-                messages.success(request, "Item criado com sucesso!")
-                return redirect("mural:mural_gerenciamento")
-
-        except Exception as e:
-            messages.error(request, f"Erro ao criar item no mural. Erro: {e}")
+                    except Exception as e:
+                        _store_create_draft_on_error(
+                            f"Erro ao criar item no mural. Erro: {e}"
+                        )
 
     if "edit_mural_item" in request.POST:
         if not request.user.has_perm("mural.ger_mural"):
@@ -802,4 +816,6 @@ def gerenciar_mural(request):
         "view_read_selected_item_id": view_read_selected_item_id,
         "view_read_filters": view_read_filters,
         "pagination": pagination,
+        "create_form_draft": create_form_draft,
+        "mural_pending_item_id": mural_pending_item_id,
     })

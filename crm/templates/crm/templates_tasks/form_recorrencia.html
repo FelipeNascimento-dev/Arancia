@@ -3,7 +3,7 @@
 {% block content %}
 <style>
     .form-card-2col { height: auto; }
-    .section-header { margin: 40px 25px 20px 90px; }
+    .section-header { margin: 40px var(--content-gutter) 20px var(--content-offset-wide); }
     .section-title {
         font-size: 1.4rem; font-weight: 600;
         border-bottom: 2px solid var(--primary-color, #c41e3a);
@@ -57,7 +57,7 @@
 </div>
 {% endif %}
 
-<div style="margin: 20px 90px; display: flex; gap: 8px;">
+<div class="app-page-actions" style="display: flex; gap: 8px;">
     <a href="{% url 'crm:lista_recorrencias' %}" class="btn btn-secondary">Voltar</a>
     {% if perms.crm.delete_task_recurrence %}
     <form method="post">

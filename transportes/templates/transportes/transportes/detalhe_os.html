@@ -643,16 +643,11 @@
                             </div>
 
                             {% if perms.transportes.transportes %}
-                            <form method="post" style="margin:0;">
-                            {% csrf_token %}
-                                <input type="hidden" name="travel_id" value="{{ travel.id }}">
-                                <button type="submit"
+                                <button type="button"
                                         class="btn-subitens"
-                                        name="travel_events"
-                                        value="1">
+                                        onclick="abrirModalEventoViagem('{{ travel.id }}')">
                                     <i class="fa-solid fa-plus"></i> Adicionar Evento
                                 </button>
-                            </form>
                             {% endif %}
                         </div>
 
@@ -1368,8 +1363,7 @@ function validarRejeicao(){
 </script>
 {% endif %}
 <!-- MODAL PARA CRIACAO DE EVENTOS NAS TRAVELS -->
-{% if modal_travel_events %}
-<div class="os-modal-overlay show" id="modalEventosTravel">
+<div class="os-modal-overlay" id="modalEventosTravel">
     <div class="os-modal" style="width:700px;">
         <div class="os-modal-header">
             <div class="os-modal-title">
@@ -1380,22 +1374,17 @@ function validarRejeicao(){
 
         <div class="os-modal-body">
 
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" id="formEventosTravel">
                 {% csrf_token %}
 
-                <input type="hidden" name="travel_id" value="{{ request.POST.travel_id|default:'' }}">
-
-                {% for selected_id in selected_travel_ids %}
-                    <input type="hidden" name="travel_ids" value="{{ selected_id }}">
-                {% endfor %}
+                <input type="hidden" name="travel_id" id="eventTravelId" value="">
+                <div id="eventTravelIdsContainer"></div>
 
                 <div class="form-group">
-                    {% if selected_travel_ids %}
-                    <div style="margin-bottom:15px; padding:10px 12px; border-radius:8px; background:#f4f6f9; font-size:14px;">
+                    <div id="eventTravelIdsInfo" style="display:none; margin-bottom:15px; padding:10px 12px; border-radius:8px; background:#f4f6f9; font-size:14px;">
                         Evento será criado para as viagens:
-                        <b>{{ selected_travel_ids|join:", " }}</b>
+                        <b id="eventTravelIdsLabel"></b>
                     </div>
-                    {% endif %}
 
                     <label>Tipo de Evento</label>
                     <input type="hidden" name="event_type_id" id="eventTypeId">
@@ -1405,53 +1394,20 @@ function validarRejeicao(){
                             id="eventTypeSearch"
                             class="custom-select-trigger"
                             placeholder="Digite para buscar o tipo de evento..."
-                            autocomplete="off">
+                            autocomplete="off"
+                            disabled>
 
                         <div class="custom-select-dropdown" id="eventTypeDropdown">
-                            {% for ev in travel_event_types %}
-                            <div class="custom-option"
-                                data-id="{{ ev.id }}"
-                                data-required="{{ ev.required_items|yesno:'true,false' }}"
-                                data-label="{{ ev.description|lower }}"
-                                data-status="{% if ev.status %}{{ ev.status.type|lower }}{% endif %}">
-                                <div class="option-content">
-                                    <div class="option-tags">
-                                        {% if ev.status %}
-                                            <span class="tag tag-status">
-                                                {{ ev.status.type }}
-                                            </span>
-                                        {% endif %}
-                                        {% if ev.status and ev.status.finished %}
-                                            <span class="tag tag-final">
-                                                Finalizador
-                                            </span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="option-text">
-                                        {{ ev.description }}
-                                    </div>
-                                </div>
+                            <div class="custom-option" style="display:none; color:#777;">
+                                Carregando tipos de evento...
                             </div>
-                            {% endfor %}
                         </div>
                     </div>
                 </div>
 
                 <div id="eventItemsBox" class="items-box" style="display:none; margin-top:20px;">
                     <div class="items-title">Itens da Viagem</div>
-                    {% if travel_items %}
-                        {% for item in travel_items %}
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="items" value="{{ item.id }}">
-                            {{ item.product_model }}
-                            <span>({{ item.serial_number }})</span>
-                        </label>
-                        {% endfor %}
-                    {% else %}
-                        <div style="font-size:13px; color:#777;">
-                            Nenhum item vinculado a esta viagem.
-                        </div>
-                    {% endif %}
+                    <div id="eventItemsList"></div>
                 </div>
 
                 <div class="form-group" style="margin-top:15px;">
@@ -1504,7 +1460,20 @@ function validarRejeicao(){
         </div>
     </div>
 </div>
-{% endif %}
+
+{{ detalhe_os_js_config|json_script:"detalhe-os-config" }}
+<script type="application/json" id="detalhe-os-items">
+[
+{% for item in payload.items %}
+{
+    "id": {{ item.id }},
+    "travel_order_id": "{{ item.travel_order_id|default_if_none:'' }}",
+    "serial_number": "{{ item.serial_number|escapejs }}",
+    "product_model": "{{ item.product_model|default_if_none:''|escapejs }}"
+}{% if not forloop.last %},{% endif %}
+{% endfor %}
+]
+</script>
 
 <!-- MODAL EDITAR ITEM -->
 <form method="post">
@@ -2887,14 +2856,27 @@ document.addEventListener("DOMContentLoaded", function(){
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const select = document.getElementById("eventTypeSelect");
-    if (!select) return;
+    const cfgEl = document.getElementById("detalhe-os-config");
+    const itemsEl = document.getElementById("detalhe-os-items");
+    const modalEventosTravel = document.getElementById("modalEventosTravel");
+    if (!cfgEl || !modalEventosTravel) return;
 
+    const cfg = JSON.parse(cfgEl.textContent);
+    const osItems = itemsEl ? JSON.parse(itemsEl.textContent) : [];
+
+    const travelIdInput = document.getElementById("eventTravelId");
+    const travelIdsContainer = document.getElementById("eventTravelIdsContainer");
+    const travelIdsInfo = document.getElementById("eventTravelIdsInfo");
+    const travelIdsLabel = document.getElementById("eventTravelIdsLabel");
+    const select = document.getElementById("eventTypeSelect");
     const searchInput = document.getElementById("eventTypeSearch");
     const dropdown = document.getElementById("eventTypeDropdown");
     const hiddenInput = document.getElementById("eventTypeId");
     const itemsBox = document.getElementById("eventItemsBox");
-    const options = dropdown.querySelectorAll(".custom-option");
+    const itemsList = document.getElementById("eventItemsList");
+
+    let eventTypesCache = null;
+    let eventTypesLoading = null;
 
     function normalizeText(value) {
         return (value || "")
@@ -2905,78 +2887,173 @@ document.addEventListener("DOMContentLoaded", function () {
             .trim();
     }
 
+    function resetEventTypeField() {
+        hiddenInput.value = "";
+        searchInput.value = "";
+        searchInput.disabled = true;
+        dropdown.innerHTML = '<div class="custom-option" style="color:#777;">Carregando tipos de evento...</div>';
+        dropdown.style.display = "none";
+    }
+
+    function renderEventTypeOptions(types) {
+        dropdown.innerHTML = "";
+        if (!types.length) {
+            dropdown.innerHTML = '<div class="custom-option" style="color:#777;">Nenhum tipo de evento encontrado.</div>';
+            return;
+        }
+
+        types.forEach((ev) => {
+            const status = ev.status || {};
+            const option = document.createElement("div");
+            option.className = "custom-option";
+            option.dataset.id = ev.id;
+            option.dataset.required = ev.required_items ? "true" : "false";
+            option.dataset.label = normalizeText(ev.description || "");
+            option.dataset.status = normalizeText(status.type || "");
+
+            const tags = [];
+            if (status.type) {
+                tags.push(`<span class="tag tag-status">${status.type}</span>`);
+            }
+            if (status.finished) {
+                tags.push('<span class="tag tag-final">Finalizador</span>');
+            }
+
+            option.innerHTML = `
+                <div class="option-content">
+                    <div class="option-tags">${tags.join("")}</div>
+                    <div class="option-text">${ev.description || ""}</div>
+                </div>
+            `;
+            dropdown.appendChild(option);
+        });
+    }
+
     function filtrarOpcoes() {
         const termo = normalizeText(searchInput.value);
+        const options = dropdown.querySelectorAll(".custom-option[data-id]");
         let visibleCount = 0;
 
-        options.forEach(option => {
+        options.forEach((option) => {
             const texto = normalizeText(option.dataset.label);
             const status = normalizeText(option.dataset.status);
             const match = !termo || texto.includes(termo) || status.includes(termo);
-
             option.style.display = match ? "block" : "none";
-
             if (match) visibleCount++;
         });
 
         dropdown.style.display = visibleCount > 0 ? "block" : "none";
     }
 
-    searchInput.addEventListener("focus", function (e) {
-        e.stopPropagation();
-        filtrarOpcoes();
-    });
+    function renderTravelItems(travelIds) {
+        const ids = new Set(travelIds.map(String));
+        const items = osItems.filter((item) => ids.has(String(item.travel_order_id)));
 
-    searchInput.addEventListener("click", function (e) {
-        e.stopPropagation();
-        filtrarOpcoes();
-    });
-
-    searchInput.addEventListener("input", function () {
-        hiddenInput.value = "";
-        filtrarOpcoes();
-    });
-
-    options.forEach(option => {
-        option.addEventListener("click", function () {
-            const id = this.dataset.id;
-            const required = this.dataset.required === "true";
-            const description = this.querySelector(".option-text")?.innerText?.trim() || "";
-
-            hiddenInput.value = id;
-            searchInput.value = description;
-            dropdown.style.display = "none";
-
-            if (required) {
-                itemsBox.style.display = "block";
-            } else {
-                itemsBox.style.display = "none";
-                itemsBox.querySelectorAll("input[type='checkbox']")
-                    .forEach(cb => cb.checked = false);
-            }
-        });
-    });
-
-    document.addEventListener("click", function (e) {
-        if (!select.contains(e.target)) {
-            dropdown.style.display = "none";
+        itemsList.innerHTML = "";
+        if (!items.length) {
+            itemsList.innerHTML = '<div style="font-size:13px; color:#777;">Nenhum item vinculado a esta viagem.</div>';
+            return;
         }
-    });
-});
-</script>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const modalEventosTravel = document.getElementById("modalEventosTravel");
+        items.forEach((item) => {
+            const label = document.createElement("label");
+            label.className = "checkbox-item";
+            label.innerHTML = `
+                <input type="checkbox" name="items" value="${item.id}">
+                ${item.product_model || "-"}
+                <span>(${item.serial_number || "-"})</span>
+            `;
+            itemsList.appendChild(label);
+        });
+    }
 
-    if (!modalEventosTravel) return;
+    function setTravelTargets(travelIds) {
+        const ids = (travelIds || []).map(String).filter(Boolean);
+        travelIdsContainer.innerHTML = "";
+
+        if (ids.length === 1) {
+            travelIdInput.value = ids[0];
+        } else {
+            travelIdInput.value = "";
+            ids.forEach((id) => {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "travel_ids";
+                input.value = id;
+                travelIdsContainer.appendChild(input);
+            });
+        }
+
+        if (ids.length > 1) {
+            travelIdsInfo.style.display = "block";
+            travelIdsLabel.textContent = ids.join(", ");
+        } else {
+            travelIdsInfo.style.display = "none";
+            travelIdsLabel.textContent = "";
+        }
+
+        renderTravelItems(ids);
+        itemsBox.style.display = "none";
+    }
+
+    function loadEventTypes() {
+        if (eventTypesCache) {
+            return Promise.resolve(eventTypesCache);
+        }
+        if (eventTypesLoading) {
+            return eventTypesLoading;
+        }
+
+        const params = new URLSearchParams({
+            cliente: cfg.cliente || "",
+            order_type: cfg.order_type_id || "",
+        });
+
+        eventTypesLoading = fetch(`${cfg.urls.travel_event_types}?${params.toString()}`, {
+            headers: { Accept: "application/json" },
+        })
+            .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+            .then(({ ok, data }) => {
+                if (!ok || data.detail) {
+                    throw new Error(data.detail || "Erro ao carregar tipos de evento.");
+                }
+                eventTypesCache = data.event_types || [];
+                return eventTypesCache;
+            })
+            .finally(() => {
+                eventTypesLoading = null;
+            });
+
+        return eventTypesLoading;
+    }
+
+    function openModalForTravels(travelIds) {
+        setTravelTargets(travelIds);
+        resetEventTypeField();
+        modalEventosTravel.classList.add("show");
+
+        loadEventTypes()
+            .then((types) => {
+                renderEventTypeOptions(types);
+                searchInput.disabled = false;
+                searchInput.focus();
+            })
+            .catch((error) => {
+                dropdown.innerHTML = `<div class="custom-option" style="color:#c00;">${error.message}</div>`;
+                searchInput.disabled = true;
+            });
+    }
 
     window.fecharModalEventosTravel = function () {
         modalEventosTravel.classList.remove("show");
     };
 
-    window.abrirModalEventosTravel = function () {
-        modalEventosTravel.classList.add("show");
+    window.abrirModalEventoViagem = function (travelId) {
+        openModalForTravels([String(travelId)]);
+    };
+
+    window.abrirModalEventoViagemLote = function (travelIds) {
+        openModalForTravels(travelIds);
     };
 
     modalEventosTravel.addEventListener("click", function (e) {
@@ -2984,6 +3061,58 @@ document.addEventListener("DOMContentLoaded", function () {
             fecharModalEventosTravel();
         }
     });
+
+    if (select && searchInput && dropdown && hiddenInput && itemsBox) {
+        searchInput.addEventListener("focus", function (e) {
+            e.stopPropagation();
+            filtrarOpcoes();
+        });
+
+        searchInput.addEventListener("click", function (e) {
+            e.stopPropagation();
+            filtrarOpcoes();
+        });
+
+        searchInput.addEventListener("input", function () {
+            hiddenInput.value = "";
+            filtrarOpcoes();
+        });
+
+        dropdown.addEventListener("click", function (e) {
+            const option = e.target.closest(".custom-option[data-id]");
+            if (!option) return;
+
+            hiddenInput.value = option.dataset.id;
+            searchInput.value = option.querySelector(".option-text")?.innerText?.trim() || "";
+            dropdown.style.display = "none";
+
+            if (option.dataset.required === "true") {
+                itemsBox.style.display = "block";
+            } else {
+                itemsBox.style.display = "none";
+                itemsBox.querySelectorAll("input[type='checkbox']").forEach((cb) => {
+                    cb.checked = false;
+                });
+            }
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!select.contains(e.target)) {
+                dropdown.style.display = "none";
+            }
+        });
+    }
+
+    const btnCriar = document.getElementById("btnCriarEventoSelecionadas");
+    if (btnCriar) {
+        btnCriar.addEventListener("click", function () {
+            const ids = [...document.querySelectorAll(".travel-checkbox:checked")]
+                .map((cb) => cb.value)
+                .filter(Boolean);
+            if (!ids.length) return;
+            abrirModalEventoViagemLote(ids);
+        });
+    }
 });
 </script>
 
@@ -3316,53 +3445,20 @@ document.addEventListener("DOMContentLoaded", function () {
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const actionBox = document.getElementById("travelSelectionActions");
-    const btnCriar = document.getElementById("btnCriarEventoSelecionadas");
     const checkboxes = document.querySelectorAll(".travel-checkbox");
 
     function atualizarBotaoViagens() {
         const selecionadas = document.querySelectorAll(".travel-checkbox:checked");
-        actionBox.style.display = selecionadas.length > 0 ? "block" : "none";
+        if (actionBox) {
+            actionBox.style.display = selecionadas.length > 0 ? "block" : "none";
+        }
     }
 
     checkboxes.forEach(cb => {
         cb.addEventListener("change", atualizarBotaoViagens);
     });
 
-    btnCriar.addEventListener("click", function () {
-        const ids = [...document.querySelectorAll(".travel-checkbox:checked")]
-            .map(cb => cb.value);
-
-        if (!ids.length) return;
-
-        const form = document.createElement("form");
-        form.method = "post";
-
-        const csrf = document.querySelector("[name=csrfmiddlewaretoken]");
-        if (csrf) {
-            const csrfInput = document.createElement("input");
-            csrfInput.type = "hidden";
-            csrfInput.name = "csrfmiddlewaretoken";
-            csrfInput.value = csrf.value;
-            form.appendChild(csrfInput);
-        }
-
-        const openInput = document.createElement("input");
-        openInput.type = "hidden";
-        openInput.name = "travel_events_bulk";
-        openInput.value = "1";
-        form.appendChild(openInput);
-
-        ids.forEach(id => {
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = "travel_ids";
-            input.value = id;
-            form.appendChild(input);
-        });
-
-        document.body.appendChild(form);
-        form.submit();
-    });
+    atualizarBotaoViagens();
 });
 </script>
 
