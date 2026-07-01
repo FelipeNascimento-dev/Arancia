@@ -710,6 +710,25 @@ td.flag.VERDE {
   box-sizing: border-box;
 }
 
+/* Extrair endereços — ocupa toda a área útil (sem margens laterais extras) */
+.forma > .container:has(.extrair-enderecos-fullbleed) {
+  padding-left: calc(var(--sidebar-width-collapsed) + 4px);
+  padding-right: 0;
+}
+
+body:has(.sidebar:not(.colapsada)) .forma > .container:has(.extrair-enderecos-fullbleed) {
+  padding-left: calc(var(--sidebar-width-expanded) + 4px);
+}
+
+.iframe-container.extrair-enderecos-fullbleed {
+  margin-top: var(--topbar-height);
+  margin-left: 0;
+  margin-right: 0;
+  width: 100%;
+  max-width: none;
+  height: calc(100vh - var(--topbar-height));
+}
+
 .iframe-container1 {
   margin-top: calc(var(--topbar-height) + 12px);
   margin-left: var(--content-offset);

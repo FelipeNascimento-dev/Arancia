@@ -3,17 +3,11 @@
 {% block content %}
 
 <style>
-    .content-wrapper,
-    .main-content,
-    .container,
-    .page-content {
-        max-width: 1100px !important;
-        width: 100% !important;
-        margin-bottom: 150px;
-    }
-
     .assign-page {
-        margin-top: 75px;
+        width: 100%;
+        max-width: min(1100px, var(--content-max-width-form));
+        margin: calc(var(--topbar-height) + 15px) auto 150px;
+        box-sizing: border-box;
     }
 
     .assign-card {
@@ -234,7 +228,8 @@
 
     @media (max-width: 768px) {
         .assign-page {
-            margin-top: 55px;
+            margin-top: calc(var(--topbar-height) + 10px);
+            margin-bottom: 80px;
         }
 
         .assign-card-body {

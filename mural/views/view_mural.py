@@ -180,6 +180,7 @@ def normalize_item(item):
         "image_url": item.get("image_url") or "",
         "target_type": item.get("target_type") or "",
         "created_by_id": item.get("created_by_id"),
+        "created_at": item.get("created_at") or item.get("updated_at") or "",
     }
 
 

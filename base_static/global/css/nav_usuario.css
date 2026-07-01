@@ -26,8 +26,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
-  max-width: min(100%, calc(100vw - var(--content-offset) - 420px));
-  margin-left: var(--content-offset);
+  max-width: min(100%, calc(100vw - var(--content-inset-left) - 420px));
+  margin-left: var(--content-inset-left);
 }
 
 .macro-guia a {
@@ -254,6 +254,6 @@ input:checked+.slider:before {
 
 @media screen and (orientation: portrait) {
   .macro-guia {
-    max-width: min(100%, calc(100vw - var(--content-offset) - 280px));
+    max-width: min(100%, calc(100vw - var(--content-inset-left) - 280px));
   }
 }

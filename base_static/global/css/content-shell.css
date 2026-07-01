@@ -4,8 +4,6 @@
  */
 .app-page {
   margin-top: calc(var(--topbar-height) + 12px);
-  margin-left: var(--content-offset);
-  margin-right: var(--content-gutter);
   box-sizing: border-box;
 }
 
@@ -28,22 +26,18 @@
   align-items: center;
   justify-content: space-between;
   margin-top: 40px;
-  margin-left: var(--content-offset-wide);
-  margin-right: var(--content-gutter);
   margin-bottom: 40px;
 }
 
 .app-page-actions {
-  margin: 20px var(--content-gutter) 20px var(--content-offset-wide);
+  margin: 20px 0;
 }
 
 .app-page-breadcrumb-bar {
-  margin: 0 var(--content-gutter) 16px var(--content-offset);
+  margin: 0 0 16px;
 }
 
 .app-romaneios-wrapper {
   margin-top: 30px;
-  margin-left: var(--content-offset);
-  margin-right: var(--content-gutter);
   box-sizing: border-box;
 }
