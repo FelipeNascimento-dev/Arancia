@@ -21,17 +21,14 @@
     }
 
     .container:has(.mural-mgmt-page) {
-        max-width: 100% !important;
-        width: 100%;
+        max-width: none !important;
     }
 
     .mural-mgmt-page {
         width: 100%;
-        max-width: var(--content-max-width-fluid);
+        max-width: 100%;
         margin-top: calc(var(--topbar-height) + 12px);
-        margin-left: var(--content-offset);
-        margin-right: var(--content-gutter);
-        padding: clamp(16px, 2vw, 28px);
+        padding: clamp(16px, 2vw, 28px) 0;
         box-sizing: border-box;
         font-family: "Inter", sans-serif;
     }

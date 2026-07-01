@@ -22,7 +22,7 @@ def gerar_etiquetas_view(request):
 @permission_required('transportes.controle_campo', raise_exception=True)
 @permission_required('logistica.acesso_arancia', raise_exception=True)
 def extrair_enderecos_view(request):
-    return render(request, "transportes/controle_campo/frame2.html", {
+    return render(request, "transportes/controle_campo/address_extractor.html", {
         "titulo": "Extrair Endereços",
         "current_parent_menu": "transportes",
         "current_menu": "controle_campo",

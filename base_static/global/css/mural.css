@@ -25,22 +25,8 @@
         --radius-md: 12px;
     }
 
-    .forma:has(.mural-feed-page) {
-        justify-content: flex-start;
-    }
-
     .forma > .container:has(.mural-feed-page) {
         max-width: none !important;
-        width: 100%;
-        margin-left: 0;
-        margin-right: 0;
-        padding-left: calc(var(--sidebar-width-collapsed) + 4px + 20px);
-        padding-right: var(--content-gutter);
-        box-sizing: border-box;
-    }
-
-    .sidebar:not(.colapsada) ~ .forma > .container:has(.mural-feed-page) {
-        padding-left: calc(var(--sidebar-width-expanded) + 4px + 20px);
     }
 
     .mural-feed-page {
@@ -481,6 +467,7 @@
         flex-direction: column;
         min-height: 0;
         overflow: visible;
+        margin-bottom: 20px
     }
 
     .notice-card h3,
@@ -497,6 +484,19 @@
         line-height: 1.5;
         color: var(--text);
         flex: 1 1 auto;
+    }
+
+    .notice-card .card-summary {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.45;
+        color: var(--muted);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: break-word;
     }
 
     .notice-card:hover,
@@ -2110,7 +2110,7 @@
     }
 
     /* =========================
-    CARROSSEL DO MURAL
+    CARROSSEL DO MURAL — 5 itens por página
     ========================= */
 
     .mural-carousel {
@@ -2126,16 +2126,23 @@
 
     .mural-carousel-track {
         display: flex;
+        flex-wrap: nowrap;
         transition: transform 0.35s ease;
         will-change: transform;
     }
 
     .mural-carousel-slide {
+        flex: 0 0 100%;
         min-width: 100%;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+        grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: clamp(10px, 1.2vw, 16px);
         align-items: stretch;
+    }
+
+    .mural-carousel-slide .notice-card {
+        margin-bottom: 0;
+        min-width: 0;
     }
 
     .mural-carousel-controls {
@@ -2158,6 +2165,7 @@
         align-items: center;
         justify-content: center;
         transition: 0.2s ease;
+        flex-shrink: 0;
     }
 
     .carousel-arrow:hover {

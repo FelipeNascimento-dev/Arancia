@@ -137,8 +137,8 @@
   }
 
   .welcome-banner {
-    margin-left: var(--content-offset);
-    margin-right: var(--content-gutter);
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .form-actions {

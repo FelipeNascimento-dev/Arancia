@@ -1,6 +1,32 @@
 ﻿{% extends 'global/base.html' %}
 {% block content %}
 
+<style>
+    #viewItemModal .view-modal-info-grid.compact {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        width: 100%;
+    }
+
+    #viewItemModal .view-info-card {
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    #viewItemModal .view-info-value {
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    @media (max-width: 720px) {
+        #viewItemModal .view-modal-info-grid.compact {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 
 <div class="page mural-feed-page">
     <section class="mural-shell">
@@ -265,6 +291,25 @@
         return value.substring(0, limit).trim() + '...';
     }
 
+    const MURAL_SUMMARY_PREVIEW_CHARS = 56;
+
+    function getItemCreatedTimestamp(item) {
+        const raw = item.created_at || item.starts_at || '';
+        const parsed = Date.parse(raw);
+        if (!Number.isNaN(parsed)) {
+            return parsed;
+        }
+
+        const id = Number(item.id);
+        return Number.isNaN(id) ? 0 : id;
+    }
+
+    function sortItemsByCreatedDesc(items) {
+        return [...items].sort(
+            (a, b) => getItemCreatedTimestamp(b) - getItemCreatedTimestamp(a)
+        );
+    }
+
     function createCriticalCard(item) {
         const coverHtml = item.image_url
             ? `
@@ -351,7 +396,7 @@
 
                 <h3>${item.title}</h3>
 
-                <p>${item.summary || ''}</p>
+                <p class="card-summary">${truncateText(item.summary, MURAL_SUMMARY_PREVIEW_CHARS)}</p>
 
                 <div class="card-meta" style="color: var(--muted); margin-top: 14px;">
                     <span>
@@ -471,18 +516,7 @@
       `;
     }
 
-    function getCardsPerSlide(container) {
-        const minCardWidth = 280;
-        const gap = 12;
-        const page = document.querySelector('.mural-feed-page');
-        const root = getComputedStyle(document.documentElement);
-        const offset = parseFloat(root.getPropertyValue('--content-offset')) || 65;
-        const gutter = parseFloat(root.getPropertyValue('--content-gutter')) || 16;
-        const width = container?.offsetWidth
-            || page?.offsetWidth
-            || (window.innerWidth - offset - gutter * 2);
-        return Math.max(1, Math.floor((width + gap) / (minCardWidth + gap)));
-    }
+    const MURAL_CAROUSEL_PAGE_SIZE = 5;
 
     function chunkArray(array, size) {
         const chunks = [];
@@ -495,14 +529,13 @@
     }
 
     function renderCarousel(container, items, cardRenderer, carouselId) {
-        const cardsPerSlide = getCardsPerSlide(container);
-        const slides = chunkArray(items, cardsPerSlide);
-
-        if (items.length <= cardsPerSlide) {
-            container.innerHTML = items.map(cardRenderer).join('');
+        if (!items.length) {
+            container.innerHTML = '';
             container.classList.remove('mural-carousel-mounted');
             return;
         }
+
+        const slides = chunkArray(items, MURAL_CAROUSEL_PAGE_SIZE);
 
         container.classList.add('mural-carousel-mounted');
 
@@ -525,9 +558,9 @@
 
                     <div class="carousel-dots">
                         ${slides.map((_, index) => `
-                            <button 
-                                type="button" 
-                                class="carousel-dot ${index === 0 ? 'active' : ''}" 
+                            <button
+                                type="button"
+                                class="carousel-dot ${index === 0 ? 'active' : ''}"
                                 data-slide="${index}"
                                 aria-label="Ir para página ${index + 1}">
                             </button>
@@ -574,14 +607,14 @@
 
         prevBtn.addEventListener('click', () => {
             if (currentSlide > 0) {
-                currentSlide--;
+                currentSlide -= 1;
                 updateCarousel();
             }
         });
 
         nextBtn.addEventListener('click', () => {
             if (currentSlide < totalSlides - 1) {
-                currentSlide++;
+                currentSlide += 1;
                 updateCarousel();
             }
         });
@@ -617,17 +650,19 @@
     }
 
     function renderMural() {
-        const filtered = filterItems(muralItems);
+        const filtered = sortItemsByCreatedDesc(filterItems(muralItems));
 
-        const criticalItems = filtered.filter(item => item.severity === 'critical');
+        const criticalItems = sortItemsByCreatedDesc(
+            filtered.filter(item => item.severity === 'critical')
+        );
 
-        const pinnedItems = filtered.filter(item => {
-            return item.is_pinned && item.severity !== 'critical';
-        });
+        const pinnedItems = sortItemsByCreatedDesc(
+            filtered.filter(item => item.is_pinned && item.severity !== 'critical')
+        );
 
-        const generalItems = filtered.filter(item => {
-            return !item.is_pinned && item.severity !== 'critical';
-        });
+        const generalItems = sortItemsByCreatedDesc(
+            filtered.filter(item => !item.is_pinned && item.severity !== 'critical')
+        );
 
         document.getElementById('count-critical').textContent =
             muralItems.filter(item => item.severity === 'critical').length;
@@ -1080,22 +1115,20 @@
                 <div class="view-modal-content" id="viewItemContent"></div>
             </div>
 
-            <div class="view-modal-info-grid">
-                <div class="view-modal-info-grid compact">
-                    <div class="view-info-card">
-                        <span class="view-info-label">Início</span>
-                        <div class="view-info-value" id="viewItemStartsAt"></div>
-                    </div>
+            <div class="view-modal-info-grid compact">
+                <div class="view-info-card">
+                    <span class="view-info-label">Início</span>
+                    <div class="view-info-value" id="viewItemStartsAt"></div>
+                </div>
 
-                    <div class="view-info-card">
-                        <span class="view-info-label">Fim</span>
-                        <div class="view-info-value" id="viewItemEndsAt"></div>
-                    </div>
+                <div class="view-info-card">
+                    <span class="view-info-label">Fim</span>
+                    <div class="view-info-value" id="viewItemEndsAt"></div>
+                </div>
 
-                    <div class="view-info-card">
-                        <span class="view-info-label">Status</span>
-                        <div class="view-info-value" id="viewItemStatus"></div>
-                    </div>
+                <div class="view-info-card">
+                    <span class="view-info-label">Status</span>
+                    <div class="view-info-value" id="viewItemStatus"></div>
                 </div>
             </div>
 
