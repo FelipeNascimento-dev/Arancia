@@ -161,7 +161,7 @@ def detalhe_viagem(request, id_viagem):
                 messages.error(request, f"Falha ao enviar imagem: {e}")
                 return redirect('transportes:detalhe_viagem', id_viagem=id_viagem)
 
-        url = f"{TRANSP_API_URL}/order_tracking_events/create?id={travel_id}&destination=travel"
+        url = f"{TRANSP_API_URL}/v2/order_tracking/create?ids={travel_id}&destination=travel"
 
         client = RequestClient(
             method="POST",
@@ -173,7 +173,7 @@ def detalhe_viagem(request, id_viagem):
             request_data=payload_event
         )
 
-        # print(payload_event)
+        print(payload_event)
 
         response_event = client.send_api_request()
 

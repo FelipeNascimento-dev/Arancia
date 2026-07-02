@@ -304,6 +304,8 @@ def lista_viagens_criar_evento_lote(request):
             },
             request_data=payload_event,
         )
+
+        print(payload_event)
         response_event = client.send_api_request()
 
         if isinstance(response_event, dict) and "detail" in response_event:
